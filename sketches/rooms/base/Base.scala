@@ -2,13 +2,13 @@ package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
-import trivalibs.bufferdata.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
-import trivalibs.graphics.scene.{BasicFirstPersonCameraController, PerspectiveCamera}
+import trivalibs.graphics.scene.BasicFirstPersonCameraController
+import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
@@ -26,82 +26,127 @@ import trivalibs.utils.numbers.NumExt.given
 private val RoomWidth = 6.5
 private val RoomHeight = 5.5
 private val RoomDepth = 10.0
-private val Tile = 2.5 // metres per texture tile
+
+// The four walls are baked into a single texture, their UVs laid out end to
+// end around the room perimeter (front, right, back, left).
+private val WallLength = RoomDepth * 2.0 + RoomWidth * 2.0
+
+// Baked texels per world metre. Texture sizes are derived from the actual
+// geometry dimensions × this factor, so texel density is uniform in space.
+private val TexScale = 24.0
 
 @main def roomsBase(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
 
   Painter.init(canvas): p =>
     // -----------------------------------------------------------------------
-    // Pre-render: fullscreen procedural-noise material textures
+    // Room geometry — box face quads → Mesh → triangulated, indexed buffers
     // -----------------------------------------------------------------------
+    type RoomVertex = (position: Vec3, uv: Vec2)
+
+    val box =
+      Box(Vec3(0.0, RoomHeight / 2.0, 0.0), RoomWidth, RoomHeight, RoomDepth)
+
+    // Each vertex carries its world position (for noise lookup at bake time)
+    // and a UV that lays the face out flat within its baked texture. `uvw` is
+    // the box-local normalized coordinate in [0,1]^3.
+    def vert(c: Vec3, u: Double, v: Double): RoomVertex =
+      (position = c, uv = Vec2(u, v))
+
+    def form(faces: Arr[Quad[RoomVertex]]): Form =
+      p.form(geometry =
+        toBufferedGeometry(Mesh(faces), MeshBufferType.FaceVertices),
+      )
+
+    // Floor / ceiling map directly onto the box's XZ extent.
+    val floorForm =
+      form(Arr(box.bottomFace((c, uvw) => vert(c, uvw.x, uvw.z))))
+
+    val ceilForm =
+      form(Arr(box.topFace((c, uvw) => vert(c, uvw.x, uvw.z))))
+
+    // Walls share one texture: u runs continuously around the perimeter.
+    val wallForm = form(
+      Arr(
+        box.frontFace((c, uvw) =>
+          vert(c, uvw.x * RoomWidth / WallLength, uvw.y),
+        ),
+        box.rightFace((c, uvw) =>
+          vert(c, (RoomWidth + uvw.z * RoomDepth) / WallLength, uvw.y),
+        ),
+        box.backFace((c, uvw) =>
+          vert(
+            c,
+            (RoomWidth + RoomDepth + (1.0 - uvw.x) * RoomWidth) / WallLength,
+            uvw.y,
+          ),
+        ),
+        box.leftFace((c, uvw) =>
+          vert(
+            c,
+            (RoomWidth + RoomDepth + RoomWidth + (1.0 - uvw.z) * RoomDepth)
+              / WallLength,
+            uvw.y,
+          ),
+        ),
+      ),
+    )
+
+    // -----------------------------------------------------------------------
+    // Pre-render: bake one 3D-noise field across the room geometry. The vertex
+    // shader lays each face out flat by its UV (so the result fills the
+    // texture), while the fragment samples noise at the real world position —
+    // the baked textures therefore look like a single noise volume filling the
+    // room. A per-material tint keeps the floor / walls / ceiling identifiable.
+    // -----------------------------------------------------------------------
+
     type NoiseUniforms = (scale: Float, seed: Vec3, tint: Vec3)
 
-    val noiseShade = p.layerShade[NoiseUniforms]: program =>
-      program.frag: ctx =>
-        val n = LetFloat("n")
-        val uv = ctx.in.uv
-        Block(
-          n := Simplex
-            .simplexNoise3d(
-              vec3(uv.x * ctx.bindings.scale, uv.y * ctx.bindings.scale, 0.0)
-                + ctx.bindings.seed,
-            )
-            .fit1101,
-          ctx.out.color := vec4(vec3(n) * ctx.bindings.tint, 1.0),
-        )
+    val noiseShade = p.shade[RoomVertex, (worldPos: Vec3), NoiseUniforms]:
+      program =>
+        program.vert: ctx =>
+          Block(
+            ctx.out.worldPos := ctx.in.position,
+            ctx.out.position := vec4(ctx.in.uv.fit0111, 0.0, 1.0),
+          )
+        program.frag: ctx =>
+          val n = LetFloat("n")
+          Block(
+            n := Simplex
+              .simplexNoise3d(
+                ctx.in.worldPos * ctx.bindings.scale + ctx.bindings.seed,
+              )
+              .fit1101
+              .clamp01
+              .pow(2.2),
+            ctx.out.color := vec4(vec3(n) * ctx.bindings.tint, 1.0),
+          )
 
-    def noiseTex(scale: Float, seed: Vec3, tint: Vec3): Panel =
-      val layer = p
-        .layer(noiseShade)
-        .bind("scale" := scale, "seed" := seed, "tint" := tint)
-      p.panel(width = 512, height = 512, mipLevels = 0, layer = layer)
+    def texSize(w: Double, h: Double): (Int, Int) =
+      ((w * TexScale).toInt, (h * TexScale).toInt)
 
-    val floorTex = noiseTex(7.0f, Vec3(11, 23, 5), Vec3(0.55, 0.5, 0.45))
-    val wallTex = noiseTex(5.0f, Vec3(40, 7, 19), Vec3(0.6, 0.62, 0.66))
-    val ceilTex = noiseTex(6.0f, Vec3(3, 31, 27), Vec3(0.72, 0.74, 0.78))
+    // Single shared noise field (same frequency + seed) → spatial continuity
+    // across faces; only the tint distinguishes the materials.
+    val NoiseScale = 0.5f
+    val NoiseSeed = Vec3(140, 140, 140)
 
-    // -----------------------------------------------------------------------
-    // Room geometry — manual vertex arrays (position + tiled UV per face)
-    // -----------------------------------------------------------------------
-    type RoomAttribs = (position: Vec3, uv: Vec2)
+    def noiseTex(form: Form, size: (Int, Int), tint: Vec3): Panel =
+      val shape = p
+        .shape(form, noiseShade, cullMode = CullMode.None)
+        .bind("scale" := NoiseScale, "seed" := NoiseSeed, "tint" := tint)
+      p.panel(width = size._1, height = size._2, mips = true, shape = shape)
 
-    val box = Box(Vec3(0.0, RoomHeight / 2.0, 0.0), RoomWidth, RoomHeight, RoomDepth)
-
-    // Triangulate a quad (tl, bl, br, tr) into 6 vertices with a UV per corner.
-    // Param typed to the concrete layout `allocateAttribs[RoomAttribs]` yields.
-    def writeQuad(
-        arr: StructArray[((F32, F32, F32), (F32, F32))],
-        off: Int,
-        q: Quad[Vec3],
-        uvOf: Vec3 => (Double, Double),
-    ): Unit =
-      val order = Arr(0, 1, 2, 0, 2, 3)
-      var k = 0
-      while k < 6 do
-        val c = q(order(k))
-        val uv = uvOf(c)
-        arr(off + k).set0(c.x, c.y, c.z)
-        arr(off + k).set1(uv._1, uv._2)
-        k += 1
-
-    val floorVerts = allocateAttribs[RoomAttribs](6)
-    writeQuad(floorVerts, 0, box.bottomFace, c => (c.x / Tile, c.z / Tile))
-    val floorForm = p.form(vertices = floorVerts)
-
-    val ceilVerts = allocateAttribs[RoomAttribs](6)
-    writeQuad(ceilVerts, 0, box.topFace, c => (c.x / Tile, c.z / Tile))
-    val ceilForm = p.form(vertices = ceilVerts)
-
-    val wallVerts = allocateAttribs[RoomAttribs](24)
-    writeQuad(wallVerts, 0, box.frontFace, c => (c.x / Tile, c.y / Tile))
-    writeQuad(wallVerts, 6, box.backFace, c => (c.x / Tile, c.y / Tile))
-    writeQuad(wallVerts, 12, box.leftFace, c => (c.z / Tile, c.y / Tile))
-    writeQuad(wallVerts, 18, box.rightFace, c => (c.z / Tile, c.y / Tile))
-    val wallForm = p.form(vertices = wallVerts)
+    val floorTex =
+      noiseTex(floorForm, texSize(RoomWidth, RoomDepth), Vec3(0.55, 0.5, 0.45))
+    val wallTex =
+      noiseTex(wallForm, texSize(WallLength, RoomHeight), Vec3(0.6, 0.62, 0.66))
+    val ceilTex =
+      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.72, 0.74, 0.78))
 
     // -----------------------------------------------------------------------
-    // Main shade — sample the material texture, tiled (UV wraps via fract)
+    // Main shade — sample the baked texture directly (V flipped to undo the
+    // render-target → texture orientation, so a fragment reads back its own
+    // baked texel).
     // -----------------------------------------------------------------------
     type RoomUniforms = (
         mvp: VertexUniform[Mat4],
@@ -109,7 +154,7 @@ private val Tile = 2.5 // metres per texture tile
     )
     type RoomPanels = (tex: FragmentPanel)
 
-    val roomShade = p.shade[RoomAttribs, (uv: Vec2), RoomUniforms, RoomPanels]:
+    val roomShade = p.shade[RoomVertex, (uv: Vec2), RoomUniforms, RoomPanels]:
       program =>
         program.vert: ctx =>
           Block(
@@ -117,7 +162,10 @@ private val Tile = 2.5 // metres per texture tile
             ctx.out.position := ctx.bindings.mvp * vec4(ctx.in.position, 1.0),
           )
         program.frag: ctx =>
-          ctx.out.color := ctx.textures.tex(ctx.in.uv.fract, ctx.bindings.samp)
+          ctx.out.color := ctx.textures.tex(
+            vec2(ctx.in.uv.x, (1.0: FloatExpr) - ctx.in.uv.y),
+            ctx.bindings.samp,
+          )
 
     val mvp = p.binding[Mat4]
     val texSampler =
@@ -143,7 +191,7 @@ private val Tile = 2.5 // metres per texture tile
     // Camera, input, controller
     // -----------------------------------------------------------------------
     val cam = PerspectiveCamera(
-      fov = 0.6,
+      fov = 0.9,
       aspect = canvas.width.toDouble / canvas.height.toDouble,
       near = 0.1,
       far = 100.0,
@@ -151,7 +199,8 @@ private val Tile = 2.5 // metres per texture tile
     )
 
     val input = p.input()
-    val controller = BasicFirstPersonCameraController(sensitivity = 1.0, speed = 3.0)
+    val controller =
+      BasicFirstPersonCameraController(sensitivity = 2.0, speed = 3.0)
 
     p.onResize: (w, h) =>
       cam(aspect = w.toDouble / h)
