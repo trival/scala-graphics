@@ -2,6 +2,7 @@ package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
+import trivalibs.dev.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
@@ -141,7 +142,7 @@ private val TexScale = 24.0
     val wallTex =
       noiseTex(wallForm, texSize(WallLength, RoomHeight), Vec3(0.6, 0.62, 0.66))
     val ceilTex =
-      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.72, 0.74, 0.78))
+      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.42, 0.04, 0.98))
 
     // -----------------------------------------------------------------------
     // Main shade — sample the baked texture directly (V flipped to undo the
@@ -171,9 +172,9 @@ private val TexScale = 24.0
     val texSampler =
       p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
 
-    // Inside-out room → disable culling so inward-facing triangles are drawn.
+    // Inside-out room → culling for inward-facing triangles.
     def roomShape(form: Form, tex: Panel) =
-      p.shape(form, roomShade, cullMode = CullMode.None)
+      p.shape(form, roomShade, cullMode = CullMode.Front)
         .bind("mvp" := mvp, "samp" := texSampler, "tex" := tex)
 
     val floorShape = roomShape(floorForm, floorTex)
@@ -197,6 +198,9 @@ private val TexScale = 24.0
       far = 100.0,
       pos = Vec3(0.0, 1.7, 0.0),
     )
+
+    // Preserve camera pose across live-coding reloads (dev only).
+    devPreserve(cam)
 
     val input = p.input()
     val controller =
