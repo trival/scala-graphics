@@ -104,7 +104,7 @@ import trivalibs.utils.js.*
         )
 
     val scenePanel = p.panel(
-      format = "rgba16float",
+      format = TextureFormat.Rgba16Float,
       clearColor = (0.0, 0.0, 0.0, 1.0),
       layer = p.layer(sceneShade).bind("res" := uRes, "time" := uTime),
     )
@@ -228,7 +228,7 @@ import trivalibs.utils.js.*
       i -= 1
 
     val bloomPanel = p.panel(
-      format = "rgba16float",
+      format = TextureFormat.Rgba16Float,
       mipLevels = 5,
       layers = bloomLayers,
     )

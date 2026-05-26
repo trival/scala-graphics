@@ -39,8 +39,8 @@ bun run sketch <path>          # one-off build
 bun run sketch:watch <path>    # rebuild on change
 ```
 
-`<path>` is the sketch directory, with or without a leading `sketches/` (so
-bash tab-completion from the project root works). Examples:
+`<path>` is the sketch directory, with or without a leading `sketches/` (so bash
+tab-completion from the project root works). Examples:
 `bun run sketch:watch base-triangle`,
 `bun run sketch:watch sketches/geometry/voronoi/`.
 
@@ -74,6 +74,38 @@ Run `sketch:watch` and `dev` side-by-side in two terminals to iterate.
 The same `project.scala` covers Metals's view of all sketches plus the library
 sources, so the IDE type-checks everything as one workspace while each sketch
 builds independently.
+
+## Learning & API reference
+
+How to write sketches without reading library source:
+
+- **Guides** — [trivalibs/docs/guide/](trivalibs/docs/guide/): start with the
+  [sketch authoring guide](trivalibs/docs/guide/sketch-authoring-guide.md), then
+  the [shader DSL guide](trivalibs/docs/guide/shader-dsl-guide.md) and
+  [gotchas](trivalibs/docs/guide/gotchas.md).
+- **API reference** — public doc-comments on the whole painter/shader/math
+  surface; generate the browsable site with `cd trivalibs && bun run docs` (also
+  published to GitHub Pages by CI).
+- **`write-sketch` skill** —
+  [trivalibs/docs/skills/write-sketch/](trivalibs/docs/skills/write-sketch/): a
+  Claude Code skill encoding the authoring procedure + gotchas.
+
+### Metals MCP for editors & AI agents
+
+The Metals language server exposes an MCP server so the IDE _and_ an AI agent
+can query the library's signatures + docstrings live (via `get-docs`, `inspect`,
+`get-source`, `glob-search`) instead of reading source. The settings live in the
+gitignored `.vscode/settings.json`, so enable it per machine:
+
+```jsonc
+// .vscode/settings.json
+{ "metals.startMcpServer": true, "metals.mcpClient": "claude" }
+```
+
+Metals writes `.mcp.json` (gitignored, dynamic port); a Claude Code session
+started after it exists prompts to approve the `metals` server. See
+[trivalibs/README.md](trivalibs/README.md#metals-mcp-live-api-for-editors--ai-agents)
+for details.
 
 ## Layout
 

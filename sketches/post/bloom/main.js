@@ -2871,9 +2871,9 @@ function $p_Ltrivalibs_graphics_painter_Painter__blitPipeline__Ltrivalibs_graphi
       "module": module,
       "entryPoint": "vs_main"
     });
-    var s = $thiz.ao;
+    var f$proxy4 = $thiz.ao;
     var _2$2 = [({
-      "format": s
+      "format": f$proxy4
     })];
     var _2$3 = ({
       "module": module,
@@ -3212,14 +3212,14 @@ function $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphic
     var ti = 0;
     while ((ti < (formats.length | 0))) {
       if ((blendState === null)) {
-        var s = formats[ti];
+        var f$proxy7 = formats[ti];
         var target = ({
-          "format": s
+          "format": f$proxy7
         });
       } else {
-        var s$1 = formats[ti];
+        var f$proxy8 = formats[ti];
         var target = ({
-          "format": s$1,
+          "format": f$proxy8,
           "blend": blendState
         });
       }
@@ -3424,9 +3424,9 @@ $p.dF = (function(canvas) {
         return value$2;
       }
     }));
-    var f$proxy6 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((adapter$2) => {
+    var f$proxy11 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((adapter$2) => {
       var promise$proxy2 = adapter$2.requestDevice();
-      var f$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((device$2) => {
+      var f$proxy10 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((device$2) => {
         var queue = device$2.queue;
         var context = $m_Ltrivalibs_graphics_painter_WebGPU$().dx(canvas);
         var format = maybeGpu.getPreferredCanvasFormat();
@@ -3452,9 +3452,9 @@ $p.dF = (function(canvas) {
         observer.observe(canvas);
         return painter;
       }));
-      return promise$proxy2.then($m_sjs_js_Any$().aY(f$proxy5));
+      return promise$proxy2.then($m_sjs_js_Any$().aY(f$proxy10));
     }));
-    return promise$proxy3.then($m_sjs_js_Any$().aY(f$proxy6));
+    return promise$proxy3.then($m_sjs_js_Any$().aY(f$proxy11));
   }
 });
 $p.dE = (function(canvas, setup) {
