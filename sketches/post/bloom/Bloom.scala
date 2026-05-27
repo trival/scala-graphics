@@ -21,8 +21,7 @@ import trivalibs.utils.js.*
 //   canvasPanel : composite = scene + bloom * intensity          (screen)
 //
 // The bloom panel uses mip-target layers, so the painter skips auto mipmap
-// generation (see painter.scala `hasMipTargetLayers` gate) and the hand-built
-// pyramid survives.
+// generation.
 
 @main def bloom(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -32,10 +31,10 @@ import trivalibs.utils.js.*
     // Bindings
     // -----------------------------------------------------------------------
 
-    val uTime = p.binding(0.0f)
-    val uThreshold = p.binding(1.0f)
-    val uBloomIntensity = p.binding(0.05f)
-    val uBlurRadius = p.binding(4.0f)
+    val uTime = p.binding(0.0)
+    val uThreshold = p.binding(1.0)
+    val uBloomIntensity = p.binding(0.05)
+    val uBlurRadius = p.binding(4.0)
 
     val uRes = p.binding[Vec2]
     val uResMip1 = p.binding[Vec2]
@@ -51,18 +50,6 @@ import trivalibs.utils.js.*
 
     type SceneU = (res: Vec2, time: Float)
 
-    // A soft circle of `brightness`, in aspect-corrected UV space.
-    def circle(
-        uvC: Expr.Vec2Expr,
-        center: Expr.Vec2Expr,
-        radius: Double,
-        brightness: Expr.Vec3Expr,
-    ): Expr.Vec3Expr =
-      val dist = (uvC - center).length
-      val alpha = (1.0: Expr.FloatExpr) -
-        ((dist - radius) / (radius * 0.05)).clamp01
-      brightness * alpha
-
     val sceneShade = p.layerShade[SceneU]: program =>
       program.frag: ctx =>
         val aspect = LetFloat("aspect")
@@ -71,41 +58,47 @@ import trivalibs.utils.js.*
         val col = VarVec3("col")
         val uv = ctx.in.uv
         val res = ctx.bindings.res
+
+        // A soft circle of `brightness`, in aspect-corrected UV space.
+        def circle(
+            center: Expr.Vec2Expr,
+            radius: Expr.FloatExpr,
+            brightness: Expr.Vec3Expr,
+        ): Expr.Vec3Expr =
+          val dist = (uvC - center).length
+          val alpha = 1.0 - ((dist - radius) / (radius * 0.05)).clamp01
+          brightness * alpha
+
         Block(
           aspect := res.x / res.y,
-          uvC := vec2(uv.x * aspect, uv.y),
+          // aspect-correct x by scaling about the center (0.5) rather than 0,
+          // so the 0..1 layout stays centered for any aspect (landscape adds
+          // equal margins L/R, portrait trims equally) and circles stay round.
+          uvC := vec2((uv.x - 0.5) * aspect + 0.5, uv.y),
           t := ctx.bindings.time * 0.5,
           col := vec3(0.1, 0.1, 0.1),
           // bright circles — will bloom
-          col := col + circle(
-            uvC,
+          col += circle(
             vec2(t.sin * 0.1 + 0.3, 0.5),
             0.15,
             vec3(3.0, 3.0, 2.5),
           ),
-          col := col + circle(
-            uvC,
+          col += circle(
             vec2(0.7, t.cos * 0.1 + 0.5),
             0.12,
             vec3(1.5, 2.5, 4.0),
           ),
-          col := col + circle(uvC, vec2(0.5, 0.3), 0.1, vec3(4.0, 1.5, 1.5)),
+          col += circle(vec2(0.5, 0.3), 0.1, vec3(1.7, 0.5, 0.5)),
           // dim circles — below threshold, no bloom
-          col := col + circle(uvC, vec2(0.25, 0.75), 0.08, vec3(0.6, 0.6, 0.8)),
-          col := col + circle(uvC, vec2(0.75, 0.75), 0.08, vec3(0.8, 0.6, 0.6)),
-          col := col + circle(uvC, vec2(0.5, 0.7), 0.06, vec3(0.7, 0.7, 0.5)),
+          col += circle(vec2(0.25, 0.75), 0.08, vec3(0.6, 0.6, 0.8)),
+          col += circle(vec2(0.75, 0.75), 0.08, vec3(0.8, 0.6, 0.6)),
+          col += circle(vec2(0.5, 0.7), 0.06, vec3(0.7, 0.7, 0.5)),
           // gamma to push the bright cores into HDR range
-          ctx.out.color := vec4(
-            col.x.pow(2.3),
-            col.y.pow(2.3),
-            col.z.pow(2.3),
-            1.0,
-          ),
+          ctx.out.color := vec4(col.pow(2.3), 1.0),
         )
 
     val scenePanel = p.panel(
       format = TextureFormat.Rgba16Float,
-      clearColor = (0.0, 0.0, 0.0, 1.0),
       layer = p.layer(sceneShade).bind("res" := uRes, "time" := uTime),
     )
 
