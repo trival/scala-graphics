@@ -1,6 +1,8 @@
 package sketches.post.bloom
 
 import org.scalajs.dom.HTMLCanvasElement
+import org.scalajs.dom.KeyboardEvent
+import org.scalajs.dom.console
 import org.scalajs.dom.document
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -9,6 +11,7 @@ import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
+import trivalibs.utils.numbers.NumExt.given
 
 // Bloom post-processing — Scala port of the Rust `bloom` test sketch.
 //
@@ -28,13 +31,21 @@ import trivalibs.utils.js.*
 
   Painter.init(canvas): p =>
     // -----------------------------------------------------------------------
+    // Tunables — constants tweakable in one place (inlined into binds / the
+    // render loop; not uniforms, since they never change at runtime).
+    // -----------------------------------------------------------------------
+
+    val bloomThreshold = 1.0 // luminance cutoff for what blooms
+    val fixedBloomRadius = 4.0 // blur radius held in "intensity only" mode
+    val fixedBloomIntensity = 0.015 // intensity held in "radius only" mode
+
+    // -----------------------------------------------------------------------
     // Bindings
     // -----------------------------------------------------------------------
 
     val uTime = p.binding(0.0)
-    val uThreshold = p.binding(1.0)
-    val uBloomIntensity = p.binding(0.05)
-    val uBlurRadius = p.binding(4.0)
+    val uBloomIntensity = p.binding(fixedBloomIntensity)
+    val uBlurRadius = p.binding(fixedBloomRadius)
 
     val uRes = p.binding[Vec2]
     val uResMip1 = p.binding[Vec2]
@@ -61,10 +72,10 @@ import trivalibs.utils.js.*
 
         // A soft circle of `brightness`, in aspect-corrected UV space.
         def circle(
-            center: Expr.Vec2Expr,
-            radius: Expr.FloatExpr,
-            brightness: Expr.Vec3Expr,
-        ): Expr.Vec3Expr =
+            center: Vec2Expr,
+            radius: FloatExpr,
+            brightness: Vec3Expr,
+        ): Vec3Expr =
           val dist = (uvC - center).length
           val alpha = 1.0 - ((dist - radius) / (radius * 0.05)).clamp01
           brightness * alpha
@@ -88,13 +99,14 @@ import trivalibs.utils.js.*
             0.12,
             vec3(1.5, 2.5, 4.0),
           ),
-          col += circle(vec2(0.5, 0.3), 0.1, vec3(1.7, 0.5, 0.5)),
+          col += circle(vec2(0.5, 0.3), 0.1, vec3(1.7, 0.9, 0.5)),
           // dim circles — below threshold, no bloom
           col += circle(vec2(0.25, 0.75), 0.08, vec3(0.6, 0.6, 0.8)),
           col += circle(vec2(0.75, 0.75), 0.08, vec3(0.8, 0.6, 0.6)),
           col += circle(vec2(0.5, 0.7), 0.06, vec3(0.7, 0.7, 0.5)),
           // gamma to push the bright cores into HDR range
-          ctx.out.color := vec4(col.pow(2.3), 1.0),
+          // ctx.out.color := vec4(col.pow(2.3), 1.0),
+          ctx.out.color := vec4(col, 1.0),
         )
 
     val scenePanel = p.panel(
@@ -187,7 +199,7 @@ import trivalibs.utils.js.*
         .bind(
           "scene" := scenePanel,
           "res" := uRes,
-          "threshold" := uThreshold,
+          "threshold" := bloomThreshold, // constant — auto-boxed by bind()
           "samp" := sampler,
         ),
     )
@@ -265,14 +277,42 @@ import trivalibs.utils.js.*
       uResMip4.set(Vec2(w / 16.0, h / 16.0))
 
     // -----------------------------------------------------------------------
+    // Animation mode — press Space to cycle. Both knobs oscillate from the same
+    // phase, so in "both" they grow/shrink in sync. The un-animated knob is held
+    // at a moderate fixed value so each effect can be studied in isolation:
+    //   blur radius : how far bright pixels spread     (0 → 8 px)
+    //   intensity   : how strongly bloom adds to scene (0 → 0.2)
+    // -----------------------------------------------------------------------
+
+    val modeNames = Arr("radius only", "intensity only", "both")
+    var mode = 2 // start with both
+
+    def logMode(): Unit = console.log(s"bloom mode: ${modeNames(mode)}")
+    logMode()
+
+    document.addEventListener[KeyboardEvent](
+      "keydown",
+      e =>
+        if e.code == "Space" then
+          e.preventDefault()
+          mode = (mode + 1) % 3
+          logMode(),
+    )
+
+    // -----------------------------------------------------------------------
     // Render loop
     // -----------------------------------------------------------------------
 
     var time = 0.0
     animate: tpf =>
       time += tpf * 0.001 // tpf is ms; bloom params think in seconds
-      uTime.set(time.toFloat)
-      uBlurRadius.set((4.0 + 4.0 * Math.sin(time)).toFloat)
+      uTime.set(time)
+
+      val phase = time.sin.fit1101 // [0, 1]
+      val radius = if mode == 1 then fixedBloomRadius else 8.0 * phase
+      val intensity = if mode == 0 then fixedBloomIntensity else 0.05 * phase
+      uBlurRadius.set(radius)
+      uBloomIntensity.set(intensity)
 
       p.paint(scenePanel, bloomPanel, canvasPanel)
       p.show(canvasPanel)
