@@ -38,6 +38,8 @@ import trivalibs.utils.numbers.NumExt.given
     val bloomThreshold = 1.0 // luminance cutoff for what blooms
     val fixedBloomRadius = 4.0 // blur radius held in "intensity only" mode
     val fixedBloomIntensity = 0.015 // intensity held in "radius only" mode
+    val maxBloomRadius = 8.0 // blur radius at peak of the oscillation
+    val maxBloomIntensity = 0.05 // intensity at peak of the oscillation
 
     // -----------------------------------------------------------------------
     // Bindings
@@ -309,8 +311,10 @@ import trivalibs.utils.numbers.NumExt.given
       uTime.set(time)
 
       val phase = time.sin.fit1101 // [0, 1]
-      val radius = if mode == 1 then fixedBloomRadius else 8.0 * phase
-      val intensity = if mode == 0 then fixedBloomIntensity else 0.05 * phase
+      val radius =
+        if mode == 1 then fixedBloomRadius else maxBloomRadius * phase
+      val intensity =
+        if mode == 0 then fixedBloomIntensity else maxBloomIntensity * phase
       uBlurRadius.set(radius)
       uBloomIntensity.set(intensity)
 
