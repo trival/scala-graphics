@@ -94,7 +94,7 @@ Metals only loads one config:
 - When doing floating point math, prefer trivalibs NumExt extensions instead of
   math library methods if possible. I.e. `x.sin` instead of `math.sin(x)`,
   `x.sqrt` instead of `math.sqrt(x)`, etc.
-- in sketches and shader dsl, don't use Float type or literals with `f` suffix;
-  just use Double and let the shader DSL and painter lib handle the conversions.
-  In JS context all numbers are Doubles, and all trivalibs graphics libs are
-  optimized for that.
+- in sketches and shader dsl, don't use Float type, literals with `f` suffix or
+  .toFloat conversions. Just use Double and let the shader DSL and painter lib
+  handle the conversions. In JS context all numbers are doubles, and all
+  trivalibs maths/graphics APIs are optimized for that.
