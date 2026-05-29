@@ -17,7 +17,7 @@ For library development, optimization, and the full architecture reference, see
 ```bash
 bun run sketch <path>        # Build one sketch → sketches/<path>/main.js
 bun run sketch:watch <path>  # Incremental build of one sketch with file watching
-bun run dev                  # Vite dev server (root: sketches/, port 3001)
+bun run dev                  # Vite dev server (root: sketches/, port 3000)
 bun run build                # Vite static build → dist/
 ```
 

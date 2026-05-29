@@ -31,7 +31,7 @@ const sketchInputs = () => {
 export default defineConfig({
 	root: "sketches",
 	server: {
-		port: 3001,
+		port: 3000,
 	},
 	build: {
 		outDir: "../dist",

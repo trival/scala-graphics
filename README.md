@@ -47,7 +47,7 @@ tab-completion from the project root works). Examples:
 ### Serve the sketches
 
 ```bash
-bun run dev                    # vite, http://localhost:3001
+bun run dev                    # vite, http://localhost:3000
 bun run build                  # static build → dist/
 ```
 
