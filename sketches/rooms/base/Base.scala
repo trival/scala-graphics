@@ -101,26 +101,48 @@ private val TexScale = 24.0
     // room. A per-material tint keeps the floor / walls / ceiling identifiable.
     // -----------------------------------------------------------------------
 
-    type NoiseUniforms = (scale: Float, seed: Vec3, tint: Vec3)
+    type NoiseUniforms = (
+        scale: Float,
+        seed: Vec3,
+        tint: Vec3,
+        // TEMP debug grid — gridStrength = 0 (floor/ceiling) disables it.
+        // Remove together with the grid block in the frag shader once the
+        // reflection is dialled in.
+        gridCells: Vec2,
+        gridStrength: Float,
+    )
 
-    val noiseShade = p.shade[RoomVertex, (worldPos: Vec3), NoiseUniforms]:
-      program =>
+    val noiseShade =
+      p.shade[RoomVertex, (worldPos: Vec3, uv: Vec2), NoiseUniforms]: program =>
         program.vert: ctx =>
           Block(
             ctx.out.worldPos := ctx.in.position,
+            ctx.out.uv := ctx.in.uv,
             ctx.out.position := vec4(ctx.in.uv.fit0111, 0.0, 1.0),
           )
         program.frag: ctx =>
-          val n = LetFloat("n")
+          val n = VarFloat("n")
+          val col = VarVec3("col")
+          val g = LetVec2("g")
+          val line = LetFloat("line")
           Block(
             n := Simplex
               .simplexNoise3d(
                 ctx.in.worldPos * ctx.bindings.scale + ctx.bindings.seed,
               )
               .fit1101
-              .clamp01
-              .pow(2.2),
-            ctx.out.color := vec4(vec3(n) * ctx.bindings.tint, 1.0),
+              .clamp01,
+            // Remap noise into a tight near-white band [0.78, 1.0] so the
+            // room reads as a gallery space rather than mottled artwork.
+            n := 0.78 + n * 0.22,
+            col := vec3(n) * ctx.bindings.tint,
+            // TEMP debug grid (zero contribution when gridStrength == 0).
+            g := (ctx.in.uv * ctx.bindings.gridCells).fract - 0.5,
+            line := g.x.abs
+              .max(g.y.abs)
+              .smoothstep(0.46: FloatExpr, 0.5: FloatExpr),
+            col := col * (1.0 - ctx.bindings.gridStrength * line),
+            ctx.out.color := vec4(col, 1.0),
           )
 
     def texSize(w: Double, h: Double): (Int, Int) =
@@ -130,19 +152,43 @@ private val TexScale = 24.0
     // across faces; only the tint distinguishes the materials.
     val NoiseScale = 0.5f
     val NoiseSeed = Vec3(140, 140, 140)
+    val NoGrid = Vec2(1.0, 1.0)
 
-    def noiseTex(form: Form, size: (Int, Int), tint: Vec3): Panel =
+    def noiseTex(
+        form: Form,
+        size: (Int, Int),
+        tint: Vec3,
+        gridCells: Vec2 = NoGrid,
+        gridStrength: Double = 0.0,
+    ): Panel =
       val shape = p
         .shape(form, noiseShade, cullMode = CullMode.None)
-        .bind("scale" := NoiseScale, "seed" := NoiseSeed, "tint" := tint)
+        .bind(
+          "scale" := NoiseScale,
+          "seed" := NoiseSeed,
+          "tint" := tint,
+          "gridCells" := gridCells,
+          "gridStrength" := gridStrength,
+        )
       p.panel(width = size._1, height = size._2, mips = true, shape = shape)
 
+    // Gallery tints: walls brightest (lights bounce off them), ceiling darkest
+    // (shaded side of the spotlights mounted just below it), floor in between
+    // with a slight warm cream.
     val floorTex =
-      noiseTex(floorForm, texSize(RoomWidth, RoomDepth), Vec3(0.55, 0.5, 0.45))
+      noiseTex(floorForm, texSize(RoomWidth, RoomDepth), Vec3(0.90, 0.88, 0.85))
     val wallTex =
-      noiseTex(wallForm, texSize(WallLength, RoomHeight), Vec3(0.6, 0.62, 0.66))
+      noiseTex(
+        wallForm,
+        texSize(WallLength, RoomHeight),
+        Vec3(0.96, 0.96, 0.95),
+        // TEMP debug grid on walls: ~1 cell per meter across the perimeter,
+        // ~RoomHeight cells vertically. Lets us read perspective/reflection.
+        gridCells = Vec2(WallLength, RoomHeight),
+        gridStrength = 0.35,
+      )
     val ceilTex =
-      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.42, 0.04, 0.98))
+      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.78, 0.78, 0.77))
 
     // -----------------------------------------------------------------------
     // Main shade — sample the baked texture directly (V flipped to undo the
