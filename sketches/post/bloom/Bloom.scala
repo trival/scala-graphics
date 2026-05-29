@@ -272,7 +272,7 @@ import trivalibs.utils.numbers.NumExt.given
     // -----------------------------------------------------------------------
 
     p.onResize: (w, h) =>
-      uRes.set(Vec2(w.toDouble, h.toDouble))
+      uRes.set(Vec2(w, h))
       uResMip1.set(Vec2(w / 2.0, h / 2.0))
       uResMip2.set(Vec2(w / 4.0, h / 4.0))
       uResMip3.set(Vec2(w / 8.0, h / 8.0))
@@ -282,8 +282,8 @@ import trivalibs.utils.numbers.NumExt.given
     // Animation mode — press Space to cycle. Both knobs oscillate from the same
     // phase, so in "both" they grow/shrink in sync. The un-animated knob is held
     // at a moderate fixed value so each effect can be studied in isolation:
-    //   blur radius : how far bright pixels spread     (0 → 8 px)
-    //   intensity   : how strongly bloom adds to scene (0 → 0.2)
+    //   blur radius : how far bright pixels spread     (0 → maxBloomRadius px)
+    //   intensity   : how strongly bloom adds to scene (0 → maxBloomIntensity)
     // -----------------------------------------------------------------------
 
     val modeNames = Arr("radius only", "intensity only", "both")
