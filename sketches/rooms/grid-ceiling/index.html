@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rooms/grid-ceiling — sketch</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+    }
+
+    canvas {
+      border: 2px solid #4a4a6a;
+      border-radius: 4px;
+      touch-action: none;
+      height: 90vh;
+      width: 90vw;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      color: #8888aa;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: #aaaacc;
+    }
+
+    .hint {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      color: #8888aa;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="/" class="back-link">&larr; back</a>
+  <canvas id="canvas"></canvas>
+  <div class="hint">WASD / arrows to move · Space / Shift up·down · drag to look</div>
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>
