@@ -169,3 +169,44 @@ intensity are constant; set once.
    with `uBlurRadius`. If the whole frame is a flat uniform blur, Change 1
    didn't take (chain is being clobbered).
 4. Tweak `uThreshold` / `uBloomIntensity` constants to sanity-check ranges.
+
+## Implementation status — DONE
+
+Sketch lives at
+[sketches/post/bloom/Bloom.scala](../sketches/post/bloom/Bloom.scala). Both
+trivalibs changes landed in
+[painter.scala:949-955](../trivalibs/src/graphics/painter/painter.scala#L949-L955)
+(mip-target gate) and
+[painter.scala:1258-1263](../trivalibs/src/graphics/painter/painter.scala#L1258-L1263)
+(format derived from panel). Plan structure (3 panels, 5-level pyramid, 9
+layers, additive upsample) matches 1:1.
+
+Deltas vs plan:
+
+- **Threshold is a constant, not a binding.** `bloomThreshold = 1.0` is passed
+  via `bind("threshold" := 1.0)` and auto-boxed. Plan listed it as `uThreshold`;
+  also noted "set once" — collapsed entirely to a literal since it never
+  changes.
+- **`uBloomIntensity` IS a binding** (animated below), not constant as the
+  plan's closing note suggested.
+- **Animation richer than plan.** Plan: `uBlurRadius = 4 + 4*sin(t)`. Impl:
+  Space-cycled mode (`radius only` / `intensity only` / `both`), shared
+  `phase = sin(t).fit1101 ∈ [0,1]`, ranges `radius ∈ [0, 8]`,
+  `intensity ∈ [0, 0.05]`. Held-knob values `fixedBloomRadius=4`,
+  `fixedBloomIntensity=0.015`.
+- **Gamma `pow(2.3)` from Rust is commented out** in the scene shade — bright
+  cores already reach HDR range from the raw `vec3(3,3,2.5)` etc. brightness
+  multipliers, gamma made highlights wash out.
+- **Tap offset constants** in down/upsample shades use `vec2(0.5,0.5)` /
+  `vec2(1.0,1.0)` factors scaled by `blurRadius / res` (kernel footprint in
+  texels, per-mip). Equivalent to plan's "4-tap box" / "9-tap tent" but with
+  explicit radius scaling rather than fixed `±1 texel`.
+- **Aspect correction** in scene shade scales `(uv.x - 0.5) * aspect + 0.5`
+  rather than the Rust naive `uv.x * aspect`, so circles stay centered on
+  resize.
+- `mipRes = Arr(uRes, uResMip1..4)` helper avoids an if/else for the i=0
+  upsample target.
+
+Verification (visual): bright circles glow and pulse, dim circles stay crisp;
+Space cycles between isolating radius vs intensity. Pyramid is not clobbered,
+confirming Change 1 took effect.
