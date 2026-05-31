@@ -31,6 +31,7 @@ const outFile = join(sketchDir, "main.js")
 const args = [
 	"--power", "package",
 	sketchDir,
+	"src",
 	"trivalibs/src",
 	"project.scala",
 	"--js",

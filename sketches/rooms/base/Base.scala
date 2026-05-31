@@ -2,6 +2,7 @@ package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
+import playground.bloom.Bloom
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
@@ -105,9 +106,14 @@ private val TexScale = 48.0
         scale: Float,
         seed: Vec3,
         tint: Vec3,
-        // TEMP debug grid — gridStrength = 0 (floor/ceiling) disables it.
-        // Remove together with the grid block in the frag shader once the
-        // reflection is dialled in.
+        // Halo light strips (ceiling only). `haloStrength = 0` zeroes the
+        // contribution — walls/floor pass that. Strips run along the V axis
+        // of the baked UV; `haloCount` = strips across U. Their HDR amplitude
+        // (>1) trips the bloom threshold downstream.
+        haloCount: Float,
+        haloStrength: Float,
+        // Debug grid darkening — `gridStrength = 0` disables it. `gridCells`
+        // is the cell count in (U, V) across the baked UV.
         gridCells: Vec2,
         gridStrength: Float,
     )
@@ -123,8 +129,6 @@ private val TexScale = 48.0
         program.frag: ctx =>
           val n = VarFloat("n")
           val col = VarVec3("col")
-          val g = LetVec2("g")
-          val line = LetFloat("line")
           val wp = ctx.in.worldPos
 
           // ----- FBM tunables (3 octaves) -----
@@ -156,6 +160,13 @@ private val TexScale = 48.0
               i += 1
             (acc / totalAmp).clamp01
 
+          val s = LetFloat("s")
+          val d = LetFloat("d")
+          val band = VarFloat("band")
+          val lf = LetFloat("lf")
+          val halo = LetVec3("halo")
+          val g = LetVec2("g")
+          val gridLine = LetFloat("gridLine")
           Block(
             n := fbm3(
               vec3(
@@ -168,12 +179,28 @@ private val TexScale = 48.0
             // room reads as a gallery space rather than mottled artwork.
             n := 0.68 + n * 0.32,
             col := vec3(n) * ctx.bindings.tint,
-            // TEMP debug grid (zero contribution when gridStrength == 0).
+            // Halo light strips (ceiling only when haloStrength > 0).
+            // `s` cycles 0..1 across each strip period along U; `d` measures
+            // distance from a strip's centre line. smoothstep(0.05, 0.02, d)
+            // gives a soft 1-at-center band ~0.04 wide. `lf` fades the strips
+            // toward V-axis ends so they read as recessed gallery lights.
+            s := (ctx.in.uv.x * ctx.bindings.haloCount + 0.5).fract + 0.5,
+            d := (s - 0.5).abs,
+            band := d.smoothstep(0.05, 0.02),
+            lf := ctx.in.uv.y.smoothstep(0.05, 0.15)
+              * (1.0 - ctx.in.uv.y).smoothstep(0.05, 0.15),
+            band *= (ctx.bindings.haloStrength * lf),
+            // HDR halo brightness. >> 1.0 so it trips bloom in both direct
+            // view and reflection (where the mip blur averages bright halo
+            // with dark surroundings → effective peak drops to ~mix * halo /
+            // a-few). Tune per taste; expect floor reflection brightness ≈
+            // halo × reflStrength × falloff × blur-attenuation.
+            halo := band * vec3(8.0, 7.6, 6.8),
+            col += halo,
+            // Debug grid (zero contribution when gridStrength == 0).
             g := (ctx.in.uv * ctx.bindings.gridCells).fract - 0.5,
-            line := g.x.abs
-              .max(g.y.abs)
-              .gt(0.45),
-            col := col * (1.0 - ctx.bindings.gridStrength * line),
+            gridLine := g.x.abs.max(g.y.abs).gt(0.45),
+            col *= 1.0 - ctx.bindings.gridStrength * gridLine,
             ctx.out.color := vec4(col, 1.0),
           )
 
@@ -185,13 +212,15 @@ private val TexScale = 48.0
     val NoiseScale = 0.5f
     val NoiseSeed = Vec3(140, 140, 140)
     val NoGrid = Vec2(1.0, 1.0)
-
     def noiseTex(
         form: Form,
         size: (Int, Int),
         tint: Vec3,
+        haloCount: Double = 1.0,
+        haloStrength: Double = 0.0,
         gridCells: Vec2 = NoGrid,
         gridStrength: Double = 0.0,
+        format: TextureFormat = TextureFormat.Rgba8Unorm,
     ): Panel =
       val shape = p
         .shape(form, noiseShade, cullMode = CullMode.None)
@@ -199,14 +228,21 @@ private val TexScale = 48.0
           "scale" := NoiseScale,
           "seed" := NoiseSeed,
           "tint" := tint,
+          "haloCount" := haloCount,
+          "haloStrength" := haloStrength,
           "gridCells" := gridCells,
           "gridStrength" := gridStrength,
         )
-      p.panel(width = size._1, height = size._2, mips = true, shape = shape)
+      p.panel(
+        width = size._1,
+        height = size._2,
+        mips = true,
+        format = format,
+        shape = shape,
+      )
 
-    // Gallery tints: walls brightest (lights bounce off them), ceiling darkest
-    // (shaded side of the spotlights mounted just below it), floor in between
-    // with a slight warm cream.
+    // Gallery tints: walls brightest (lights bounce off them), ceiling slightly
+    // darker (shaded side of the spotlights mounted on it), floor in between.
     val floorTex =
       noiseTex(floorForm, texSize(RoomWidth, RoomDepth), Vec3(0.80, 0.78, 0.75))
     val wallTex =
@@ -214,13 +250,22 @@ private val TexScale = 48.0
         wallForm,
         texSize(WallLength, RoomHeight),
         Vec3(0.96, 0.96, 0.95),
-        // TEMP debug grid on walls: ~1 cell per meter across the perimeter,
-        // ~RoomHeight cells vertically. Lets us read perspective/reflection.
+        // Debug grid on walls: ~1 cell per meter across the perimeter, scaled
+        // 2× to read clearly at this TexScale.
         gridCells = Vec2(WallLength, RoomHeight) * 2.0,
         gridStrength = 0.35,
       )
+    // Ceiling tex is HDR so the halo light strips can encode brightness > 1
+    // and survive the trip through the mirror render + bloom threshold.
     val ceilTex =
-      noiseTex(ceilForm, texSize(RoomWidth, RoomDepth), Vec3(0.88, 0.88, 0.87))
+      noiseTex(
+        ceilForm,
+        texSize(RoomWidth, RoomDepth),
+        Vec3(0.88, 0.88, 0.87),
+        haloCount = 6.0,
+        haloStrength = 1.0,
+        format = TextureFormat.Rgba16Float,
+      )
 
     // -----------------------------------------------------------------------
     // Main shade — sample the baked texture directly (V flipped to undo the
@@ -293,9 +338,11 @@ private val TexScale = 48.0
         .bind("mvp" := mirrorMvp, "samp" := texSampler, "tex" := tex)
 
     // Only walls + ceiling reflect; the floor reflecting itself is degenerate.
-    // No multisample — the blur smooths out aliasing and avoids the resolve
-    // step that texture inputs to follow-up passes would otherwise need.
+    // HDR so the ceiling's halo strips (brightness > 1) survive into the
+    // reflection and can bloom on the floor. No multisample — the blur masks
+    // aliasing and avoids the resolve step for texture inputs downstream.
     val mirrorPanel = p.panel(
+      format = TextureFormat.Rgba16Float,
       clearColor = (0.0, 0.0, 0.0, 0.0),
       depthTest = true,
       shapes =
@@ -354,16 +401,23 @@ private val TexScale = 48.0
     val mirrorResMip2 = p.binding[Vec2]
     val mirrorResMip3 = p.binding[Vec2]
     val mirrorResMip4 = p.binding[Vec2]
+    val mirrorResMip5 = p.binding[Vec2]
 
     val mirrorBlurLayers = Arr[AnyLayer]()
     mirrorBlurLayers.push(
       p.layer(blitShade)
         .bind("tex" := mirrorPanel, "samp" := texSampler),
     )
-    val mipResArr =
-      Arr(mirrorRes, mirrorResMip1, mirrorResMip2, mirrorResMip3, mirrorResMip4)
+    val mipResArr = Arr(
+      mirrorRes,
+      mirrorResMip1,
+      mirrorResMip2,
+      mirrorResMip3,
+      mirrorResMip4,
+      mirrorResMip5,
+    )
     var mi = 0
-    while mi < 4 do
+    while mi < 5 do
       mirrorBlurLayers.push(
         p.layer(downBlurShade, mipSource = mi, mipTarget = mi + 1)
           .bind("res" := mipResArr(mi + 1), "samp" := texSampler),
@@ -371,7 +425,8 @@ private val TexScale = 48.0
       mi += 1
 
     val mirrorBlurPanel = p.panel(
-      mipLevels = 5,
+      format = TextureFormat.Rgba16Float,
+      mipLevels = 6,
       layers = mirrorBlurLayers,
     )
 
@@ -408,11 +463,12 @@ private val TexScale = 48.0
           val a = LetFloat("a")
           val refl = LetVec3("refl")
           val mix = LetFloat("mix")
+          val falloff = LetFloat("falloff")
           Block(
             // Baked floor noise (same V-flip as roomShade).
             base := ctx.textures
               .tex(
-                vec2(ctx.in.uv.x, (1.0: FloatExpr) - ctx.in.uv.y),
+                vec2(ctx.in.uv.x, 1.0 - ctx.in.uv.y),
                 ctx.bindings.samp,
               )
               .xyz,
@@ -429,25 +485,25 @@ private val TexScale = 48.0
             // `log2(1 + a * reflMaxLod)` so the *blur radius* is linear in
             // alpha rather than exponential — closer to a real polished-floor
             // reflection. `a = 0` → lod = 0 (sharp); `a = 1` → lod ≈ log2(1+k).
-            // Clamp to the top mip (4) so we never read off the chain.
+            // Clamp to the top mip (5) so we never read off the chain.
             refl := ctx.textures.reflTex
               .sampleLevel(
                 sUv,
                 ctx.bindings.reflSamp,
-                ((1.0 + a * 2.5 * ctx.bindings.reflMaxLod).log2)
-                  .min(4.0),
+                (1.0 + a * 2.0 * ctx.bindings.reflMaxLod).log2.min(5.0),
               )
               .xyz,
-            // Reflection contribution fades with reflected height.
-            mix := ctx.bindings.reflStrength * (1.0 - a).max(0.1),
-            ctx.out.color := vec4(base * (1.0 - mix) + refl * mix, 1.0),
+            falloff := (1.0 - a).max(0.1),
+            mix := ctx.bindings.reflStrength * falloff,
+            ctx.out.color :=
+              vec4(base * (1.0 - mix) + refl * mix, 1.0),
           )
 
     val reflStrength = p.binding(0.35)
     // Linear-blur tuning. Effective blur radius at full alpha ≈ reflMaxLod
     // source texels (since lod = log2(1 + a*reflMaxLod) and radius ≈ 2^lod).
-    // reflMaxLod = 15 → a=1 lands at lod=4 (top of the chain).
-    val reflMaxLod = p.binding(15.0)
+    // reflMaxLod = 31 → a=1 lands at lod=5 (top of the 6-level chain).
+    val reflMaxLod = p.binding(31.0)
 
     // Inside-out room → culling for inward-facing triangles.
     def roomShape(form: Form, tex: Panel) =
@@ -468,11 +524,25 @@ private val TexScale = 48.0
     val ceilShape = roomShape(ceilForm, ceilTex)
     val wallShape = roomShape(wallForm, wallTex)
 
-    val canvasPanel = p.panel(
+    // HDR scene panel — feeds the bloom util and the composite below.
+    val scenePanel = p.panel(
+      format = TextureFormat.Rgba16Float,
       clearColor = (0.5, 0.6, 0.7, 1.0),
       depthTest = true,
       multisample = true,
       shapes = Arr(floorShape, ceilShape, wallShape),
+    )
+
+    // Bloom pyramid driven by scenePanel; threshold ≈ 1.0 trips on the
+    // ceiling halo strips (vec3(3.5,3.4,3.0) HDR) but not on the near-white
+    // baked surfaces (max ~1.0 × tint).
+    val bloom = Bloom(
+      p,
+      scenePanel,
+      intensity = 0.002,
+      threshold = 1.0,
+      blurRadius = 4.0,
+      mipLevels = 5,
     )
 
     // -----------------------------------------------------------------------
@@ -500,6 +570,8 @@ private val TexScale = 48.0
       mirrorResMip2.set(Vec2(w / 4.0, h / 4.0))
       mirrorResMip3.set(Vec2(w / 8.0, h / 8.0))
       mirrorResMip4.set(Vec2(w / 16.0, h / 16.0))
+      mirrorResMip5.set(Vec2(w / 32.0, h / 32.0))
+      bloom.onResize(w, h)
 
     // Pre-render the static material textures once (with mip chains).
     p.paint(floorTex, wallTex, ceilTex)
@@ -510,5 +582,6 @@ private val TexScale = 48.0
       controller.updateCamera(cam, input, tpf)
       mvp.set(cam.viewProjMat)
       mirrorMvp.set(cam.viewProjMat * mirrorMat)
-      p.paint(mirrorPanel, mirrorBlurPanel, canvasPanel)
-      p.show(canvasPanel)
+      p.paint(mirrorPanel, mirrorBlurPanel, scenePanel)
+      bloom.paint()
+      p.show(bloom.resultPanel)

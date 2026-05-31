@@ -98,3 +98,9 @@ Metals only loads one config:
   .toFloat conversions. Just use Double and let the shader DSL and painter lib
   handle the conversions. In JS context all numbers are doubles, and all
   trivalibs maths/graphics APIs are optimized for that.
+- **Shader DSL: never reach for type-ascription casts as a first move.** Write
+  expressions naturally — `0.5`, `(1.0 - uv.y)`, `band * vec3(...)` — without
+  `: FloatExpr` or `: Vec3Expr` annotations. If a natural-looking expression
+  doesn't compile, treat that as a missing library overload / conversion in
+  `trivalibs/` and check with me before settling for the annotation. Adding
+  the overload library-side is preferred; the annotation is the fallback.
