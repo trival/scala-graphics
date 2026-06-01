@@ -15,8 +15,7 @@ import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
 
 // Bloom post-processing demo. Drives the shared `playground.bloom.Bloom`
-// pyramid with an HDR test scene of bright + dim SDF circles and composites
-// `scene + bloom * intensity` onto the screen.
+// pyramid with an HDR test scene of bright + dim SDF circles.
 
 @main def bloom(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -68,6 +67,7 @@ import trivalibs.utils.numbers.NumExt.given
           uvC := vec2((uv.x - 0.5) * aspect + 0.5, uv.y),
           t := ctx.bindings.time * 0.5,
           col := vec3(0.1, 0.1, 0.1),
+          // hdr high value circles — these will trigger bloom
           col += circle(
             vec2(t.sin * 0.1 + 0.3, 0.5),
             0.15,
@@ -79,6 +79,7 @@ import trivalibs.utils.numbers.NumExt.given
             vec3(1.5, 2.5, 4.0),
           ),
           col += circle(vec2(0.5, 0.3), 0.1, vec3(1.7, 0.9, 0.5)),
+          // dim low value circles — these won't bloom
           col += circle(vec2(0.25, 0.75), 0.08, vec3(0.6, 0.6, 0.8)),
           col += circle(vec2(0.75, 0.75), 0.08, vec3(0.8, 0.6, 0.6)),
           col += circle(vec2(0.5, 0.7), 0.06, vec3(0.7, 0.7, 0.5)),
@@ -91,7 +92,7 @@ import trivalibs.utils.numbers.NumExt.given
     )
 
     // -----------------------------------------------------------------------
-    // Shared bloom util — owns the threshold + down/upsample pyramid.
+    // Shared bloom util — owns the threshold + down/upsample pyramid + intensity based composite.
     // -----------------------------------------------------------------------
 
     val bloom = Bloom(
