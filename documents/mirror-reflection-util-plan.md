@@ -1,4 +1,4 @@
-# MirrorReflection — reusable blurred mirror floor reflection util
+# MirrorReflection — depth-driven blurred mirror reflection util
 
 ## Context
 
@@ -12,18 +12,95 @@ sketches, so it should become a shared util living next to `Bloom`
 We just extracted `Bloom` the same way (commit 92ea5ac). The reflection follows
 the same trait + factory pattern. Like Bloom it owns its result + intermediate
 panels; the difference is only the **render input**. Bloom's first panel is a
-ready-made `scene` panel handed in. MirrorReflection's `blurPanel` renders the
-mirror shapes itself (mip 0 is a _scene render of the mirror shapes_; the higher
-mips blur it), so on top of owning the panels the util also **drives the mirror
-view-projection** each frame: it reflects the camera's view-projection across
-the mirror plane and feeds it to that render. The name is `MirrorReflection`
-because a flat ground is only the default case — the mirror plane is a parameter
-(`mirrorMat`), so an arbitrary plane works too.
+ready-made `scene` panel handed in. MirrorReflection's `mirrorScenePanel`
+renders the mirror shapes itself (mip 0 is a _scene render of the mirror
+shapes_; the higher mips blur it), so on top of owning the panels the util also
+**drives the mirror view-projection** each frame: it reflects the camera's
+view-projection across the mirror plane and feeds it to that render. The name is
+`MirrorReflection` because a flat ground is only the default case — the mirror
+mirror plane is a parameter (`mirror: Plane`), so an arbitrary plane works too.
 
-Goal: the consuming floor shader shrinks to "sample base mip, drive contribution
-by alpha"; all blur tuning lives in the util.
+**Core algorithm change vs. the current hand-rolled sketch: distance comes from
+the depth buffer, not from a shade-written alpha.** The blur amount per
+reflected fragment is driven by that fragment's distance from the mirror plane
+(blurrier the further away). The current sketch makes the mirror shapes' shade
+_write that distance into alpha_ (`worldY`), which forces a mirror-specific
+shade (a `mirrorMode` flag, a distinct alpha write) and couples the util to the
+user's shade. Instead we **sample the mirror render's depth buffer and
+reconstruct the distance** in the resolve pass (depth + inverse view-projection
+→ world position → analytic plane distance). The user's shade then only has to
+produce colour — the _same_ scene shade can render into the mirror panel
+unmodified — and the whole `mirrorMode` / alpha-write contract disappears.
 
-## Design decisions (confirmed with user)
+This also exercises the library's **depth-texture sampling** feature for the
+first time end-to-end. The CPU/painter side is already prepared
+(`panel.binding(depth = true)`, `depthSamplingView`); the shader-DSL side does
+not exist yet. We have many more depth-dependent effects planned (shadow maps,
+focus blur, artistic texture projection, …), so this is the case that drives the
+DSL feature in and tests it.
+
+## Strategy — three phases
+
+Build and validate bottom-up:
+
+1. **Library prerequisites** — add depth-texture sampling to the shader DSL
+   (§Phase 1a) and the 2D blur kernels to `blur.scala` (§Phase 1b). Type-check
+   the lib in isolation.
+2. **Prove it in the room sketch** — rewrite `Base.scala`'s hand-rolled mirror
+   to the depth-reconstruction algorithm (§Phase 2). Still hand-rolled, no util
+   yet. This validates the new DSL feature _and_ the reconstruction algorithm in
+   a concrete, visually-verifiable setting before generalizing.
+3. **Extract the generic util** — once the algorithm is known-good in the
+   sketch, lift it into `MirrorReflection` (§Phase 3) and migrate `Base.scala`
+   onto the util.
+
+## Why depth-reconstructed distance (rationale + tradeoffs)
+
+- **Depth alone is camera distance, but reconstruction gives plane distance.**
+  The depth buffer stores camera-space depth, not distance from the mirror
+  plane. With the inverse view-projection (which the util computes anyway) we
+  recover the full world position and then the _analytic_ perpendicular distance
+  to the plane — in the resolve pass that already exists, **no extra geometry
+  pass**:
+  ```wgsl
+  // resolve-pass WGSL (planeN/planeD baked as literals; signedDist done by hand)
+  let ndc       = vec3(uv.x*2-1, 1-uv.y*2, depth);  // screen uv + sampled depth → NDC
+  let worldH    = invVP * vec4(ndc, 1.0);
+  let worldPos  = worldH.xyz / worldH.w;
+  let planeDist = dot(planeN, worldPos) - planeD;   // n·p - d; ground: worldPos.y
+  ```
+  Because the mirror render's clip pos is `VP * reflMat * pOrig`, multiplying
+  back by `inverse(VP * reflMat)` yields the _original_ world position, and
+  `n·p - d` is exactly the perpendicular distance — for the ground plane that is
+  `worldPos.y`, reproducing today's `worldY`. (A reflection also preserves
+  perpendicular distance to its own plane, so the value is robust either way.)
+  **The mirror plane parameterizes both sides on the CPU:** the util derives the
+  reflection matrix `reflMat` from it (for the render's VP) _and_ bakes its
+  normal/offset into the resolve shade for the distance — no matrix→plane
+  reverse-derivation. **Note `Plane` is CPU-only — there is no GPU/DSL `Plane`,
+  so the shader computes `n·p - d` manually** (the `signedDist` formula); the
+  class is a construction-time convenience, not a shader value.
+- **What it deletes:** the `mirrorMode` flag uniform, the shade's
+  `alpha = distance` write, and the "merge `roomShade` + `mirrorShade`" step.
+  The _unmodified_ scene shade renders into the mirror panel (we read its `.xyz`
+  for colour and get distance from depth). The only panel-level uniform left is
+  `vp`, which is the legitimate mechanism for shape reuse across passes — not a
+  "dance."
+- **Empty texels handled cleanly.** Where no mirror shape drew, depth is the far
+  plane (`1.0`); detect that → zero reflection. This is _cleaner_ than today's
+  `alpha = 0`, which conflates "distance 0" with "nothing here."
+- **Tradeoff — geometry only, no artistic blur map.** A shade-written alpha
+  could encode arbitrary per-fragment blur (a roughness/gloss map); depth gives
+  only geometric plane distance. That is exactly this util's purpose, so it is
+  acceptable; an optional alpha-override mode is noted in Future work.
+- **Tradeoff — depth precision.** Perspective depth is non-linear (precision
+  concentrated near the camera), so reconstructed distance is not bit-exact to
+  the shade's `worldY`. For a smooth blur LOD this is immaterial.
+- **Unaffected — cull winding.** A reflection flips triangle winding regardless
+  of how distance is sourced. Single-shape reuse still needs `CullMode.None` (or
+  distinct pipelines per pass sharing the shade). See the cull note in Phase 2.
+
+## Other design decisions (carried over)
 
 - **Util owns the mirror render + the mirrored view-projection.** `apply` takes
   the shapes to mirror and builds the output panels. The uniform contract splits
@@ -32,85 +109,167 @@ by alpha"; all blur tuning lives in the util.
   **view-projection** (`vp`) — one viewpoint for the whole render — is owned and
   driven by the util.
   - The shapes' shade reads `vp` from a **panel-level** uniform (set on
-    `blurPanel` via `panel.bind`, shared by all its shapes). Panel bindings are
-    string-keyed/untyped (unlike shape bindings, which infer from the shade), so
-    the factory takes the uniform's **name** (`vpName`) to know where to write.
+    `mirrorScenePanel` via `panel.bind`, shared by all its shapes). Panel
+    bindings are string-keyed/untyped (unlike shape bindings, which infer from
+    the shade), so the factory takes the uniform's **name** (`vpName`) to know
+    where to write.
   - The util holds its own `BufferBinding[Mat4, ?]` for `vp`, binds it on
-    `blurPanel` under `vpName`, and each `paint` writes `cameraVP * mirrorMat`
-    into it (mirror applied in world space, matching today's
-    `cam.viewProjMat * mirrorMat`).
+    `mirrorScenePanel` under `vpName`, and each `paint` writes
+    `cameraVP * reflMat` into it (reflection applied in world space). It also
+    holds a second matrix binding for **`invVP = inverse(cameraVP * reflMat)`**
+    (used by the resolve pass for distance reconstruction). `reflMat` is derived
+    once from the mirror `plane` (see below).
   - **Viewpoint source:** pass a `PerspectiveCamera` at construction (the util
     pulls `camera.viewProjMat` each `paint`) and/or a raw `vp: Mat4` to `paint`
-    that overrides it. The raw arg is required when no camera is supplied (e.g.
-    no camera object is queryable). `PerspectiveCamera` is concrete for now; a
-    generic camera trait can replace it later.
-  - `mirrorMat` defaults to the ground Y-flip (`Mat4.fromScale(1, -1, 1)`).
+    that overrides it. The raw arg is required when no camera is supplied.
+    `PerspectiveCamera` is concrete for now; a generic camera trait can replace
+    it later.
+  - **Mirror plane is a `Plane`, not a matrix.** `apply` takes
+    `mirror: Plane = Plane.ground` (the `y = 0` plane, normal `(0,1,0)`). The
+    util derives `reflMat = mirror.reflectionMat` once at construction (reflection
+    across the plane; reduces to `Mat4.fromScale(1,-1,1)` for ground) and bakes
+    `mirror.normal`/`mirror.d` into the resolve shade, which computes the blur
+    distance `n·p - d` by hand — `Plane` is **CPU-only**, there is no DSL `Plane`,
+    so it is a construction-time convenience, not a shader value. Still one
+    source of truth for both the render and the distance. (`Plane.reflectionMat`
+    + convenience constructors are a small geometry-lib prerequisite, §Phase 1c.)
   - **Why panel-level vp (not per-shape mvp): shape reuse across passes.**
     Because `vp` is a panel binding, the painter fills it per-render from
     whichever panel is drawing the shape — a shape that doesn't bind `vp` itself
     inherits the scene panel's vp in the normal pass and the mirror panel's
     (reflected) vp in the mirror pass (`applyPanelRuntimeBindings`,
     `painter.scala` 1323–1351: panel bindings only fill slots the shape left
-    null). So the *same* shape instance can sit in both panels with no per-frame
+    null). So the _same_ shape instance can sit in both panels with no per-frame
     juggling — `m` is identical in both, reflection lives entirely in the util's
-    panel vp. The old per-shape-`mvp` model couldn't do this: it forced either a
-    second `mirrorMvp` binding + duplicate shapes (what `Base.scala` does), or a
-    set→render→reset→render dance every frame.
-  - **Closing the "needs a distinct mirror shade" caveat — `extraBindings`.**
-    The room's mirror pass differs from the normal pass only by writing
-    `alpha = distance` (for the blur LOD). Rather than a separate shade, write
-    *one* shade that gates this on a `mirrorMode` flag uniform: `mirrorMode == 1`
-    ⇒ `alpha = worldY`, else `alpha = 1`. The flag is a **panel-level** uniform,
-    so the same shape — binding neither `vp` nor `mirrorMode` — reads `0` from the
-    scene panel and `1` from the mirror panel. To let the util supply such
-    per-mirror-render uniforms, `apply` takes `extraBindings` (name → value/binding
-    pairs) and writes them onto `blurPanel` alongside `vp`. **Override direction
-    matters:** panel bindings only fill slots the shape left null, so a
-    per-panel-varying uniform must be unbound on the shape and supplied by *both*
-    panels (scene panel sets `mirrorMode = 0`, util sets `1`); a shape-level
-    default would *block* the override.
-  - **Residual non-uniform difference — cull winding.** A reflection has negative
-    determinant, so it flips triangle winding: the normal shapes cull
-    `CullMode.Front`, the mirror needs `CullMode.Back` (`Base.scala` 510 vs 337).
-    `cullMode` is baked into the shape's pipeline (not a uniform), so one shape
-    can't cull both ways. True single-shape reuse therefore also needs the shared
-    shapes on `CullMode.None` (draw both faces, depth resolves — minor overdraw).
-    If a sketch keeps distinct cull modes it keeps distinct shapes regardless of
-    the flag — but they can still share the *shade*. **The room sketch goes for
-    full reuse** (`CullMode.None` on the shared walls/ceiling) to exercise and
-    verify the whole contract — see the Base.scala migration below.
-- **Alpha = raw distance from the mirror plane.** The mirrored shapes' shades
-  write `rgb = reflected colour`, `alpha = raw distance from mirror plane`
-  (world units). The util normalizes via `alphaScale` (the distance that maps to
-  alpha 1.0). This replaces today's pre-normalized `worldY/RoomHeight`.
+    panel vp. With depth-driven distance the shade no longer differs between
+    passes _at all_ (no `mirrorMode`), so reuse is total: same shape, same
+    shade, only the panel-level `vp` differs.
+  - **Residual non-uniform difference — cull winding.** A reflection has
+    negative determinant, so it flips triangle winding: the normal shapes cull
+    `CullMode.Front`, the mirror needs `CullMode.Back`. `cullMode` is baked into
+    the shape's pipeline (not a uniform), so one shape can't cull both ways.
+    True single-shape reuse therefore needs the shared shapes on `CullMode.None`
+    (draw both faces, depth resolves — minor overdraw). If a sketch keeps
+    distinct cull modes it keeps distinct shapes regardless — but they can still
+    share the _shade_. **The room sketch goes for full reuse** (`CullMode.None`
+    on the shared walls/ceiling) to exercise and verify the whole contract.
 - **Mirror render and blur pyramid share one panel.** The panel renders its
   shapes into mip 0 _first_ (depth + clearColor), then runs its layers — so the
-  mirror shapes draw straight into `blurPanel` mip 0 and the downsample layers
-  build mips 1..N. This drops both the separate `mirrorPanel` _and_ the old
-  `blitShade` mip-0 copy (mip 0 was only ever a blit of the mirror render) — one
-  fewer panel and one fewer fullscreen pass per frame. Verified safe: layers run
-  "no depth, no msaa" so depth only affects the shape pass; mip-target layers
-  already gate off auto-mipgen; `multisample = false` keeps mip 0 directly
-  sampleable.
+  mirror shapes draw straight into `mirrorScenePanel` mip 0 and the downsample
+  layers build mips 1..N. This drops both a separate mirror panel _and_ any
+  mip-0 blit (mip 0 _is_ the mirror render) — one fewer panel and one fewer
+  fullscreen pass per frame. Verified safe: layers run "no depth, no msaa" so
+  depth only affects the shape pass; mip-target layers already gate off
+  auto-mipgen; `multisample = false` keeps mip 0 directly sampleable **and keeps
+  the depth attachment directly sampleable** (no MSAA depth-resolve needed).
 - **Two output panels exposed:**
-  1. `blurPanel` — the shared mirror-render + box-blur mip pyramid (mip 0 = raw
-     mirror render, mips 1..N = progressive downsample). The raw sharp
-     reflection is `blurPanel.binding(mipLevel = 0)` for advanced/raw use.
-  2. `resultPanel` — full-res panel from one extra pass that, per texel, picks
-     the mip-LOD from the (normalized) alpha and writes the pre-blurred colour +
-     preserved normalized alpha. This is the panel sketches normally sample
-     (named `resultPanel` to match Bloom's final-output panel).
+  1. `mirrorScenePanel` — the shared mirror-render + box-blur mip pyramid (mip 0
+     = raw mirror render, mips 1..N = progressive downsample) **plus the depth
+     attachment** of the mirror render. The raw sharp reflection is
+     `mirrorScenePanel.binding(mipLevel = 0)`; its depth is
+     `mirrorScenePanel.binding(depth = true)`.
+  2. `resultPanel` — full-res panel from one extra pass that, per texel,
+     reconstructs distance from depth, picks the mip-LOD from it, and writes the
+     pre-blurred colour + normalized distance. This is the panel sketches
+     normally sample (named `resultPanel` to match Bloom's final-output panel).
 - **Composition stays in user land.** Floor shader samples `resultPanel` base
-  mip and computes its own mix/falloff from alpha and a user-side
-  `reflStrength`. Util provides `uvFromClipSpace` to remove the clip→screen-UV
-  boilerplate.
+  mip and computes its own mix/falloff from the normalized distance and a
+  user-side `reflStrength`. Util provides `uvFromClipSpace` to remove the
+  clip→screen-UV boilerplate.
 - **Blur kernel: keep the 9-tap tent + `res` bindings + `onResize`** (preserves
   current look). The bespoke kernel is promoted into the trivalibs blur lib as a
-  reusable **2D single-pass** blur (see prerequisite below) rather than living
-  inline in the util. Res-free bilinear downsample noted as future exploration
-  only.
+  reusable **2D single-pass** blur (Phase 1b) rather than living inline in the
+  util. Res-free bilinear downsample noted as future exploration only.
 
-## Prerequisite trivalibs change — 2D blur category in `blur.scala`
+---
+
+## Phase 1a — Depth-texture sampling in the shader DSL
+
+The painter already supports binding a panel's depth texture as a sampleable
+input — `panel.binding(depth = true)` builds a `PanelBinding(..., depth = true)`
+(`panel.scala` 137–144); at bind time the painter resolves it to
+`pb.panel.depthSamplingView` (`painter.scala` 1414), and `depthSamplingView`
+(`panel.scala` 118–133) lazily recreates the depth texture with
+`TEXTURE_BINDING` usage and flags `_depthSamplable` so subsequent (re)creations
+include the usage (`panel.scala` 495–509). **Missing is the DSL side** — a depth
+texture must be declared `texture_depth_2d` in WGSL with a `sampleType: "depth"`
+layout entry, but today both generators hardcode the float form:
+
+- `generatePanelDeclsImpl` (`derive.scala` 361–372) emits
+  `var $name: texture_2d<f32>` for _every_ panel field, ignoring its type.
+- `panelBindGroupEntriesImpl` (`layouts.scala` 226–237) emits
+  `texture = Obj.literal()` (defaults to `sampleType: "float"`) for every entry.
+
+Work items:
+
+1. **New DSL resource type `DepthTexture2D`** in `math/gpu/expr.scala`, an
+   opaque `<: Expr` exactly like `Texture2D` (`expr.scala` 105–106), with a
+   companion `apply(s: String)`. Add it to the exported resource-type list
+   alongside `Texture2D`/`Sampler` (`expr.scala` 286–287).
+2. **`WGSLType[DepthTexture2D]`** in `types.scala` next to `WGSLType[Texture2D]`
+   (152–158): `wgslName = "texture_depth_2d"`, zero sizes, and a new marker
+   `override def isDepthTexture = true` (add
+   `def isDepthTexture: Boolean = false` to the `WGSLType` trait, mirroring the
+   existing `isSampler` flag).
+3. **Type-aware panel WGSL decl** — `generatePanelDeclsImpl` must pick
+   `texture_depth_2d` vs `texture_2d<f32>` from the field's `WGSLType` (summon
+   `WGSLType[head]`, read `isDepthTexture`/`wgslName`). Use `wgslName` directly
+   rather than the hardcoded string.
+4. **Type-aware bind-group layout** — `panelBindGroupEntriesImpl` must emit
+   `texture = Obj.literal(sampleType = "depth")` for a depth field (else the
+   current float default). Same `WGSLType[head].isDepthTexture` branch.
+5. **Depth read ops** — extension(s) on `Expr.DepthTexture2D` returning a
+   **scalar** `FloatExpr` (depth yields a single channel). WGSL has three read
+   families with _different_ sampler needs (see the sampler note):
+   - `def load(coord: IVec2Expr, level): FloatExpr` →
+     `textureLoad(tex, coord, level)` — **no sampler**, exact texel fetch; pairs
+     with `BuiltinFragCoord` (`builtins.scala` 45–49) for pixel coords.
+     **Primary path for the resolve pass** (full-res 1:1, point-exact, zero
+     sampler boilerplate).
+   - `def sampleLevel(uv, sampler, level): FloatExpr` →
+     `textureSampleLevel(tex, samp, uv, level)` (returns `f32`) — needs a
+     _non-comparison_ sampler. For filtered / downscaled depth reads.
+   - (later) `def sampleCompare(uv, ref, sampler): FloatExpr` →
+     `textureSampleCompare(tex, samp_cmp, uv, ref)` — needs a _comparison_
+     sampler (`sampler_comparison`). For shadow-map PCF; out of scope here.
+
+**Sampler note — depth has two sampler families, not one.** Regular reads
+(`textureSample*`) take a normal sampler (layout `sampler` type
+`filtering`/`non-filtering`); comparison reads (`textureSampleCompare`, shadow
+PCF) take a `sampler_comparison` (layout type `comparison`). So there is no
+single "depth sampler" to standardize on. **This util sidesteps it entirely: the
+resolve pass uses `load`, which needs no sampler.** (If a filtered `sampleLevel`
+is ever needed, confirm WebGPU accepts the default filtering sampler entry —
+`layouts.scala` 133–149 — against a `depth` sampleType; `non-filtering` is the
+safe fallback.) See Future work for auto-supplying the sampler.
+
+6. **Generalize `load` across texture types (not just depth).** `textureLoad` is
+   a general primitive — integer texel coords, no sampler, point read, explicit
+   level — useful for fullscreen post-processing and layer passes
+   (fragment-only) that read 1:1 with their target, where a sampler was always
+   slightly superfluous. Add `load` to `Texture2D` too (returns `Vec4Expr`)
+   alongside the depth variant (returns `FloatExpr`); the depth resolve read is
+   just one instance. The coord/level types already exist (`IVec2Expr`,
+   `IntExpr` — `int_expr.scala` 31–44); the op block is `expr.scala` 250–270.
+   Signature `def load(coord: IVec2Expr, level: IntExpr): <Vec4Expr|FloatExpr>`
+   → `textureLoad(tex, coord, level)`; consider a `level = 0` default overload.
+   **Gotchas to document:** coords are texel indices (not UV), out-of-bounds
+   returns `0` (not clamped), and the level arg is mandatory (pass `0` for
+   non-mipmapped).
+7. **Companion `textureDimensions` op (optional, recommended).** WGSL
+   `textureDimensions(t, level) -> vec2<u32>` lets a shader convert UV→texel
+   (`ivec2(uv * vec2(textureDimensions(t)))`) without a `res` binding. The DSL
+   currently has no such op (only `textureNumLevels` via `numLevels`). Adding it
+   pairs naturally with `load` and would also unblock the res-free blur
+   downsample (see Future work). Small, self-contained; do it here or defer.
+
+**Minimal DSL test** before touching the sketch: a tiny example/test that
+declares a `DepthTexture2D` panel field, reads it (`load`), and renders — verify
+the WGSL validates and the bind group builds. Cover a `Texture2D.load` too. (Add
+under `examples/` or a focused playground sketch; the room sketch in Phase 2 is
+the real end-to-end test.)
+
+## Phase 1b — 2D blur category in `blur.scala`
 
 `trivalibs/src/graphics/shader/lib/blur.scala` currently holds only **separable
 1D** blurs (`gaussianBlur5/9/13`, `boxBlur`): a full 2D blur needs two passes (H
@@ -159,16 +318,201 @@ refactored onto these later (out of scope here). Verified call style: `Blur.*`
 takes the panel texture directly as the `Texture2D` arg — e.g.
 `Blur.gaussianBlur9(ctx.textures.source, …)` in `examples/blur/Blur.scala:77`.
 
-## Files
+## Phase 1c — `Plane` enhancements in `geometry/package.scala`
+
+`Plane(normal, d)` already exists with `signedDist(p) = normal·p - d` and `flip`
+(`geometry/package.scala` 73–75). The util consumes a `Plane` directly (mirror
+plane = single source of truth for both the reflection matrix and the blur
+distance). Add:
+
+1. **`def reflectionMat: Mat4`** — reflection across the plane (assumes a unit
+   `normal`). For unit `n = (a,b,c)` and `n·x = d`:
+   ```
+   [1-2a²  -2ab   -2ac    2ad]
+   [ -2ab 1-2b²   -2bc    2bd]
+   [ -2ac  -2bc  1-2c²    2cd]
+   [   0     0      0      1 ]
+   ```
+   Reduces to `Mat4.fromScale(1,-1,1)` for the ground plane `n=(0,1,0), d=0`.
+2. **Convenience constructors** (the current ctor takes `normal, d` raw, which
+   requires a unit normal and pre-computed `d`):
+   - `Plane.fromPointNormal(p: Vec3, n: Vec3)` → `Plane(n.normalize, n.normalize·p)`.
+   - `Plane.fromPoints(a, b, c: Vec3)` → normal `(b-a)×(c-a)` normalized,
+     `d = normal·a`.
+   - `Plane.ground` (or a `val`) = `Plane(Vec3(0,1,0), 0)` — the util's default.
+   Normalizing in these ctors keeps `signedDist` a true distance and
+   `reflectionMat` correct. (The existing raw ctor stays for the clip/split
+   callers that already pass normalized planes.)
+
+Small, self-contained; needed before the resolve pass and the util can take a
+`Plane`. Verify `Vec3` has `normalize` / `cross` / `dot` in `graphics/math`
+(used elsewhere, should be present).
+
+**CPU-only — no DSL `Plane`.** These are all CPU-side geometry helpers; there is
+no GPU equivalent of `Plane`. The resolve shade does not call `signedDist` —
+the util reads `mirror.normal`/`mirror.d` on the CPU and bakes them as WGSL
+literals (the plane is fixed at construction), and the shader computes
+`dot(planeN, worldPos) - planeD` by hand. (A future GPU `Plane`/`signedDist` DSL
+op could replace the hand-written line, but is not needed here.)
+
+---
+
+## Phase 2 — Prove the algorithm in `sketches/rooms/base/Base.scala`
+
+Rewrite the existing hand-rolled mirror to depth-reconstructed distance. **Still
+hand-rolled** — no util — so the DSL feature and the reconstruction math get
+validated visually in a real scene first. This is the smaller, reversible step;
+Phase 3 only generalizes what works here.
+
+**1. One shade for the walls/ceiling, used in both passes unmodified.** Today's
+`roomShade` and `mirrorShade` (Base.scala ~281–331) differ only by the alpha
+write and the `worldY` varying. With depth-driven distance, **neither is
+needed** — collapse to one `wallShade`:
+
+- Uniforms `(samp: FragmentUniform[Sampler], vp: VertexUniform[Mat4])` — `vp`
+  panel-level, read but never bound on the shape. World-space geometry, so vert
+  is `ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0)`.
+- Varyings `(uv: Vec2)` only — no `worldY`.
+- Frag: the V-flipped tex lookup, `out.color := vec4(c.xyz, 1.0)`. No flag, no
+  distance write.
+- Delete `mvp`/`mirrorMvp` bindings, the standalone `mirrorShade`/`mirrorShape`,
+  and the `worldY` plumbing.
+
+**2. One shared wall/ceiling shape set, `CullMode.None`** (reflection flips
+winding; `None` draws both faces, depth resolves — visually identical from
+inside the room):
+
+```scala
+def wallShape(form: Form, tex: Panel) =
+  p.shape(form, wallShade, cullMode = CullMode.None)
+    .bind("samp" := texSampler, "tex" := tex)   // NOT vp
+val ceilShape  = wallShape(ceilForm, ceilTex)
+val wallShapeW = wallShape(wallForm, wallTex)
+```
+
+Both instances go into **both** panels.
+
+**3. Scene panel supplies `vp`** (literal name, typed `.bind` sugar):
+
+```scala
+val sceneVp = p.binding[Mat4]
+scenePanel.bind("vp" := sceneVp)
+```
+
+(`scenePanel` lists `Arr(floorShape, wallShapeW, ceilShape)`. The floor keeps
+its own scene-only `floorShade` but also reads `vp` from the panel — rename its
+`mvp` uniform to `vp` and stop binding it per-shape.)
+
+**4. Mirror scene panel = mirror render + blur pyramid, with a sampleable depth
+attachment.**
+
+```scala
+val mirror    = Plane.ground            // y = 0; reflMat reduces to scale(1,-1,1)
+val reflMat   = mirror.reflectionMat
+val mirrorVp  = p.binding[Mat4]         // cam.viewProjMat * reflMat
+val mirrorScenePanel = p.panel(
+  format = Rgba16Float, clearColor, depthTest = true, mipLevels = 6,
+  shapes = Arr(wallShapeW, ceilShape), layers = downsampleLayers)
+mirrorScenePanel.bind("vp" := mirrorVp)   // panel-level mirror view-projection
+```
+
+- `depthTest = true` produces the depth buffer we sample; `multisample = false`
+  keeps both colour mip 0 and depth directly sampleable.
+- `downBlurShade` calls the lib kernel
+  `Blur.tentBlur2d(ctx.textures.tex, ctx.bindings.samp, ctx.in.uv, ctx.bindings.res, 2.0)`;
+  `mipLevels-1` downsample layers
+  `p.layer(downBlurShade, mipSource = i, mipTarget = i+1)` each bound to its
+  per-mip `res` binding (loop).
+
+**5. Resolve pass → `resultPanel`** (full-res, `Rgba16Float` for HDR halo):
+binds the mirror panel's **colour pyramid** _and_ its **depth**, plus the
+util-side `invVP` matrix. Per texel:
+
+```scala
+// reconstruct world position from depth + inverse mirror view-projection
+d        := mirrorDepth.load(ivec2(ctx.in.fragCoord.xy), 0) // f32 depth, no sampler
+ndc      := vec3(uv.x*2.0 - 1.0, 1.0 - uv.y*2.0, d)
+worldH   := invVP * vec4(ndc, 1.0)
+worldPos := worldH.xyz / worldH.w
+dist     := dot(planeN, worldPos) - planeD                   // = plane.signedDist; ground: worldPos.y
+t        := (dist / alphaScale).clamp01                      // normalized
+// far-plane texels (nothing rendered) → no reflection
+keep     := step(d, 0.9999)                                  // 1 if geometry, else 0
+lod      := (1.0 + t * uBlurStrength * maxBlur).log2.min(maxBlur)
+out.color := vec4(colorPyramid.sampleLevel(uv, samp, lod).xyz, t * keep)
+```
+
+(`alphaScale = RoomHeight`, `maxBlur = 5.0`, `blurStrength = 62.0` to match the
+current look; `blurStrength` a runtime binding. `planeN`/`planeD` are the mirror
+plane's normal/offset, baked as WGSL literals when the shade is built — known at
+construction.) Bind invVP = `(cam.viewProjMat * reflMat).inverse` each frame.
+
+**6. floorShade** (~449–500): drop the old LOD math **and the screen-UV
+reconstruction**. The reflection is a screen-space image at the same resolution
+as the floor's render target, so the floor fragment reads `resultPanel` at its
+*own* pixel via `load(fragCoord)` — no `uvFromClipSpace`, no sampler, no
+`clipPos` varying, no Y-flip:
+
+```scala
+refl    := reflTex.load(ivec2(ctx.in.fragCoord.xy), 0)   // base mip, same pixel
+falloff := (1.0 - refl.w).max(0.1)
+mix     := reflStrength * falloff
+ctx.out.color := vec4(base * (1.0 - mix) + refl.xyz * mix, 1.0)
+```
+
+(`fragCoord` = `@builtin(position)` in the fragment, i.e. the framebuffer pixel
+coord; texel `(0,0)` is top-left in both the floor target and `resultPanel`, so
+they align 1:1 with no flip. This holds because both are full canvas res — a
+half-res reflection would need UV scaling, see the `uvFromClipSpace` fallback in
+Phase 3.)
+
+**7. Per-frame** (animate ~581–587):
+
+```scala
+sceneVp.set(cam.viewProjMat)
+mirrorVp.set(cam.viewProjMat * reflMat)
+invVp.set((cam.viewProjMat * reflMat).inverse)
+p.paint(mirrorScenePanel)   // mirror render → mip0, blur pyramid, then resolve
+p.paint(resolvePanel)       // (or include in one paint call, mirror first)
+p.paint(scenePanel)         // floor samples resultPanel
+```
+
+**8. onResize** — update the per-mip `res` bindings (loop).
+
+**Verification (Phase 2):**
+
+1. `bun run sketch rooms/base` compiles (includes `trivalibs/src`, so it
+   exercises the new DSL depth type + blur kernels).
+2. `bun run dev`, open `rooms/base`: the blurred floor reflection should look
+   **identical to the pre-change sketch** — sharp near the floor, blurrier
+   toward the ceiling, halo strips still bloom on the floor. This is the key
+   check that depth-reconstructed distance reproduces the old `worldY` alpha.
+3. Walk around (WASD + drag): the depth reconstruction must track correctly from
+   all angles (it depends on `invVP`, refreshed per frame). No blur "swimming"
+   or distance banding.
+4. `CullMode.None` introduced no z-fighting / see-through faces.
+5. Resize — reflection stays correct.
+6. **Empty-texel check:** if any view angle leaves mirror-panel texels with no
+   geometry (far depth), confirm they contribute no reflection (the `keep`
+   term).
+
+---
+
+## Phase 3 — Extract the generic `MirrorReflection` util
+
+Once Phase 2 looks right, lift it into a util. The algorithm is unchanged; this
+step is about ownership and a clean API.
 
 ### New: `src/playground/mirror/MirrorReflection.scala` (package `playground.mirror`)
 
-Trait + factory mirroring `Bloom`'s shape:
-
 ```scala
 trait MirrorReflection:
-  def blurPanel: Panel       // mip pyramid: mip 0 = raw mirror render, mips 1..N = box-blur
-  def resultPanel: Panel     // pre-blurred, alpha-driven LOD resolved (sample this)
+  // The panel the mirror scene renders into: mip 0 = raw mirror render of the
+  // shapes, mips 1..N = box-blur pyramid; plus a sampleable depth attachment.
+  // Bind only your shade's shared/panel-level uniforms here (the util binds `vp`
+  // itself, see vpName). The mirror shade needs NO mirror-specific uniforms.
+  def mirrorScenePanel: Panel
+  def resultPanel: Panel     // pre-blurred, depth-driven LOD resolved (sample this)
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit  // raw vp overrides the camera
   def setBlurStrength(v: Double): Unit
   def onResize(w: Double, h: Double): Unit
@@ -179,267 +523,177 @@ object MirrorReflection:
   // `[S <: AnyShape, L <: AnyLayer]`, so S threads straight through.
   def apply[S <: AnyShape](
       p: Painter,
-      shapes: Arr[S],            // mirrored shapes; write rgb + raw-dist alpha
+      shapes: Arr[S],            // mirrored shapes; produce colour only
       vpName: String,            // panel-uniform name the util writes the
                                  //   mirrored view-projection into (shapes read it)
-      alphaScale: Double,        // distance mapping to normalized alpha 1.0
+      alphaScale: Double,        // plane distance mapping to normalized 1.0
       camera: Opt[PerspectiveCamera] = null, // viewpoint source; null ⇒ paint(vp) required
-      mirrorMat: Mat4 = Mat4.fromScale(Vec3(1.0, -1.0, 1.0)), // reflection plane; default = ground Y-flip
-      extraBindings: Arr[(String, PanelBindingValue)] = Arr(), // extra panel-level uniforms for the mirror render (e.g. a "mirrorMode" flag); name → BufferBinding/Sampler/Panel
+      mirror: Plane = Plane.ground, // mirror plane (CPU-only); util derives reflMat + bakes normal/d into the resolve shade
       blurStrength: Double = 2.0,// how fast blur ramps with distance (log2 coef)
       maxBlur: Double = 5.0,     // max LOD / top mip index (== mipLevels-1)
-      mipLevels: Int = 6,        // pyramid depth (matches current sketch)
+      mipLevels: Int = 6,        // pyramid depth
       clearColor: (Double,Double,Double,Double) = (0.0,0.0,0.0,0.0),
   ): MirrorReflection
 
   /** Clip-space position → screen UV in [0,1] (Y flipped). DSL expression
-    * helper, used in the consuming floor fragment. */
+    * helper for consumers that *sample* the result (filtered, or at a different
+    * resolution than the floor target). The default floor path instead uses
+    * `resultPanel.load(ivec2(fragCoord.xy), 0)` (1:1, no UV needed) — keep this
+    * only for the off-res / filtered case. */
   def uvFromClipSpace(clipPos: Vec4Expr): Vec2Expr =
     val ndc = clipPos.xy / clipPos.w
     ndc * vec2(0.5, -0.5) + vec2(0.5, 0.5)
 ```
 
-Internals (lift verbatim from `Base.scala` 344–431, generalize the constants):
+Internals (lift from the proven Phase-2 sketch, generalize constants):
 
-1. **vp binding** — `val vp = p.binding[Mat4]`, owned by the util, bound on
-   `blurPanel` by name (panel-level, shared by all the panel's shapes).
-   `panel.bind` can't be used: its `BindPair[N <: String & Singleton, V]`
-   requires a _literal_ name, but `vpName` is a runtime `String`. Instead set
-   the panel's public `runtimeBindings` Dict directly:
-   `blurPanel.runtimeBindings.set(vpName, vp)`. (Same effect `.bind` has — it
-   ultimately writes `runtimeBindings` — just with a dynamic key. No library
-   change needed; a typed `panel.bindDynamic(name, value)` helper would be a
-   nice future tidy-up.) Each `extraBindings` pair is written the same way —
-   `blurPanel.runtimeBindings.set(name, value)` — so mirror-only uniforms (e.g.
-   `mirrorMode = 1`) ride along on the same panel as `vp`.
-2. **blurPanel** (mirror render + blur pyramid, one panel) —
-   `p.panel(format = Rgba16Float, clearColor, depthTest = true, mipLevels, shapes = shapes, layers = downsampleLayers)`,
-   then set the `vp` binding (1). No multisample (blur masks aliasing; keeps mip
-   0 directly sampleable). The shape pass fills mip 0 (the old `mirrorPanel`
-   render); **no `blitShade`** — mip 0 _is_ the mirror render, not a copy.
-   - `downBlurShade` just calls the lib kernel —
-     `Blur.tentBlur2d(ctx.textures.tex, ctx.bindings.samp, ctx.in.uv, ctx.bindings.res, 2.0)`
-     (radius 2.0 = old `o = 2/res`). `mipLevels-1` downsample layers, each
-     `p.layer(downBlurShade, mipSource = i, mipTarget = i+1)` for `i` in
-     `0 .. mipLevels-2`, bound to its per-mip `res` binding (loop, cf. 419–425).
-     Note mip0→mip1 now downsamples the _shape render_ directly (previously the
-     blit output — identical pixels).
-   - Per-mip `Vec2` res bindings built in a loop sized to `mipLevels` (replaces
-     the hand-listed `mirrorRes…Mip5`, 399–418), stored in
-     `Arr[BufferBinding[Vec2, ?]]` like `Bloom`.
-3. **resultPanel** — NEW full-res layer pass reading `blurPanel`. **Format
-   `Rgba16Float`** (HDR: the ceiling halo strips exceed 1.0 and must survive
-   into the floor so they still bloom):
-   - `t := (sampleLevel(uv,s,0).w / alphaScale).clamp01` (sharp normalized dist)
-   - `lod := (1.0 + t * uBlurStrength * maxBlur).log2.min(maxBlur)` (generalizes
-     today's `(1 + a*2*reflMaxLod).log2.min(5)`, `Base.scala` 489–494)
-   - `out.color := vec4(sampleLevel(uv,s,lod).xyz, t)` — pre-blurred colour +
-     preserved normalized alpha.
-   - `alphaScale`/`maxBlur` are compile-time consts in the shade; `blurStrength`
-     is a runtime binding (`setBlurStrength`).
-4. **onResize** — set each mip res binding to `(w/2^i, h/2^i)` (loop, like
-   `Bloom.onResize`).
-5. **paint(vp)** — resolve the view-projection: use the raw `vp` arg if given,
-   else `camera.viewProjMat`, else error (no viewpoint). Write
-   `vp.set(resolvedVP * mirrorMat)` into the owned binding, then
-   `p.paint(blurPanel, resultPanel)` (two panels — mirror render is mip 0 of
-   `blurPanel`).
+1. **vp + invVP bindings** — `val vp = p.binding[Mat4]`,
+   `val invVp = p.binding[Mat4]`, both util-owned. `vp` is bound on
+   `mirrorScenePanel` under the runtime `vpName`: `panel.bind` needs a _literal_
+   name, so write the public `runtimeBindings` Dict directly —
+   `mirrorScenePanel.runtimeBindings.set(vpName, vp)`. `invVp` is bound on the
+   resolve layer by the util (literal name there, so typed `.bind`). `reflMat =
+   mirror.reflectionMat` is computed once at construction; the resolve shade
+   bakes `mirror.normal`/`mirror.d` as WGSL literals for `signedDist`.
+2. **mirrorScenePanel** —
+   `p.panel(format = Rgba16Float, clearColor, depthTest = true, mipLevels, shapes, layers = downsampleLayers)`;
+   no multisample. mip 0 is the mirror render; depth attachment is sampled by
+   the resolve pass via `mirrorScenePanel.binding(depth = true)`. Per-mip `Vec2`
+   res bindings built in a loop (`Arr[BufferBinding[Vec2, ?]]`, like Bloom).
+3. **resultPanel** — the resolve layer pass from Phase 2 step 5, reading the
+   colour pyramid + depth + `invVp`. `alphaScale`/`maxBlur` compile-time consts;
+   `blurStrength` runtime (`setBlurStrength`).
+4. **onResize** — set each mip res binding to `(w/2^i, h/2^i)` (loop).
+5. **paint(vp)** — resolve the view-projection (raw arg, else camera, else
+   error); `val m = resolvedVP * reflMat`; `vp.set(m)`, `invVp.set(m.inverse)`;
+   `p.paint(mirrorScenePanel, resultPanel)`.
 
-**Resolution handling (why `onResize` is kept):** Panels auto-scale to canvas
-(painter ResizeObserver) — only the blur's `res` bindings need updating. The
-9-tap tent divides by `res` (`2.0 / res`) and the DSL exposes no
-`textureDimensions` op (confirmed: nothing in `src/graphics/shader`), so the
-resolution must come from bindings → `onResize` is required, exactly like Bloom.
-The resolve pass and mirror render need no `res`. Future exploration (out of
-scope here): a res-free bilinear box downsample would drop the `res` bindings +
-`onResize` entirely; user wants to evaluate that for both this util and Bloom
-later.
+### Edit: `sketches/rooms/base/Base.scala` (migrate onto the util)
 
-### Edit: `sketches/rooms/base/Base.scala`
+Replace the hand-built mirror block (Phase 2 steps 4–5, 7–8) with:
 
-This is the **full-reuse** migration: the walls + ceiling become *one shared
-shape set* that lives in both the scene panel and the mirror panel, driven by
-panel-level `vp` + `mirrorMode`. It exercises every part of the util and the
-uniform contract.
-
-**1. Merge `roomShade` + `mirrorShade` into one `wallShade`.** Today (281–292 and
-310–331) they differ only by (a) the alpha write and (b) the `worldY` varying.
-Unify:
-- Uniforms `(samp: FragmentUniform[Sampler], vp: VertexUniform[Mat4],
-  mirrorMode: VertexUniform[Float])` — **`vp` and `mirrorMode` are panel-level,
-  read but never bound on the shape.** Room geometry is world-space (today's
-  `mvp` carries no model term), so the vert is
-  `ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0)` plus
-  `ctx.out.worldY := ctx.in.position.y`.
-- Varyings `(uv: Vec2, worldY: Float)`.
-- Frag: same V-flipped tex lookup; alpha selects on the flag —
-  `vec4(c.xyz, mix(1.0, ctx.in.worldY, mirrorMode))` (raw `worldY`; the util
-  normalizes via `alphaScale`). `mirrorMode = 0` ⇒ opaque scene fragment,
-  `= 1` ⇒ raw-distance alpha for the blur LOD.
-- Delete the old `mvp` and `mirrorMvp` bindings (294, 333) and the standalone
-  `mirrorShade`/`mirrorShape` (310–338).
-
-**2. One shared wall/ceiling shape set, `CullMode.None`.** The reflection flips
-winding, so the shared shapes can't keep `CullMode.Front`; use `None` (both
-faces, depth resolves — minor overdraw, visually identical from inside the room):
-```scala
-def wallShape(form: Form, tex: Panel) =
-  p.shape(form, wallShade, cullMode = CullMode.None)
-    .bind("samp" := texSampler, "tex" := tex)   // NOT vp, NOT mirrorMode
-val ceilShape = wallShape(ceilForm, ceilTex)
-val wallShapeW = wallShape(wallForm, wallTex)
-```
-These two instances go into **both** panels.
-
-**3. Scene panel supplies `vp` + `mirrorMode = 0`.** Replace the per-shape `mvp`
-with a panel-level `vp` (literal names here, so the typed `.bind` sugar works):
-```scala
-val vp = p.binding[Mat4]                       // scene view-projection
-scenePanel.bind("vp" := vp, "mirrorMode" := 0.0)
-```
-(`scenePanel` still lists `Arr(floorShape, wallShapeW, ceilShape)`. The floor
-keeps its own `floorShade` — scene-only, never mirrored — but also reads `vp`
-from the panel: rename its `mvp` uniform to `vp` and stop binding it. `mirrorMode`
-on the panel is ignored by `floorShade`, which has no such uniform.)
-
-**4. Delete the hand-built mirror blur block** (344–431): the `mirrorPanel`
-literal, `blitShade`, `downBlurShade`, the six `mirrorRes*` bindings,
-`mirrorBlurLayers`, `mipResArr`, the while loop, `mirrorBlurPanel`, and the
-`mirrorMat` val (579). The util owns all of these.
-
-**5. Construct the util** with the shared shapes + the `mirrorMode = 1` flag:
 ```scala
 val mirror = MirrorReflection(
   p,
   shapes = Arr(wallShapeW, ceilShape),  // same instances as in scenePanel
   vpName = "vp",
   alphaScale = RoomHeight,
-  camera = cam,                          // util pulls cam.viewProjMat each paint
-  extraBindings = Arr("mirrorMode" -> p.binding(1.0)),
-  blurStrength = 62.0,  // == old 2 * reflMaxLod(31), preserves current look
+  camera = cam,
+  blurStrength = 62.0,
   maxBlur = 5.0,
   mipLevels = 6,
 )
+// floor binds the result; no mirror-specific shape/shade uniforms anywhere
+floorShape.bind("reflTex" := mirror.resultPanel)
 ```
-(`mirrorMat` left at its ground-Y-flip default. The util writes `vp` =
-`cam.viewProjMat * mirrorMat` and `mirrorMode = 1` onto `blurPanel`; the scene
-panel's `vp`/`mirrorMode = 0` drive the same shapes in the scene pass.)
 
-**6. floorShade** (449–500): drop `reflSamp`/`reflMaxLod` LOD math. Replace the
-`ndc`/`sUv`/`sampleLevel`-twice block with:
-```scala
-sUv  := uvFromClipSpace(ctx.in.clipPos)
-refl := reflTex.sample(sUv, reflSamp)        // base mip of resultPanel
-// refl.w = normalized distance; falloff + mix unchanged, user-side:
-falloff := (1.0 - refl.w).max(0.1)
-mix     := reflStrength * falloff
-ctx.out.color := vec4(base * (1.0 - mix) + refl.xyz * mix, 1.0)
-```
-Floor binds `"reflTex" := mirror.resultPanel`. Keep `reflStrength` user-side;
-remove `reflMaxLod`.
-
-**7. onResize** (566–574): replace the six `mirrorResMip*.set(...)` lines with
-`mirror.onResize(w, h)`.
-
-**8. animate** (581–587): drop `mirrorMvp.set(...)`. Set the scene `vp` once
-(`vp.set(cam.viewProjMat)` — replaces `mvp.set(...)`). Replace
-`p.paint(mirrorPanel, mirrorBlurPanel, scenePanel)` with `mirror.paint()` then
-`p.paint(scenePanel)` — paint mirror first (scene's floor samples
-`mirror.resultPanel`). The util reflects `cam.viewProjMat` internally.
+Per frame: `sceneVp.set(cam.viewProjMat)`, then `mirror.paint()` (reflects
+internally), then `p.paint(scenePanel)`. onResize: `mirror.onResize(w, h)`.
 
 **Reuse check (what full use proves):** `wallShapeW`/`ceilShape` are single
-instances in two panels; neither binds `vp` or `mirrorMode`. The scene pass fills
-them from `scenePanel` (`vp = cam.viewProjMat`, `mirrorMode = 0`), the mirror pass
-from `blurPanel` (`vp = cam.viewProjMat * mirrorMat`, `mirrorMode = 1`) — no
-per-frame rebinding, no duplicate shapes/shades. This is exactly the
-shape-reuse-across-passes the panel-level-`vp` contract was designed for.
+instances in two panels; neither binds any mirror-specific uniform. The scene
+pass fills `vp` from `scenePanel`, the mirror pass from `mirrorScenePanel`
+(reflected) — no per-frame rebinding, no duplicate shapes/shades, no
+`mirrorMode` flag. Reflection lives entirely in the util's `vp`/`invVp` + the
+depth resolve.
+
+---
 
 ## Verified API facts (resolved during planning)
 
-- **Shapes param is generic** `[S <: AnyShape]` — see signature note above.
-  `Shape.bind` returns `this.type`, so `Arr(wallShape(...), wallShape(...))`
-  is `Arr[Shape[WallU, WallP]]` and conforms to `Arr[S]`.
-  (`AnyShape = Shape[?, ?]` in `painter/shape.scala`; `AnyLayer = Layer[?, ?]`
-  in `painter/layer.scala`.)
-- **Panel-level bindings exist and are name-keyed.** `panel.bind("name" := v)`
-  (panel.scala 212–217) supplies a uniform shared by all the panel's shapes,
-  stored in the public `runtimeBindings: Dict` (48). The shapes' shade reads it
-  like any uniform. `bind`'s `BindPair[N <: String & Singleton, V]` needs a
-  _literal_ name, so for the runtime `vpName` the util writes
-  `blurPanel.runtimeBindings.set(vpName, vp)` directly instead.
-- `PerspectiveCamera.viewProjMat` (scene/camera.scala:73,
-  `projectionMat * viewMat`) is the matrix the util reflects each frame — same
-  value the sketch fed `mirrorMvp` before.
-- `Blur.*` WgslFns take the panel texture directly as the `Texture2D` arg
-  (confirmed in `examples/blur/Blur.scala`). A plain `2.0` literal is fine for
-  the `radius: Float` arg (DSL Double→FloatExpr conversion).
-- `.log2` / `.clamp01` / `.min(<double>)` are all already used in the current
-  `Base.scala` floor shader, so the resolve-pass expressions compile as written.
+- **Depth-as-input plumbing already exists (CPU side).**
+  `panel.binding(depth = true)` (`panel.scala` 137–144) → `painter.scala` 1414
+  resolves to `panel.depthSamplingView` → `panel.scala` 118–133 lazily recreates
+  the depth texture with `TEXTURE_BINDING` usage and flags `_depthSamplable`
+  (creation honours it at `panel.scala` 495–509). **DSL side is missing** — see
+  Phase 1a.
+- **Panel WGSL decls + layout entries currently hardcode float textures.**
+  `generatePanelDeclsImpl` (`derive.scala` 361–372) emits `texture_2d<f32>` for
+  every field; `panelBindGroupEntriesImpl` (`layouts.scala` 226–237) emits a
+  default (`float`) `texture` entry. Both must branch on
+  `WGSLType.isDepthTexture` (Phase 1a).
+- **`WGSLType` already carries resource markers.** `WGSLType[Texture2D]`
+  (`types.scala` 152) = `texture_2d<f32>`; `WGSLType[Sampler]` sets
+  `override def isSampler = true`. Add an analogous `isDepthTexture`.
+- **`BuiltinFragCoord`** (`builtins.scala` 45–49, `@builtin(position)` frag
+  input) gives pixel coords for a `textureLoad` depth fetch.
+- **Panel-level bindings are name-keyed.** `panel.bind("name" := v)` stores into
+  the public `runtimeBindings: Dict` (`panel.scala` 48); a literal name
+  auto-boxes raw values via `processPanelEntry` (`panel.scala` 197–210). For the
+  runtime `vpName` the util writes `runtimeBindings.set(vpName, vp)` directly.
+- **`PerspectiveCamera.viewProjMat`** (`scene/camera.scala:73`,
+  `projectionMat * viewMat`) is the matrix the util reflects each frame. Confirm
+  a `Mat4.inverse` (or equivalent) exists in `graphics/math` for `invVP`.
+- **Shapes param is generic** `[S <: AnyShape]`. `Shape.bind` returns
+  `this.type`, so `Arr(wallShape(...), wallShape(...))` conforms to `Arr[S]`.
+  (`AnyShape = Shape[?, ?]`; `AnyLayer = Layer[?, ?]`.)
+- **No `textureLoad` wrapper exists anywhere in the DSL yet.** The texture op
+  block (`expr.scala` 250–270) has only `sample` / `apply` / `sampleLevel` /
+  `numLevels` (all sampler-based); `load` is net-new and must be added for _all_
+  texture types as part of Phase 1a, not just depth. Integer coord/level exprs
+  (`IVec2Expr`, `IntExpr`, `UIntExpr`) already exist (`int_expr.scala` 31–44).
+- **`Blur.*` WgslFns** take the panel texture directly as the `Texture2D` arg
+  (`examples/blur/Blur.scala`). A plain `2.0` literal is fine for
+  `radius: Float`.
+- **`.log2` / `.clamp01` / `.min(<double>)`** are already used in the current
+  `Base.scala` floor shader.
 - Metals MCP is configured in `.mcp.json` as `graphics-metals` but is **not**
   wired into the agent session — used grep/read of `trivalibs/src` instead.
 
-## Open detail to verify during implementation
+## Open details to verify during implementation
 
-- `uvFromClipSpace` returning a composed `Vec2Expr` (no `WgslFn`) should inline
-  fine; if the DSL needs a `let`, fall back to a `WgslFn.dsl`. Could later
-  migrate to `trivalibs.graphics.shader.lib.coords` if broadly useful.
-- **`extraBindings` value type.** `PanelBindingValue` is
-  `BufferBinding | GPUSampler | Panel | PanelBinding` — *not* raw scalars, so the
-  flag is passed as `p.binding(1.0)`, not `1.0`. (Raw values only auto-box inside
-  `panel.bind`'s inline `processPanelEntry`; the util's direct
-  `runtimeBindings.set` doesn't.) Confirm `p.binding(1.0): BufferBinding[Float,?]`
-  conforms. See [Future work] — we want `"mirrorMode" := 1.0` here eventually.
-- **`mirrorMode` selects in the vert vs frag.** The flag is a `VertexUniform` but
-  `worldY` is a varying used in the frag; confirm reading `mirrorMode` in the frag
-  is allowed, else make it a `FragmentUniform` (or duplicate). `mix(1.0, worldY,
-  flag)` over a 0/1 float is exact; `select` is the alternative.
+- **`BuiltinFragCoord` in a layer shade.** The resolve pass uses `load` with
+  integer pixel coords from `fragCoord` — confirm a fullscreen layer shade can
+  declare/read `BuiltinFragCoord` (`builtins.scala` 45–49). If not, derive
+  coords as `ivec2(uv * resolution)` (needs a res binding) or fall back to
+  `sampleLevel`
+  - a non-filtering sampler. The mirror depth (mip 0) and the resolve target are
+    both full canvas res, so `fragCoord.xy` maps 1:1 to depth texels.
+- **`Mat4.inverse` availability and numerical quality** for `invVP`. Confirm the
+  math lib has it; perspective inverse is standard but verify reconstruction
+  precision is adequate for the blur LOD (it should be — LOD is smooth).
+- **NDC depth range & y-flip** in the reconstruction (`ndc.y = 1 - uv.y*2`,
+  `ndc.z = depth ∈ [0,1]`). Validate against WebGPU conventions in Phase 2 — a
+  sign error shows immediately as wrong/striped blur.
+- **First-frame depth-texture recreation.** `depthSamplingView`
+  destroys+recreates the depth texture the first time it's sampled; confirm this
+  upgrade doesn't disturb the frame (it flags `_depthSamplable` so resizes
+  recreate correctly).
+- **`uvFromClipSpace`** returning a composed `Vec2Expr` (no `WgslFn`) should
+  inline fine; if the DSL needs a `let`, fall back to a `WgslFn.dsl`.
 - **`CullMode.None` on shared walls/ceiling** must look identical to today's
   `Front` from inside the room (depth resolves the extra back faces). Watch for
-  z-fighting / visible far-side faces; if any, the fallback is to keep distinct
-  shapes per pass (sharing only the shade) — see the cull caveat in design
-  decisions.
+  z-fighting / visible far-side faces; fallback is distinct shapes per pass
+  sharing only the shade.
 
 ## Future work
 
-- **Unify `extraBindings` with the `:=` bind API.** Goal: write
-  `extraBindings = Arr("mirrorMode" := 1.0)` — same `name := value` syntax and
-  raw-value auto-boxing as `shape.bind` / `panel.bind`, so there is *one* binding
-  concept across shapes, panels, and the util. Blocked today by two things: (a)
-  `BindPair[N <: String & Singleton, V]` needs a literal name, and (b) raw-scalar
-  auto-boxing lives in `panel.bind`'s inline `processPanelEntry`, not on the
-  dynamic-name path. The likely fix is the **`panel.bindDynamic(name, value)`**
-  helper noted in internals step 1 (a runtime-name sibling of `bind` that reuses
-  the same boxing), and having the util route `extraBindings` + `vpName` through
-  it. Until then the util takes pre-built `PanelBindingValue`s
-  (`p.binding(1.0)`).
-- **Allow a non-literal binding name in `bind` itself (at least `panel.bind`).**
-  Rather than a separate `bindDynamic`, explore relaxing `bind` to accept a
-  runtime `String` name — e.g. a sibling overload where `N` is plain `String`
-  (no `& Singleton`) for the panel case, since panel bindings are name-keyed at
-  runtime anyway and don't need the literal type for shade-side inference. That
-  would let the util write `blurPanel.bind(vpName := vp, "mirrorMode" := 1.0)`
-  with the *same* `bind`, collapsing the dynamic path into the one API (subsumes
-  the `bindDynamic` helper above). Needs care that the typed shape-side `bind`
-  (which *does* rely on the singleton name for inference) is unaffected.
-- **Res-free bilinear box downsample** (drops the `res` bindings + `onResize`
-  from both this util and `Bloom`) — noted in the blur-kernel decision.
+- **Optional shade-alpha blur override.** Re-admit a mode where the shade writes
+  a per-fragment blur amount (roughness/gloss map) into alpha, overriding the
+  geometric depth distance — for material-driven, non-geometric blur. Off by
+  default; the depth path stays the norm.
+- **Reuse the depth-sampling feature for other effects.** Shadow maps (needs a
+  comparison sampler + `texture_depth_2d` already added here), depth-of-field /
+  focus blur, artistic depth-based texture projection. Phase 1a is the shared
+  foundation; revisit the sampler-type story when shadow maps land.
+- **Auto-supplied depth sampler (eliminate sampler boilerplate).** When a
+  `sampleLevel`/`sampleCompare` depth read is used (not `load`), the sampler is
+  almost always a fixed canonical one — a non-filtering sampler for regular
+  reads, a comparison sampler for shadow PCF. Explore having the DSL auto-inject
+  an implicit companion sampler binding for a depth-texture field (e.g. declared
+  `<name>_sampler`) with the painter auto-supplying the matching default, so the
+  user writes `depthTex.sample(uv)` with no sampler arg. Design caveats: (a) it
+  shifts panel binding indices, so the index accounting in
+  `derive`/`layouts`/runtime resolution must count the hidden binding; (b) the
+  injected sampler _type_ must match the read family (regular vs comparison), so
+  it likely keys off the op or a separate comparison-texture type. Best
+  revisited once shadow maps add the second sampler-carrying depth use and the
+  pattern is concrete. Until then: `load` needs no sampler, and regular `sample`
+  takes an explicit one (consistent with how `Texture2D` already works).
+- **Res-free bilinear box downsample** — drops the `res` bindings + `onResize`
+  from both this util and `Bloom`.
+- **`panel.bindDynamic(name, value)`** — a runtime-name sibling of `bind`
+  (reusing `processPanelEntry`'s boxing) so the util writes
+  `mirrorScenePanel.bindDynamic(vpName, vp)` instead of poking
+  `runtimeBindings`. Minor internal tidy-up.
 - **Generic camera trait** to replace the concrete `PerspectiveCamera` param.
-
-## Verification
-
-1. `bun run sketch rooms/base` — must compile cleanly (this build includes
-   `trivalibs/src`, so it also covers the new `blur.scala` kernels; optionally
-   `bun run check` inside `trivalibs/` to type-check the lib in isolation
-   first).
-2. `bun run dev`, open `rooms/base`: the blurred floor reflection should look
-   identical to before — sharp near the floor, blurrier toward the ceiling, halo
-   strips still bloom on the floor. Walk around (WASD + drag) to confirm the
-   screen-space lookup tracks correctly and there's no regression in
-   alpha-driven blur falloff or reflection strength.
-3. **Shared-shape correctness** — the walls/ceiling now render in both passes
-   from one instance. Confirm: the *scene* walls/ceiling are unchanged (opaque,
-   no distance-alpha leaking in) and the *reflection* still carries the
-   height-driven blur. Check `CullMode.None` introduced no z-fighting or
-   see-through faces from any camera angle inside the room.
-4. Resize the window — reflection stays correct (per-mip res bindings update via
-   `mirror.onResize`).
