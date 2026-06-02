@@ -54,6 +54,79 @@ Build and validate bottom-up:
    sketch, lift it into `MirrorReflection` (§Phase 3) and migrate `Base.scala`
    onto the util.
 
+## Implementation status
+
+- ✅ **Phase 1a — depth-texture DSL** (done). `DepthTexture2D` opaque type
+  (`math/gpu/expr.scala`) → `texture_depth_2d`, with `.load(coord, level=0)` (no
+  sampler) and `.sample(uv, samp)`. (No `sampleLevel` for depth — the attachment
+  is single-level; the mip pyramid lives on the colour texture.)
+  `WGSLType.isDepthTexture` marker + `WGSLType[DepthTexture2D]`; depth panel
+  markers `FragmentDepthPanel`/`VertexDepthPanel`/`SharedDepthPanel`
+  (`shader/types.scala`); `PanelToTexture` maps them to `DepthTexture2D`
+  (`shader/dsl/context.scala`); `generatePanelDeclsImpl` (`derive.scala`) and
+  `panelBindGroupEntriesImpl` (`layouts.scala`) are now type-aware
+  (`texture_depth_2d` / `sampleType: "depth"`). **`load` was added across all
+  textures** (`Texture2D.load` returning `Vec4`, depth returning `Float`, both
+  with a `level = 0` arity overload), plus `.dimensions` (`textureDimensions`)
+  and `ivec2(Vec2Expr)` (truncating float→int coord). GPU-free unit test:
+  `test/shader/DepthTexture.test.scala`.
+- ✅ **Phase 1b — 2D blur kernels** (done). `Blur.boxBlur2d` + `Blur.tentBlur2d`
+  in `shader/lib/blur.scala` with the separable-vs-2D group comment.
+- ✅ **Phase 1c — `Plane`** (done). `Plane.reflectionMat` (column-major,
+  verified against `Mat4`'s `m<col><row>` layout) + `Plane.fromPointNormal` /
+  `Plane.fromPoints` / `Plane.ground` in `geometry/package.scala`.
+- ✅ **Phase 2 — room sketch** (done, **visually verified**).
+  `sketches/rooms/base/Base.scala` rewritten to depth-reconstructed distance:
+  one shared `wallShade` (walls + ceiling, `CullMode.None`) used unmodified in
+  both passes via panel-level `vp`; `mirrorScenePanel` (reflected render +
+  `tentBlur2d` pyramid + sampleable depth); a resolve pass that reconstructs
+  distance from depth + `invVp` and writes pre-blurred colour + normalized
+  distance; floor samples `resultPanel` in screen space. `mirrorMode` flag /
+  alpha-distance write / separate mirror shade all removed. Reflection looks
+  identical to the pre-change sketch.
+  - **Deviations from the plan as written**, all deliberate:
+    - **No empty-texel `keep` term** — the room is closed, so the mirror view
+      has no far-plane gaps (matches the original, which also didn't guard).
+    - **Plane distance uses `worldPos.y` directly** (ground plane) rather than a
+      baked `n·p - d`; the util (Phase 3) will bake `mirror.normal`/`d` for the
+      general case.
+  - **Runtime note (not a bug):** the mirror panel's depth attachment is lazily
+    recreated as sampleable on first use, so frame 1 samples an empty depth
+    (one-frame startup glitch, invisible in the animation). `paint(…)` submits
+    per panel, so this is between submissions — no validation error, no warmup
+    needed.
+- ✅ **Follow-up DSL extensions (done, sketch updated + still visually
+  verified).** Two items originally listed as findings were implemented and
+  folded into the sketch:
+  - **`ctx.fragCoord`** (`@builtin(position)`) now exposed on `FragmentCtx` for
+    both shape and layer frags (`shader/dsl/context.scala`). The resolve pass
+    reads depth via `depth.load(ivec2(ctx.fragCoord.xy))`, and the **floor now
+    uses `resultPanel.load(ivec2(ctx.fragCoord.xy))`** — dropping the `clipPos`
+    varying, the ndc→uv math, and `reflSamp`.
+  - **Res-free blur** — added `Blur.boxBlur2dAuto` / `Blur.tentBlur2dAuto`
+    (resolution from `textureDimensions(tex)`), plus `tex.dimensions` and a
+    `vec2(UVec2Expr)` conversion. The downsample chain now uses
+    `tentBlur2dAuto`, so **all `mipRes` bindings and their `onResize`
+    bookkeeping are gone**.
+- ✅ **Side fix:** `test/geometry/Grid.test.scala` updated to expect
+  `js.JavaScriptException` (the `jsError` policy) — was a stale
+  `IllegalArgumentException` expectation.
+- ✅ **Phase 3 — `MirrorReflection` util** (done, builds clean). New
+  `src/playground/mirror/MirrorReflection.scala` (package `playground.mirror`),
+  mirroring the updated `Bloom` structure: trait + factory, **no `onResize`**
+  (res-free — `tentBlur2dAuto` + `fragCoord`/`load`), with a left-in TODO for an
+  optional custom-panel-size API. The util owns `vp`/`invVp`/`blurStrength`
+  bindings + the reflection matrix; takes `mirror: Plane = Plane.ground`
+  (bakes `normal`/`d` into the resolve shade's distance), `vpName` (writes the
+  reflected VP onto `mirrorScenePanel.runtimeBindings`), `alphaScale`,
+  `mipLevels` (→ `maxBlur = mipLevels-1`), and an optional `camera` (else pass
+  `vp` to `paint`). Exposes `mirrorScenePanel` + `resultPanel`.
+  `Base.scala` migrated onto it: the whole mirror-panel + resolve + blur block
+  (~95 lines) collapsed to one `MirrorReflection(...)` call; the floor binds
+  `mirror.resultPanel`; `animate` is `sceneVp.set(vp); mirror.paint(vp);
+  p.paint(scenePanel)`. (Sketch feeds `vp` per frame rather than `camera = cam`,
+  noted inline; both paths are supported.)
+
 ## Why depth-reconstructed distance (rationale + tradeoffs)
 
 - **Depth alone is camera distance, but reconstruction gives plane distance.**
@@ -126,13 +199,15 @@ Build and validate bottom-up:
     it later.
   - **Mirror plane is a `Plane`, not a matrix.** `apply` takes
     `mirror: Plane = Plane.ground` (the `y = 0` plane, normal `(0,1,0)`). The
-    util derives `reflMat = mirror.reflectionMat` once at construction (reflection
-    across the plane; reduces to `Mat4.fromScale(1,-1,1)` for ground) and bakes
-    `mirror.normal`/`mirror.d` into the resolve shade, which computes the blur
-    distance `n·p - d` by hand — `Plane` is **CPU-only**, there is no DSL `Plane`,
-    so it is a construction-time convenience, not a shader value. Still one
-    source of truth for both the render and the distance. (`Plane.reflectionMat`
-    + convenience constructors are a small geometry-lib prerequisite, §Phase 1c.)
+    util derives `reflMat = mirror.reflectionMat` once at construction
+    (reflection across the plane; reduces to `Mat4.fromScale(1,-1,1)` for
+    ground) and bakes `mirror.normal`/`mirror.d` into the resolve shade, which
+    computes the blur distance `n·p - d` by hand — `Plane` is **CPU-only**,
+    there is no DSL `Plane`, so it is a construction-time convenience, not a
+    shader value. Still one source of truth for both the render and the
+    distance. (`Plane.reflectionMat`
+    - convenience constructors are a small geometry-lib prerequisite, §Phase
+      1c.)
   - **Why panel-level vp (not per-shape mvp): shape reuse across passes.**
     Because `vp` is a panel binding, the painter fills it per-render from
     whichever panel is drawing the shape — a shape that doesn't bind `vp` itself
@@ -336,22 +411,23 @@ distance). Add:
    Reduces to `Mat4.fromScale(1,-1,1)` for the ground plane `n=(0,1,0), d=0`.
 2. **Convenience constructors** (the current ctor takes `normal, d` raw, which
    requires a unit normal and pre-computed `d`):
-   - `Plane.fromPointNormal(p: Vec3, n: Vec3)` → `Plane(n.normalize, n.normalize·p)`.
+   - `Plane.fromPointNormal(p: Vec3, n: Vec3)` →
+     `Plane(n.normalize, n.normalize·p)`.
    - `Plane.fromPoints(a, b, c: Vec3)` → normal `(b-a)×(c-a)` normalized,
      `d = normal·a`.
    - `Plane.ground` (or a `val`) = `Plane(Vec3(0,1,0), 0)` — the util's default.
-   Normalizing in these ctors keeps `signedDist` a true distance and
-   `reflectionMat` correct. (The existing raw ctor stays for the clip/split
-   callers that already pass normalized planes.)
+     Normalizing in these ctors keeps `signedDist` a true distance and
+     `reflectionMat` correct. (The existing raw ctor stays for the clip/split
+     callers that already pass normalized planes.)
 
 Small, self-contained; needed before the resolve pass and the util can take a
 `Plane`. Verify `Vec3` has `normalize` / `cross` / `dot` in `graphics/math`
 (used elsewhere, should be present).
 
 **CPU-only — no DSL `Plane`.** These are all CPU-side geometry helpers; there is
-no GPU equivalent of `Plane`. The resolve shade does not call `signedDist` —
-the util reads `mirror.normal`/`mirror.d` on the CPU and bakes them as WGSL
-literals (the plane is fixed at construction), and the shader computes
+no GPU equivalent of `Plane`. The resolve shade does not call `signedDist` — the
+util reads `mirror.normal`/`mirror.d` on the CPU and bakes them as WGSL literals
+(the plane is fixed at construction), and the shader computes
 `dot(planeN, worldPos) - planeD` by hand. (A future GPU `Plane`/`signedDist` DSL
 op could replace the hand-written line, but is not needed here.)
 
@@ -450,7 +526,7 @@ construction.) Bind invVP = `(cam.viewProjMat * reflMat).inverse` each frame.
 **6. floorShade** (~449–500): drop the old LOD math **and the screen-UV
 reconstruction**. The reflection is a screen-space image at the same resolution
 as the floor's render target, so the floor fragment reads `resultPanel` at its
-*own* pixel via `load(fragCoord)` — no `uvFromClipSpace`, no sampler, no
+_own_ pixel via `load(fragCoord)` — no `uvFromClipSpace`, no sampler, no
 `clipPos` varying, no Y-flip:
 
 ```scala
@@ -552,9 +628,10 @@ Internals (lift from the proven Phase-2 sketch, generalize constants):
    `mirrorScenePanel` under the runtime `vpName`: `panel.bind` needs a _literal_
    name, so write the public `runtimeBindings` Dict directly —
    `mirrorScenePanel.runtimeBindings.set(vpName, vp)`. `invVp` is bound on the
-   resolve layer by the util (literal name there, so typed `.bind`). `reflMat =
-   mirror.reflectionMat` is computed once at construction; the resolve shade
-   bakes `mirror.normal`/`mirror.d` as WGSL literals for `signedDist`.
+   resolve layer by the util (literal name there, so typed `.bind`).
+   `reflMat = mirror.reflectionMat` is computed once at construction; the
+   resolve shade bakes `mirror.normal`/`mirror.d` as WGSL literals for
+   `signedDist`.
 2. **mirrorScenePanel** —
    `p.panel(format = Rgba16Float, clearColor, depthTest = true, mipLevels, shapes, layers = downsampleLayers)`;
    no multisample. mip 0 is the mirror render; depth attachment is sampled by
@@ -642,13 +719,10 @@ depth resolve.
 
 ## Open details to verify during implementation
 
-- **`BuiltinFragCoord` in a layer shade.** The resolve pass uses `load` with
-  integer pixel coords from `fragCoord` — confirm a fullscreen layer shade can
-  declare/read `BuiltinFragCoord` (`builtins.scala` 45–49). If not, derive
-  coords as `ivec2(uv * resolution)` (needs a res binding) or fall back to
-  `sampleLevel`
-  - a non-filtering sampler. The mirror depth (mip 0) and the resolve target are
-    both full canvas res, so `fragCoord.xy` maps 1:1 to depth texels.
+- ~~**`BuiltinFragCoord` in a layer shade.**~~ **Resolved:** `ctx.fragCoord`
+  (`@builtin(position)` = `in.position`) works in both shape and layer frags and
+  is now exposed on `FragmentCtx`. Both the resolve pass and the floor read
+  `load(ivec2(ctx.fragCoord.xy))` 1:1; no res binding or sampler needed.
 - **`Mat4.inverse` availability and numerical quality** for `invVP`. Confirm the
   math lib has it; perspective inverse is standard but verify reconstruction
   precision is adequate for the blur LOD (it should be — LOD is smooth).
@@ -690,8 +764,9 @@ depth resolve.
   revisited once shadow maps add the second sampler-carrying depth use and the
   pattern is concrete. Until then: `load` needs no sampler, and regular `sample`
   takes an explicit one (consistent with how `Texture2D` already works).
-- **Res-free bilinear box downsample** — drops the `res` bindings + `onResize`
-  from both this util and `Bloom`.
+- ✅ **Res-free downsample (done).** `Blur.tentBlur2dAuto`/`boxBlur2dAuto`
+  derive resolution from `textureDimensions(tex)`, dropping the `res` bindings +
+  `onResize` bookkeeping (applied in the sketch; `Bloom` could adopt the same).
 - **`panel.bindDynamic(name, value)`** — a runtime-name sibling of `bind`
   (reusing `processPanelEntry`'s boxing) so the util writes
   `mirrorScenePanel.bindDynamic(vpName, vp)` instead of poking

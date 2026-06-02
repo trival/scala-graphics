@@ -3,8 +3,8 @@ package sketches.rooms.base
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
 import playground.bloom.Bloom
+import playground.mirror.MirrorReflection
 import trivalibs.dev.*
-import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -23,6 +23,13 @@ import trivalibs.utils.numbers.NumExt.given
 // inside-out cuboid (floor / ceiling / four walls) is textured with three
 // procedurally pre-rendered noise textures (one per material), sampled with
 // mipmaps. Move with WASD / arrows + Space / Shift, look around by dragging.
+//
+// The blurred floor reflection is DEPTH-DRIVEN (see the mirror section): the
+// walls/ceiling render once as a shared shape set, reused in both the scene
+// pass and a mirror pass (only the panel-level `vp` differs), and the blur
+// amount per reflected fragment is reconstructed from the mirror render's depth
+// buffer rather than written by the shade. This exercises the library's depth-
+// texture sampling + `Plane` reflection helpers end-to-end.
 // ---------------------------------------------------------------------------
 
 private val RoomWidth = 6.5
@@ -268,274 +275,136 @@ private val TexScale = 48.0
       )
 
     // -----------------------------------------------------------------------
-    // Main shade — sample the baked texture directly (V flipped to undo the
-    // render-target → texture orientation, so a fragment reads back its own
-    // baked texel).
+    // Shared scene view-projection. `vp` is a PANEL-LEVEL uniform: the wall /
+    // ceiling shapes leave it unbound and read it from whichever panel draws
+    // them — the scene VP here, the reflected VP inside the MirrorReflection
+    // util — so one shape instance serves both passes with no per-frame juggle.
     // -----------------------------------------------------------------------
-    type RoomUniforms = (
-        mvp: VertexUniform[Mat4],
-        samp: FragmentUniform[Sampler],
-    )
-    type RoomPanels = (tex: FragmentPanel)
+    val sceneVp = p.binding[Mat4]
 
-    val roomShade = p.shade[RoomVertex, (uv: Vec2), RoomUniforms, RoomPanels]:
-      program =>
-        program.vert: ctx =>
-          Block(
-            ctx.out.uv := ctx.in.uv,
-            ctx.out.position := ctx.bindings.mvp * vec4(ctx.in.position, 1.0),
-          )
-        program.frag: ctx =>
-          ctx.out.color := ctx.textures.tex(
-            vec2(ctx.in.uv.x, (1.0: FloatExpr) - ctx.in.uv.y),
-            ctx.bindings.samp,
-          )
-
-    val mvp = p.binding[Mat4]
     val texSampler =
       p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
 
     // -----------------------------------------------------------------------
-    // Mirror shade — same baked-tex lookup as roomShade but driven by a
-    // Y-flipped MVP, and writes alpha = worldY/RoomHeight so downstream blur +
-    // composite know the reflected fragment's height above the ground.
+    // Wall/ceiling shade — used UNMODIFIED in both the scene pass and the
+    // mirror pass. Reads `vp` from a panel-level uniform (never bound on the
+    // shape) and the baked texture (V flipped to undo the render-target →
+    // texture orientation). Outputs colour only; the reflection blur distance
+    // comes from the depth buffer, not from this shade.
     // -----------------------------------------------------------------------
-    type MirrorUniforms = (
-        mvp: VertexUniform[Mat4],
+    type WallUniforms = (
+        vp: VertexUniform[Mat4],
         samp: FragmentUniform[Sampler],
     )
-    type MirrorPanels = (tex: FragmentPanel)
-    type MirrorVaryings = (uv: Vec2, worldY: Float)
+    type WallPanels = (tex: FragmentPanel)
 
-    val mirrorShade =
-      p.shade[RoomVertex, MirrorVaryings, MirrorUniforms, MirrorPanels]:
-        program =>
-          program.vert: ctx =>
-            Block(
-              ctx.out.uv := ctx.in.uv,
-              ctx.out.worldY := ctx.in.position.y,
-              ctx.out.position := ctx.bindings.mvp * vec4(ctx.in.position, 1.0),
-            )
-          program.frag: ctx =>
-            val c = LetVec4("c")
-            Block(
-              c := ctx.textures.tex(
-                vec2(ctx.in.uv.x, 1.0 - ctx.in.uv.y),
-                ctx.bindings.samp,
-              ),
-              // Alpha = clamped height/RoomHeight; floor = 0, ceiling = 1.
-              ctx.out.color := vec4(
-                c.xyz,
-                (ctx.in.worldY / RoomHeight.toFloat).clamp01,
-              ),
-            )
-
-    val mirrorMvp = p.binding[Mat4]
-
-    // Y-flip reverses winding, so inside-out culling flips Front → Back.
-    def mirrorShape(form: Form, tex: Panel) =
-      p.shape(form, mirrorShade, cullMode = CullMode.Back)
-        .bind("mvp" := mirrorMvp, "samp" := texSampler, "tex" := tex)
-
-    // Only walls + ceiling reflect; the floor reflecting itself is degenerate.
-    // HDR so the ceiling's halo strips (brightness > 1) survive into the
-    // reflection and can bloom on the floor. No multisample — the blur masks
-    // aliasing and avoids the resolve step for texture inputs downstream.
-    val mirrorPanel = p.panel(
-      format = TextureFormat.Rgba16Float,
-      clearColor = (0.0, 0.0, 0.0, 0.0),
-      depthTest = true,
-      shapes =
-        Arr(mirrorShape(wallForm, wallTex), mirrorShape(ceilForm, ceilTex)),
-    )
-
-    // -----------------------------------------------------------------------
-    // Mirror blur — build a mip pyramid of progressively-blurred copies of
-    // mirrorPanel. The floor shader picks a mip per-fragment via
-    // sampleLevel(uv, lod = alpha * MaxMip), so reflected pixels that were
-    // higher above the ground get blurrier — purely a function of the alpha
-    // channel mirrorShade writes.
-    //
-    // Mip 0 = blit of mirrorPanel; mips 1..4 = 4-tap box downsample of the
-    // prior mip. Auto mipgen is gated off because mip-target layers exist.
-    // -----------------------------------------------------------------------
-    type BlitU = (samp: FragmentUniform[Sampler])
-    type BlitP = (tex: FragmentPanel)
-    val blitShade = p.layerShade[BlitU, BlitP]: program =>
-      program.frag: ctx =>
-        ctx.out.color :=
-          ctx.textures.tex.sample(ctx.in.uv, ctx.bindings.samp)
-
-    type DownU = (res: Vec2, samp: FragmentUniform[Sampler])
-    type DownP = (tex: FragmentPanel)
-    val downBlurShade = p.layerShade[DownU, DownP]: program =>
-      program.frag: ctx =>
-        val uv = ctx.in.uv
-        val o = LetVec2("o")
-        val s = ctx.bindings.samp
-        val tex = ctx.textures.tex
-        Block(
-          // 9-tap tent kernel at ±2 texels of the destination mip (~±4 texels
-          // of the source). Each downsample step gaussian-blurs by a few
-          // source texels, so the cumulative mip 4 has a noticeably softer
-          // appearance than just a plain resolution drop would give.
-          o := vec2(2.0, 2.0) / ctx.bindings.res,
-          ctx.out.color :=
-            tex.sample(uv, s) * 0.25
-              + (
-                tex.sample(uv + vec2(0.0, o.y), s)
-                  + tex.sample(uv + vec2(0.0, -o.y), s)
-                  + tex.sample(uv + vec2(o.x, 0.0), s)
-                  + tex.sample(uv + vec2(-o.x, 0.0), s)
-              ) * 0.125
-              + (
-                tex.sample(uv + o, s)
-                  + tex.sample(uv + vec2(-o.x, o.y), s)
-                  + tex.sample(uv + vec2(o.x, -o.y), s)
-                  + tex.sample(uv - o, s)
-              ) * 0.0625,
-        )
-
-    val mirrorRes = p.binding[Vec2]
-    val mirrorResMip1 = p.binding[Vec2]
-    val mirrorResMip2 = p.binding[Vec2]
-    val mirrorResMip3 = p.binding[Vec2]
-    val mirrorResMip4 = p.binding[Vec2]
-    val mirrorResMip5 = p.binding[Vec2]
-
-    val mirrorBlurLayers = Arr[AnyLayer]()
-    mirrorBlurLayers.push(
-      p.layer(blitShade)
-        .bind("tex" := mirrorPanel, "samp" := texSampler),
-    )
-    val mipResArr = Arr(
-      mirrorRes,
-      mirrorResMip1,
-      mirrorResMip2,
-      mirrorResMip3,
-      mirrorResMip4,
-      mirrorResMip5,
-    )
-    var mi = 0
-    while mi < 5 do
-      mirrorBlurLayers.push(
-        p.layer(downBlurShade, mipSource = mi, mipTarget = mi + 1)
-          .bind("res" := mipResArr(mi + 1), "samp" := texSampler),
-      )
-      mi += 1
-
-    val mirrorBlurPanel = p.panel(
-      format = TextureFormat.Rgba16Float,
-      mipLevels = 6,
-      layers = mirrorBlurLayers,
-    )
-
-    // -----------------------------------------------------------------------
-    // Floor shade — like roomShade, but additionally samples mirrorBlurPanel
-    // in screen-space and picks a mip-LOD from the reflection's alpha (= the
-    // reflected fragment's normalized height above the ground). Close-to-
-    // ground reflections stay sharp; ceiling-ward ones smear out.
-    // -----------------------------------------------------------------------
-    type FloorUniforms = (
-        mvp: VertexUniform[Mat4],
-        samp: FragmentUniform[Sampler],
-        reflSamp: FragmentUniform[Sampler],
-        reflStrength: FragmentUniform[Float],
-        reflMaxLod: FragmentUniform[Float],
-    )
-    type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
-    type FloorVaryings = (uv: Vec2, clipPos: Vec4)
-
-    val floorShade =
-      p.shade[RoomVertex, FloorVaryings, FloorUniforms, FloorPanels]: program =>
+    val wallShade = p.shade[RoomVertex, (uv: Vec2), WallUniforms, WallPanels]:
+      program =>
         program.vert: ctx =>
-          val pos = LetVec4("pos")
           Block(
             ctx.out.uv := ctx.in.uv,
-            pos := ctx.bindings.mvp * vec4(ctx.in.position, 1.0),
-            ctx.out.clipPos := pos,
-            ctx.out.position := pos,
+            ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0),
+          )
+        program.frag: ctx =>
+          ctx.out.color := ctx.textures.tex(
+            vec2(ctx.in.uv.x, 1.0 - ctx.in.uv.y),
+            ctx.bindings.samp,
+          )
+
+    // The reflection flips triangle winding, so the shared shapes can't keep
+    // `CullMode.Front`; draw both faces (`None`) — depth resolves the extra
+    // back faces, visually identical from inside the room. Bind only `samp` +
+    // `tex`; `vp` is supplied per-panel.
+    def wallShape(form: Form, tex: Panel) =
+      p.shape(form, wallShade, cullMode = CullMode.None)
+        .bind("samp" := texSampler, "tex" := tex)
+    val ceilShape = wallShape(ceilForm, ceilTex)
+    val wallShapeW = wallShape(wallForm, wallTex)
+
+    // -----------------------------------------------------------------------
+    // Blurred floor reflection (depth-driven). Renders the shared walls/ceiling
+    // from a camera reflected across the ground plane, reconstructs each
+    // reflected fragment's height above the floor from the mirror render's depth
+    // buffer, and resolves a per-pixel blur LOD from it. `vpName = "vp"` ties
+    // into the panel-level `vp` the wall shade reads; the floor samples
+    // `mirror.resultPanel`. (`blurStrength = 62` preserves the original look.)
+    // We feed the camera VP per frame via `paint(vp)`; alternatively pass
+    // `camera = cam` for arg-less `paint()`.
+    // -----------------------------------------------------------------------
+    val mirror = MirrorReflection(
+      p,
+      shapes = Arr(wallShapeW, ceilShape),
+      vpName = "vp",
+      alphaScale = RoomHeight,
+      blurStrength = 62.0,
+      mipLevels = 6,
+    )
+
+    // -----------------------------------------------------------------------
+    // Floor shade — scene-only. Samples its baked noise, then the resolved
+    // reflection at its own pixel (resultPanel is full-res and screen-aligned,
+    // so a 1:1 `load(fragCoord)` reads the right texel — no screen-UV varying or
+    // sampler needed), mixing by a user `reflStrength` and a falloff from the
+    // reflection's normalized distance (alpha). Reads `vp` panel-level like the
+    // walls.
+    // -----------------------------------------------------------------------
+    type FloorUniforms = (
+        vp: VertexUniform[Mat4],
+        samp: FragmentUniform[Sampler],
+        reflStrength: FragmentUniform[Float],
+    )
+    type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
+
+    val floorShade =
+      p.shade[RoomVertex, (uv: Vec2), FloorUniforms, FloorPanels]: program =>
+        program.vert: ctx =>
+          Block(
+            ctx.out.uv := ctx.in.uv,
+            ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0),
           )
         program.frag: ctx =>
           val base = LetVec3("base")
-          val ndc = LetVec2("ndc")
-          val sUv = LetVec2("sUv")
-          val a = LetFloat("a")
-          val refl = LetVec3("refl")
+          val refl = LetVec4("refl")
           val mix = LetFloat("mix")
           val falloff = LetFloat("falloff")
           Block(
-            // Baked floor noise (same V-flip as roomShade).
+            // Baked floor noise (same V-flip as wallShade).
             base := ctx.textures
-              .tex(
-                vec2(ctx.in.uv.x, 1.0 - ctx.in.uv.y),
-                ctx.bindings.samp,
-              )
+              .tex(vec2(ctx.in.uv.x, 1.0 - ctx.in.uv.y), ctx.bindings.samp)
               .xyz,
-            // Screen-UV from interpolated clip-space position.
-            ndc := ctx.in.clipPos.xy / ctx.in.clipPos.w,
-            sUv := ndc * vec2(0.5, -0.5) + vec2(0.5, 0.5),
-            // Mip-0 alpha = reflected fragment's normalized height (0..1).
-            a := ctx.textures.reflTex
-              .sampleLevel(sUv, ctx.bindings.reflSamp, 0.0)
-              .w,
-            // Per-fragment blur via mip-LOD.
-            // Each mip-level halves both axes → effective blur radius doubles
-            // per LOD step (radius ≈ 2^LOD). Map alpha to LOD via
-            // `log2(1 + a * reflMaxLod)` so the *blur radius* is linear in
-            // alpha rather than exponential — closer to a real polished-floor
-            // reflection. `a = 0` → lod = 0 (sharp); `a = 1` → lod ≈ log2(1+k).
-            // Clamp to the top mip (5) so we never read off the chain.
-            refl := ctx.textures.reflTex
-              .sampleLevel(
-                sUv,
-                ctx.bindings.reflSamp,
-                (1.0 + a * 2.0 * ctx.bindings.reflMaxLod).log2.min(5.0),
-              )
-              .xyz,
-            falloff := (1.0 - a).max(0.1),
+            // Resolved reflection at this fragment's own pixel (1:1, no sampler).
+            refl := ctx.textures.reflTex.load(ivec2(ctx.fragCoord.xy)),
+            // refl.w = normalized distance; nearer ⇒ stronger reflection.
+            falloff := (1.0 - refl.w).max(0.1),
             mix := ctx.bindings.reflStrength * falloff,
-            ctx.out.color :=
-              vec4(base * (1.0 - mix) + refl * mix, 1.0),
+            ctx.out.color := vec4(base * (1.0 - mix) + refl.xyz * mix, 1.0),
           )
 
     val reflStrength = p.binding(0.35)
-    // Linear-blur tuning. Effective blur radius at full alpha ≈ reflMaxLod
-    // source texels (since lod = log2(1 + a*reflMaxLod) and radius ≈ 2^lod).
-    // reflMaxLod = 31 → a=1 lands at lod=5 (top of the 6-level chain).
-    val reflMaxLod = p.binding(31.0)
 
-    // Inside-out room → culling for inward-facing triangles.
-    def roomShape(form: Form, tex: Panel) =
-      p.shape(form, roomShade, cullMode = CullMode.Front)
-        .bind("mvp" := mvp, "samp" := texSampler, "tex" := tex)
-
+    // Floor is scene-only (not mirrored) → keep inside-out front culling.
     val floorShape = p
       .shape(floorForm, floorShade, cullMode = CullMode.Front)
       .bind(
-        "mvp" := mvp,
         "samp" := texSampler,
-        "tex" := floorTex,
-        "reflSamp" := texSampler,
         "reflStrength" := reflStrength,
-        "reflMaxLod" := reflMaxLod,
-        "reflTex" := mirrorBlurPanel,
+        "tex" := floorTex,
+        "reflTex" := mirror.resultPanel,
       )
-    val ceilShape = roomShape(ceilForm, ceilTex)
-    val wallShape = roomShape(wallForm, wallTex)
 
-    // HDR scene panel — feeds the bloom util and the composite below.
+    // HDR scene panel — supplies the scene `vp` to all its shapes, feeds the
+    // bloom util and the composite below.
     val scenePanel = p.panel(
       format = TextureFormat.Rgba16Float,
       clearColor = (0.5, 0.6, 0.7, 1.0),
       depthTest = true,
       multisample = true,
-      shapes = Arr(floorShape, ceilShape, wallShape),
+      shapes = Arr(floorShape, wallShapeW, ceilShape),
     )
+    scenePanel.bind("vp" := sceneVp)
 
     // Bloom pyramid driven by scenePanel; threshold ≈ 1.0 trips on the
-    // ceiling halo strips (vec3(3.5,3.4,3.0) HDR) but not on the near-white
-    // baked surfaces (max ~1.0 × tint).
+    // ceiling halo strips (HDR) but not on the near-white baked surfaces.
     val bloom = Bloom(
       p,
       scenePanel,
@@ -565,23 +434,17 @@ private val TexScale = 48.0
 
     p.onResize: (w, h) =>
       cam(aspect = w.toDouble / h)
-      mirrorRes.set(Vec2(w, h))
-      mirrorResMip1.set(Vec2(w / 2.0, h / 2.0))
-      mirrorResMip2.set(Vec2(w / 4.0, h / 4.0))
-      mirrorResMip3.set(Vec2(w / 8.0, h / 8.0))
-      mirrorResMip4.set(Vec2(w / 16.0, h / 16.0))
-      mirrorResMip5.set(Vec2(w / 32.0, h / 32.0))
-      bloom.onResize(w, h)
 
     // Pre-render the static material textures once (with mip chains).
     p.paint(floorTex, wallTex, ceilTex)
 
-    val mirrorMat = Mat4.fromScale(Vec3(1.0, -1.0, 1.0))
-
     animate: tpf =>
       controller.updateCamera(cam, input, tpf)
-      mvp.set(cam.viewProjMat)
-      mirrorMvp.set(cam.viewProjMat * mirrorMat)
-      p.paint(mirrorPanel, mirrorBlurPanel, scenePanel)
+      val vp = cam.viewProjMat
+      sceneVp.set(vp)
+      // Mirror reflects `vp` across the ground plane internally, renders +
+      // resolves into `mirror.resultPanel` (which the floor samples).
+      mirror.paint(vp)
+      p.paint(scenePanel)
       bloom.paint()
       p.show(bloom.resultPanel)

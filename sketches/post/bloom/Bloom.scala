@@ -105,12 +105,12 @@ import trivalibs.utils.numbers.NumExt.given
     )
 
     // -----------------------------------------------------------------------
-    // Resize — bloom util manages its own mip-resolution bindings + composite.
+    // Resize — only this sketch's own resolution uniform; the bloom util is
+    // resolution-free (panels auto-scale, blur derives size from the texture).
     // -----------------------------------------------------------------------
 
     p.onResize: (w, h) =>
       uRes.set(Vec2(w, h))
-      bloom.onResize(w, h)
 
     // -----------------------------------------------------------------------
     // Animation mode — press Space to cycle (radius only / intensity only / both).
