@@ -30,6 +30,9 @@ import trivalibs.utils.js.*
   *
   * Per frame call [[paint]] (after setting the scene VP, before painting the
   * scene that samples `resultPanel`).
+  *
+  * Construct via `MirrorReflection(...)` — see the companion object / [[apply]]
+  * for the constructor parameters.
   */
 trait MirrorReflection:
   /** Mirror render (mip 0) + box-blur mip pyramid, with a sampleable depth
@@ -63,6 +66,11 @@ trait MirrorReflection:
 // size). A sub-resolution mirror would make `resultPanel` smaller than the
 // scene, so the floor would need to UV-`sample` it instead of `load`.
 
+/** Factory for [[MirrorReflection]] — the trait carries the full overview, and
+  * [[apply]] documents every constructor parameter (surfaced at the call site
+  * via "Trigger Parameter Hints" / signature help). Build with
+  * `MirrorReflection(...)`.
+  */
 object MirrorReflection:
 
   /** Build a depth-driven blurred planar reflection for `shapes`.
