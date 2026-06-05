@@ -26,7 +26,7 @@ import trivalibs.utils.numbers.NumExt.given
 // border, exposing the UV inside cells and the texture along the borders.
 // ---------------------------------------------------------------------------
 
-private case class GridProps(
+case class GridProps(
     gridWidth: Double,
     gridHeight: Double,
     count: Int,
@@ -35,17 +35,17 @@ private case class GridProps(
     center: Vec3,
 )
 
-private case class GridData(faces: Arr[Quad[GridVertex]], texSize: (Double, Double))
+case class GridData(faces: Arr[Quad[GridVertex]], texSize: (Double, Double))
 
-private type GridVertex = (position: Vec3, uv: Vec2)
+type GridVertex = (position: Vec3, uv: Vec2)
 
-private def gvert(c: Vec3, u: Double, v: Double): GridVertex =
+def gvert(c: Vec3, u: Double, v: Double): GridVertex =
   (position = c, uv = Vec2(u, v))
 
 // Lay strips out vertically into one texture. `vFull` is the total v-extent
 // (sum of two strip-side bands + one strip-bottom band per strip), so each
 // face writes into its own contiguous v-slice.
-private def gridRows(props: GridProps): GridData =
+def gridRows(props: GridProps): GridData =
   val step = props.gridHeight / props.count
   val hHalf = props.gridHeight / 2.0 - step
   val count = props.count - 1
@@ -77,7 +77,7 @@ private def gridRows(props: GridProps): GridData =
 
 // Columns run along the X axis (perpendicular to rows). Strip width is along
 // X, length along Z; visible faces are left / right / bottom.
-private def gridCols(props: GridProps): GridData =
+def gridCols(props: GridProps): GridData =
   val step = props.gridWidth / props.count
   val wHalf = props.gridWidth / 2.0 - step
   val count = props.count - 1
@@ -156,15 +156,21 @@ private def gridCols(props: GridProps): GridData =
     val preRenderShade =
       p.shade[GridVertex, (worldPos: Vec3), EmptyTuple]: program =>
         program.vert: ctx =>
+          val uv = ctx.in.uv
           Block(
             ctx.out.worldPos := ctx.in.position,
-            ctx.out.position := vec4(ctx.in.uv.fit0111, 0.0, 1.0),
+            ctx.out.position := vec4(
+              uv.x.fit0111,
+              (1.0 - uv.y).fit0111,
+              0.0,
+              1.0,
+            ),
           )
         program.frag: ctx =>
           val n = LetFloat("n")
           Block(
-            n := Psrdnoise.rotNoise3d(ctx.in.worldPos, 0.0).x.fit1101 / 2.0,
-            ctx.out.color := vec4(vec3(n.pow(2.2)), 1.0),
+            n := Psrdnoise.rotNoise3d(ctx.in.worldPos, 0.0).x.fit1101,
+            ctx.out.color := vec4(vec3(n), 1.0),
           )
 
     val texPxPerUnit = 50.0
@@ -215,7 +221,7 @@ private def gridCols(props: GridProps): GridData =
           col := select(
             vec3(ctx.in.uv.x, ctx.in.uv.y, 0.5),
             ctx.textures.tex(ctx.in.uv, ctx.bindings.samp).xyz,
-            (uv.x < 0.25) || (uv.y < 0.25),
+            (uv.x < 0.45) || (uv.y < 0.45),
           ),
           ctx.out.color := vec4(col.pow(2.2), 1.0),
         )
@@ -260,8 +266,21 @@ private def gridCols(props: GridProps): GridData =
     val groundShape = p.shape(groundForm, renderShade)
     val roofShape = p.shape(roofForm, renderShade)
     val wallShape = p.shape(wallForm, renderShade)
-    val rowShape = p.shape(rowForm, renderShade)
+    val rowShape = p.shape(rowForm, renderShade).bind("tex" := rowTex)
     val colShape = p.shape(colForm, renderShade).bind("tex" := colTex)
+
+    val tex = p.panel(
+      width = 1,
+      height = 1,
+      layer = p.layer(
+        p.layerShade(program =>
+          program.frag: ctx =>
+            ctx.out.color := vec4(1.0, 0.0, 1.0, 1.0),
+        ),
+      ),
+    )
+    // need to paint at least once to allocate the texture for sampling
+    p.paint(tex)
 
     val canvasPanel = p
       .panel(
@@ -270,7 +289,7 @@ private def gridCols(props: GridProps): GridData =
         multisample = true,
         shapes = Arr(groundShape, wallShape, roofShape, rowShape, colShape),
       )
-      .bind("mvp" := mvp, "samp" := samp, "tex" := rowTex)
+      .bind("mvp" := mvp, "samp" := samp, "tex" := tex)
 
     // ------ camera + input ------
 
