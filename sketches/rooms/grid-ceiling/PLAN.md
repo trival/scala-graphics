@@ -118,17 +118,27 @@ don't launch it as part of a checkpoint).
     `p.sampler` in `trivalibs`.)
   - **Integer-period constraint**: psrdnoise only tiles when the *domain* period
     (`tileWorld · NoiseScale`) is an integer, so `NoiseScale` is **snapped** via
-    `gridNoisePeriod = round(gridTileWorld · targetNoiseScale)`; `planeTileWorld`
-    is an integer multiple of `gridTileWorld` so it stays seamless under the same
-    scale. See memory `psrdnoise-integer-period`.
+    `noisePeriod = round(tileWorld · targetNoiseScale)`. See memory
+    `psrdnoise-integer-period`.
   - **Tiling FBM**: lacunarity fixed at **2** (integer) so every octave period
     stays integer ⇒ the sum still tiles; `FbmOctaves`, `FbmGain` tunable.
   - **Contrast** is a global `val` (`NoiseContrast`, high for now) baked into the
     render shade — Step 5 dampens it.
   - The render shade just samples the baked tile (no grid-cell border pattern;
     that was dropped as debug-only).
-- ⏳ **Step 3 — center box**: NOT STARTED (resume here). Bake its own non-tiling
-  tile from the **same** noise volume/params so it blends with the ground.
+- ✅ **Step 3 — center box** (done). 5-face UV atlas (`boxFaces`), baked from the
+  **same noise volume** and rendered with a **clamp** sampler (its own
+  non-tiling patch). Sits on the ground; blends with the floor at the base.
+  (`boxSize`/`boxHeight` are tweakable — currently set tall to intersect all
+  geometries as a noise-volume-alignment check.)
+- ✅ **Noise volume unified to ONE shared period** (during Step 3). The grid and
+  the planes originally used different periods (`gridNoisePeriod` vs
+  `planeNoisePeriod`) → different fields, so the box aligned with floor/ceiling
+  but **not** the grid. Now a single `tileWorld` + `noisePeriod` + `NoiseScale` +
+  `noiseBakeShade` is shared by grid, planes and box; the grid bakes
+  `TileCells = displayArea / gridStep` strips to span that one period. Trade-off:
+  bigger shared period (`displayArea`) = less repetition but larger grid atlas
+  (compensated by lower `gridTexPx`).
 - ⏳ **Step 4 — fog/DOF**, **Step 5 — lights + bloom + reflection**: pending.
 
 ---

@@ -19,23 +19,35 @@ import trivalibs.utils.numbers.NumExt.given
 // ---------------------------------------------------------------------------
 // Open endless "indirect light" space (see PLAN.md). No walls — a floor and a
 // ceiling that appear to extend endlessly, with two crossing grids of strips
-// suspended just below the ceiling.
+// suspended just below the ceiling, and a centre box (item-display stand-in).
 //
-// STEP 2: shared world-space tiling noise. Every bake samples ONE conceptual
-// 3D noise volume — `tilingNoise3d(worldPos · NoiseScale, period)` — at world
-// position. The pieces that must cover huge surfaces only bake a small slice
-// and repeat it via a Repeat sampler:
-//   - ground / ceiling are flat 2D surfaces → a square tile sampled by world XZ.
-//   - each grid direction (rows / cols) is a FOLDED 2D surface: its strip faces
-//     unwrap into a UV atlas. We bake only `TileCells` strips' worth (period in
-//     world Z for rows / X for cols) and, in the render mesh, let the UV run
-//     past 1 so the Repeat sampler wraps it back over the whole grid.
-// Non-tiling objects (the future centre box / display items) will bake a unique
-// patch of the SAME volume at their world position, so they stay continuous
-// with the tiling surfaces without repeating themselves.
+// SHARED NOISE VOLUME. Every surface samples ONE conceptual 3D noise volume —
+// `fbm(tilingNoise3d(worldPos · NoiseScale, noisePeriod))` — at world position,
+// so floor / ceiling / grid / box are all slices or patches of the same field
+// and stay mutually aligned. Surfaces that cover huge areas bake a small slice
+// and repeat it (AddressMode.Repeat); the box bakes a unique patch (clamp):
+//   - ground / ceiling: flat 2D square tile, sampled by world XZ.
+//   - each grid direction (rows / cols): a FOLDED 2D surface — strip faces
+//     unwrap into a UV atlas; bake `TileCells` strips (one period), and let the
+//     render UV run past 1 so the Repeat sampler wraps it over the whole grid.
+//   - box: 5 faces unwrapped into a 5-band atlas; same volume, no repeat.
 //
-// Step 2a here = a single noise octave, HIGH CONTRAST for easy verification;
-// FBM + contrast dampening come later.
+// TWEAKABLES (all in the `Painter.init` body; the rest derive from these):
+//   Space:   fogEnd (visible radius → extent), ceilingY.
+//   Grid:    rowSpacing / colSpacing (strip spacing), stripWidth, stripHeight,
+//            gridY (height of the grid plane).
+//   Noise:   displayArea (shared tiling period in world units — bigger = less
+//            repetition but larger grid atlas), targetNoiseScale (feature size;
+//            snapped to keep tiling exact), NoiseContrast (high for now; Step 5
+//            dampens it), FbmOctaves, FbmGain.
+//   Box:     boxSize, boxHeight.
+//   Bake res: gridTexPx, planeTilePx factor, boxTilePx.
+// Note: psrdnoise tiles only at INTEGER domain periods, so targetNoiseScale is
+// snapped (noisePeriod = round(tileWorld · targetNoiseScale)); FBM lacunarity is
+// fixed at 2 so every octave period stays integer ⇒ the sum still tiles.
+//
+// STATUS: Steps 1–3 done (open geometry, shared tiling-FBM noise, centre box).
+// Pending: Step 4 fog/DOF, Step 5 lights + bloom + reflection.
 // ---------------------------------------------------------------------------
 
 type GridVertex = (position: Vec3, uv: Vec2)
@@ -142,6 +154,22 @@ def planeQuad(
       gvert(pos, pos.x / tileWorld, pos.z / tileWorld),
   )
 
+// Centre reference box (item-display stand-in): stands on the ground, well
+// below the ceiling. Its 5 visible faces (top + 4 sides; bottom hidden on the
+// ground) unwrap into a 5-band UV atlas — each face fills U and a 1/5 V band.
+// Baked with the SAME (periodic) noise volume as everything else, so its patch
+// is continuous with the ground; it doesn't tile (UV stays in [0,1]).
+def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
+  val box = Box(Vec3(0.0, height / 2.0, 0.0), size, height, size)
+  val vb = 1.0 / 5.0
+  Arr(
+    box.topFace((c, uvw) => gvert(c, uvw.x, 0.0 * vb + uvw.z * vb)),
+    box.frontFace((c, uvw) => gvert(c, uvw.x, 1.0 * vb + uvw.y * vb)),
+    box.backFace((c, uvw) => gvert(c, uvw.x, 2.0 * vb + uvw.y * vb)),
+    box.leftFace((c, uvw) => gvert(c, uvw.z, 3.0 * vb + uvw.y * vb)),
+    box.rightFace((c, uvw) => gvert(c, uvw.z, 4.0 * vb + uvw.y * vb)),
+  )
+
 @main def roomsGridCeiling(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
 
@@ -164,29 +192,30 @@ def planeQuad(
     // Strips centred on the extent.
     val gridStart = -extent / 2.0 + gridStep / 2.0
 
-    // ------ shared tiling-noise parameters ------
-    val TileCells = 4
-    val NoiseContrast = 4.0 // global, baked into the shader (Step 5 dampens it)
-    // Grid noise repeats every TileCells strips → its world tiling period.
-    val gridTileWorld = TileCells * gridStep // ~8
-    // Ground / ceiling tile covers the central display area; kept an INTEGER
-    // multiple of the grid period so both stay seamless under one shared scale.
-    val planeTileMul = 6
-    val planeTileWorld = planeTileMul * gridTileWorld // ~48
+    // ------ shared tiling-noise volume ------
+    // ONE noise volume for EVERY surface: a single world period + scale, sampled
+    // at world position. So floor, ceiling, grid and box are all slices/patches
+    // of the same field and stay mutually aligned (same period everywhere — a
+    // different period would be a different field).
+    val NoiseContrast = 1.0 // global, baked into the shader (Step 5 dampens it)
+    // `tileWorld` is the shared world period; it covers the central display area
+    // (bigger ⇒ less repetition but larger grid atlas). Aligned to the grid strip
+    // spacing so the grid tiles cleanly — the grid bakes `TileCells` strips per
+    // period.
+    val displayArea = 28.0
+    val TileCells = (displayArea / gridStep).round.toInt.max(1)
+    val tileWorld = TileCells * gridStep // shared period, strip-aligned (~48)
     // Feature-size knob. psrdnoise only tiles cleanly when the DOMAIN period
-    // (tileWorld · NoiseScale) is an integer, so we snap: pick a target scale,
-    // round the grid's domain period to an int, then derive the real NoiseScale
-    // from it. Lower scale = bigger features; the biggest (period = 1) span a
-    // whole tile — for still-bigger features, raise TileCells (grows the tile).
+    // (tileWorld · NoiseScale) is an integer, so snap: round it, derive the real
+    // NoiseScale. Lower scale = bigger features (biggest = period 1 spans a tile).
     val targetNoiseScale = 0.125
-    val gridNoisePeriod = (gridTileWorld * targetNoiseScale).round.toInt.max(1)
-    val NoiseScale = gridNoisePeriod.toDouble / gridTileWorld // snapped
-    val planeNoisePeriod = gridNoisePeriod * planeTileMul // stays integer
+    val noisePeriod = (tileWorld * targetNoiseScale).round.toInt.max(1)
+    val NoiseScale = noisePeriod.toDouble / tileWorld // snapped
     // FBM: each octave doubles the frequency AND its domain period (lacunarity
     // must be the integer 2 so every octave period stays integer ⇒ the sum still
     // tiles). `FbmGain` weights successive octaves (lower = subtler detail).
     val FbmOctaves = 4
-    val FbmGain = 0.4
+    val FbmGain = 0.3
 
     // --- bake shade: lay the UV atlas flat, sample the noise volume at the
     //     surface's true world position with a tiling FBM. Parameterized by the
@@ -229,8 +258,8 @@ def planeQuad(
             ctx.out.color := vec4(vec3(n), 1.0),
           )
 
-    val gridBakeShade = bakeShade(gridNoisePeriod)
-    val planeBakeShade = bakeShade(planeNoisePeriod)
+    // One shade for the one shared noise volume — used by grid, plane and box.
+    val noiseBakeShade = bakeShade(noisePeriod)
 
     def meshForm(faces: Arr[Quad[GridVertex]]): Form =
       p.form(geometry =
@@ -250,12 +279,12 @@ def planeQuad(
         shape = p.shape(meshForm(faces), shade, cullMode = CullMode.None),
       )
 
-    // --- bake the four tiles (atlas slices of the shared noise volume) ---
-    val gridTexPx = 64.0
-    val gridTileU = (gridTileWorld * gridTexPx).toInt
+    // --- bake the tiles (atlas slices of the one shared noise volume) ---
+    val gridTexPx = 24.0
+    val gridTileU = (tileWorld * gridTexPx).toInt
     val gridTileV =
       (TileCells * (2.0 * stripHeight + stripWidth) * gridTexPx).toInt
-    val planeTilePx = (planeTileWorld * 24.0).toInt
+    val planeTilePx = (tileWorld * 24.0).toInt
 
     // Grid bake meshes: only TileCells strips, length = one tile period,
     // positioned at the same world start as the render mesh so the noise aligns.
@@ -264,58 +293,57 @@ def planeQuad(
       gridTileV,
       rowStrips(
         TileCells,
-        gridTileWorld,
-        gridTileWorld / 2.0,
+        tileWorld,
+        tileWorld / 2.0,
         gridStart,
         gridStep,
         gridY,
         stripWidth,
         stripHeight,
-        gridTileWorld,
+        tileWorld,
         TileCells,
       ),
-      gridBakeShade,
+      noiseBakeShade,
     )
     val colTile = bakeTile(
       gridTileU,
       gridTileV,
       colStrips(
         TileCells,
-        gridTileWorld,
-        gridTileWorld / 2.0,
+        tileWorld,
+        tileWorld / 2.0,
         gridStart,
         gridStep,
         gridY,
         stripWidth,
         stripHeight,
-        gridTileWorld,
+        tileWorld,
         TileCells,
       ),
-      gridBakeShade,
+      noiseBakeShade,
     )
     val groundTile = bakeTile(
       planeTilePx,
       planeTilePx,
-      planeQuad(
-        planeTileWorld,
-        planeTileWorld / 2.0,
-        0.0,
-        Vec3.Y,
-        planeTileWorld,
-      ),
-      planeBakeShade,
+      planeQuad(tileWorld, tileWorld / 2.0, 0.0, Vec3.Y, tileWorld),
+      noiseBakeShade,
     )
     val ceilTile = bakeTile(
       planeTilePx,
       planeTilePx,
-      planeQuad(
-        planeTileWorld,
-        planeTileWorld / 2.0,
-        ceilingY,
-        -Vec3.Y,
-        planeTileWorld,
-      ),
-      planeBakeShade,
+      planeQuad(tileWorld, tileWorld / 2.0, ceilingY, -Vec3.Y, tileWorld),
+      noiseBakeShade,
+    )
+    // Centre box: own non-tiling tile, baked from the same noise volume (it is
+    // periodic ⇒ the box's patch matches the ground/grid at the same world XZ).
+    val boxSize = 7.0
+    val boxHeight = 20.5
+    val boxTilePx = 1024
+    val boxTile = bakeTile(
+      boxTilePx,
+      boxTilePx,
+      boxFaces(boxSize, boxHeight),
+      noiseBakeShade,
     )
 
     // ------ render geometry ------
@@ -329,7 +357,7 @@ def planeQuad(
         gridY,
         stripWidth,
         stripHeight,
-        gridTileWorld,
+        tileWorld,
         TileCells,
       ),
     )
@@ -343,14 +371,15 @@ def planeQuad(
         gridY,
         stripWidth,
         stripHeight,
-        gridTileWorld,
+        tileWorld,
         TileCells,
       ),
     )
     val groundForm =
-      meshForm(planeQuad(extent, 0.0, 0.0, Vec3.Y, planeTileWorld))
+      meshForm(planeQuad(extent, 0.0, 0.0, Vec3.Y, tileWorld))
     val ceilForm =
-      meshForm(planeQuad(extent, 0.0, ceilingY, -Vec3.Y, planeTileWorld))
+      meshForm(planeQuad(extent, 0.0, ceilingY, -Vec3.Y, tileWorld))
+    val boxForm = meshForm(boxFaces(boxSize, boxHeight))
 
     // ------ render shade: sample the baked tile (Repeat sampler tiles it),
     //        stretch contrast (global val, baked in). ------
@@ -384,6 +413,9 @@ def planeQuad(
       FilterMode.Linear,
       AddressMode.Repeat,
     )
+    // Non-tiling surfaces (the box) clamp instead of repeat.
+    val clampSamp =
+      p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
 
     val groundShape = p
       .shape(groundForm, renderShade, cullMode = CullMode.None)
@@ -397,13 +429,16 @@ def planeQuad(
     val colShape = p
       .shape(colForm, renderShade, cullMode = CullMode.None)
       .bind("tex" := colTile)
+    val boxShape = p
+      .shape(boxForm, renderShade, cullMode = CullMode.None)
+      .bind("tex" := boxTile, "samp" := clampSamp)
 
     val canvasPanel = p
       .panel(
         clearColor = (0.08, 0.10, 0.13, 1.0),
         depthTest = true,
         multisample = true,
-        shapes = Arr(groundShape, ceilShape, rowShape, colShape),
+        shapes = Arr(groundShape, ceilShape, rowShape, colShape, boxShape),
       )
       .bind("mvp" := mvp, "samp" := samp)
 
@@ -426,7 +461,7 @@ def planeQuad(
       cam(aspect = cw.toDouble / ch)
 
     // Bake the (static) noise tiles once, with mip chains.
-    p.paint(rowTile, colTile, groundTile, ceilTile)
+    p.paint(rowTile, colTile, groundTile, ceilTile, boxTile)
 
     animate: tpf =>
       controller.updateCamera(cam, input, tpf)
