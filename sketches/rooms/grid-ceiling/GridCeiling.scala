@@ -433,14 +433,75 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       .shape(boxForm, renderShade, cullMode = CullMode.None)
       .bind("tex" := boxTile, "samp" := clampSamp)
 
-    val canvasPanel = p
+    // ------ fog + focus-blur (DOF) post-process (inline) ------
+    // Distant space progressively blurs and fades into `fogColor`. Driven by the
+    // scene's depth: reconstruct each pixel's world position, take its distance
+    // from the camera, and ramp both a blur LOD and a fog mix from `fadeStart`
+    // (sharp/unmodified) to `fadeEnd`.
+    val fadeStart = 18.0 // sharp within this radius
+    val fadeEnd = fogEnd // fully fogged/blurred at the visible edge
+    val blurStrength = 8.0
+    val fadeMips = 6
+
+    val invVp = p.binding[Mat4]
+    val camPos = p.binding[Vec3]
+
+    // Scene panel (HDR, NON-MSAA so its depth is sampleable). Mip-chained: the
+    // painter auto-generates the blur pyramid from mip 0 after the shapes render;
+    // the resolve below samples it at a depth-driven LOD for the focus blur.
+    val fogColor = Vec3(0.08, 0.10, 0.13)
+    val scenePanel = p
       .panel(
-        clearColor = (0.08, 0.10, 0.13, 1.0),
+        format = TextureFormat.Rgba16Float,
+        clearColor = (fogColor.x, fogColor.y, fogColor.z, 1.0),
         depthTest = true,
-        multisample = true,
+        multisample = false,
+        mipLevels = fadeMips,
         shapes = Arr(groundShape, ceilShape, rowShape, colShape, boxShape),
       )
       .bind("mvp" := mvp, "samp" := samp)
+
+    // Resolve: depth → world distance → fog mix + blur LOD (sample scene mips).
+    type ResolveU = (invVp: Mat4, camPos: Vec3, samp: Sampler)
+    type ResolveP = (scene: FragmentPanel, depth: FragmentDepthPanel)
+    val resolveShade = p.layerShade[ResolveU, ResolveP]: program =>
+      program.frag: ctx =>
+        val uv = ctx.in.uv
+        val d = LetFloat("d")
+        val ndc = LetVec3("ndc")
+        val worldH = LetVec4("worldH")
+        val worldPos = LetVec3("worldPos")
+        val dist = LetFloat("dist")
+        val f = LetFloat("f")
+        val lod = LetFloat("lod")
+        val col = LetVec3("col")
+        Block(
+          d := ctx.textures.depth.load(ivec2(ctx.fragCoord.xy)),
+          ndc := vec3(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, d),
+          worldH := ctx.bindings.invVp * vec4(ndc, 1.0),
+          worldPos := worldH.xyz / worldH.w,
+          dist := (worldPos - ctx.bindings.camPos).length,
+          f := dist.smoothstep(fadeStart, fadeEnd),
+          lod := (1.0 + f * blurStrength).log2.min((fadeMips - 1).toDouble),
+          col := ctx.textures.scene.sampleLevel(uv, ctx.bindings.samp, lod).xyz,
+          ctx.out.color := vec4(
+            col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f),
+            1.0,
+          ),
+        )
+
+    val fadePanel = p.panel(
+      format = TextureFormat.Rgba16Float,
+      layer = p
+        .layer(resolveShade)
+        .bind(
+          "scene" := scenePanel,
+          "depth" := scenePanel.binding(depth = true),
+          "invVp" := invVp,
+          "camPos" := camPos,
+          "samp" := clampSamp,
+        ),
+    )
 
     // ------ camera + input ------
 
@@ -465,6 +526,10 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
 
     animate: tpf =>
       controller.updateCamera(cam, input, tpf)
-      mvp.set(cam.viewProjMat)
-      p.paint(canvasPanel)
-      p.show(canvasPanel)
+      val vp = cam.viewProjMat
+      mvp.set(vp)
+      invVp.set(vp.inverse)
+      camPos.set(cam.pos)
+      // scene (+ auto mip pyramid) → fog/DOF resolve; show the faded result.
+      p.paint(scenePanel, fadePanel)
+      p.show(fadePanel)
