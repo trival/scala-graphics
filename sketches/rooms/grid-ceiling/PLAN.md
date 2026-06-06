@@ -139,7 +139,39 @@ don't launch it as part of a checkpoint).
   `TileCells = displayArea / gridStep` strips to span that one period. Trade-off:
   bigger shared period (`displayArea`) = less repetition but larger grid atlas
   (compensated by lower `gridTexPx`).
-- ⏳ **Step 4 — fog/DOF**, **Step 5 — lights + bloom + reflection**: pending.
+- ✅ **Step 4 — inline fog + focus-blur (DOF)** (done). A depth-driven resolve:
+  reconstruct world position from the scene depth + `invVp`, take camera
+  distance, and `smoothstep(fadeStart, fadeEnd, dist)` ramps **both** a fog mix
+  toward `fogColor` and a blur LOD. Within `fadeStart` everything is sharp;
+  beyond it surfaces blur and dissolve into the fog. Notes on how it landed:
+  - **Blur source = a TENT-blur pyramid** (`fadeBlurPanel`: mip 0 a sharp copy
+    of the scene, mips 1.. `tentBlur2dAuto` downsamples), sampled with trilinear.
+    The first attempt used the painter's **box auto-mips**, which produced
+    crawling staircase steps on aliased diagonal edges at mid LOD — the tent
+    pyramid fixed that.
+  - **Sampler must be bare** (`samp: Sampler`) in the `layerShade` resolve U, not
+    `FragmentUniform[Sampler]` (the wrapper shifted the bind-group layout → a
+    WebGPU "group 1 binding 0 missing" error).
+  - Knobs (sketch): `fadeStart`, `fadeEnd` (= `fogEnd`), `blurStrength` (now 4),
+    `fadeMips`, `fogColor`.
+  - Pass order per frame: `scene → fadeBlurPanel (pyramid) → fadePanel (resolve)`,
+    then `show(fadePanel)`. Bloom slots in front of `fadePanel` in Step 5.
+- ✅ **Library: MSAA depth sampling** (added during Step 4 to keep MSAA AA). A
+  multisample depth attachment can't be sampled as `texture_depth_2d`, and WebGPU
+  has no auto depth-resolve. The painter now does it transparently:
+  `panel(multisample = true)` + `binding(depth = true)` allocates a single-sample
+  resolve texture and runs an internal depth-resolve pass (subsample 0 →
+  `frag_depth`) after the shape pass — so the depth API stays uniform
+  (`FragmentDepthPanel`) and the scene keeps MSAA. Touch points:
+  `painter/panel.scala` (`allocDepth`, `depthSamplingView`, `needsDepthResolve`,
+  `resolvedDepthTarget`), `painter/painter.scala` (`DEPTH_RESOLVE_WGSL`,
+  `depthResolvePipeline`, `resolvePanelDepth`, call in `paintPanel`). Also added a
+  `// TODO(perf)` note on `Painter.show` re: a possible 1:1 blit fast path. (No
+  automated test — the render path needs a real GPU device the munit suite lacks;
+  verified via this sketch.)
+  - Footgun caveat noted: edge depth uses subsample 0 (cheap, fine for DOF); if a
+    future effect needs averaged/MSAA-accurate depth, revisit the resolve shader.
+- ⏳ **Step 5 — lights + bloom + reflection**: pending.
 
 ---
 

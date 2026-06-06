@@ -10,6 +10,7 @@ import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
 import trivalibs.graphics.scene.*
 import trivalibs.graphics.shader.dsl.{*, given}
+import trivalibs.graphics.shader.lib.blur.Blur
 import trivalibs.graphics.shader.lib.random.Psrdnoise
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
@@ -440,30 +441,74 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
     // (sharp/unmodified) to `fadeEnd`.
     val fadeStart = 18.0 // sharp within this radius
     val fadeEnd = fogEnd // fully fogged/blurred at the visible edge
-    val blurStrength = 8.0
+    val blurStrength = 4.0
     val fadeMips = 6
 
     val invVp = p.binding[Mat4]
     val camPos = p.binding[Vec3]
 
-    // Scene panel (HDR, NON-MSAA so its depth is sampleable). Mip-chained: the
-    // painter auto-generates the blur pyramid from mip 0 after the shapes render;
-    // the resolve below samples it at a depth-driven LOD for the focus blur.
+    // Scene panel (HDR + MSAA). The painter resolves its multisample depth to a
+    // sampleable single-sample texture automatically (binding(depth = true)).
     val fogColor = Vec3(0.08, 0.10, 0.13)
     val scenePanel = p
       .panel(
         format = TextureFormat.Rgba16Float,
         clearColor = (fogColor.x, fogColor.y, fogColor.z, 1.0),
         depthTest = true,
-        multisample = false,
-        mipLevels = fadeMips,
+        multisample = true,
         shapes = Arr(groundShape, ceilShape, rowShape, colShape, boxShape),
       )
       .bind("mvp" := mvp, "samp" := samp)
 
-    // Resolve: depth → world distance → fog mix + blur LOD (sample scene mips).
+    // Blur pyramid of the scene with a smooth TENT filter (not box auto-mips —
+    // those step/crawl on aliased diagonal edges at mid LOD). mip 0 = a sharp
+    // copy of the scene; mips 1.. = tent downsamples. Trilinear over this gives a
+    // smooth blur ramp.
+    type CopyU = (samp: Sampler)
+    type CopyP = (src: FragmentPanel)
+    val copyShade = p.layerShade[CopyU, CopyP]: program =>
+      program.frag: ctx =>
+        ctx.out.color := ctx.textures.src(ctx.in.uv, ctx.bindings.samp)
+
+    type DownU = (samp: Sampler)
+    type DownP = (tex: FragmentPanel)
+    val downBlurShade = p.layerShade[DownU, DownP]: program =>
+      program.frag: ctx =>
+        ctx.out.color := Blur.tentBlur2dAuto(
+          ctx.textures.tex,
+          ctx.bindings.samp,
+          ctx.in.uv,
+          4.0,
+        )
+
+    val fadeLayers = Arr[AnyLayer]()
+    fadeLayers.push(
+      p.layer(copyShade).bind("src" := scenePanel, "samp" := clampSamp),
+    )
+    var fm = 0
+    while fm < fadeMips - 1 do
+      fadeLayers.push(
+        p.layer(downBlurShade, mipSource = fm, mipTarget = fm + 1)
+          .bind("samp" := clampSamp),
+      )
+      fm += 1
+
+    // A SEPARATE pyramid panel (+ the copy into mip 0 above) rather than just
+    // mip-chaining `scenePanel` and downsampling in place. The in-place version
+    // is leaner (mip 0 is already the scene; no copy), but it couples the scene
+    // panel's config to the DOF effect. Keeping the pyramid self-contained means
+    // a future fog/DOF helper can own it and take any scene panel as input
+    // without mutating it (cf. Bloom / MirrorReflection). The copy pass is the
+    // small cost of that decoupling.
+    val fadeBlurPanel = p.panel(
+      format = TextureFormat.Rgba16Float,
+      mipLevels = fadeMips,
+      layers = fadeLayers,
+    )
+
+    // Resolve: depth → world distance → fog mix + blur LOD (sample the pyramid).
     type ResolveU = (invVp: Mat4, camPos: Vec3, samp: Sampler)
-    type ResolveP = (scene: FragmentPanel, depth: FragmentDepthPanel)
+    type ResolveP = (col: FragmentPanel, depth: FragmentDepthPanel)
     val resolveShade = p.layerShade[ResolveU, ResolveP]: program =>
       program.frag: ctx =>
         val uv = ctx.in.uv
@@ -478,12 +523,12 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         Block(
           d := ctx.textures.depth.load(ivec2(ctx.fragCoord.xy)),
           ndc := vec3(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, d),
-          worldH := ctx.bindings.invVp * vec4(ndc, 1.0),
+          worldH := ctx.bindings.invVp * vec4(ndc, 1),
           worldPos := worldH.xyz / worldH.w,
           dist := (worldPos - ctx.bindings.camPos).length,
           f := dist.smoothstep(fadeStart, fadeEnd),
-          lod := (1.0 + f * blurStrength).log2.min((fadeMips - 1).toDouble),
-          col := ctx.textures.scene.sampleLevel(uv, ctx.bindings.samp, lod).xyz,
+          lod := (1 + f * blurStrength).log2.min(fadeMips - 1),
+          col := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod).xyz,
           ctx.out.color := vec4(
             col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f),
             1.0,
@@ -495,7 +540,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       layer = p
         .layer(resolveShade)
         .bind(
-          "scene" := scenePanel,
+          "col" := fadeBlurPanel,
           "depth" := scenePanel.binding(depth = true),
           "invVp" := invVp,
           "camPos" := camPos,
@@ -530,6 +575,6 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       mvp.set(vp)
       invVp.set(vp.inverse)
       camPos.set(cam.pos)
-      // scene (+ auto mip pyramid) → fog/DOF resolve; show the faded result.
-      p.paint(scenePanel, fadePanel)
+      // scene → tent blur pyramid → fog/DOF resolve; show the faded result.
+      p.paint(scenePanel, fadeBlurPanel, fadePanel)
       p.show(fadePanel)
