@@ -171,7 +171,33 @@ don't launch it as part of a checkpoint).
   verified via this sketch.)
   - Footgun caveat noted: edge depth uses subsample 0 (cheap, fine for DOF); if a
     future effect needs averaged/MSAA-accurate depth, revisit the resolve shader.
-- ⏳ **Step 5 — lights + bloom + reflection**: pending.
+- ✅ **Step 5 — lights + bloom + ground reflection** (done). The full look:
+  - **Dampened noise**: surfaces are near-white (`NoiseBase 0.85` ±
+    `NoiseDetail`) × a per-shape `tint`, replacing the debug high-contrast.
+  - **Ceiling lights**: `ceilShade` adds HDR parallel strips (periodic in world
+    Z; `LightSpacing`/`LightWidth`/`LightColor`). HDR amplitude trips bloom.
+  - **Bloom** (`playground.bloom.Bloom`) on the **faded** panel, so distant
+    lights bloom progressively less and dissolve into the fog.
+  - **Ground reflection** (`playground.mirror.MirrorReflection`) of grid +
+    ceiling + box across `Plane.ground`; `groundShade` mixes `mirror.resultPanel`
+    (rgb = blurred reflection, a = distance → falloff). Shapes read the
+    (reflected) VP from the panel-level `mvp` the mirror drives; `samp` is
+    per-shape so it travels into the mirror pass.
+  - **Light tuning vs reflection**: `LightColor` chosen so direct strips bloom
+    (> threshold 1.0) but their dimmed reflection (× `reflStrength`) stays below
+    it — the reflection reads as a soft blurred strip, not a re-bloomed glow.
+  - **Mirror is non-MSAA** (and the `multisample` option was *removed* from
+    `MirrorReflection`): the reflection is blurred (AA moot) and its alpha
+    carries distance, so an MSAA color resolve would only corrupt edges against
+    the transparent clear. (The MSAA depth-resolve library feature stays — the
+    **scene** panel still uses it for the fog/DOF depth read.)
+  - Frame pipeline: `mirror.paint(vp) → p.paint(scenePanel, fadeBlurPanel,
+    fadePanel) → bloom.paint() → show(bloom.resultPanel)`.
+
+**All five steps complete.** Possible follow-ups (not required): extract the
+inline fog/DOF into a `playground` util if a second sketch needs it; near-edge
+AA on the in-focus foreground (no MSAA on the scene's *sharp* zone — the DOF
+hides the rest).
 
 ---
 

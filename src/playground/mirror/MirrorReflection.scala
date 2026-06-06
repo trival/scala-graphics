@@ -197,6 +197,9 @@ object MirrorReflection:
       )
       mi += 1
 
+    // Always non-MSAA: the reflection is blurred (AA moot), and the resolve
+    // writes distance into alpha — an MSAA color resolve would average
+    // silhouettes against the transparent clear and corrupt reflection colors.
     val mirrorPanel = p.panel(
       format = TextureFormat.Rgba16Float,
       clearColor = clearColor,
