@@ -229,7 +229,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       // Feature-size knob. psrdnoise only tiles cleanly when the DOMAIN period
       // (tileWorld · NoiseScale) is an integer, so snap: round it, derive the real
       // NoiseScale. Lower scale = bigger features (biggest = period 1 spans a tile).
-      val targetNoiseScale = 0.125
+      val targetNoiseScale = 0.075
       val noisePeriod = (tileWorld * targetNoiseScale).round.toInt.max(1)
       val NoiseScale = noisePeriod.toDouble / tileWorld // snapped
       // FBM: each octave doubles the frequency AND its domain period (lacunarity
@@ -511,8 +511,8 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         p,
         Arr(rowShape, colShape, ceilShape, boxShape),
         vpName = "mvp",
-        alphaScale = ceilingY,
-        blurStrength = 160.0,
+        alphaScale = ceilingY / 2.0,
+        blurStrength = 60.0,
         mipLevels = 6,
       )
 
@@ -546,7 +546,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
               // reflTex: rgb = pre-blurred reflection, a = normalized plane distance.
               refl := ctx.textures.reflTex.load(ivec2(ctx.fragCoord.xy)),
               falloff := (1.0 - refl.a).max(0.1),
-              mix := ctx.bindings.reflStrength, // * falloff,
+              mix := ctx.bindings.reflStrength * falloff,
               ctx.out.color := vec4(base * (1.0 - mix) + refl.rgb * mix, 1.0),
             )
 
@@ -656,7 +656,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
             lod := (1 + f * blurStrength).log2.min(fadeMips - 1),
             col := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod).xyz,
             ctx.out.color := vec4(
-              col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f),
+              col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f).pow(2.2),
               1.0,
             ),
           )
@@ -719,4 +719,4 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
           p.paint(scenePanel, fadeBlurPanel, fadePanel)
           bloom.paint()
           p.show(bloom.resultPanel)
-          // p.show(scenePanel)
+          // p.show(mirror.resultPanel)
