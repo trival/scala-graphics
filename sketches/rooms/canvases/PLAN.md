@@ -116,9 +116,9 @@ front, side image stretched `stretch`× relative to the front. `stretch` is a
   direction** (the back is seen from the opposite side).
   - _Optimization (when a frame is present):_ the canvas back face is
     **skipped** — the frame's opaque back quad (same color) covers it. This also
-    avoids z-fighting: two coplanar back quads at the same depth would
-    shine through randomly, and a depth offset would be fragile — skipping is
-    cleaner. So the back face is only built for frameless paintings.
+    avoids z-fighting: two coplanar back quads at the same depth would shine
+    through randomly, and a depth offset would be fragile — skipping is cleaner.
+    So the back face is only built for frameless paintings.
 
 Built as explicit `Quad`s (6 faces) via `Box(...)` face callbacks computing the
 UVs above → `Mesh` → `Form`.
@@ -256,7 +256,7 @@ both shadow consumers plus future sketches.
 Each milestone is independently verifiable (`bun run sketch rooms/canvases` +
 `bun run dev`).
 
-### M1 — Wall + Painting data structures, first static render
+### M1 — Wall + Painting data structures, first static render ✅ DONE
 
 - `Wall` + `PaintingSpec` (**no frames yet**), per-wall `Form` + baked texture
   (local UV), painting flat-box geometry + shade rendering a monochrome image
@@ -268,7 +268,24 @@ Each milestone is independently verifiable (`bun run sketch rooms/canvases` +
 - _Checkpoint:_ four walls each with one centred painting + its baked shadow,
   reflected in the floor.
 
-### M1b — UV test pattern on the canvas image
+**Status:** implemented & rendering. Built [Wall.scala](Wall.scala)
+(`PaintingSpec`, `HungPainting`, `Paintings` kit, `Wall`, top-level
+`shadowMask`) and reworked [Canvases.scala](Canvases.scala) (4 walls, 1 random
+monochrome painting each, extended `noiseShade`, mirror + scene wiring). Notes
+from implementation:
+
+- A clearColor-only image panel must be **painted once** before it can be
+  sampled (else `createBindGroup` fails with an undefined resource) — image
+  panels are pre-rendered with the bakes.
+- Shadow refined past the original plan into a **directional drop shadow**
+  (tunables atop `Wall.scala`): aspect-correct penumbra (`ShadowFadeWorld` in
+  metres → per-axis UV), tight/short above, broad pooling below, medium sides,
+  plus a top→bottom gradient (`ShadowGradTop`) so most darkening sits under the
+  canvas. `ShadowStrength = 0.6`.
+- `p.paint` has no `Arr` overload — pass panels as explicit args (or loop
+  single-arg); the 6 static bakes are passed explicitly.
+
+### M1b — UV test pattern on the canvas image ✅ DONE
 
 - **In the sketch** (not the block): build the image panels from a small
   **procedural `layerShade`** — monochrome base color overlaid with **black
@@ -281,7 +298,11 @@ Each milestone is independently verifiable (`bun run sketch rooms/canvases` +
 - _Checkpoint:_ lines run corner-to-corner on the front face and wrap straight
   across the sides without kinks; back continuous.
 
-### M2 — Multiple paintings per wall (Plan A)
+**Status:** done. Sketch-side `imgShade` (`layerShade[(color: Vec3)]`) draws a
+diagonal grid (`lineMask` on `uv.x±uv.y`, smoothstep-AA) over the base color;
+`patternPanel(c)` builds a 256² panel per painting. Block unchanged.
+
+### M2 — Multiple paintings per wall (Plan A) ← NEXT
 
 - Up to **4 paintings per wall**, random sizes/positions, still static.
 - Shadow still baked; `MaxShadows = 4` via **Plan A** (discrete `vec4` uniform
