@@ -61,11 +61,14 @@ in `base`.
   `Form`.
 - **Transforms**:
   `Mat4.fromTranslationRotationScale(t, Quat.fromRotationY(a), s)`; walls are
-  axis-aligned so each painting's orientation is a single yaw.
+  axis-aligned so each painting's orientation is a single Y rotation (`rotY`).
 - **Monochrome image panel**: a tiny panel cleared to the color
   (`p.panel(width=8, height=8, clearColor=(r,g,b,1))`, painted once). Fallback
   if an empty-shape panel doesn't clear as expected: a one-line `layerShade`
-  outputting a constant color.
+  outputting a constant color. At M1b the sketch builds these panels from a
+  small procedural `layerShade` (base color + black diagonal/grid lines from
+  `ctx.in.uv`) — needs a larger panel (e.g. 256²) for crisp lines. Either way
+  the panel is created **in the sketch** and handed to the painting.
 - **Randomness**: `trivalibs.utils.random.randInRange(min, max)`.
 - Reusable-block reference shape: `src/playground/mirror/MirrorReflection.scala`
   — `trait` (public surface) + `object apply(...)` factory; panel-level `vp`
@@ -91,16 +94,31 @@ a second file in the package is fine.
 
 Local space centred at origin: `width` along X, `height` along Y, `depth` along
 Z; front = `+Z`. Let `mu`, `mv` be the UV margins reserved for the side wrap.
-**1:3 stretch**: the side strip is a texture band of width `mu` (resp. `mv`)
-mapped across the geometric `depth`; pick `mu = clamp(3 * depth / width, …)`
-(and `mv` analogously) so a thin band stretches over the side — `sideUvFrac`/the
-`3.0` ratio is a `PaintingSpec` tunable with a sensible default.
+**1:3 stretch**: the side strip is a thin texture band of width `mu` (resp.
+`mv`) mapped across the geometric `depth`, so the side carries _little_ image
+spread over its depth (stretched), while most image content stays on the front.
+For a front:side texel-density ratio of `stretch` (default `3`):
+`mu = clamp(depth / (stretch * width), …)` (and
+`mv = depth / (stretch * height)`). A small `mu` ⇒ small margin removed from the
+front, side image stretched `stretch`× relative to the front. `stretch` is a
+`PaintingSpec` tunable.
 
 - **Front** (`+Z`): corners map to UV rect `[mu, 1-mu] × [mv, 1-mv]`.
 - **Sides** (4 thin faces): each maps the band between the front-edge UV and the
   texture edge (0 or 1) across the depth — e.g. right side: U `1-mu → 1.0`, V
   spanning `[mv, 1-mv]`; top side: V `mv → 0.0`, U `[mu, 1-mu]`; etc.
-- **Back** (`-Z`): full `[0,1]`, mirrored in U so it reads upright from behind.
+- **Back** (`-Z`): **continuous with the sides' back edges**, so a free-standing
+  canvas looks seamless when walked around. The sides run to the texture
+  extremes at the back (left→`U=0`, right→`U=1`, top→`V=0`, bottom→`V=1`), so
+  the back spans full `[0,1]` with the **same world-axis→UV mapping as the
+  front** (geometric `+X`→`U=1`, top→`V=0`). No UV flip in the mapping:
+  top/bottom stay, and the apparent **left/right swap is just the viewing
+  direction** (the back is seen from the opposite side).
+  - _Optimization (when a frame is present):_ the canvas back face is
+    **skipped** — the frame's opaque back quad (same color) covers it. This also
+    avoids z-fighting: two coplanar back quads at the same depth would
+    shine through randomly, and a depth offset would be fragile — skipping is
+    cleaner. So the back face is only built for frameless paintings.
 
 Built as explicit `Quad`s (6 faces) via `Box(...)` face callbacks computing the
 UVs above → `Mesh` → `Form`.
@@ -120,14 +138,15 @@ panel, reflected `vp` in mirror) — same trick as the walls.
 forming a rectangle around the canvas, offset outward by `gap`, plus a single
 **back plane** quad — all in `color`. One flat-color shade
 (`U = (vp, model, color)`), `vp` panel-level. Built relative to the painting's
-own model matrix so frame + canvas move together.
+own model matrix so frame + canvas move together. When a frame is present the
+canvas geometry **omits its own back face** (the frame back quad covers it).
 
 ### Wall block
 
 ```
 class Wall(
   p, center: Vec3, width, height,
-  yaw: Double,                 // axis-aligned wall orientation about Y
+  rotY: Double,                // axis-aligned wall orientation about Y
   inwardNormal: Vec3,
   tint: Vec3, texScale: Double,
   noiseShade, ...
@@ -141,7 +160,7 @@ Responsibilities:
 - `hang(spec, u, v, moving=false)` — record a painting; compute its world model
   matrix:
   `center + rightAxis*(u - width/2) + upAxis*(v - height/2) + inwardNormal*offset`,
-  oriented by `Quat.fromRotationY(yaw)`. Returns a handle whose model
+  oriented by `Quat.fromRotationY(rotY)`. Returns a handle whose model
   `BufferBinding` can be updated each frame (for moving ones).
 - Produce: the wall **scene shape** (reads baked tex + applies _moving_ shadows
   live), the painting + frame shapes, and the list of shapes to feed the mirror.
@@ -161,13 +180,15 @@ multiplied darkening). Implemented once and used by:
    applies the **moving** painting rects live (updated per frame). This is the
    literal "wall shader renders the shadow that tracks the canvas".
 
-**How the rect array is passed (decision point — see research):**
+The **baked** consumer (1) appears at M1; the **live** scene-shade consumer (2)
+first appears at M4 (animation). Rect array passing per the roadmap:
 
-- **Plan A (no lib change, default-safe):** fixed `MaxShadows` (e.g. 6) discrete
-  `vec4` uniform fields per consumer, unrolled with a Scala `while` loop; unused
-  slots have `halfSize = 0` (no contribution). Works today.
-- **Plan B (preferred if we add the feature):** a single
-  `UniformArray[Vec4, MaxShadows]` field — far cleaner, used by both shades.
+- **Plan A (no lib change):** fixed `MaxShadows` discrete `vec4` uniform fields
+  per consumer (`1` at M1, `4` from M2), unrolled with a Scala `while` loop;
+  unused slots have `halfSize = 0` (no contribution). The path through M1–M2
+  (and M4 unless M3 lands first).
+- **Plan B (deferred, M3/after M4):** a single `UniformArray[Vec4, MaxShadows]`
+  field — far cleaner, used by both shades. See research.
 
 ### Sketch composition (`Canvases.scala`)
 
@@ -223,20 +244,72 @@ Tight runtime-sized arrays would instead need **storage buffers**
 (`var<storage>`, a new bind-group path) — out of scope; the fixed-size uniform
 array covers the painting-shadow use case.
 
-**Recommendation:** implement **Plan B** (`UniformArray[Vec4, N]`) as part of
-this work — it's bounded, removes the ugly N-field unrolling, and is reused by
-two shades plus future sketches. Ship-safe fallback is **Plan A**.
+**Recommendation:** **deferred** (roadmap M3 / after M4). M1–M2 ship on **Plan
+A** (discrete `vec4` fields). Revisit `UniformArray[Vec4, N]` once the sketch
+works statically — it's bounded, removes the N-field unrolling, and is reused by
+both shadow consumers plus future sketches.
 
 ---
 
-## Open decisions for review
+## Staged implementation roadmap
 
-1. **Array uniforms now or later?** Plan B (add `UniformArray[Vec4, N]` to the
-   library) vs Plan A (discrete `vec4` fields in the sketch, library untouched).
-   Recommended: **Plan B**.
-2. **`MaxShadows` cap** per wall/consumer (default proposal: **6**).
-3. **Reflect paintings in the floor?** Recommended: **yes** (consistent realism;
-   small extra cost).
+Each milestone is independently verifiable (`bun run sketch rooms/canvases` +
+`bun run dev`).
+
+### M1 — Wall + Painting data structures, first static render
+
+- `Wall` + `PaintingSpec` (**no frames yet**), per-wall `Form` + baked texture
+  (local UV), painting flat-box geometry + shade rendering a monochrome image
+  panel.
+- **One painting per wall**, static (no animation).
+- Shadow: **baked only**, `MaxShadows = 1` (single static rect baked into each
+  wall texture via the noise/bake shade). No live shadow in the scene shade yet.
+- All above-ground objects already feed the floor reflection (see below).
+- _Checkpoint:_ four walls each with one centred painting + its baked shadow,
+  reflected in the floor.
+
+### M1b — UV test pattern on the canvas image
+
+- **In the sketch** (not the block): build the image panels from a small
+  **procedural `layerShade`** — monochrome base color overlaid with **black
+  lines edge-to-edge** (a diagonal, or a diagonal grid) driven by `ctx.in.uv`,
+  so the canvas UV projection (front rect, side wrap ratio, back continuity) is
+  **visually verifiable**. The `Painting` is unchanged — it just displays the
+  `Panel` it's handed; color/line params and the generator live entirely in the
+  sketch. (This is the ownership split we keep for extraction: image **content**
+  is the consumer's concern, never `PaintingSpec`/`Wall`.)
+- _Checkpoint:_ lines run corner-to-corner on the front face and wrap straight
+  across the sides without kinks; back continuous.
+
+### M2 — Multiple paintings per wall (Plan A)
+
+- Up to **4 paintings per wall**, random sizes/positions, still static.
+- Shadow still baked; `MaxShadows = 4` via **Plan A** (discrete `vec4` uniform
+  fields, unrolled `while` loop) in the bake shade.
+- _Checkpoint:_ several paintings per wall, each with a correct baked shadow.
+
+### M3 — (optional) Upgrade to `UniformArray`
+
+- Add `UniformArray[Vec4, N]` to the library (see research) and rewrite the
+  shadow consumers to use it instead of discrete fields. **May be deferred past
+  M4 — decided later.**
+
+### M4 — Details: frames, animation, live shadows
+
+- Optional `FrameSpec` (4 bars + back plane).
+- **Moving** paintings: per-frame model update **and** a live shadow in the
+  **scene wall shade** that tracks the canvas (Plan A discrete fields, or
+  `UniformArray` if M3 landed). This is where the live shadow consumer first
+  appears.
+- _Checkpoint:_ frames render; moving paintings' shadows track them.
+
+### Locked decisions
+
+- **Floor reflection:** **all above-ground objects** — walls, paintings, frames
+  — contribute to the floor reflection (added to the `MirrorReflection` shape
+  set; floor itself is the mirror plane, so excluded).
+- `MaxShadows`: **1** at M1, **4** from M2 on.
+- `UniformArray` (Plan B) timing: **deferred**, revisit at M3/after M4.
 
 ---
 
@@ -257,16 +330,16 @@ two shades plus future sketches. Ship-safe fallback is **Plan A**.
 
 ## Verification
 
-1. `bun run sketch rooms/canvases` compiles clean.
-2. _(Plan B)_ `bun run test` (trivalibs) incl. a new `UniformArray` WGSL-gen
-   test; `bun run check` type-checks the library in isolation.
-3. `bun run dev` → open `/rooms/canvases/`:
-   - Paintings hang on all four walls at the given `(u,v)`, correctly oriented,
-     with the image wrapping the sides and (where specified) a coloured frame +
-     hidden back.
-   - **Static** paintings show a soft baked shadow on the wall behind them.
-   - **Moving** paintings: the live wall shadow **tracks** the canvas as it
-     drifts/sways (the verification target for shadow sync).
-   - Paintings appear in the **floor reflection**; **bloom** (ceiling halos)
-     unaffected.
-   - Walk with WASD/arrows + Space/Shift, drag to look.
+Every milestone: `bun run sketch rooms/canvases` compiles clean, then
+`bun run dev` → open `/rooms/canvases/` (walk WASD/arrows + Space/Shift, drag to
+look). Per milestone:
+
+- **M1:** each of the four walls shows one centred painting (image wraps the
+  sides; back continuous) with a single baked shadow; painting reflects in the
+  floor; bloom (ceiling halos) unaffected.
+- **M2:** up to 4 paintings per wall, each with a correct baked shadow.
+- **M3 (if taken):** `bun run test` + `bun run check` (trivalibs) incl. a new
+  `UniformArray` WGSL-gen test; sketch renders identically after the rewrite.
+- **M4:** frames render (bars + hidden back); **moving** paintings' live wall
+  shadow **tracks** the canvas as it drifts/sways (shadow-sync target); all
+  above-ground objects reflect in the floor.
