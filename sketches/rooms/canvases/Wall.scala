@@ -67,8 +67,9 @@ private val ShadowGradTop = 0.28 // strength fraction at the canvas top edge
   * `rect = (centerX, centerY, halfW, halfH)`, `fade = (fadeU, fadeV)` is the
   * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
   * `worldFade / wallHeight` so the penumbra is isotropic in world space
-  * regardless of wall aspect. Returns ~0 above the canvas, rising to 1 under it.
-  * Shared by the bake shade (static, baked) and — from M4 — the live wall shade.
+  * regardless of wall aspect. Returns ~0 above the canvas, rising to 1 under
+  * it. Shared by the bake shade (static, baked) and — from M4 — the live wall
+  * shade.
   */
 def shadowMask(uv: Vec2Expr, rect: Vec4Expr, fade: Vec2Expr): FloatExpr =
   val hx = rect.z
@@ -107,7 +108,7 @@ class Paintings(p: Painter):
   // bias are shaped by `shadowMask`. `ShadowFadeWorld` is the penumbra width in
   // world metres (converted to per-axis UV fade so it's aspect-correct).
   private val ShadowFadeWorld = 0.16
-  private val ShadowStrength = 0.6
+  private val ShadowStrength = 0.2
 
   val sampler =
     p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
@@ -115,8 +116,7 @@ class Paintings(p: Painter):
   // Wall scene shade — samples the baked wall texture. (M1: no live shadow.)
   // Public so consumers can reuse it for other textured quads (e.g. ceiling).
   val wallSceneShade =
-    p.shade[PaintingVertex, (uv: Vec2), WallUniforms, WallPanels]:
-      program =>
+    p.shade[PaintingVertex, (uv: Vec2), WallUniforms, WallPanels]: program =>
       program.vert: ctx =>
         Block(
           ctx.out.uv := ctx.in.uv,
@@ -150,7 +150,13 @@ class Paintings(p: Painter):
     val mu = (spec.depth / (spec.stretch * spec.width)).clamp(0.0, 0.45)
     val mv = (spec.depth / (spec.stretch * spec.height)).clamp(0.0, 0.45)
 
-    def v(x: Double, y: Double, z: Double, u: Double, w: Double): PaintingVertex =
+    def v(
+        x: Double,
+        y: Double,
+        z: Double,
+        u: Double,
+        w: Double,
+    ): PaintingVertex =
       (position = Vec3(x, y, z), uv = Vec2(u, w))
 
     val faces = Arr(
@@ -203,8 +209,8 @@ class Paintings(p: Painter):
     )
 
   /** Build a wall. `mkTexPanel(form, shadowRect, shadowStrength)` is the
-    * consumer's per-wall texture bake (room look + baked shadow); the wall calls
-    * it once its paintings are hung.
+    * consumer's per-wall texture bake (room look + baked shadow); the wall
+    * calls it once its paintings are hung.
     */
   def wall(
       center: Vec3,
@@ -216,8 +222,8 @@ class Paintings(p: Painter):
   ): Wall =
     Wall(center, width, height, rotY, inwardNormal, mkTexPanel)
 
-  /** One wall side: own quad geometry (local UV [0,1]) + own baked texture, with
-    * any hung paintings. Hang paintings, then read [[bakePanel]] /
+  /** One wall side: own quad geometry (local UV [0,1]) + own baked texture,
+    * with any hung paintings. Hang paintings, then read [[bakePanel]] /
     * [[sceneShapes]] (both lazy — built after the hangs).
     */
   final class Wall private[Paintings] (

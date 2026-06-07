@@ -153,7 +153,11 @@ val TexScale = 48.0
             halo := band * vec3(8.0, 7.6, 6.8),
             col += halo,
             // Baked painting shadow (walls only when shadowStrength > 0).
-            sm := shadowMask(uv, ctx.bindings.shadowRect, ctx.bindings.shadowFade),
+            sm := shadowMask(
+              uv,
+              ctx.bindings.shadowRect,
+              ctx.bindings.shadowFade,
+            ),
             col *= 1.0 - ctx.bindings.shadowStrength * sm,
             ctx.out.color := vec4(col, 1.0),
           )
@@ -224,7 +228,7 @@ val TexScale = 48.0
       roomTex(
         ceilForm,
         texSize(RoomWidth, RoomDepth),
-        Vec3(0.88, 0.88, 0.87),
+        Vec3(0.92, 0.92, 0.90),
         haloCount = 6.0,
         haloStrength = 1.0,
         format = TextureFormat.Rgba16Float,
@@ -253,7 +257,11 @@ val TexScale = 48.0
         ctx.out.color := vec4(ctx.bindings.color * (1.0 - m), 1.0)
 
     def patternPanel(c: Vec3): Panel =
-      p.panel(width = 256, height = 256, layer = p.layer(imgShade).bind("color" := c))
+      p.panel(
+        width = 256,
+        height = 256,
+        layer = p.layer(imgShade).bind("color" := c),
+      )
 
     // Four walls, each from the room box's extent, facing inward.
     def mkWall(

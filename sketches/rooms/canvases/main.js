@@ -4020,7 +4020,7 @@ $p.oe = (function() {
     var pl = $m_Ltrivalibs_graphics_shader_layouts$().N(p$6.e, bgls$2);
     var noiseShade = new $c_Ltrivalibs_graphics_painter_Shade(id, module, vbl, bgls$2[0], null, pl, false, dict, dict$2);
     var floorTex = $p_Lsketches_rooms_canvases_Canvases$package$__roomTex$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Form__T2__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T__Ltrivalibs_graphics_painter_Panel(this, p$6, noiseShade, floorForm, $p_Lsketches_rooms_canvases_Canvases$package$__texSize$1__D__D__T2(this, 6.5, 10.0), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.8, 0.78, 0.75), 1.0, 0.0, "rgba8unorm");
-    var ceilTex = $p_Lsketches_rooms_canvases_Canvases$package$__roomTex$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Form__T2__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T__Ltrivalibs_graphics_painter_Panel(this, p$6, noiseShade, ceilForm, $p_Lsketches_rooms_canvases_Canvases$package$__texSize$1__D__D__T2(this, 6.5, 10.0), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.88, 0.88, 0.87), 6.0, 1.0, "rgba16float");
+    var ceilTex = $p_Lsketches_rooms_canvases_Canvases$package$__roomTex$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Form__T2__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T__Ltrivalibs_graphics_painter_Panel(this, p$6, noiseShade, ceilForm, $p_Lsketches_rooms_canvases_Canvases$package$__texSize$1__D__D__T2(this, 6.5, 10.0), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.92, 0.92, 0.9), 6.0, 1.0, "rgba16float");
     var paintings = new $c_Lsketches_rooms_canvases_Paintings(p$6);
     var WallTint = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.96, 0.96, 0.95);
     var build$proxy2 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$1) => {
@@ -4381,7 +4381,7 @@ function $c_Lsketches_rooms_canvases_Paintings(p) {
   this.jW = null;
   this.fz = p;
   this.hX = 0.16;
-  this.jV = 0.6;
+  this.jV = 0.2;
   this.hW = p.j3("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
   var program = new $c_Ltrivalibs_graphics_shader_dsl_Program();
   var d = ({});
