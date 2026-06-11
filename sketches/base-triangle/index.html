@@ -7,32 +7,20 @@
   <title>base-triangle — sketch</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #1a1a2e;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: system-ui, sans-serif;
-    }
+
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; }
+
     canvas {
-      border: 2px solid #4a4a6a;
-      border-radius: 4px;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
     }
-    .back-link {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      color: #8888aa;
-      text-decoration: none;
-    }
-    .back-link:hover { color: #aaaacc; }
   </style>
 </head>
 
 <body>
-  <a href="/" class="back-link">&larr; back</a>
-  <canvas id="canvas" width="800" height="600"></canvas>
+  <canvas id="canvas"></canvas>
   <script type="module" src="./main.js"></script>
 </body>
 

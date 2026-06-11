@@ -43,7 +43,6 @@ import trivalibs.utils.numbers.NumExt.given
 
     val cam = PerspectiveCamera(
       fov = math.Pi / 3.0,
-      aspect = canvas.width.toDouble / canvas.height.toDouble,
       near = 0.1,
       far = 100.0,
       pos = Vec3(0.0, 0.0, 2.5),
@@ -54,6 +53,9 @@ import trivalibs.utils.numbers.NumExt.given
       clearColor = (0.05, 0.06, 0.1, 1.0),
       multisample = true,
     )
+
+    p.onResize: (w, h) =>
+      cam.set(aspect = w / h)
 
     var time = 0.0
     animate: tpf =>

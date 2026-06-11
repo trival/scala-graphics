@@ -690,7 +690,6 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
 
       val cam = PerspectiveCamera(
         fov = 0.6,
-        aspect = canvas.width.toDouble / canvas.height.toDouble,
         near = 0.1,
         far = extent,
         pos = Vec3(0.0, 3.0, 15.0),

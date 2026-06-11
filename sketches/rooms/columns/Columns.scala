@@ -257,7 +257,6 @@ private val ColsXHalf = 4
 
     val cam = PerspectiveCamera(
       fov = 0.6,
-      aspect = canvas.width.toDouble / canvas.height.toDouble,
       near = 0.1,
       far = 200.0,
       pos = Vec3(0.0, 3.0, 15.0),

@@ -3817,8 +3817,7 @@ $p.kt = (function(size, height) {
   return [$x_20, $x_15, $x_10, $x_5, $x_4.au($x_3, $x_2, $x_1, f$4(x0$19, x1$19))];
 });
 $p.nl = (function() {
-  var canvas = document.getElementById("canvas");
-  $m_Ltrivalibs_graphics_painter_Painter$().mc(canvas, new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((p$11) => {
+  $m_Ltrivalibs_graphics_painter_Painter$().mc(document.getElementById("canvas"), new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((p$11) => {
     var rowCount = $doubleToInt((+Math.floor(226.66666666666666)));
     var colCount = $doubleToInt((+Math.floor(226.66666666666666)));
     var gridStep = (340.0 / rowCount);
@@ -4734,7 +4733,7 @@ $p.nl = (function() {
     Bindable_this$33.j[idx$25] = \u03b4scrutinee852;
     var fadePanel = p$11.b3((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), "rgba16float", (void 0), (void 0), (void 0), Bindable_this$33, (void 0));
     var bloom = $m_Lplayground_bloom_Bloom$().lw(p$11, fadePanel, 0.005, 1.0, 4.0, 5);
-    var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().ls(0.6, ((canvas.width | 0) / (canvas.height | 0)), 0.1, 340.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 3.0, 15.0));
+    var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().ls(0.6, 1.0, 0.1, 340.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 3.0, 15.0));
     $m_Ltrivalibs_dev_devPreserve$().lx(cam, "camera");
     var input = $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$().me(p$11.fx, true, 400.0, 5.0, true, (void 0));
     var controller = new $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController(1.0, 3.0);
