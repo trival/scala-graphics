@@ -4,11 +4,9 @@
   "workspaces": {
     "": {
       "name": "scala-webgpu",
-      "dependencies": {
-        "@webgpu/types": "^0.1.69",
-      },
       "devDependencies": {
         "@types/bun": "latest",
+        "@webgpu/types": "^0.1.69",
         "vite": "^7.0.0",
       },
     },
