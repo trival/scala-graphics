@@ -1,0 +1,12 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "scala-sketches",
+	"compatibility_date": "2026-06-11",
+	// Static-assets-only Worker: no `main` script, just serve the Vite
+	// build output. `wrangler deploy` uploads `./dist` as-is. The presence
+	// of this config also stops wrangler's framework auto-setup (which tried
+	// to inject a Vite plugin and failed) from running on Cloudflare.
+	"assets": {
+		"directory": "./dist"
+	}
+}
