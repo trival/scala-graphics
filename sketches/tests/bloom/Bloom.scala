@@ -1,4 +1,4 @@
-package sketches.post.bloom
+package sketches.tests.bloom
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.KeyboardEvent
