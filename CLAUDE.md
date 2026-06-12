@@ -25,6 +25,12 @@ Each sketch builds in isolation via `scripts/sketch.ts`, which passes only that
 sketch dir + `trivalibs/src` + `project.scala` to scala-cli — never a bare `.`.
 Never use sbt.
 
+Assume the Vite dev server (`bun run dev`, port 3000) is **already running** —
+don't launch it yourself as part of a checkpoint/verification. Rebuilding a
+sketch (`bun run sketch <path>`) is fine and produces the `main.js` the running
+server hot-reloads; if the server isn't up, ask to have it started rather than
+starting it.
+
 ## Sketches
 
 Sketches live under `sketches/` — each is a self-contained directory. They can
@@ -43,9 +49,26 @@ sketch. The Scala `package` should mirror the path (e.g.
 `package sketches.geometry.voronoi`).
 
 Sketches are **user code**: Scala convenience shorthands (`for`-comprehensions,
-string interpolation, etc.) are fine here — readability wins, and the bundle
-cost is local to one sketch. The strict bundle-size discipline applies to
-library code in `trivalibs/`, not here. See `trivalibs/CLAUDE.md` for that.
+string interpolation, etc.) are fine in one-off sketch code under `sketches/` —
+readability wins, and the bundle cost is local to one sketch. The strict
+bundle-size discipline applies to library code in `trivalibs/` (see
+`trivalibs/CLAUDE.md`) — and to shared sketch utilities under `src/` (see below),
+but not to individual sketches.
+
+## Shared sketch utilities (`src/`)
+
+Reusable helpers shared across multiple sketches live under `src/` in the
+`playground.*` namespace (e.g. `src/playground/bloom/Bloom.scala` →
+`playground.bloom`, `src/playground/mirror/` → `playground.mirror`). `src/` is a
+scala-cli build input for every sketch (`scripts/sketch.ts`), so any sketch can
+import `playground.*` with no build change.
+
+Unlike one-off sketch code, these are **shared infrastructure compiled into many
+sketches**, so they follow the same **bundle-size discipline as the trivalibs
+library** (see `trivalibs/CLAUDE.md`): prefer `Arr`/`Dict`/`Maybe`/`Opt` and
+native JS over the Scala stdlib, `while` over `for`-comprehensions, and avoid
+`enum`/`Option`/collection traits in any runtime path. Keep them lightweight and
+performant.
 
 ## Using trivalibs
 
@@ -104,3 +127,6 @@ Metals only loads one config:
   doesn't compile, treat that as a missing library overload / conversion in
   `trivalibs/` and check with me before settling for the annotation. Adding
   the overload library-side is preferred; the annotation is the fallback.
+- in comments and docs you write, use American spelling **"color"** (not
+  "colour"). Don't mass-rewrite pre-existing "colour" in code you didn't touch —
+  much of trivalibs uses it — just don't add more.
