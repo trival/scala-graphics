@@ -2,21 +2,21 @@ package sketches.tests.texture_bake
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
-import playground.bake.*
+import sketchlib.shaders.Noise
+import sketchlib.utils.bake.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
 import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
 
 // ---------------------------------------------------------------------------
-// Verification sketch for `playground.bake.TextureBaker`.
+// Verification sketch for `sketchlib.utils.bake.TextureBaker`.
 //
 // A rotating box in a normal 3D scene (camera + MVP). One TextureBaker is reused
 // across all six faces: its fragment samples 3D noise at the world position and
@@ -62,28 +62,10 @@ val NoiseScale = 1.4
 
     // ----- the baker: 3D noise sampled in world space, tinted by normal -------
     val baker = TextureBaker.block(p): (worldPos, normal, uv, color) =>
-      // FBM (3 octaves) — the expensive per-pixel result worth caching.
-      val FbmFreqMul = 2.0
-      val FbmAmpMul = 0.5
-      val Seed = vec3(70)
-
-      def fbm3(pos: Vec3Expr): FloatExpr =
-        var acc: FloatExpr = 0.0
-        var freq = 1.0
-        var amp = 1.0
-        var total = 0.0
-        var i = 0
-        while i < 3 do
-          acc = acc + Simplex.simplexNoise3d(pos * freq + Seed) * amp
-          total += amp
-          freq *= FbmFreqMul
-          amp *= FbmAmpMul
-          i += 1
-        (acc / total).fit1101.clamp01
-
       val n = LetFloat("n")
       Block(
-        n := fbm3(worldPos * NoiseScale),
+        // FBM 3D noise — the expensive per-pixel result worth caching.
+        n := Noise.fbm3(worldPos * NoiseScale, seed = vec3(70)),
         // Tighten the noise into a visible band so the pattern reads clearly.
         // Tint each face by its orientation: normal (-1..1) → color (0..1).
         color := vec4(normal.fit1101 * lerp(0.45, 1.0, n), 1.0),

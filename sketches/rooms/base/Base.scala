@@ -2,8 +2,9 @@ package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
-import playground.bloom.Bloom
-import playground.mirror.MirrorReflection
+import sketchlib.shaders.Noise
+import sketchlib.utils.bloom.Bloom
+import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
@@ -12,7 +13,6 @@ import trivalibs.graphics.painter.*
 import trivalibs.graphics.scene.BasicFirstPersonCameraController
 import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
@@ -142,31 +142,6 @@ val TexScale = 48.0
             ),
           )
         program.frag: ctx =>
-          // ----- FBM tunables (3 octaves) -----
-          val FbmFreqMul = 3.6
-          val FbmAmpMul = 0.12
-          val NoiseSeed = vec3(140)
-
-          // Inline 3-octave fbm of simplexNoise3d. Returns a FloatExpr in
-          // [0, 1].
-          def fbm3(basePos: Vec3Expr): FloatExpr =
-            var acc: FloatExpr = 0.0: FloatExpr
-            // Per-octave frequency multiplier, grown by FbmFreqMul each octave.
-            var freq = 1.0
-            var amp = 1.0
-            var totalAmp = 0.0
-            var i = 0
-            while i < 3 do
-              acc = acc + Simplex
-                .simplexNoise3d(
-                  basePos * freq + NoiseSeed,
-                ) * amp
-              totalAmp += amp
-              freq *= FbmFreqMul
-              amp *= FbmAmpMul
-              i += 1
-            (acc / totalAmp).fit1101.clamp01
-
           val n = VarFloat("n")
           val col = VarVec3("col")
           val s = LetFloat("s")
@@ -180,12 +155,15 @@ val TexScale = 48.0
           val uv = ctx.in.uv
 
           Block(
-            n := fbm3(
+            n := Noise.fbm3(
               vec3(
                 wp.x + wp.y * 0.2,
                 wp.y * 0.3,
                 wp.z * 0.8 + wp.y * 0.2,
               ) * 0.15,
+              freqMul = 3.6,
+              ampMul = 0.12,
+              seed = vec3(140),
             ),
             // Remap noise into a tight near-white band [0.68, 1.0]
             // to emulate slightly irregular ambient lighting.

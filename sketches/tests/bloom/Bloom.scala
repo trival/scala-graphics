@@ -4,7 +4,7 @@ import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.console
 import org.scalajs.dom.document
-import playground.bloom.Bloom
+import sketchlib.utils.bloom.Bloom
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
@@ -14,7 +14,7 @@ import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
 
-// Bloom post-processing demo. Drives the shared `playground.bloom.Bloom`
+// Bloom post-processing demo. Drives the shared `sketchlib.utils.bloom.Bloom`
 // pyramid with an HDR test scene of bright + dim SDF circles.
 
 @main def bloom(): Unit =

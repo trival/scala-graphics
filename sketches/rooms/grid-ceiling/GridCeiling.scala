@@ -2,8 +2,8 @@ package sketches.rooms.gridceiling
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
-import playground.bloom.Bloom
-import playground.mirror.MirrorReflection
+import sketchlib.utils.bloom.Bloom
+import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}

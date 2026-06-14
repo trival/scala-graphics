@@ -1,4 +1,4 @@
-package playground.bloom
+package sketchlib.utils.bloom
 
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}

@@ -58,10 +58,17 @@ but not to individual sketches.
 ## Shared sketch utilities (`src/`)
 
 Reusable helpers shared across multiple sketches live under `src/` in the
-`playground.*` namespace (e.g. `src/playground/bloom/Bloom.scala` →
-`playground.bloom`, `src/playground/mirror/` → `playground.mirror`). `src/` is a
+`sketchlib.*` namespace (the package mirrors the path below `src/`). `src/` is a
 scala-cli build input for every sketch (`scripts/sketch.ts`), so any sketch can
-import `playground.*` with no build change.
+import `sketchlib.*` with no build change. Two subnamespaces:
+
+- `sketchlib.utils.*` (`src/utils/`) — larger painter-level building blocks, each
+  a small class/trait constructed from the `Painter` (e.g.
+  `src/utils/bloom/Bloom.scala` → `sketchlib.utils.bloom`, `src/utils/mirror/`,
+  `src/utils/bake/`).
+- `sketchlib.shaders.*` (`src/shaders/`) — reusable shader-DSL blocks: build-time
+  helpers that assemble WGSL expressions from trivalibs primitives (e.g.
+  `Noise.fbm3`).
 
 Unlike one-off sketch code, these are **shared infrastructure compiled into many
 sketches**, so they follow the same **bundle-size discipline as the trivalibs

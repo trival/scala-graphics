@@ -1,4 +1,4 @@
-package playground.bake
+package sketchlib.utils.bake
 
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}

@@ -1,4 +1,4 @@
-package playground.mirror
+package sketchlib.utils.mirror
 
 import trivalibs.graphics.geometry.Plane
 import trivalibs.graphics.math.cpu.{*, given}

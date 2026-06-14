@@ -24,7 +24,7 @@ import trivalibs.utils.numbers.NumExt.given
 // the sketch). Static painting shadows are baked into that texture; the shared
 // `shadowMask` helper below is what the sketch's bake shade calls.
 //
-// Designed to later lift into `src/playground/paintings/` unchanged.
+// Designed to later lift into `src/utils/paintings/` unchanged.
 // ---------------------------------------------------------------------------
 
 /** A painting to hang on a wall. `image` is any `Panel` (its content is the
