@@ -1,5 +1,40 @@
 # Texture baking helper — generalize prebaking a texture from geometry
 
+## Implementation status — ✅ done
+
+Implemented and verified. The plan below is kept as the design record; it
+predates a `src/` restructure, so file paths / namespaces in it are stale. What
+actually shipped:
+
+- **Helper:** [src/utils/bake/Bake.scala](../src/utils/bake/Bake.scala), package
+  **`sketchlib.utils.bake`** — _not_ the planned `src/playground/bake/` /
+  `playground.bake`. The shared-sketch-utility tree was restructured to `src/`
+  under the **`sketchlib.*`** namespace (`sketchlib.utils.*` for painter-level
+  helpers, `sketchlib.shaders.*` for shader-DSL blocks); `bloom` / `mirror` moved
+  alongside as `sketchlib.utils.bloom` / `sketchlib.utils.mirror`.
+- **Two fragment forms split by name, not overload:** as the plan's fallback
+  anticipated (both erase to `(Painter)(Function)`), the factory is
+  `TextureBaker.apply` (expression form) + **`TextureBaker.block`** (block form).
+  The block form's `color` handle is typed **`AssignTarget`** (assigned via
+  `:=`).
+- **One-shot convenience split likewise:** `TextureBaker.bake` (expression) +
+  **`TextureBaker.bakeBlock`** (block) — two helpers, not the single `.bake` the
+  plan sketched.
+- **Schemas, vertex stage, transform/normal handling, `apply` signature** match
+  the design (incl. the uniform-scaling-only constraint, documented in scaladoc).
+- **Verification lives in the `sketches/tests/` folder** as planned:
+  [sketches/tests/texture-bake/TextureBake.scala](../sketches/tests/texture-bake/TextureBake.scala)
+  (rotating box, one baker reused across all six faces, FBM noise + normal tint)
+  and the moved [sketches/tests/bloom/](../sketches/tests/bloom/). The old
+  `sketches/post/bloom/` is gone.
+- **Known limitation (transient resources not freed)** stands — the general fix
+  is parked in
+  [trivalibs/documents/independent-todos.md](../trivalibs/documents/independent-todos.md);
+  prebaking will not free its binding for now.
+- **Not done (optional, by design):** the rooms-sketch migration
+  (`rooms/canvases` → baker) under _Optional follow-up_ remains a separate,
+  unstarted task.
+
 ## Context
 
 Three sketches (`rooms/canvases`, `rooms/base`, `rooms/grid-ceiling`, plus
@@ -157,11 +192,12 @@ Notes:
   `GPUTexture` have `.destroy()` at the WebGPU facade (`webgpu.scala`) and
   `Form` destroys its own buffers on re-set, but **`BufferBinding` exposes no
   public destroy**, so we can't release the model buffer today. Negligible for a
-  handful of bakes — **fine for now**. The fix (expose `destroy()` on `Form` /
-  `BufferBinding` / `Panel`) is spec'd as an optional library workstream below
-  (_Optional library addition: explicit GPU resource freeing_); once it lands
-  the baker can free the transient `model` binding after `p.paint`. (The baked
-  `Panel` texture itself must persist — it's the result.)
+  handful of bakes — **fine for now**, and prebaking will not free its binding
+  for the foreseeable future. The general fix (explicit GPU resource freeing
+  across the painter) is parked in
+  [trivalibs/documents/independent-todos.md](../trivalibs/documents/independent-todos.md);
+  if it ever lands the baker could free the transient `model` binding after
+  `p.paint`. (The baked `Panel` texture itself must persist — it's the result.)
 
 ### One-shot convenience
 
@@ -244,48 +280,6 @@ to `rooms/base` and `rooms/grid-ceiling`.
 2. In the already-running `bun run dev`, open `tests/texture-bake` — confirm the
    noise is **continuous across the box's face edges** (spatial continuity) and
    each face is **tinted by its normal**; check `tests/bloom` still renders.
-
-## Optional library addition (trivalibs): explicit GPU resource freeing
-
-Independent, tangential workstream — **not required** for the baker, but it
-unblocks the cleanup path above and is a generally useful library capability.
-trivalibs is still work-in-progress, so filling this gap is fair game.
-
-Add a public `destroy(): Unit` to the three painter classes that own GPU
-resources:
-
-- **`Form`** (`form.scala`) — destroy `vertexBuffer` + `indexBuffer`. The
-  teardown already exists internally (it runs on `set`, `form.scala:59/72`);
-  expose it.
-- **`BufferBinding`** (`buffers/…`) — destroy the underlying `GPUBuffer` (the
-  WebGPU facade already has `GPUBuffer.destroy()`, `webgpu.scala:139`). This is
-  the one the baker would actually use (free the transient `model` binding after
-  `p.paint`).
-- **`Panel`** (`panel.scala`) — destroy color / pong / msaa / depth textures;
-  reuse the existing texture-teardown logic (`panel.scala:133-134, 450-458`).
-
-Each class carries a `private var destroyed = false` flag:
-
-- `destroy()` is **idempotent** (no-op if already destroyed) and sets the flag.
-- Use-after-destroy **throws** `throw jsError("<Resource>: use after destroy")`
-  (plain JS `Error`, per the trivalibs no-Scala-exceptions rule) from the public
-  use/mutation entry points — `Form` render/buffer access, `BufferBinding`
-  `set`/`update`/bind, `Panel` paint/bind/show/`binding`. The guard is a single
-  boolean branch.
-
-Feasibility / cost notes:
-
-- Guarding only the **public** entry points (not every internal access) keeps it
-  cheap and avoids per-inner-loop checks. If a guard would land on a genuine hot
-  path, limit it to the outermost call.
-- Bundle-size discipline applies (library code): boolean field +
-  `throw jsError(...)`, no Scala exception types, no stdlib.
-- A small test can assert `destroy()` is idempotent and that a guarded call
-  after destroy throws.
-
-When this lands, the baker may free the transient `model` `BufferBinding`
-**after** `p.paint`. It must **not** destroy the caller-owned `Form` (reused
-across bakes) nor the returned `Panel` (it is the result).
 
 ## Open questions / iteration notes
 
