@@ -68,7 +68,7 @@ val NoiseScale = 1.4
         n := Noise.fbm3(worldPos * NoiseScale, seed = vec3(70)),
         // Tighten the noise into a visible band so the pattern reads clearly.
         // Tint each face by its orientation: normal (-1..1) → color (0..1).
-        color := vec4(normal.fit1101 * lerp(0.45, 1.0, n), 1.0),
+        color := vec4(normal.fit1101 * lerp(0.45, 1.0, n.fit1101), 1.0),
       )
 
     // ----- runtime box shade: sample each face's baked panel by UV ------------

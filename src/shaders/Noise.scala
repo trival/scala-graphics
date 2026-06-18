@@ -15,16 +15,18 @@ import trivalibs.graphics.shader.lib.random.Simplex
 
 object Noise:
 
-  /** Fractal Brownian motion over 3D simplex noise, normalized to `[0, 1]`.
+  /** Fractal Brownian motion over 3D simplex noise, in the `[-1, 1]` range.
     *
     * Sums `octaves` layers of [[Simplex.simplexNoise3d]], each at `freqMul`×
-    * the previous frequency and `ampMul`× the amplitude, then rescales the
-    * amplitude-weighted average from `[-1, 1]` to `[0, 1]`. Sampling in world
-    * space makes the field continuous across adjacent surfaces.
+    * the previous frequency and `ampMul`× the amplitude, then returns the
+    * amplitude-weighted average, which stays in simplex noise's natural
+    * `[-1, 1]` range. Sampling in world space makes the field continuous across
+    * adjacent surfaces. Use `.fit1101` at the call site to remap to `[0, 1]`
+    * where needed.
     *
     * The loop is unrolled into the generated WGSL, so `octaves` / `freqMul` /
-    * `ampMul` are baked compile-time constants — vary them per call site, not at
-    * runtime.
+    * `ampMul` are baked compile-time constants — vary them per call site, not
+    * at runtime.
     *
     * @param pos
     *   sample position (pre-scale it to set the base feature size).
@@ -55,4 +57,4 @@ object Noise:
       freq *= freqMul
       amp *= ampMul
       i += 1
-    (acc / total).fit1101.clamp01
+    acc / total

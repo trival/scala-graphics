@@ -112,18 +112,20 @@ val TexScale = 48.0
           val uv = ctx.in.uv
 
           Block(
-            n := Noise.fbm3(
-              vec3(
-                wp.x + wp.y * 0.2,
-                wp.y * 0.3,
-                wp.z * 0.8 + wp.y * 0.2,
-              ) * 0.15,
-              freqMul = 3.6,
-              ampMul = 0.12,
-              seed = vec3(140),
-            ),
+            n := Noise
+              .fbm3(
+                vec3(
+                  wp.x + wp.y * 0.2,
+                  wp.y * 0.3,
+                  wp.z * 0.8 + wp.y * 0.2,
+                ) * 0.15,
+                freqMul = 3.6,
+                ampMul = 0.12,
+                seed = vec3(140),
+              )
+              .fit1101,
             // Remap noise into a tight near-white band [0.68, 1.0].
-            n := 0.68 + n * 0.32,
+            n := lerp(0.68, 1.0, n),
             col := ctx.bindings.tint * n,
             // Halo light strips (ceiling only when haloStrength > 0).
             s := (uv.x * ctx.bindings.haloCount + 0.5).fract,
