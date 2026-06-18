@@ -4,6 +4,7 @@
 
 import { existsSync } from "node:fs"
 import { join, normalize } from "node:path"
+import { sketchPackageArgs } from "./build.ts"
 
 const argv = process.argv.slice(2)
 const watch = argv.includes("--watch") || argv.includes("-w")
@@ -26,19 +27,7 @@ if (!existsSync(sketchDir)) {
 	console.error(`sketch not found: ${sketchDir}`)
 	process.exit(1)
 }
-const outFile = join(sketchDir, "main.js")
-
-const args = [
-	"--power", "package",
-	sketchDir,
-	"src",
-	"trivalibs/src",
-	"project.scala",
-	"--js",
-	"-o", outFile,
-	"-f",
-	...(watch ? ["-w"] : []),
-]
+const args = sketchPackageArgs(sketchDir, { watch })
 
 const proc = Bun.spawn(["scala-cli", ...args], {
 	stdout: "pipe",

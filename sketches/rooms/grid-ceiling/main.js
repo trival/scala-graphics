@@ -8453,6 +8453,16 @@ $p.me = (function(canvas, initialFocus, holdDelay, holdRadius, suppressContextMe
   canvas.setAttribute("tabindex", "0");
   var \u03b41$ = canvas.style;
   \u03b41$.setProperty("outline", "none");
+  var \u03b42$ = canvas.style;
+  \u03b42$.setProperty("touch-action", "none");
+  var \u03b43$ = canvas.style;
+  \u03b43$.setProperty("user-select", "none");
+  var \u03b44$ = canvas.style;
+  \u03b44$.setProperty("-webkit-user-select", "none");
+  var \u03b45$ = canvas.style;
+  \u03b45$.setProperty("-webkit-touch-callout", "none");
+  var \u03b46$ = canvas.style;
+  \u03b46$.setProperty("-webkit-tap-highlight-color", "transparent");
   var input = new $c_Ltrivalibs_utils_events_InputState(canvas, canvas, holdDelay, holdRadius, suppressContextMenu, onActivity, true);
   if (initialFocus) {
     canvas.focus();
