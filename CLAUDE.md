@@ -52,8 +52,8 @@ Sketches are **user code**: Scala convenience shorthands (`for`-comprehensions,
 string interpolation, etc.) are fine in one-off sketch code under `sketches/` —
 readability wins, and the bundle cost is local to one sketch. The strict
 bundle-size discipline applies to library code in `trivalibs/` (see
-`trivalibs/CLAUDE.md`) — and to shared sketch utilities under `src/` (see below),
-but not to individual sketches.
+`trivalibs/CLAUDE.md`) — and to shared sketch utilities under `src/` (see
+below), but not to individual sketches.
 
 ## Shared sketch utilities (`src/`)
 
@@ -62,13 +62,13 @@ Reusable helpers shared across multiple sketches live under `src/` in the
 scala-cli build input for every sketch (`scripts/sketch.ts`), so any sketch can
 import `sketchlib.*` with no build change. Two subnamespaces:
 
-- `sketchlib.utils.*` (`src/utils/`) — larger painter-level building blocks, each
-  a small class/trait constructed from the `Painter` (e.g.
+- `sketchlib.utils.*` (`src/utils/`) — larger painter-level building blocks,
+  each a small class/trait constructed from the `Painter` (e.g.
   `src/utils/bloom/Bloom.scala` → `sketchlib.utils.bloom`, `src/utils/mirror/`,
   `src/utils/bake/`).
-- `sketchlib.shaders.*` (`src/shaders/`) — reusable shader-DSL blocks: build-time
-  helpers that assemble WGSL expressions from trivalibs primitives (e.g.
-  `Noise.fbm3`).
+- `sketchlib.shaders.*` (`src/shaders/`) — reusable shader-DSL blocks:
+  build-time helpers that assemble WGSL expressions from trivalibs primitives
+  (e.g. `Noise.fbm3`).
 
 Unlike one-off sketch code, these are **shared infrastructure compiled into many
 sketches**, so they follow the same **bundle-size discipline as the trivalibs
@@ -132,8 +132,15 @@ Metals only loads one config:
   expressions naturally — `0.5`, `(1.0 - uv.y)`, `band * vec3(...)` — without
   `: FloatExpr` or `: Vec3Expr` annotations. If a natural-looking expression
   doesn't compile, treat that as a missing library overload / conversion in
-  `trivalibs/` and check with me before settling for the annotation. Adding
-  the overload library-side is preferred; the annotation is the fallback.
+  `trivalibs/` and check with me before settling for the annotation. Adding the
+  overload library-side is preferred; the annotation is the fallback.
 - in comments and docs you write, use American spelling **"color"** (not
   "colour"). Don't mass-rewrite pre-existing "colour" in code you didn't touch —
   much of trivalibs uses it — just don't add more.
+- **Per-frame `update` methods take `tpf`** (milliseconds since the last frame,
+  as `animate` provides) — not an absolute timestamp. E.g. `input.update(tpf)`,
+  `controller.update(tpf)`. This keeps stepping consistent, pauses/resumes
+  cleanly with the render loop, and avoids wall-clock coupling. Time-since-event
+  _queries_ are the exception (e.g. `keyHeldMs`, `pointerDownMs`): they take an
+  optional `now = js.Date.now()` because they measure real elapsed time. animate
+  should pause increating

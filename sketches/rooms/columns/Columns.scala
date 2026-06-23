@@ -265,13 +265,19 @@ private val ColsXHalf = 4
 
     val input = p.input()
     val controller =
-      BasicFirstPersonCameraController(sensitivity = 3.0, speed = 4.0)
+      BasicFirstPersonCameraController(
+        cam,
+        input,
+        sensitivity = 3.0,
+        speed = 4.0,
+      )
 
     p.onResize: (cw, ch) =>
       cam(aspect = cw.toDouble / ch)
 
     animate: tpf =>
-      controller.updateCamera(cam, input, tpf)
+      input.update(tpf)
+      controller.update(tpf)
       viewProj.set(cam.viewProjMat)
       p.paint(canvasPanel)
       p.show(canvasPanel)

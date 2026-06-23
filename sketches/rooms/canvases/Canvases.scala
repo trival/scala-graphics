@@ -452,13 +452,19 @@ val TexScale = 48.0
 
     val input = p.input()
     val controller =
-      BasicFirstPersonCameraController(sensitivity = 2.0, speed = 3.0)
+      BasicFirstPersonCameraController(
+        cam,
+        input,
+        sensitivity = 2.0,
+        speed = 3.0,
+      )
 
     p.onResize: (w, h) =>
       cam.set(aspect = w / h)
 
     animate: tpf =>
-      controller.updateCamera(cam, input, tpf)
+      input.update(tpf)
+      controller.update(tpf)
       val vp = cam.viewProjMat
       sceneVp.set(vp)
       mirror.paint(vp)

@@ -698,7 +698,12 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
 
       val input = p.input()
       val controller =
-        BasicFirstPersonCameraController(sensitivity = 1.0, speed = 3.0)
+        BasicFirstPersonCameraController(
+          cam,
+          input,
+          sensitivity = 1.0,
+          speed = 3.0,
+        )
 
       p.onResize: (cw, ch) =>
         cam(aspect = cw.toDouble / ch)
@@ -708,7 +713,8 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
 
       animate:
         tpf =>
-          controller.updateCamera(cam, input, tpf)
+          input.update(tpf)
+          controller.update(tpf)
           val vp = cam.viewProjMat
           mvp.set(vp)
           invVp.set(vp.inverse)
