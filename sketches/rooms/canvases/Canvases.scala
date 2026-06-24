@@ -3,6 +3,7 @@ package sketches.rooms.canvases
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
 import sketchlib.shaders.Noise
+import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
@@ -56,7 +57,10 @@ val TexScale = 48.0
 
     def form(faces: Arr[Quad[RoomVertex]]): Form =
       p.form(geometry =
-        toBufferedGeometry(Mesh(faces), MeshBufferType.FaceVertices),
+        toBufferedGeometry(
+          Mesh(faces),
+          MeshBufferType.FaceVerticesWithFaceNormal,
+        ),
       )
 
     val floorForm =
@@ -66,162 +70,124 @@ val TexScale = 48.0
       form(Arr(box.topFace((c, uvw) => vert(c, uvw.x, uvw.z))))
 
     // -----------------------------------------------------------------------
-    // Pre-render: bake a 3D-noise field across the room geometry. The vertex
-    // shader lays each face out flat by its UV; the fragment samples noise at
-    // the real world position — so the baked textures look like a single noise
-    // volume filling the room. Per-material tint + optional ceiling halos. The
-    // walls additionally bake a soft painting shadow (shadowStrength > 0).
+    // Pre-render: bake a 3D-noise field across the room geometry. A shared
+    // `roomNoise` shapes the noise so neighbouring faces line up in world
+    // space, but a second normal-cross term adds some per-orientation variance
+    // (a wall reads slightly differently from the floor). Each surface gets
+    // its own dedicated baker so the shaders stay focused: floor is plain
+    // tinted noise, ceiling adds HDR halo strips, walls add a vertical
+    // darkening toward the top and bake a soft painting shadow.
     // -----------------------------------------------------------------------
 
-    type NoiseUniforms = (
-        tint: Vec3,
-        // Halo light strips (ceiling only). `haloStrength = 0` zeroes them.
-        haloCount: Float,
-        haloStrength: Float,
-        // Soft painting shadow (walls only). `shadowStrength = 0` disables it;
-        // `shadowRect` = (centerX, centerY, halfW, halfH) in baked-UV space;
-        // `shadowFade` = per-axis penumbra width in UV (aspect-correct).
-        shadowStrength: Float,
-        shadowRect: Vec4,
-        shadowFade: Vec2,
-    )
-
-    val noiseShade =
-      p.shade[RoomVertex, (worldPos: Vec3, uv: Vec2), NoiseUniforms]: program =>
-        program.vert: ctx =>
-          val uv = ctx.in.uv
-          Block(
-            ctx.out.worldPos := ctx.in.position,
-            ctx.out.uv := uv,
-            ctx.out.position := vec4(
-              vec2(uv.x, 1.0 - uv.y).fit0111,
-              0.0,
-              1.0,
-            ),
-          )
-        program.frag: ctx =>
-          val n = VarFloat("n")
-          val col = VarVec3("col")
-          val s = LetFloat("s")
-          val band = VarFloat("band")
-          val lf = LetFloat("lf")
-          val halo = LetVec3("halo")
-          val sm = LetFloat("sm")
-
-          val wp = ctx.in.worldPos
-          val uv = ctx.in.uv
-
-          Block(
-            n := Noise
-              .fbm3(
-                vec3(
-                  wp.x + wp.y * 0.2,
-                  wp.y * 0.3,
-                  wp.z * 0.8 + wp.y * 0.2,
-                ) * 0.15,
-                freqMul = 3.6,
-                ampMul = 0.12,
-                seed = vec3(140),
-              )
-              .fit1101,
-            // Remap noise into a tight near-white band [0.68, 1.0].
-            n := lerp(0.68, 1.0, n),
-            col := ctx.bindings.tint * n,
-            // Halo light strips (ceiling only when haloStrength > 0).
-            s := (uv.x * ctx.bindings.haloCount + 0.5).fract,
-            band := s.abs.smoothstep(0.05, 0.02),
-            lf := uv.y.smoothstep(0.05, 0.15)
-              * (1.0 - uv.y).smoothstep(0.05, 0.15),
-            band *= (ctx.bindings.haloStrength * lf),
-            halo := band * vec3(8.0, 7.6, 6.8),
-            col += halo,
-            // Baked painting shadow (walls only when shadowStrength > 0).
-            sm := shadowMask(
-              uv,
-              ctx.bindings.shadowRect,
-              ctx.bindings.shadowFade,
-            ),
-            col *= 1.0 - ctx.bindings.shadowStrength * sm,
-            ctx.out.color := vec4(col, 1.0),
-          )
+    def roomNoise(wp: Vec3Expr, normal: Vec3Expr) =
+      val scaledWp = vec3(
+        wp.x + wp.y * 0.2,
+        wp.y * 0.3,
+        wp.z * 0.8 + wp.y * 0.2,
+      )
+      lerp(
+        0.68,
+        1.0,
+        ((Noise
+          .fbm3(
+            scaledWp * 0.15,
+            freqMul = 3.6,
+            ampMul = 0.12,
+            seed = vec3(140),
+          ) +
+          Noise.fbm3(
+            scaledWp.cross(normal) * 0.2,
+            freqMul = 2.1,
+            ampMul = 0.25,
+            seed = vec3(70),
+          ) * 0.3)
+          / 1.3).fit1101,
+      )
 
     def texSize(w: Double, h: Double): (Int, Int) =
       ((w * TexScale).toInt, (h * TexScale).toInt)
 
-    // Floor / ceiling bake (no shadow).
-    def roomTex(
-        f: Form,
-        size: (Int, Int),
-        tint: Vec3,
-        haloCount: Double = 1.0,
-        haloStrength: Double = 0.0,
-        format: TextureFormat = TextureFormat.Rgba8Unorm,
-    ): Panel =
-      val shape = p
-        .shape(f, noiseShade, cullMode = CullMode.None)
-        .bind(
-          "tint" := tint,
-          "haloCount" := haloCount,
-          "haloStrength" := haloStrength,
-          "shadowStrength" := 0.0,
-          "shadowRect" := Vec4(0.0, 0.0, 0.0, 0.0),
-          "shadowFade" := Vec2(0.01, 0.01),
-        )
-      p.panel(
-        width = size._1,
-        height = size._2,
-        mips = true,
-        format = format,
-        shape = shape,
+    val (rfw, rfh) = texSize(RoomWidth, RoomDepth)
+
+    // Floor — plain tinted noise.
+    val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
+      vec4(vec3(0.80, 0.78, 0.75) * roomNoise(wp, normal), 1.0)
+
+    // Ceiling — tinted noise + HDR halo light strips along V; 6 strips across U.
+    val ceilTex = TextureBaker.bakeBlock(
+      p,
+      ceilForm,
+      rfw,
+      rfh,
+      format = TextureFormat.Rgba16Float,
+    ): (wp, normal, uv, color) =>
+      val col = VarVec3("col")
+      val s = LetFloat("s")
+      val band = VarFloat("band")
+      val lf = LetFloat("lf")
+      val halo = LetVec3("halo")
+      Block(
+        col := vec3(0.92, 0.92, 0.90) * roomNoise(wp, normal),
+        s := (uv.x * 6.0 + 0.5).fract,
+        band := s.abs.smoothstep(0.05, 0.02),
+        lf := uv.y.smoothstep(0.05, 0.15)
+          * (1.0 - uv.y).smoothstep(0.05, 0.15),
+        band *= lf,
+        halo := band * vec3(8.0, 7.6, 6.8),
+        col += halo,
+        color := vec4(col, 1.0),
       )
 
-    // Per-wall bake (room noise + a baked painting shadow). Used by the Wall
-    // block via the `mkTexPanel` callback; captures this wall's tint + size.
-    def wallTex(
-        f: Form,
-        w: Double,
-        h: Double,
-        tint: Vec3,
-        shadowRect: Vec4,
-        shadowFade: Vec2,
-        shadowStrength: Double,
-    ): Panel =
-      val size = texSize(w, h)
-      val shape = p
-        .shape(f, noiseShade, cullMode = CullMode.None)
-        .bind(
-          "tint" := tint,
-          "haloCount" := 1.0,
-          "haloStrength" := 0.0,
-          "shadowStrength" := shadowStrength,
-          "shadowRect" := shadowRect,
-          "shadowFade" := shadowFade,
-        )
-      p.panel(
-        width = size._1,
-        height = size._2,
-        mips = true,
-        format = TextureFormat.Rgba8Unorm,
-        shape = shape,
+    // Single wall noise baker — shared by all four walls (one shade, one
+    // pipeline). Plain tinted noise darkened toward the ceiling; no shadow,
+    // since that's drawn on top per-wall by the shadow layer below.
+    val wallBaker = TextureBaker(p): (wp, normal, _) =>
+      vec4(
+        vec3(0.96, 0.96, 0.95).lerp(
+          vec3(0.86, 0.86, 0.85),
+          wp.y.smoothstep(4.9, 5.5),
+        ) * roomNoise(wp, normal),
+        1.0,
       )
 
-    val floorTex =
-      roomTex(floorForm, texSize(RoomWidth, RoomDepth), Vec3(0.80, 0.78, 0.75))
-    val ceilTex =
-      roomTex(
-        ceilForm,
-        texSize(RoomWidth, RoomDepth),
-        Vec3(0.92, 0.92, 0.90),
-        haloCount = 6.0,
-        haloStrength = 1.0,
-        format = TextureFormat.Rgba16Float,
-      )
+    // Shadow layer — reads the bake pong-injected as `prev` and modulates by a
+    // soft painting shadow whose rect / fade / strength come in as per-wall
+    // uniforms. One shade, one pipeline, four draws.
+    type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
+    type ShadowP = (prev: FragmentPanel)
+    val shadowLayerShade = p.layerShade[ShadowU, ShadowP]: program =>
+      program.frag: ctx =>
+        val base = LetVec4("base")
+        val sm = LetFloat("sm")
+        Block(
+          base := ctx.textures.prev.load(ivec2(ctx.fragCoord.xy)),
+          sm := shadowMask(ctx.in.uv, ctx.bindings.rect, ctx.bindings.fade),
+          ctx.out.color :=
+            vec4(base.xyz * (1.0 - ctx.bindings.strength * sm), base.w),
+        )
+
+    // Bake one wall texture: noise prepared by the shared baker, painting
+    // shadow drawn on top by the shadow layer (auto-pong reads the bake as
+    // `prev`; the painter swaps main↔pong after the layer so external
+    // samplers see the shadowed result).
+    def bakeWallTex(wall: paintings.Wall): Panel =
+      val (ww, wh) = texSize(wall.width, wall.height)
+      val panel = wallBaker.prepare(wall.form, ww, wh)
+      val shadow = p
+        .layer(shadowLayerShade)
+        .bind(
+          "rect" := wall.shadowRect,
+          "fade" := wall.shadowFade,
+          "strength" := wall.shadowStrength,
+        )
+      panel.set(layer = shadow)
+      p.paint(panel)
+      panel
 
     // -----------------------------------------------------------------------
     // Walls + paintings (the M1 feature)
     // -----------------------------------------------------------------------
     val paintings = Paintings(p)
-    val WallTint = Vec3(0.96, 0.96, 0.95)
 
     // Image panels (content is the sketch's concern, never the block). A
     // procedural diagonal grid over a monochrome base — black lines edge to
@@ -254,15 +220,7 @@ val TexScale = 48.0
         rotY: Double,
         normal: Vec3,
     ): paintings.Wall =
-      paintings.wall(
-        center,
-        w,
-        h,
-        rotY,
-        normal,
-        (f, rect, fade, strength) =>
-          wallTex(f, w, h, WallTint, rect, fade, strength),
-      )
+      paintings.wall(center, w, h, rotY, normal)
 
     val Tau = 2.0 * math.Pi
     val wallFront = mkWall(
@@ -333,15 +291,20 @@ val TexScale = 48.0
       .shape(ceilForm, paintings.wallSceneShade, cullMode = CullMode.None)
       .bind("samp" := texSampler, "tex" := ceilTex)
 
-    // All above-ground scene shapes (walls + paintings + ceiling) — these also
-    // feed the floor mirror.
+    // All above-ground scene shapes (ceiling + walls + paintings) — these also
+    // feed the floor mirror. Bake each wall's texture here (noise via the
+    // shared baker + shadow layer with that wall's bindings), then ask the
+    // wall for the scene shape that samples it.
     val aboveGround = Arr[AnyShape](ceilShape)
     wi = 0
     while wi < walls.length do
-      val ss = walls(wi).sceneShapes
+      val wall = walls(wi)
+      val wallTex = bakeWallTex(wall)
+      aboveGround.push(wall.createWallShape(wallTex))
+      val ps = wall.paintingShapes
       var j = 0
-      while j < ss.length do
-        aboveGround.push(ss(j))
+      while j < ps.length do
+        aboveGround.push(ps(j))
         j += 1
       wi += 1
 
@@ -362,7 +325,7 @@ val TexScale = 48.0
     type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
 
     val floorShade =
-      p.shade[RoomVertex, (uv: Vec2), FloorUniforms, FloorPanels]: program =>
+      p.shade[BakeVertex, (uv: Vec2), FloorUniforms, FloorPanels]: program =>
         program.vert: ctx =>
           Block(
             ctx.out.uv := ctx.in.uv,
@@ -423,20 +386,14 @@ val TexScale = 48.0
     )
 
     // -----------------------------------------------------------------------
-    // Pre-render the static textures once (wall + floor + ceiling, with mips).
+    // Pre-render the painting image panels once. (Floor / ceiling / wall
+    // textures are already painted by their respective `TextureBaker.bake` /
+    // `bakeWallTex` calls above.)
     // -----------------------------------------------------------------------
     var pi = 0
     while pi < imagePanels.length do
       p.paint(imagePanels(pi))
       pi += 1
-    p.paint(
-      floorTex,
-      ceilTex,
-      wallFront.texPanel,
-      wallBack.texPanel,
-      wallLeft.texPanel,
-      wallRight.texPanel,
-    )
 
     // -----------------------------------------------------------------------
     // Camera, input, controller

@@ -7339,12 +7339,11 @@ function $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController() {
 $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController.prototype = $p;
 $p.gZ = (function(tpf) {
   var dist = ((this.kl * tpf) / 1000.0);
-  var backward = (((this.a7.ae.aI("KeyS") || this.a7.ae.aI("ArrowDown")) || this.a7.ae.mB(2)) || (this.a7.ae.ln() >= 2));
   var forward = 0.0;
-  if (((this.a7.ae.aI("KeyW") || this.a7.ae.aI("ArrowUp")) || (this.a7.ix.f1 && (this.a7.ae.ln() < 2)))) {
+  if (((this.a7.ae.aI("KeyW") || this.a7.ae.aI("ArrowUp")) || (this.a7.ix.f1 && (this.a7.ae.ln() === 1)))) {
     forward = (forward + dist);
   }
-  if (backward) {
+  if ((((this.a7.ae.aI("KeyS") || this.a7.ae.aI("ArrowDown")) || this.a7.ae.mB(2)) || (this.a7.ae.ln() >= 2))) {
     forward = (forward - dist);
   }
   var left = 0.0;

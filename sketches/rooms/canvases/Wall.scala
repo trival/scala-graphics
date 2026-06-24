@@ -1,5 +1,6 @@
 package sketches.rooms.canvases
 
+import sketchlib.utils.bake.*
 import trivalibs.graphics.buffers.BufferBinding
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
@@ -107,8 +108,10 @@ class Paintings(p: Painter):
   // Shadow box matches the canvas footprint exactly; the soft edge + downward
   // bias are shaped by `shadowMask`. `ShadowFadeWorld` is the penumbra width in
   // world metres (converted to per-axis UV fade so it's aspect-correct).
+  // `ShadowStrength` is public so the sketch can feed it to a shadow layer
+  // built outside the wall.
   private val ShadowFadeWorld = 0.16
-  private val ShadowStrength = 0.2
+  val ShadowStrength = 0.2
 
   val sampler =
     p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
@@ -116,7 +119,7 @@ class Paintings(p: Painter):
   // Wall scene shade — samples the baked wall texture. (M1: no live shadow.)
   // Public so consumers can reuse it for other textured quads (e.g. ceiling).
   val wallSceneShade =
-    p.shade[PaintingVertex, (uv: Vec2), WallUniforms, WallPanels]: program =>
+    p.shade[BakeVertex, (uv: Vec2), WallUniforms, WallPanels]: program =>
       program.vert: ctx =>
         Block(
           ctx.out.uv := ctx.in.uv,
@@ -208,9 +211,12 @@ class Paintings(p: Painter):
       toBufferedGeometry(Mesh(faces), MeshBufferType.FaceVertices),
     )
 
-  /** Build a wall. `mkTexPanel(form, shadowRect, shadowStrength)` is the
-    * consumer's per-wall texture bake (room look + baked shadow); the wall
-    * calls it once its paintings are hung.
+  /** Build a wall. After hanging any paintings, read [[Wall.form]] +
+    * [[Wall.shadowRect]] / [[Wall.shadowFade]] / [[Wall.shadowStrength]] to
+    * bake its texture externally (e.g. a `TextureBaker` for the noise + a
+    * shadow layer on top), then hand the painted panel back via
+    * [[Wall.setTexPanel]]. After that, [[Wall.sceneShapes]] yields the wall
+    * + painting shapes for the scene panel and floor mirror.
     */
   def wall(
       center: Vec3,
@@ -218,13 +224,16 @@ class Paintings(p: Painter):
       height: Double,
       rotY: Double,
       inwardNormal: Vec3,
-      mkTexPanel: (Form, Vec4, Vec2, Double) => Panel,
   ): Wall =
-    Wall(center, width, height, rotY, inwardNormal, mkTexPanel)
+    Wall(center, width, height, rotY, inwardNormal)
 
-  /** One wall side: own quad geometry (local UV [0,1]) + own baked texture,
-    * with any hung paintings. Hang paintings, then read [[bakePanel]] /
-    * [[sceneShapes]] (both lazy — built after the hangs).
+  /** One wall side: own quad geometry (local UV [0,1]), the data needed to
+    * bake a soft painting shadow on top of any noise texture, and the
+    * hung-painting scene shapes.
+    *
+    * Lifecycle: construct → hang paintings → bake `texPanel` externally using
+    * `form` + `shadowRect` + `shadowFade` + `shadowStrength` → [[setTexPanel]]
+    * → read [[sceneShapes]].
     */
   final class Wall private[Paintings] (
       val center: Vec3,
@@ -232,7 +241,6 @@ class Paintings(p: Painter):
       val height: Double,
       rotY: Double,
       inwardNormal: Vec3,
-      mkTexPanel: (Form, Vec4, Vec2, Double) => Panel,
   ):
     private val up = Vec3(0.0, 1.0, 0.0)
     // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
@@ -240,8 +248,10 @@ class Paintings(p: Painter):
     private val rot = Quat.fromRotationY(rotY)
     private val hung = Arr[HungPainting]()
 
-    // Wall quad in world space, UV [0,1] (tl=(0,0), v down).
-    private val wallForm: Form =
+    /** Wall quad in world space, UV [0,1] (tl=(0,0), v down). Pass to the
+      * sketch's TextureBaker to lay down the wall noise.
+      */
+    val form: Form =
       def corner(su: Double, sv: Double, u: Double, w: Double): PaintingVertex =
         val pos = center + right * (su * width / 2.0) + up * (sv * height / 2.0)
         (position = pos, uv = Vec2(u, w))
@@ -252,7 +262,10 @@ class Paintings(p: Painter):
         corner(1.0, 1.0, 1.0, 0.0),
       )
       p.form(geometry =
-        toBufferedGeometry(Mesh(Arr(face)), MeshBufferType.FaceVertices),
+        toBufferedGeometry(
+          Mesh(Arr(face)),
+          MeshBufferType.FaceVerticesWithFaceNormal,
+        ),
       )
 
     /** Hang a painting at wall-local `(u, v)` in world units (`u` along the
@@ -280,24 +293,36 @@ class Paintings(p: Painter):
       hung.push(h)
       h
 
-    /** The baked wall texture (room noise + baked static-painting shadows). */
-    lazy val texPanel: Panel =
-      val has = hung.length > 0
-      val rect = if has then hung(0).shadowRect else Vec4(0.0, 0.0, 0.0, 0.0)
-      val fade = if has then hung(0).shadowFade else Vec2(0.01, 0.01)
-      val strength = if has then ShadowStrength else 0.0
-      mkTexPanel(wallForm, rect, fade, strength)
+    /** UV-space `(centerX, centerY, halfW, halfH)` of the first hung
+      * painting's shadow box (zeros if nothing hung). Feed to a shadow layer
+      * via uniforms.
+      */
+    def shadowRect: Vec4 =
+      if hung.length > 0 then hung(0).shadowRect
+      else Vec4(0.0, 0.0, 0.0, 0.0)
 
-    private lazy val sceneShape: AnyShape =
-      p.shape(wallForm, wallSceneShade, cullMode = CullMode.None)
+    /** Per-axis penumbra width in baked-UV space (aspect-correct in world). */
+    def shadowFade: Vec2 =
+      if hung.length > 0 then hung(0).shadowFade
+      else Vec2(0.01, 0.01)
+
+    /** `0` when no paintings are hung — lets one shadow layer no-op without
+      * branching at the call site.
+      */
+    def shadowStrength: Double =
+      if hung.length > 0 then ShadowStrength else 0.0
+
+    /** Scene shape for the wall quad textured with the externally-baked
+      * `texPanel`. Pass the panel the sketch baked from [[form]] +
+      * [[shadowRect]] / [[shadowFade]] / [[shadowStrength]].
+      */
+    def createWallShape(texPanel: Panel): AnyShape =
+      p.shape(form, wallSceneShade, cullMode = CullMode.None)
         .bind("samp" := sampler, "tex" := texPanel)
 
-    /** Panels to pre-render before the scene (the wall texture). */
-    def bakePanels: Arr[Panel] = Arr(texPanel)
-
-    /** Wall + painting shapes for the scene panel and the floor mirror. */
-    def sceneShapes: Arr[AnyShape] =
-      val out = Arr[AnyShape](sceneShape)
+    /** Scene shapes for the hung paintings (no wall texture needed). */
+    def paintingShapes: Arr[AnyShape] =
+      val out = Arr[AnyShape]()
       var i = 0
       while i < hung.length do
         out.push(hung(i).shape)

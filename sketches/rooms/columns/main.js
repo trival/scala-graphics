@@ -6465,12 +6465,11 @@ function $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController() {
 $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController.prototype = $p;
 $p.gw = (function(tpf) {
   var dist = ((this.k0 * tpf) / 1000.0);
-  var backward = (((this.P.U.ai("KeyS") || this.P.U.ai("ArrowDown")) || this.P.U.m2(2)) || (this.P.U.kK() >= 2));
   var forward = 0.0;
-  if (((this.P.U.ai("KeyW") || this.P.U.ai("ArrowUp")) || (this.P.i9.eD && (this.P.U.kK() < 2)))) {
+  if (((this.P.U.ai("KeyW") || this.P.U.ai("ArrowUp")) || (this.P.i9.eD && (this.P.U.kK() === 1)))) {
     forward = (forward + dist);
   }
-  if (backward) {
+  if ((((this.P.U.ai("KeyS") || this.P.U.ai("ArrowDown")) || this.P.U.m2(2)) || (this.P.U.kK() >= 2))) {
     forward = (forward - dist);
   }
   var left = 0.0;

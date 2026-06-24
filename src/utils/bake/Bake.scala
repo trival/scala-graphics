@@ -47,25 +47,55 @@ type BakeUniforms = (model: VertexUniform[Mat4])
 /** A reusable texture baker built around one shade / pipeline.
   *
   * Construct one with [[TextureBaker.apply]] (expression-form fragment) or
-  * [[TextureBaker.block]] (multi-statement fragment); the shade is built once in
-  * the factory. Each [[apply]] call bakes a geometry into its own [[Panel]] and
-  * returns it ready to sample — so the same baker shades many geometries through
-  * one pipeline (e.g. the six faces of a box).
+  * [[TextureBaker.block]] (multi-statement fragment); the shade is built once
+  * in the factory. Each [[apply]] call bakes a geometry into its own [[Panel]]
+  * and returns it ready to sample — so the same baker shades many geometries
+  * through one pipeline (e.g. the six faces of a box).
   */
 class TextureBaker private (
     p: Painter,
     shade: Shade[BakeUniforms, EmptyTuple],
 ):
+  /** Build the bake panel for `form` (own model binding, the shared shade
+    * attached as its sole shape) WITHOUT painting it. Use this to stack
+    * additional layers on top of the bake — the layer pong-reads the bake's
+    * output (or to defer painting until you've made other panel changes).
+    *
+    * Parameters mirror [[apply]] — see there for the uniform-scaling constraint
+    * on `transform`.
+    */
+  def prepare(
+      form: Form,
+      width: Int,
+      height: Int,
+      transform: Maybe[Mat4] = Maybe.Not,
+      format: Maybe[TextureFormat] = Maybe.Not,
+      mips: Boolean = true,
+  ): Panel =
+    // Own model binding per call (set once, static) so geometries keep distinct
+    // transforms while sharing the one shade / pipeline.
+    val model = p.binding(transform.orElse(Mat4.identity))
+    val shape = p
+      .shape(form, shade, cullMode = CullMode.None)
+      .bind("model" := model)
+    p.panel(
+      width = width,
+      height = height,
+      mips = mips,
+      format = format.orElse(TextureFormat.Rgba8Unorm),
+      shape = shape,
+    )
+
   /** Bake `form` into a fresh `width`×`height` panel and return it (already
-    * painted, ready to sample).
+    * painted, ready to sample). Equivalent to [[prepare]] + `p.paint(panel)`.
     *
     * @param transform
     *   CPU model matrix applied in the vertex stage (default identity). The
-    *   fragment receives the transformed world position + normal.
-    *   '''Uniform scaling only''' — rotation, translation, and uniform scale are
-    *   safe. Non-uniform scale or shear would mis-transform the normal (it is
-    *   transformed by the model's 3×3 with `w = 0`, then renormalized — there is
-    *   no inverse-transpose normal matrix), so avoid those.
+    *   fragment receives the transformed world position + normal. '''Uniform
+    *   scaling only''' — rotation, translation, and uniform scale are safe.
+    *   Non-uniform scale or shear would mis-transform the normal (it is
+    *   transformed by the model's 3×3 with `w = 0`, then renormalized — there
+    *   is no inverse-transpose normal matrix), so avoid those.
     * @param format
     *   Output texture format (default `Rgba8Unorm`; use a float format for HDR
     *   bakes such as light maps).
@@ -80,19 +110,7 @@ class TextureBaker private (
       format: Maybe[TextureFormat] = Maybe.Not,
       mips: Boolean = true,
   ): Panel =
-    // Own model binding per call (set once, static) so geometries keep distinct
-    // transforms while sharing the one shade / pipeline.
-    val model = p.binding(transform.orElse(Mat4.identity))
-    val shape = p
-      .shape(form, shade, cullMode = CullMode.None)
-      .bind("model" := model)
-    val panel = p.panel(
-      width = width,
-      height = height,
-      mips = mips,
-      format = format.orElse(TextureFormat.Rgba8Unorm),
-      shape = shape,
-    )
+    val panel = prepare(form, width, height, transform, format, mips)
     // Bake once, here — caller gets a ready-to-sample texture. The transient
     // `model` binding + `shape` stay resident (BufferBinding has no public
     // destroy yet); negligible for a handful of bakes.
@@ -101,8 +119,9 @@ class TextureBaker private (
 
 /** Factory for [[TextureBaker]]. Two fragment forms:
   *   - [[apply]] — expression form, the fragment returns a single `Vec4Expr`.
-  *   - [[block]] — block form, the fragment writes `color` as the last statement
-  *     of a multi-statement `Block` (FBM noise and other expensive bodies).
+  *   - [[block]] — block form, the fragment writes `color` as the last
+  *     statement of a multi-statement `Block` (FBM noise and other expensive
+  *     bodies).
   *
   * Both vertex stages are identical (generated): they lay each face out flat by
   * its UV for the offscreen render while passing the model-transformed world
@@ -117,12 +136,21 @@ object TextureBaker:
   // panel render covers the whole [0,1]² target), and passes the
   // model-transformed world position + normal to the fragment.
   private def buildVert(
-      program: Program[BakeVertex, BakeVaryings, BakeUniforms, EmptyTuple, FragOut],
+      program: Program[
+        BakeVertex,
+        BakeVaryings,
+        BakeUniforms,
+        EmptyTuple,
+        FragOut,
+      ],
   ): Unit =
     program.vert: ctx =>
       val uv = ctx.in.uv
       Block(
-        ctx.out.worldPos := (ctx.bindings.model * vec4(ctx.in.position, 1.0)).xyz,
+        ctx.out.worldPos := (ctx.bindings.model * vec4(
+          ctx.in.position,
+          1.0,
+        )).xyz,
         // Transform the normal by the model's 3×3 (w = 0 drops translation),
         // then renormalize. Correct for uniform scaling only (see `apply`).
         ctx.out.normal :=
@@ -147,12 +175,12 @@ object TextureBaker:
         )
     new TextureBaker(p, shade)
 
-  /** Build a baker whose fragment is a multi-statement `Block`. The body gets
-    * `(worldPos, normal, uv)` plus the `color` output handle to assign as its
-    * last statement (`color := …`). Use this for FBM noise and other expensive
-    * bodies. See [[TextureBaker.apply]] for the per-bake call.
+  /** Block-form overload: the fragment is a multi-statement `Block` and gets a
+    * fourth `color` output handle to assign as its last statement (`color :=
+    * …`). Use this for FBM noise and other expensive bodies. Picked over the
+    * expression-form [[apply]] by lambda arity (4 vs 3 args).
     */
-  def block(p: Painter)(
+  def apply(p: Painter)(
       frag: (
           worldPos: Vec3Expr,
           normal: Vec3Expr,
@@ -197,4 +225,4 @@ object TextureBaker:
           color: AssignTarget,
       ) => Block,
   ): Panel =
-    TextureBaker.block(p)(frag).apply(form, width, height, transform, format, mips)
+    TextureBaker(p)(frag).apply(form, width, height, transform, format, mips)
