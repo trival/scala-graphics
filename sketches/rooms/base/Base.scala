@@ -134,7 +134,7 @@ val TexScale = 164.0
       vec4(vec3(0.80, 0.78, 0.75) * roomNoise(wp, normal), 1.0)
 
     // Walls — tinted noise + debug grid darkening.
-    val wallBaker = TextureBaker.block(p): (wp, normal, uv, color) =>
+    val wallBaker = TextureBaker(p): (wp, normal, uv, color) =>
       val col = VarVec3("col")
       val g = LetVec2("g")
       val gridLine = LetFloat("gridLine")
@@ -153,7 +153,7 @@ val TexScale = 164.0
 
     // Ceiling — tinted noise + HDR halo light strips. Strips run along the V
     // axis of the baked UV; 6 strips across U.
-    val ceilBaker = TextureBaker.block(p): (wp, normal, uv, color) =>
+    val ceilBaker = TextureBaker(p): (wp, normal, uv, color) =>
       val col = VarVec3("col")
       val s = LetFloat("s")
       val band = VarFloat("band")

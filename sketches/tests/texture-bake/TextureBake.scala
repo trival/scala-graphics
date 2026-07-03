@@ -61,7 +61,7 @@ val NoiseScale = 1.4
       )
 
     // ----- the baker: 3D noise sampled in world space, tinted by normal -------
-    val baker = TextureBaker.block(p): (worldPos, normal, uv, color) =>
+    val baker = TextureBaker(p): (worldPos, normal, uv, color) =>
       val n = LetFloat("n")
       Block(
         // FBM 3D noise — the expensive per-pixel result worth caching.

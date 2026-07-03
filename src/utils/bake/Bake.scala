@@ -46,8 +46,9 @@ type BakeUniforms = (model: VertexUniform[Mat4])
 
 /** A reusable texture baker built around one shade / pipeline.
   *
-  * Construct one with [[TextureBaker.apply]] (expression-form fragment) or
-  * [[TextureBaker.block]] (multi-statement fragment); the shade is built once
+  * Construct one with [[TextureBaker.apply]] — expression-form fragment (3-arg
+  * lambda) or block-form fragment (4-arg lambda), picked by arity; the shade is
+  * built once
   * in the factory. Each [[apply]] call bakes a geometry into its own [[Panel]]
   * and returns it ready to sample — so the same baker shades many geometries
   * through one pipeline (e.g. the six faces of a box).
