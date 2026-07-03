@@ -16,11 +16,11 @@ import trivalibs.utils.js.*
   * a mirror `plane`, into [[mirrorScenePanel]] (mip 0 = the reflected render).
   * A bake pass then reconstructs each fragment's distance from the mirror plane
   * from that render's **depth buffer** (no shade cooperation needed) and writes
-  * it into alpha next to the colour; an internal mip pyramid (shared `Blur` 2D
-  * kernels) blurs colour *and* distance together — so the distance-driven
-  * falloff softens in lockstep with the colour and a blurred silhouette is not
+  * it into alpha next to the color; an internal mip pyramid (shared `Blur` 2D
+  * kernels) blurs color *and* distance together — so the distance-driven
+  * falloff softens in lockstep with the color and a blurred silhouette is not
   * re-sharpened at its edge. [[resultPanel]] picks a blur mip per pixel from the
-  * distance (further ⇒ blurrier) and writes the pre-blurred colour + the
+  * distance (further ⇒ blurrier) and writes the pre-blurred color + the
   * (blurred) normalized distance in alpha. A consumer (the floor) samples
   * `resultPanel` and mixes it in.
   *
@@ -40,11 +40,11 @@ import trivalibs.utils.js.*
 trait MirrorReflection:
   /** The raw reflected render (sharp, mip 0), with a sampleable depth
     * attachment. `resultPanel` is what consumers normally read; this is exposed
-    * for raw/advanced use (e.g. the sharp reflection). The colour+distance blur
+    * for raw/advanced use (e.g. the sharp reflection). The color+distance blur
     * pyramid lives in a separate internal panel. */
   def mirrorScenePanel: Panel
 
-  /** Resolved reflection: pre-blurred colour (rgb) + blurred normalized distance
+  /** Resolved reflection: pre-blurred color (rgb) + blurred normalized distance
     * from the mirror plane (alpha). Sample/​`load` this from the consuming
     * surface. */
   def resultPanel: Panel
@@ -117,7 +117,7 @@ object MirrorReflection:
     * @param p
     *   The painter that owns the GPU device and frame loop.
     * @param shapes
-    *   The shapes to reflect. Their shade produces colour only (distance comes
+    *   The shapes to reflect. Their shade produces color only (distance comes
     *   from depth, not a shade-written value) and reads its view-projection from
     *   the panel-level `vpName` uniform — leave that uniform **unbound** on the
     *   shape so each panel can supply its own.
@@ -175,14 +175,14 @@ object MirrorReflection:
     val uVp = p.binding[Mat4]
     val uInvVp = p.binding[Mat4]
     val uBlurStrength = p.binding(blurStrength)
-    // Trilinear (mipmapFilter = Linear) so the resolve's fractional-LOD colour
+    // Trilinear (mipmapFilter = Linear) so the resolve's fractional-LOD color
     // sample interpolates smoothly across the blur pyramid.
     val sampler =
       p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
 
     // ----- mirror render (mip 0, no pyramid) ------------------------------
     // Always non-MSAA: the reflection is blurred (AA moot). The shapes write
-    // colour only; the plane-distance lands in alpha during the bake below, so
+    // color only; the plane-distance lands in alpha during the bake below, so
     // they stay mirror-agnostic.
     val mirrorPanel = p.panel(
       format = TextureFormat.Rgba16Float,
@@ -194,12 +194,12 @@ object MirrorReflection:
     // name, so write the public runtime-bindings dict directly.
     mirrorPanel.runtimeBindings.set(vpName, uVp)
 
-    // ----- bake distance into alpha, then blur colour + distance together --
+    // ----- bake distance into alpha, then blur color + distance together --
     // The reflection is blurred, but the plane-distance falloff that gates it
-    // (consumer: `mix ∝ 1 - alpha`) must blur *with* the colour — otherwise a
+    // (consumer: `mix ∝ 1 - alpha`) must blur *with* the color — otherwise a
     // blurred silhouette gets re-sharpened by a crisp falloff mask at its edge.
     // So mip 0 of the blur pyramid reconstructs each fragment's distance from
-    // the depth buffer and writes it to alpha alongside the colour; the same
+    // the depth buffer and writes it to alpha alongside the color; the same
     // tent pyramid then blurs both. The resolve reads a *blurred* distance.
     type BakeU = (invVp: Mat4)
     type BakeP = (col: FragmentPanel, depth: FragmentDepthPanel)
@@ -236,7 +236,7 @@ object MirrorReflection:
           4.0,
         )
 
-    // mip 0 = bake (colour + distance); mips 1.. = tent downsamples of both.
+    // mip 0 = bake (color + distance); mips 1.. = tent downsamples of both.
     val blurLayers = Arr[AnyLayer]()
     blurLayers.push(
       p.layer(bakeShade)
@@ -260,7 +260,7 @@ object MirrorReflection:
       layers = blurLayers,
     )
 
-    // ----- resolve: distance → blur LOD, sample blurred colour + distance --
+    // ----- resolve: distance → blur LOD, sample blurred color + distance --
     type ResolveU = (blurStrength: Float, samp: Sampler)
     type ResolveP = (col: FragmentPanel)
     val resolveShade = p.layerShade[ResolveU, ResolveP]: program =>
@@ -269,9 +269,9 @@ object MirrorReflection:
         val t = LetFloat("t")
         val lod = LetFloat("lod")
         Block(
-          // Sharp (mip-0) distance at this pixel drives the LOD; the colour and
+          // Sharp (mip-0) distance at this pixel drives the LOD; the color and
           // the falloff distance are then both read pre-blurred at that LOD, so
-          // the falloff edge softens in lockstep with the colour.
+          // the falloff edge softens in lockstep with the color.
           t := ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).a,
           lod := (1.0 + t * ctx.bindings.blurStrength).log2.min(maxBlur),
           ctx.out.color := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod),

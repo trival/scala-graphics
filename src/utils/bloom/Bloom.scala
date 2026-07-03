@@ -11,7 +11,7 @@ import trivalibs.utils.js.*
 /** Bloom post-processing pyramid + final composite.
   *
   * Internals:
-  *   - [[bloomPanel]] (Rgba16Float, mip-chained) holds the bloom-only colour.
+  *   - [[bloomPanel]] (Rgba16Float, mip-chained) holds the bloom-only color.
   *     The threshold layer writes mip 0; downsample/upsample layers build the
   *     pyramid with the shared `Blur` 2D kernels (resolution derived from
   *     `textureDimensions`, so no per-mip `res` uniforms).

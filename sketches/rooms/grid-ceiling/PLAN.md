@@ -21,7 +21,7 @@ Confirmed design decisions:
 1. **Fog + DOF** = a fog + focus-blur post-process **kept inline in the sketch**
    for this first iteration (no util extraction yet — if another sketch needs it
    later, extract a `playground` util then). It reads the HDR scene **and its
-   depth**, reconstructs view distance, and does _both_ the fog-colour mix and a
+   depth**, reconstructs view distance, and does _both_ the fog-color mix and a
    distance-driven focus-blur LOD in a single resolve pass over a blur mip
    pyramid (mirrors `MirrorReflection`'s depth pattern). → the scene panel must
    be **non-MSAA** so its depth is cleanly sampleable.
@@ -113,64 +113,66 @@ don't launch it as part of a checkpoint).
     grid direction is a **folded 2D surface** baked as a UV atlas.
   - **Repeat-sampler wrap instead of explicit `mod`**: the render grid mesh lets
     `u` (= worldLen ÷ tileWorld) and `v` (strip index ÷ `TileCells`) run past 1;
-    a **`AddressMode.Repeat`** sampler wraps them. (Required a small library add:
-    `AddressMode` enum + `addressMode`/`addressModeU`/`addressModeV` on
+    a **`AddressMode.Repeat`** sampler wraps them. (Required a small library
+    add: `AddressMode` enum + `addressMode`/`addressModeU`/`addressModeV` on
     `p.sampler` in `trivalibs`.)
-  - **Integer-period constraint**: psrdnoise only tiles when the *domain* period
+  - **Integer-period constraint**: psrdnoise only tiles when the _domain_ period
     (`tileWorld · NoiseScale`) is an integer, so `NoiseScale` is **snapped** via
     `noisePeriod = round(tileWorld · targetNoiseScale)`. See memory
     `psrdnoise-integer-period`.
   - **Tiling FBM**: lacunarity fixed at **2** (integer) so every octave period
     stays integer ⇒ the sum still tiles; `FbmOctaves`, `FbmGain` tunable.
-  - **Contrast** is a global `val` (`NoiseContrast`, high for now) baked into the
-    render shade — Step 5 dampens it.
+  - **Contrast** is a global `val` (`NoiseContrast`, high for now) baked into
+    the render shade — Step 5 dampens it.
   - The render shade just samples the baked tile (no grid-cell border pattern;
     that was dropped as debug-only).
-- ✅ **Step 3 — center box** (done). 5-face UV atlas (`boxFaces`), baked from the
-  **same noise volume** and rendered with a **clamp** sampler (its own
+- ✅ **Step 3 — center box** (done). 5-face UV atlas (`boxFaces`), baked from
+  the **same noise volume** and rendered with a **clamp** sampler (its own
   non-tiling patch). Sits on the ground; blends with the floor at the base.
   (`boxSize`/`boxHeight` are tweakable — currently set tall to intersect all
   geometries as a noise-volume-alignment check.)
 - ✅ **Noise volume unified to ONE shared period** (during Step 3). The grid and
   the planes originally used different periods (`gridNoisePeriod` vs
   `planeNoisePeriod`) → different fields, so the box aligned with floor/ceiling
-  but **not** the grid. Now a single `tileWorld` + `noisePeriod` + `NoiseScale` +
-  `noiseBakeShade` is shared by grid, planes and box; the grid bakes
-  `TileCells = displayArea / gridStep` strips to span that one period. Trade-off:
-  bigger shared period (`displayArea`) = less repetition but larger grid atlas
-  (compensated by lower `gridTexPx`).
+  but **not** the grid. Now a single `tileWorld` + `noisePeriod` +
+  `NoiseScale` + `noiseBakeShade` is shared by grid, planes and box; the grid
+  bakes `TileCells = displayArea / gridStep` strips to span that one period.
+  Trade-off: bigger shared period (`displayArea`) = less repetition but larger
+  grid atlas (compensated by lower `gridTexPx`).
 - ✅ **Step 4 — inline fog + focus-blur (DOF)** (done). A depth-driven resolve:
   reconstruct world position from the scene depth + `invVp`, take camera
   distance, and `smoothstep(fadeStart, fadeEnd, dist)` ramps **both** a fog mix
   toward `fogColor` and a blur LOD. Within `fadeStart` everything is sharp;
   beyond it surfaces blur and dissolve into the fog. Notes on how it landed:
   - **Blur source = a TENT-blur pyramid** (`fadeBlurPanel`: mip 0 a sharp copy
-    of the scene, mips 1.. `tentBlur2dAuto` downsamples), sampled with trilinear.
-    The first attempt used the painter's **box auto-mips**, which produced
-    crawling staircase steps on aliased diagonal edges at mid LOD — the tent
-    pyramid fixed that.
-  - **Sampler must be bare** (`samp: Sampler`) in the `layerShade` resolve U, not
-    `FragmentUniform[Sampler]` (the wrapper shifted the bind-group layout → a
-    WebGPU "group 1 binding 0 missing" error).
+    of the scene, mips 1.. `tentBlur2dAuto` downsamples), sampled with
+    trilinear. The first attempt used the painter's **box auto-mips**, which
+    produced crawling staircase steps on aliased diagonal edges at mid LOD — the
+    tent pyramid fixed that.
+  - **Sampler must be bare** (`samp: Sampler`) in the `layerShade` resolve U,
+    not `FragmentUniform[Sampler]` (the wrapper shifted the bind-group layout →
+    a WebGPU "group 1 binding 0 missing" error).
   - Knobs (sketch): `fadeStart`, `fadeEnd` (= `fogEnd`), `blurStrength` (now 4),
     `fadeMips`, `fogColor`.
-  - Pass order per frame: `scene → fadeBlurPanel (pyramid) → fadePanel (resolve)`,
-    then `show(fadePanel)`. Bloom slots in front of `fadePanel` in Step 5.
+  - Pass order per frame:
+    `scene → fadeBlurPanel (pyramid) → fadePanel (resolve)`, then
+    `show(fadePanel)`. Bloom slots in front of `fadePanel` in Step 5.
 - ✅ **Library: MSAA depth sampling** (added during Step 4 to keep MSAA AA). A
-  multisample depth attachment can't be sampled as `texture_depth_2d`, and WebGPU
-  has no auto depth-resolve. The painter now does it transparently:
-  `panel(multisample = true)` + `binding(depth = true)` allocates a single-sample
-  resolve texture and runs an internal depth-resolve pass (subsample 0 →
-  `frag_depth`) after the shape pass — so the depth API stays uniform
-  (`FragmentDepthPanel`) and the scene keeps MSAA. Touch points:
+  multisample depth attachment can't be sampled as `texture_depth_2d`, and
+  WebGPU has no auto depth-resolve. The painter now does it transparently:
+  `panel(multisample = true)` + `binding(depth = true)` allocates a
+  single-sample resolve texture and runs an internal depth-resolve pass
+  (subsample 0 → `frag_depth`) after the shape pass — so the depth API stays
+  uniform (`FragmentDepthPanel`) and the scene keeps MSAA. Touch points:
   `painter/panel.scala` (`allocDepth`, `depthSamplingView`, `needsDepthResolve`,
   `resolvedDepthTarget`), `painter/painter.scala` (`DEPTH_RESOLVE_WGSL`,
-  `depthResolvePipeline`, `resolvePanelDepth`, call in `paintPanel`). Also added a
-  `// TODO(perf)` note on `Painter.show` re: a possible 1:1 blit fast path. (No
-  automated test — the render path needs a real GPU device the munit suite lacks;
-  verified via this sketch.)
-  - Footgun caveat noted: edge depth uses subsample 0 (cheap, fine for DOF); if a
-    future effect needs averaged/MSAA-accurate depth, revisit the resolve shader.
+  `depthResolvePipeline`, `resolvePanelDepth`, call in `paintPanel`). Also added
+  a `// TODO(perf)` note on `Painter.show` re: a possible 1:1 blit fast path.
+  (No automated test — the render path needs a real GPU device the munit suite
+  lacks; verified via this sketch.)
+  - Footgun caveat noted: edge depth uses subsample 0 (cheap, fine for DOF); if
+    a future effect needs averaged/MSAA-accurate depth, revisit the resolve
+    shader.
 - ✅ **Step 5 — lights + bloom + ground reflection** (done). The full look:
   - **Dampened noise**: surfaces are near-white (`NoiseBase 0.85` ±
     `NoiseDetail`) × a per-shape `tint`, replacing the debug high-contrast.
@@ -179,24 +181,24 @@ don't launch it as part of a checkpoint).
   - **Bloom** (`playground.bloom.Bloom`) on the **faded** panel, so distant
     lights bloom progressively less and dissolve into the fog.
   - **Ground reflection** (`playground.mirror.MirrorReflection`) of grid +
-    ceiling + box across `Plane.ground`; `groundShade` mixes `mirror.resultPanel`
-    (rgb = blurred reflection, a = distance → falloff). Shapes read the
-    (reflected) VP from the panel-level `mvp` the mirror drives; `samp` is
-    per-shape so it travels into the mirror pass.
+    ceiling + box across `Plane.ground`; `groundShade` mixes
+    `mirror.resultPanel` (rgb = blurred reflection, a = distance → falloff).
+    Shapes read the (reflected) VP from the panel-level `mvp` the mirror drives;
+    `samp` is per-shape so it travels into the mirror pass.
   - **Light tuning vs reflection**: `LightColor` chosen so direct strips bloom
     (> threshold 1.0) but their dimmed reflection (× `reflStrength`) stays below
     it — the reflection reads as a soft blurred strip, not a re-bloomed glow.
-  - **Mirror is non-MSAA** (and the `multisample` option was *removed* from
+  - **Mirror is non-MSAA** (and the `multisample` option was _removed_ from
     `MirrorReflection`): the reflection is blurred (AA moot) and its alpha
     carries distance, so an MSAA color resolve would only corrupt edges against
     the transparent clear. (The MSAA depth-resolve library feature stays — the
     **scene** panel still uses it for the fog/DOF depth read.)
-  - Frame pipeline: `mirror.paint(vp) → p.paint(scenePanel, fadeBlurPanel,
-    fadePanel) → bloom.paint() → show(bloom.resultPanel)`.
+  - Frame pipeline:
+    `mirror.paint(vp) → p.paint(scenePanel, fadeBlurPanel, fadePanel) → bloom.paint() → show(bloom.resultPanel)`.
 
 **All five steps complete.** Possible follow-ups (not required): extract the
 inline fog/DOF into a `playground` util if a second sketch needs it; near-edge
-AA on the in-focus foreground (no MSAA on the scene's *sharp* zone — the DOF
+AA on the in-focus foreground (no MSAA on the scene's _sharp_ zone — the DOF
 hides the rest).
 
 ---
@@ -328,16 +330,16 @@ baked noise **blends continuously** with the ground noise at its base.
 A fullscreen fog + focus-blur resolve built **inline in the sketch**, structured
 like `MirrorReflection` (build a blur mip pyramid of the source, then a
 depth-driven resolve picks per-pixel LOD), but the source is the **scene
-itself** and the resolve also mixes toward a fog colour. Two panels + a couple
+itself** and the resolve also mixes toward a fog color. Two panels + a couple
 bindings declared right in the `Painter.init` body — no util, no trait.
 
 For this to read depth cleanly the scene must render into an HDR, **non-MSAA**
 panel:
 
 - `scenePanel`: `Rgba16Float`, `depthTest = true`, **`multisample = false`**,
-  `clearColor = fogColor` (same colour the fog mixes to → seamless void).
-  Shapes: ground, grid rows, grid cols, ceiling, box. Supplies a panel-level
-  `vp` to its shapes (so they're reusable in the mirror pass in Step 5).
+  `clearColor = fogColor` (same color the fog mixes to → seamless void). Shapes:
+  ground, grid rows, grid cols, ceiling, box. Supplies a panel-level `vp` to its
+  shapes (so they're reusable in the mirror pass in Step 5).
 
 ### Constants / bindings (in the sketch)
 
@@ -386,7 +388,7 @@ Per frame (after the scene is painted): `invVp.set(vp.inverse)`,
 
 **Checkpoint**: geometry **within `fadeStart`** stays sharp and un-fogged;
 beyond it, the box / grid / floor / ceiling progressively **blur and fade into
-the fog colour**, distant space dissolving into the void. Tune
+the fog color**, distant space dissolving into the void. Tune
 `fadeStart`/`fadeEnd`/`blurStrength`.
 
 ---
@@ -397,10 +399,10 @@ Now layer the lighting + remaining post on top of the verified base.
 
 - **Dampen noise contrast**: drop the debug high-contrast noise (Step 2) to a
   **subtle detail** — a narrow value band that just adds texture to the
-  near-uniform surfaces (cf. `rooms/base`'s tight `[0.68, 1.0]` remap). Just edit
-  the global contrast `val` (baked into the shader, no uniform) so the lighting +
-  reflection + bloom read as the primary effects and the noise only enriches
-  them.
+  near-uniform surfaces (cf. `rooms/base`'s tight `[0.68, 1.0]` remap). Just
+  edit the global contrast `val` (baked into the shader, no uniform) so the
+  lighting + reflection + bloom read as the primary effects and the noise only
+  enriches them.
 - **Ceiling lights**: upgrade the ceiling plate to an **HDR halo-strip light
   texture** ported from `rooms/base`'s `ceilTex` (the `haloCount`/`haloStrength`
   strips in `noiseShade`, lines 196–209 of `Base.scala`), composited over /

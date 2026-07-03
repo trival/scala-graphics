@@ -29,7 +29,7 @@ shade (a `mirrorMode` flag, a distinct alpha write) and couples the util to the
 user's shade. Instead we **sample the mirror render's depth buffer and
 reconstruct the distance** in the resolve pass (depth + inverse view-projection
 → world position → analytic plane distance). The user's shade then only has to
-produce colour — the _same_ scene shade can render into the mirror panel
+produce color — the _same_ scene shade can render into the mirror panel
 unmodified — and the whole `mirrorMode` / alpha-write contract disappears.
 
 This also exercises the library's **depth-texture sampling** feature for the
@@ -59,7 +59,7 @@ Build and validate bottom-up:
 - ✅ **Phase 1a — depth-texture DSL** (done). `DepthTexture2D` opaque type
   (`math/gpu/expr.scala`) → `texture_depth_2d`, with `.load(coord, level=0)` (no
   sampler) and `.sample(uv, samp)`. (No `sampleLevel` for depth — the attachment
-  is single-level; the mip pyramid lives on the colour texture.)
+  is single-level; the mip pyramid lives on the color texture.)
   `WGSLType.isDepthTexture` marker + `WGSLType[DepthTexture2D]`; depth panel
   markers `FragmentDepthPanel`/`VertexDepthPanel`/`SharedDepthPanel`
   (`shader/types.scala`); `PanelToTexture` maps them to `DepthTexture2D`
@@ -80,7 +80,7 @@ Build and validate bottom-up:
   one shared `wallShade` (walls + ceiling, `CullMode.None`) used unmodified in
   both passes via panel-level `vp`; `mirrorScenePanel` (reflected render +
   `tentBlur2d` pyramid + sampleable depth); a resolve pass that reconstructs
-  distance from depth + `invVp` and writes pre-blurred colour + normalized
+  distance from depth + `invVp` and writes pre-blurred color + normalized
   distance; floor samples `resultPanel` in screen space. `mirrorMode` flag /
   alpha-distance write / separate mirror shade all removed. Reflection looks
   identical to the pre-change sketch.
@@ -116,16 +116,16 @@ Build and validate bottom-up:
   mirroring the updated `Bloom` structure: trait + factory, **no `onResize`**
   (res-free — `tentBlur2dAuto` + `fragCoord`/`load`), with a left-in TODO for an
   optional custom-panel-size API. The util owns `vp`/`invVp`/`blurStrength`
-  bindings + the reflection matrix; takes `mirror: Plane = Plane.ground`
-  (bakes `normal`/`d` into the resolve shade's distance), `vpName` (writes the
+  bindings + the reflection matrix; takes `mirror: Plane = Plane.ground` (bakes
+  `normal`/`d` into the resolve shade's distance), `vpName` (writes the
   reflected VP onto `mirrorScenePanel.runtimeBindings`), `alphaScale`,
   `mipLevels` (→ `maxBlur = mipLevels-1`), and an optional `camera` (else pass
-  `vp` to `paint`). Exposes `mirrorScenePanel` + `resultPanel`.
-  `Base.scala` migrated onto it: the whole mirror-panel + resolve + blur block
-  (~95 lines) collapsed to one `MirrorReflection(...)` call; the floor binds
-  `mirror.resultPanel`; `animate` is `sceneVp.set(vp); mirror.paint(vp);
-  p.paint(scenePanel)`. (Sketch feeds `vp` per frame rather than `camera = cam`,
-  noted inline; both paths are supported.)
+  `vp` to `paint`). Exposes `mirrorScenePanel` + `resultPanel`. `Base.scala`
+  migrated onto it: the whole mirror-panel + resolve + blur block (~95 lines)
+  collapsed to one `MirrorReflection(...)` call; the floor binds
+  `mirror.resultPanel`; `animate` is
+  `sceneVp.set(vp); mirror.paint(vp); p.paint(scenePanel)`. (Sketch feeds `vp`
+  per frame rather than `camera = cam`, noted inline; both paths are supported.)
 
 ## Why depth-reconstructed distance (rationale + tradeoffs)
 
@@ -156,7 +156,7 @@ Build and validate bottom-up:
 - **What it deletes:** the `mirrorMode` flag uniform, the shade's
   `alpha = distance` write, and the "merge `roomShade` + `mirrorShade`" step.
   The _unmodified_ scene shade renders into the mirror panel (we read its `.xyz`
-  for colour and get distance from depth). The only panel-level uniform left is
+  for color and get distance from depth). The only panel-level uniform left is
   `vp`, which is the legitimate mechanism for shape reuse across passes — not a
   "dance."
 - **Empty texels handled cleanly.** Where no mirror shape drew, depth is the far
@@ -245,7 +245,7 @@ Build and validate bottom-up:
      `mirrorScenePanel.binding(depth = true)`.
   2. `resultPanel` — full-res panel from one extra pass that, per texel,
      reconstructs distance from depth, picks the mip-LOD from it, and writes the
-     pre-blurred colour + normalized distance. This is the panel sketches
+     pre-blurred color + normalized distance. This is the panel sketches
      normally sample (named `resultPanel` to match Bloom's final-output panel).
 - **Composition stays in user land.** Floor shader samples `resultPanel` base
   mip and computes its own mix/falloff from the normalized distance and a
@@ -493,7 +493,7 @@ mirrorScenePanel.bind("vp" := mirrorVp)   // panel-level mirror view-projection
 ```
 
 - `depthTest = true` produces the depth buffer we sample; `multisample = false`
-  keeps both colour mip 0 and depth directly sampleable.
+  keeps both color mip 0 and depth directly sampleable.
 - `downBlurShade` calls the lib kernel
   `Blur.tentBlur2d(ctx.textures.tex, ctx.bindings.samp, ctx.in.uv, ctx.bindings.res, 2.0)`;
   `mipLevels-1` downsample layers
@@ -501,7 +501,7 @@ mirrorScenePanel.bind("vp" := mirrorVp)   // panel-level mirror view-projection
   per-mip `res` binding (loop).
 
 **5. Resolve pass → `resultPanel`** (full-res, `Rgba16Float` for HDR halo):
-binds the mirror panel's **colour pyramid** _and_ its **depth**, plus the
+binds the mirror panel's **color pyramid** _and_ its **depth**, plus the
 util-side `invVP` matrix. Per texel:
 
 ```scala
@@ -599,7 +599,7 @@ object MirrorReflection:
   // `[S <: AnyShape, L <: AnyLayer]`, so S threads straight through.
   def apply[S <: AnyShape](
       p: Painter,
-      shapes: Arr[S],            // mirrored shapes; produce colour only
+      shapes: Arr[S],            // mirrored shapes; produce color only
       vpName: String,            // panel-uniform name the util writes the
                                  //   mirrored view-projection into (shapes read it)
       alphaScale: Double,        // plane distance mapping to normalized 1.0
@@ -638,7 +638,7 @@ Internals (lift from the proven Phase-2 sketch, generalize constants):
    the resolve pass via `mirrorScenePanel.binding(depth = true)`. Per-mip `Vec2`
    res bindings built in a loop (`Arr[BufferBinding[Vec2, ?]]`, like Bloom).
 3. **resultPanel** — the resolve layer pass from Phase 2 step 5, reading the
-   colour pyramid + depth + `invVp`. `alphaScale`/`maxBlur` compile-time consts;
+   color pyramid + depth + `invVp`. `alphaScale`/`maxBlur` compile-time consts;
    `blurStrength` runtime (`setBlurStrength`).
 4. **onResize** — set each mip res binding to `(w/2^i, h/2^i)` (loop).
 5. **paint(vp)** — resolve the view-projection (raw arg, else camera, else

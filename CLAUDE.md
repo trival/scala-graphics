@@ -134,9 +134,11 @@ Metals only loads one config:
   doesn't compile, treat that as a missing library overload / conversion in
   `trivalibs/` and check with me before settling for the annotation. Adding the
   overload library-side is preferred; the annotation is the fallback.
-- in comments and docs you write, use American spelling **"color"** (not
-  "colour"). Don't mass-rewrite pre-existing "colour" in code you didn't touch —
-  much of trivalibs uses it — just don't add more.
+- **Always use US spelling "color", never "colour"** — everywhere in the project
+  (Scala identifiers, comments, scaladoc, markdown docs, plan files, commit
+  messages, PRs). Both `graphics/` and the `trivalibs/` submodule. The codebase
+  has been swept; any new "colour" is a regression and should be rewritten in
+  the same touch.
 - **Per-frame `update` methods take `tpf`** (milliseconds since the last frame,
   as `animate` provides) — not an absolute timestamp. E.g. `input.update(tpf)`,
   `controller.update(tpf)`. This keeps stepping consistent, pauses/resumes
