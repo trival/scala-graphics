@@ -7164,6 +7164,9 @@ $p.kW = (function() {
 $p.nI = (function() {
   return this.gg;
 });
+$p.lq = (function(index) {
+  return this.hf[index];
+});
 $p.nV = (function() {
   var t = this.aQ[0];
   this.aQ[0] = this.aQ[1];
@@ -7172,9 +7175,6 @@ $p.nV = (function() {
   this.W[0] = this.W[1];
   this.W[1] = sv;
   this.f3 = ((1 + this.f3) | 0);
-});
-$p.lq = (function(index) {
-  return this.hf[index];
 });
 $p.m8 = (function() {
   if (((!this.gb) && (this.gc !== null))) {

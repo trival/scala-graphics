@@ -6269,6 +6269,9 @@ $p.kr = (function() {
 $p.mO = (function() {
   return this.fN;
 });
+$p.kL = (function(index) {
+  return this.gU[index];
+});
 $p.mY = (function() {
   var t = this.aq[0];
   this.aq[0] = this.aq[1];
@@ -6277,9 +6280,6 @@ $p.mY = (function() {
   this.G[0] = this.G[1];
   this.G[1] = sv;
   this.eD = ((1 + this.eD) | 0);
-});
-$p.kL = (function(index) {
-  return this.gU[index];
 });
 $p.lu = (function() {
   if (((!this.fI) && (this.fJ !== null))) {

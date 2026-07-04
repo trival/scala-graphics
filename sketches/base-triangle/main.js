@@ -3608,6 +3608,9 @@ $p.dw = (function() {
 $p.fp = (function() {
   return this.ao;
 });
+$p.dU = (function(index) {
+  return this.ba[index];
+});
 $p.fy = (function() {
   var t = this.A[0];
   this.A[0] = this.A[1];
@@ -3616,9 +3619,6 @@ $p.fy = (function() {
   this.f[0] = this.f[1];
   this.f[1] = sv;
   this.O = ((1 + this.O) | 0);
-});
-$p.dU = (function(index) {
-  return this.ba[index];
 });
 $p.ee = (function() {
   if (((!this.aj) && (this.ak !== null))) {

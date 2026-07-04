@@ -7886,6 +7886,9 @@ $p.lT = (function() {
 $p.p0 = (function() {
   return this.gt;
 });
+$p.mp = (function(index) {
+  return this.hy[index];
+});
 $p.ph = (function() {
   var t = this.aY[0];
   this.aY[0] = this.aY[1];
@@ -7894,9 +7897,6 @@ $p.ph = (function() {
   this.X[0] = this.X[1];
   this.X[1] = sv;
   this.fh = ((1 + this.fh) | 0);
-});
-$p.mp = (function(index) {
-  return this.hy[index];
 });
 $p.np = (function() {
   if (((!this.go) && (this.gp !== null))) {

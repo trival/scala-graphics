@@ -3941,6 +3941,9 @@ $p.dd = (function() {
 $p.el = (function() {
   return this.aO;
 });
+$p.di = (function(index) {
+  return this.bg[index];
+});
 $p.ex = (function() {
   var t = this.M[0];
   this.M[0] = this.M[1];
@@ -3949,9 +3952,6 @@ $p.ex = (function() {
   this.k[0] = this.k[1];
   this.k[1] = sv;
   this.a5 = ((1 + this.a5) | 0);
-});
-$p.di = (function(index) {
-  return this.bg[index];
 });
 $p.dK = (function() {
   if (((!this.aJ) && (this.aK !== null))) {
