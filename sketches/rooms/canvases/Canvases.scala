@@ -7,6 +7,7 @@ import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
+import trivalibs.graphics.buffers.BufferBinding
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -32,15 +33,100 @@ val RoomDepth = 10.0
 // geometry dimensions × this factor, so texel density is uniform in space.
 val TexScale = 48.0
 
+val Up = Vec3(0.0, 1.0, 0.0)
+
+// Painting drop-shadow shaping. The shadow box matches the canvas footprint
+// exactly; the soft edge + downward bias are shaped by `shadowMask`.
+val ShadowTopFadeMul = 0.5
+val ShadowBotFadeMul = 2.5
+val ShadowGradTop = 0.28 // strength fraction at the canvas top edge
+val ShadowFadeWorld = 0.16 // penumbra width in world metres
+val ShadowStrength = 0.2
+
+/** Soft, directional painting drop-shadow for one rect, in wall-local UV.
+  * `rect = (centerX, centerY, halfW, halfH)`, `fade = (fadeU, fadeV)` is the
+  * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
+  * `worldFade / wallHeight` so the penumbra is isotropic in world space
+  * regardless of wall aspect. Returns ~0 above the canvas, rising to 1 under
+  * it.
+  */
+def shadowMask(uv: Vec2Expr, rect: Vec4Expr, fade: Vec2Expr): FloatExpr =
+  val hx = rect.z
+  val hy = rect.w
+  val dx = uv.x - rect.x
+  val dy = uv.y - rect.y // +Y is down
+  // Horizontal containment — symmetric soft edge.
+  val hMask = dx.abs.smoothstep(hx + fade.x, hx)
+  // Vertical containment — tight fade above the top edge, broad below the
+  // bottom edge (the cast shadow pools under the canvas).
+  val upper = dy.smoothstep(-hy - fade.y * ShadowTopFadeMul, -hy)
+  val lower = dy.smoothstep(hy + fade.y * ShadowBotFadeMul, hy)
+  // Top→bottom gradient inside the box: ShadowGradTop at top → 1 at bottom.
+  val grad = ((dy + hy) / (2.0 * hy + 0.0001)).clamp01
+  val vert = grad * (1.0 - ShadowGradTop) + ShadowGradTop
+  hMask * upper * lower * vert
+
+/** A painting to hang on a wall. `image` is any `Panel` (its content is the
+  * consumer's concern). `sideStretch` is the front:side texel-density ratio — a
+  * thin UV margin `depth / (sideStretch * size)` wraps each side.
+  */
+case class PaintingSpec(
+    width: Double,
+    height: Double,
+    depth: Double,
+    image: Panel,
+    sideStretch: Double = 3.0,
+)
+
+/** A painting hung on a wall: its scene shape, its per-painting `model` matrix
+  * binding (mutable, for animation in a later milestone) and the wall-local UV
+  * data its baked shadow needs.
+  */
+case class Painting(
+    model: BufferBinding[Mat4, ?],
+    shape: AnyShape,
+    shadowRect: Vec4, // UV-space (centerX, centerY, halfW, halfH)
+    shadowFade: Vec2, // per-axis penumbra width in UV
+)
+
+/** One wall side: its quad geometry (local UV [0,1], v down) and the paintings
+  * hung on it.
+  */
+case class Wall(
+    center: Vec3,
+    width: Double,
+    height: Double,
+    rotY: Double,
+    inwardNormal: Vec3,
+    form: Form,
+    paintings: Arr[Painting] = Arr(),
+)
+
+type RoomVertex = (position: Vec3, uv: Vec2)
+
+// Wall + ceiling: both are quads textured with a pre-baked panel.
+type TexturedUniforms = (
+    vp: VertexUniform[Mat4],
+    samp: FragmentUniform[Sampler],
+)
+type TexturedPanels = (tex: FragmentPanel)
+
+type PaintingUniforms = (
+    vp: VertexUniform[Mat4],
+    model: VertexUniform[Mat4],
+    samp: FragmentUniform[Sampler],
+)
+type PaintingPanels = (img: FragmentPanel)
+
 @main def roomsCanvases(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
 
   Painter.init(canvas): p =>
+    val sampler = p.samplerLinear
+
     // -----------------------------------------------------------------------
     // Floor / ceiling geometry — box face quads → Mesh → buffered geometry
     // -----------------------------------------------------------------------
-    type RoomVertex = (position: Vec3, uv: Vec2)
-
     val box =
       Box(Vec3(0.0, RoomHeight / 2.0, 0.0), RoomWidth, RoomHeight, RoomDepth)
 
@@ -148,26 +234,180 @@ val TexScale = 48.0
             vec4(base.xyz * (1.0 - ctx.bindings.strength * sm), base.w),
         )
 
-    // Bake one wall texture: noise prepared by the shared baker, painting
-    // shadow drawn on top by the shadow layer.
-    def bakeWallTex(wall: paintings.Wall): Panel =
-      val (ww, wh) = texSize(wall.width, wall.height)
-      val panel = wallBaker.prepare(wall.form, ww, wh)
-      val shadow = p
-        .layer(shadowLayerShade)
-        .bind(
-          "rect" := wall.shadowRect,
-          "fade" := wall.shadowFade,
-          "strength" := wall.shadowStrength,
-        )
-      panel.set(layer = shadow)
-      p.paint(panel)
-      panel
+    // -----------------------------------------------------------------------
+    // Scene shades — a textured quad (walls, ceiling) and a painting box.
+    // -----------------------------------------------------------------------
+    val texturedShade =
+      p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
+        program =>
+          program.vert: ctx =>
+            Block(
+              ctx.out.uv := ctx.in.uv,
+              ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0),
+            )
+          program.frag: ctx =>
+            ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
+
+    val paintingShade =
+      p.shade[RoomVertex, (uv: Vec2), PaintingUniforms, PaintingPanels]:
+        program =>
+          program.vert: ctx =>
+            Block(
+              ctx.out.uv := ctx.in.uv,
+              ctx.out.position :=
+                ctx.bindings.vp * ctx.bindings.model * vec4(
+                  ctx.in.position,
+                  1.0,
+                ),
+            )
+          program.frag: ctx =>
+            ctx.out.color := ctx.textures.img(ctx.in.uv, ctx.bindings.samp)
 
     // -----------------------------------------------------------------------
     // Walls + paintings (the M1 feature)
     // -----------------------------------------------------------------------
-    val paintings = Paintings(p)
+
+    /** Flat-box geometry for one painting, centred at the local origin, front
+      * on `+Z`. Front fills the inset UV rect; the four thin sides wrap the
+      * outer margin (stretched across the depth); the back is continuous with
+      * the side back edges. (M1: always includes the back face — no frames
+      * yet.)
+      */
+    def paintingForm(spec: PaintingSpec): Form =
+      val hw = spec.width / 2.0
+      val hh = spec.height / 2.0
+      val hd = spec.depth / 2.0
+      val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
+      val mv = (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
+
+      def v(x: Double, y: Double, z: Double, u: Double, w: Double): RoomVertex =
+        (position = Vec3(x, y, z), uv = Vec2(u, w))
+
+      val faces = Arr(
+        // Front (+Z): inset rect.
+        Quad(
+          v(-hw, hh, hd, mu, mv),
+          v(-hw, -hh, hd, mu, 1.0 - mv),
+          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+          v(hw, hh, hd, 1.0 - mu, mv),
+        ),
+        // Right side (+X): U 1-mu → 1.
+        Quad(
+          v(hw, hh, hd, 1.0 - mu, mv),
+          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+          v(hw, -hh, -hd, 1.0, 1.0 - mv),
+          v(hw, hh, -hd, 1.0, mv),
+        ),
+        // Left side (-X): U mu → 0.
+        Quad(
+          v(-hw, hh, hd, mu, mv),
+          v(-hw, -hh, hd, mu, 1.0 - mv),
+          v(-hw, -hh, -hd, 0.0, 1.0 - mv),
+          v(-hw, hh, -hd, 0.0, mv),
+        ),
+        // Top side (+Y): V mv → 0.
+        Quad(
+          v(-hw, hh, hd, mu, mv),
+          v(hw, hh, hd, 1.0 - mu, mv),
+          v(hw, hh, -hd, 1.0 - mu, 0.0),
+          v(-hw, hh, -hd, mu, 0.0),
+        ),
+        // Bottom side (-Y): V 1-mv → 1.
+        Quad(
+          v(-hw, -hh, hd, mu, 1.0 - mv),
+          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+          v(hw, -hh, -hd, 1.0 - mu, 1.0),
+          v(-hw, -hh, -hd, mu, 1.0),
+        ),
+        // Back (-Z): continuous with side back edges, same world-X→U as front.
+        Quad(
+          v(-hw, hh, -hd, 0.0, 0.0),
+          v(-hw, -hh, -hd, 0.0, 1.0),
+          v(hw, -hh, -hd, 1.0, 1.0),
+          v(hw, hh, -hd, 1.0, 0.0),
+        ),
+      )
+
+      p.form(geometry =
+        toBufferedGeometry(Mesh(faces), MeshBufferType.FaceVertices),
+      )
+
+    /** A wall quad in world space, UV [0,1] (tl=(0,0), v down). Its `form` goes
+      * to the wall baker; paintings are hung on it afterwards.
+      */
+    def mkWall(
+        center: Vec3,
+        width: Double,
+        height: Double,
+        rotY: Double,
+        inwardNormal: Vec3,
+    ): Wall =
+      // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
+      val right = Up.cross(inwardNormal)
+      def corner(su: Double, sv: Double, u: Double, w: Double): RoomVertex =
+        val pos = center + right * (su * width / 2.0) + Up * (sv * height / 2.0)
+        (position = pos, uv = Vec2(u, w))
+      val wallForm = form(
+        Arr(
+          Quad(
+            corner(-1.0, 1.0, 0.0, 0.0),
+            corner(-1.0, -1.0, 0.0, 1.0),
+            corner(1.0, -1.0, 1.0, 1.0),
+            corner(1.0, 1.0, 1.0, 0.0),
+          ),
+        ),
+      )
+      Wall(center, width, height, rotY, inwardNormal, wallForm)
+
+    /** Hang a painting at wall-local `(u, v)` in world units (`u` along the
+      * wall width from its left edge, `v` height from the floor edge).
+      */
+    def hang(wall: Wall, spec: PaintingSpec, u: Double, v: Double): Painting =
+      val right = Up.cross(wall.inwardNormal)
+      val hd = spec.depth / 2.0
+      val pos = wall.center +
+        right * (u - wall.width / 2.0) +
+        Up * (v - wall.height / 2.0) +
+        wall.inwardNormal * (hd + 0.02)
+      val m = Mat4.fromTranslationRotationScale(
+        pos,
+        Quat.fromRotationY(wall.rotY),
+        Vec3(1.0, 1.0, 1.0),
+      )
+      val model = p.binding(m)
+      val shape = p
+        .shape(paintingForm(spec), paintingShade, cullMode = CullMode.None)
+        .bind("model" := model, "samp" := sampler, "img" := spec.image)
+      val painting = Painting(
+        model,
+        shape,
+        Vec4(
+          u / wall.width,
+          1.0 - v / wall.height,
+          (spec.width / 2.0) / wall.width,
+          (spec.height / 2.0) / wall.height,
+        ),
+        Vec2(ShadowFadeWorld / wall.width, ShadowFadeWorld / wall.height),
+      )
+      wall.paintings.push(painting)
+      painting
+
+    // Bake one wall texture: noise prepared by the shared baker, painting
+    // shadow drawn on top by the shadow layer. Call after the paintings are up.
+    def bakeWallTex(wall: Wall): Panel =
+      val (ww, wh) = texSize(wall.width, wall.height)
+      val panel = wallBaker.prepare(wall.form, ww, wh)
+      val painting = wall.paintings(0)
+      val shadow = p
+        .layer(shadowLayerShade)
+        .bind(
+          "rect" := painting.shadowRect,
+          "fade" := painting.shadowFade,
+          "strength" := ShadowStrength,
+        )
+      panel.set(layer = shadow)
+      p.paint(panel)
+      panel
 
     // Image panels projected onto the canvases.
     val imgShade = p.layerShade[(color: Vec3)]: program =>
@@ -190,15 +430,6 @@ val TexScale = 48.0
       )
 
     // Four walls, each from the room box's extent, facing inward.
-    def mkWall(
-        center: Vec3,
-        w: Double,
-        h: Double,
-        rotY: Double,
-        normal: Vec3,
-    ): paintings.Wall =
-      paintings.wall(center, w, h, rotY, normal)
-
     val Tau = 2.0 * math.Pi
     val wallFront = mkWall(
       Vec3(0.0, RoomHeight / 2.0, RoomDepth / 2.0),
@@ -245,7 +476,8 @@ val TexScale = 48.0
       val img = imagePanels(i)
       val pw = randInRange(0.9, 1.7)
       val ph = randInRange(0.7, 1.4)
-      wall.hang(
+      hang(
+        wall,
         PaintingSpec(width = pw, height = ph, depth = 0.05, image = img),
         u = wall.width / 2.0,
         v = 1.7,
@@ -255,10 +487,8 @@ val TexScale = 48.0
     // Scene rendering
     // -----------------------------------------------------------------------
 
-    val sampler = p.samplerLinear
-
     val ceilShape = p
-      .shape(ceilForm, paintings.wallSceneShade, cullMode = CullMode.None)
+      .shape(ceilForm, texturedShade, cullMode = CullMode.None)
       .bind("samp" := sampler, "tex" := ceilTex)
 
     // All above-ground scene shapes (ceiling + walls + paintings) — these also
@@ -266,8 +496,11 @@ val TexScale = 48.0
     val aboveGround = Arr[AnyShape](ceilShape)
     for wall <- walls do
       val wallTex = bakeWallTex(wall)
-      aboveGround.push(wall.createWallShape(wallTex))
-      for shape <- wall.paintingShapes do aboveGround.push(shape)
+      aboveGround.push(
+        p.shape(wall.form, texturedShade, cullMode = CullMode.None)
+          .bind("samp" := sampler, "tex" := wallTex),
+      )
+      for painting <- wall.paintings do aboveGround.push(painting.shape)
 
     val mirror = MirrorReflection(
       p,
