@@ -21,15 +21,7 @@ import trivalibs.utils.numbers.NumExt.given
 import trivalibs.utils.random.randInRange
 
 // ---------------------------------------------------------------------------
-// A first-person walkable room (forked from rooms/base) with paintings hanging
-// on the walls. The four walls are split into separate `Wall` blocks (see
-// Wall.scala), each with its own baked noise texture (local UV) and the
-// paintings hung on it. Floor / ceiling, the HDR ceiling halos + bloom, and the
-// depth-driven blurred floor reflection are unchanged from base.
-//
-// M1: one painting per wall, static, with a single soft shadow baked into the
-// wall texture. All above-ground objects (walls + paintings) contribute to the
-// floor reflection.
+// A first-person walkable room with paintings hanging on the walls.
 // ---------------------------------------------------------------------------
 
 val RoomWidth = 6.5
@@ -70,13 +62,7 @@ val TexScale = 48.0
       form(Arr(box.topFace((c, uvw) => vert(c, uvw.x, uvw.z))))
 
     // -----------------------------------------------------------------------
-    // Pre-render: bake a 3D-noise field across the room geometry. A shared
-    // `roomNoise` shapes the noise so neighbouring faces line up in world
-    // space, but a second normal-cross term adds some per-orientation variance
-    // (a wall reads slightly differently from the floor). Each surface gets
-    // its own dedicated baker so the shaders stay focused: floor is plain
-    // tinted noise, ceiling adds HDR halo strips, walls add a vertical
-    // darkening toward the top and bake a soft painting shadow.
+    // Pre-render: Simulate ambient lighting 3D-noise fields and generated halo light strips.
     // -----------------------------------------------------------------------
 
     def roomNoise(wp: Vec3Expr, normal: Vec3Expr) =
@@ -138,9 +124,7 @@ val TexScale = 48.0
         color := vec4(col, 1.0),
       )
 
-    // Single wall noise baker — shared by all four walls (one shade, one
-    // pipeline). Plain tinted noise darkened toward the ceiling; no shadow,
-    // since that's drawn on top per-wall by the shadow layer below.
+    // Single wall noise baker - shadows go on top in a separate layer.
     val wallBaker = TextureBaker(p): (wp, normal, _) =>
       vec4(
         vec3(0.96, 0.96, 0.95).lerp(
@@ -150,9 +134,7 @@ val TexScale = 48.0
         1.0,
       )
 
-    // Shadow layer — reads the bake pong-injected as `prev` and modulates by a
-    // soft painting shadow whose rect / fade / strength come in as per-wall
-    // uniforms. One shade, one pipeline, four draws.
+    // Shadow layer — draw a shadow on top of the sampled texture.
     type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
     type ShadowP = (prev: FragmentPanel)
     val shadowLayerShade = p.layerShade[ShadowU, ShadowP]: program =>
@@ -167,9 +149,7 @@ val TexScale = 48.0
         )
 
     // Bake one wall texture: noise prepared by the shared baker, painting
-    // shadow drawn on top by the shadow layer (auto-pong reads the bake as
-    // `prev`; the painter swaps main↔pong after the layer so external
-    // samplers see the shadowed result).
+    // shadow drawn on top by the shadow layer.
     def bakeWallTex(wall: paintings.Wall): Panel =
       val (ww, wh) = texSize(wall.width, wall.height)
       val panel = wallBaker.prepare(wall.form, ww, wh)
@@ -189,10 +169,7 @@ val TexScale = 48.0
     // -----------------------------------------------------------------------
     val paintings = Paintings(p)
 
-    // Image panels (content is the sketch's concern, never the block). A
-    // procedural diagonal grid over a monochrome base — black lines edge to
-    // edge — so the canvas UV projection (front inset, side wrap, back
-    // continuity) is visually verifiable.
+    // Image panels projected onto the canvases.
     val imgShade = p.layerShade[(color: Vec3)]: program =>
       program.frag: ctx =>
         val GridN = 6.0
@@ -253,60 +230,44 @@ val TexScale = 48.0
     )
     val walls = Arr(wallFront, wallBack, wallLeft, wallRight)
 
-    // Hang one painting per wall, centred horizontally at eye height, random
-    // size, monochrome image.
     val palette = Arr(
-      (0.78, 0.30, 0.28),
-      (0.30, 0.45, 0.70),
-      (0.40, 0.62, 0.42),
-      (0.82, 0.70, 0.34),
+      Vec3(0.78, 0.30, 0.28),
+      Vec3(0.30, 0.45, 0.70),
+      Vec3(0.40, 0.62, 0.42),
+      Vec3(0.82, 0.70, 0.34),
     )
-    // Image panels are static — collected here so they get pre-rendered (a
-    // clearColor-only panel still needs one paint to allocate + clear its
-    // texture before it can be sampled).
-    val imagePanels = Arr[Panel]()
-    var wi = 0
-    while wi < walls.length do
-      val wall = walls(wi)
+    val imagePanels = palette.map(patternPanel)
+    // Pre-render the painting image panels once.
+    imagePanels.foreach(p.paint(_))
+
+    for i <- 0 until walls.length do
+      val wall = walls(i)
+      val img = imagePanels(i)
       val pw = randInRange(0.9, 1.7)
       val ph = randInRange(0.7, 1.4)
-      val c = palette(wi)
-      val img = patternPanel(Vec3(c._1, c._2, c._3))
-      imagePanels.push(img)
       wall.hang(
         PaintingSpec(width = pw, height = ph, depth = 0.05, image = img),
         u = wall.width / 2.0,
         v = 1.7,
       )
-      wi += 1
 
     // -----------------------------------------------------------------------
     // Scene rendering
     // -----------------------------------------------------------------------
 
-    val texSampler =
-      p.sampler(FilterMode.Linear, FilterMode.Linear, FilterMode.Linear)
+    val sampler = p.samplerLinear
 
     val ceilShape = p
       .shape(ceilForm, paintings.wallSceneShade, cullMode = CullMode.None)
-      .bind("samp" := texSampler, "tex" := ceilTex)
+      .bind("samp" := sampler, "tex" := ceilTex)
 
     // All above-ground scene shapes (ceiling + walls + paintings) — these also
-    // feed the floor mirror. Bake each wall's texture here (noise via the
-    // shared baker + shadow layer with that wall's bindings), then ask the
-    // wall for the scene shape that samples it.
+    // feed the floor mirror.
     val aboveGround = Arr[AnyShape](ceilShape)
-    wi = 0
-    while wi < walls.length do
-      val wall = walls(wi)
+    for wall <- walls do
       val wallTex = bakeWallTex(wall)
       aboveGround.push(wall.createWallShape(wallTex))
-      val ps = wall.paintingShapes
-      var j = 0
-      while j < ps.length do
-        aboveGround.push(ps(j))
-        j += 1
-      wi += 1
+      for shape <- wall.paintingShapes do aboveGround.push(shape)
 
     val mirror = MirrorReflection(
       p,
@@ -317,10 +278,11 @@ val TexScale = 48.0
       mipLevels = 6,
     )
 
+    val reflStrength = 0.35
+
     type FloorUniforms = (
         vp: VertexUniform[Mat4],
         samp: FragmentUniform[Sampler],
-        reflStrength: FragmentUniform[Float],
     )
     type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
 
@@ -342,17 +304,14 @@ val TexScale = 48.0
               .xyz,
             refl := ctx.textures.reflTex.load(ivec2(ctx.fragCoord.xy)),
             falloff := (1.0 - refl.a).max(0.1),
-            mix := ctx.bindings.reflStrength * falloff,
+            mix := falloff * reflStrength,
             ctx.out.color := vec4(base * (1.0 - mix) + refl.rgb * mix, 1.0),
           )
-
-    val reflStrength = p.binding(0.35)
 
     val floorShape = p
       .shape(floorForm, floorShade, cullMode = CullMode.Front)
       .bind(
-        "samp" := texSampler,
-        "reflStrength" := reflStrength,
+        "samp" := sampler,
         "tex" := floorTex,
         "reflTex" := mirror.resultPanel,
       )
@@ -360,19 +319,13 @@ val TexScale = 48.0
     // HDR scene panel — supplies the scene `vp` to all its shapes.
     val sceneVp = p.binding[Mat4]
 
-    val sceneShapes = Arr[AnyShape](floorShape)
-    var ai = 0
-    while ai < aboveGround.length do
-      sceneShapes.push(aboveGround(ai))
-      ai += 1
-
     val scenePanel = p
       .panel(
         format = TextureFormat.Rgba16Float,
         clearColor = (0.5, 0.6, 0.7, 1.0),
         depthTest = true,
         multisample = true,
-        shapes = sceneShapes,
+        shapes = aboveGround :+ floorShape,
       )
       .bind("vp" := sceneVp)
 
@@ -384,16 +337,6 @@ val TexScale = 48.0
       blurRadius = 4.0,
       mipLevels = 5,
     )
-
-    // -----------------------------------------------------------------------
-    // Pre-render the painting image panels once. (Floor / ceiling / wall
-    // textures are already painted by their respective `TextureBaker.bake` /
-    // `bakeWallTex` calls above.)
-    // -----------------------------------------------------------------------
-    var pi = 0
-    while pi < imagePanels.length do
-      p.paint(imagePanels(pi))
-      pi += 1
 
     // -----------------------------------------------------------------------
     // Camera, input, controller

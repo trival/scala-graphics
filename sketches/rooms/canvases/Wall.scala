@@ -215,8 +215,8 @@ class Paintings(p: Painter):
     * [[Wall.shadowRect]] / [[Wall.shadowFade]] / [[Wall.shadowStrength]] to
     * bake its texture externally (e.g. a `TextureBaker` for the noise + a
     * shadow layer on top), then hand the painted panel back via
-    * [[Wall.setTexPanel]]. After that, [[Wall.sceneShapes]] yields the wall
-    * + painting shapes for the scene panel and floor mirror.
+    * [[Wall.setTexPanel]]. After that, [[Wall.sceneShapes]] yields the wall +
+    * painting shapes for the scene panel and floor mirror.
     */
   def wall(
       center: Vec3,
@@ -227,9 +227,9 @@ class Paintings(p: Painter):
   ): Wall =
     Wall(center, width, height, rotY, inwardNormal)
 
-  /** One wall side: own quad geometry (local UV [0,1]), the data needed to
-    * bake a soft painting shadow on top of any noise texture, and the
-    * hung-painting scene shapes.
+  /** One wall side: own quad geometry (local UV [0,1]), the data needed to bake
+    * a soft painting shadow on top of any noise texture, and the hung-painting
+    * scene shapes.
     *
     * Lifecycle: construct → hang paintings → bake `texPanel` externally using
     * `form` + `shadowRect` + `shadowFade` + `shadowStrength` → [[setTexPanel]]
@@ -293,9 +293,8 @@ class Paintings(p: Painter):
       hung.push(h)
       h
 
-    /** UV-space `(centerX, centerY, halfW, halfH)` of the first hung
-      * painting's shadow box (zeros if nothing hung). Feed to a shadow layer
-      * via uniforms.
+    /** UV-space `(centerX, centerY, halfW, halfH)` of the first hung painting's
+      * shadow box (zeros if nothing hung). Feed to a shadow layer via uniforms.
       */
     def shadowRect: Vec4 =
       if hung.length > 0 then hung(0).shadowRect
