@@ -40,7 +40,7 @@ val Up = Vec3(0.0, 1.0, 0.0)
 val ShadowTopFadeMul = 0.5
 val ShadowBotFadeMul = 2.5
 val ShadowGradTop = 0.28 // strength fraction at the canvas top edge
-val ShadowFadeWorld = 0.16 // penumbra width in world metres
+val ShadowFadeWorld = 0.06 // penumbra width in world metres
 val ShadowStrength = 0.2
 
 /** Soft, directional painting drop-shadow for one rect, in wall-local UV.
@@ -199,7 +199,7 @@ type PaintingPanels = (img: FragmentPanel)
       val lf = LetFloat("lf")
       val halo = LetVec3("halo")
       Block(
-        col := vec3(0.92, 0.92, 0.90) * roomNoise(wp, normal),
+        col := vec3(0.88, 0.88, 0.87) * roomNoise(wp, normal),
         s := (uv.x * 6.0 + 0.5).fract,
         band := s.abs.smoothstep(0.05, 0.02),
         lf := uv.y.smoothstep(0.05, 0.15)
@@ -214,8 +214,8 @@ type PaintingPanels = (img: FragmentPanel)
     val wallBaker = TextureBaker(p): (wp, normal, _) =>
       vec4(
         vec3(0.96, 0.96, 0.95).lerp(
-          vec3(0.86, 0.86, 0.85),
-          wp.y.smoothstep(4.9, 5.5),
+          vec3(0.89, 0.89, 0.88),
+          wp.y.smoothstep(4.7, 5.5),
         ) * roomNoise(wp, normal),
         1.0,
       )
