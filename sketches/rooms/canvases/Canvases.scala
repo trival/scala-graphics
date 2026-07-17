@@ -508,6 +508,7 @@ type PaintingPanels = (img: FragmentPanel)
       vpName = "vp",
       alphaScale = RoomHeight,
       blurStrength = 62.0,
+      stretch = 0.04,
       mipLevels = 6,
     )
 
