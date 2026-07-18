@@ -36,56 +36,74 @@ compare, not a replacement.
   Approach B. But it needs the milestone below to be artifact-free enough to be
   usable at all.
 
-### Milestone A1 — fix the banding with dithered LOD (make it usable again)
+### Milestone A1 — ATTEMPTED AND FAILED (2026-07-19)
 
-The banding is a contour where `lod` crosses integer mip boundaries: adjacent
-mips are independently-blurred (tent) images, so a fast-varying LOD makes the
-blend weight reset visibly along iso-LOD lines. The standard fix is to **dither
-the LOD stochastically** so the contour becomes high-frequency noise instead of
-a hard edge.
+**Status: parked. Three fixes tried, none changed the artifact.** Approach A is
+not usable as-is and is not the production surface. What follows is the record
+of what was tried and what the bisection proved, so none of it gets retried.
 
-Scope this **minimally and in order** — do not build the whole noise+denoise
-pipeline up front:
+#### Attempt 1 — dithered LOD (IGN). Failed, and the premise was wrong.
 
-1. **Dithered LOD (do this first).** Before `sampleLevel`, add a small per-pixel
-   offset to `lod`:
-   `lod := (baseLod + (dither - 0.5) * ~1.0).clamp(0, maxBlur)`. One shader
-   change plus a noise source. Cheap; keeps the mip approach's cost advantage.
+The plan assumed the banding was a contour where `lod` crosses **quantized** mip
+boundaries, fixable by scattering the crossing stochastically. It isn't
+quantized: the resolve samples with `p.samplerLinear`, which sets
+`mipmapFilter = FilterMode.Linear` (`trivalibs/.../painter.scala:179-183`), so
+`sampleLevel` already blends mip `k`/`k+1` **continuously** in `lod`. There is
+no snap to dither away — the jitter just resampled the same continuous blend at
+noisy positions. Result: pure added grain (IGN's raw cross-hatch weave, clearly
+visible at ±0.5 and ±2.0 LOD), artifact untouched. Reverted, along with the
+`Noise.ign` helper it needed.
 
-   **Noise source — ranked (the spectral quality decides whether we even need
-   step 2):**
-   - **IGN (interleaved gradient noise) — default, try first.** One line, no
-     asset/binding, blue-noise-ish spectrum → near-invisible grain, far better
-     than a plain hash for the same strength:
-     `ign = fract(52.9829189 * fract(dot(fragCoord, vec2(0.06711056, 0.00583715))))`.
-     Good chance it kills the banding cleanly with no denoise.
-   - **Tiled blue-noise texture — the upgrade if IGN isn't clean enough.** Use a
-     *small* tile (64² or 128², single-channel R8) sampled at
-     `fragCoord % tileSize` — **not** screen-sized (screen-sized couples to
-     canvas size + forces regen on resize). Animate over time, if needed, with
-     the golden-ratio trick `fract(blueNoise + frameIndex * 0.61803399)` — keeps
-     it blue over time, no repeat, no extra memory. (Beats rotating a 4-channel
-     screen texture, which is only a 4-frame cycle.)
-   - **In-shader hash (`Hash.hash21` on `uvec2(fragCoord)`, XOR a frame counter)
-     — prototype only.** `hash.scala` hashes are **white** noise: clumpy, the
-     ugliest grain per unit strength, most likely to *force* the denoise. Fine
-     to validate wiring; don't ship — IGN beats it at the same cost.
+**Lesson: dither only fixes quantized selections.** Check the sampler's
+`mipmapFilter` before reaching for it.
 
-   **Temporal:** without a history buffer, animating the noise doesn't *reduce*
-   it — it just makes the eye average it, at the cost of possible flicker/crawl.
-   Start **static, spatial-only** (no time uniform); add the golden-ratio
-   temporal term only if the static pattern reads as locked to the screen.
-2. **Denoise — only if the grain is objectionable.** A naive blur denoise would
-   re-introduce cross-distance bleeding (the very thing the pyramid avoids), so
-   it must be **distance-aware** (joint-bilateral keyed on the alpha/distance
-   channel) — real code and cost. Treat this as a conditional second step, not a
-   default.
+#### Attempt 2 — smoothstepped LOD fraction (C1 ramp). Failed.
 
-**Honest expectation**: even fixed, the tent pyramid's power-of-two levels give
-a chunkier large-blur character than a true Gaussian, and max blur is capped at
-the top mip. So A1's goal is "usable + a fair comparison baseline", not
-necessarily the production surface — Approach B is the likely quality/cost
-winner. Decide production vs. baseline *after* both are side-by-side.
+Second theory: trilinear cross-fades linearly, so apparent blurriness is C0 but
+C1-discontinuous — its slope resets at each integer level, and the eye reads a
+slope kink as a hard line (Mach banding). Fix was to feed the hardware a
+smoothstepped fraction, `lod := l.floor + l.fract.smoothstep(0.0, 1.0)`, making
+the blend derivative vanish at every boundary. One line, no extra samples.
+Artifact **unchanged**. Reverted.
+
+#### Attempt 3 — bisection by diagnostic flags. This is what we actually learned.
+
+Temporary build-time flags in `MirrorReflection.scala` pinned the LOD and dumped
+the distance channel. Three facts, all reproduced:
+
+| Test                                       | Result                     | Conclusion                                        |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------- |
+| Fixed `lod = 3.0` (no per-pixel variation) | artifact **still visible** | LOD selection exonerated                          |
+| Fixed `lod = 0.0` (unblurred bake)         | artifact **absent**        | bake / depth→world→`t` exonerated                 |
+| Alpha channel as greyscale                 | smooth gradient, no fringe | distance field is correct; defect is in **color** |
+
+**Therefore: the artifact is created by the tent downsample/blur chain itself,
+in the color channel, and grows with mip level.** It is not LOD banding at all —
+the name in the original problem statement was a misdiagnosis, which is why two
+fixes aimed at the LOD path did nothing.
+
+#### Remaining candidates (untested — we stopped here and moved to B)
+
+- **(a) Bleed against absent content.** The tent blur pulls in texels the
+  reflected render never drew (clear color = transparent black), or duplicated
+  border texels via clamp-to-edge. Blurring color toward black across a
+  silhouette gives a rim that compounds per level. Would be fixable: clear to a
+  plausible color, render wider than the visible frame, or use a
+  coverage-weighted blur.
+- **(b) Bilinear upsample of a low-res mip.** Mip 3 is ⅛ resolution; resolving
+  it to full res bilinearly turns a high-contrast diagonal edge into an ~8px
+  staircase. **Not fixable within a mip pyramid.**
+
+**Decisive test if A is ever revisited**: set `clearColor` to bright magenta at
+the constructor call. Magenta rim ⇒ (a), proven. Unchanged rim ⇒ (a) ruled out,
+(b) by elimination, and the approach is structurally dead.
+
+**Honest expectation** (unchanged, now with evidence behind it): the tent
+pyramid's power-of-two levels give a chunkier large-blur character than a true
+Gaussian, and max blur is capped at the top mip. Approach B blurs at full
+resolution with a continuously-varying radius, which sidesteps **both**
+remaining candidates — it is the likely quality winner and is now the active
+path.
 
 ## Approach B — per-pixel Gaussian (`GaussianMirrorReflection.scala`, new)
 

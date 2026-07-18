@@ -5,7 +5,7 @@ import org.scalajs.dom.document
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
-import sketchlib.utils.mirror.MirrorReflection
+import sketchlib.utils.mirror.GaussianMirrorReflection
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.BufferBinding
 import trivalibs.graphics.geometry.{*, given}
@@ -278,9 +278,16 @@ type PaintingPanels = (img: FragmentPanel)
       val hh = spec.height / 2.0
       val hd = spec.depth / 2.0
       val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
-      val mv = (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
+      val mv =
+        (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
 
-      def v(x: Double, y: Double, z: Double, u: Double, w: Double): RoomVertex =
+      def v(
+          x: Double,
+          y: Double,
+          z: Double,
+          u: Double,
+          w: Double,
+      ): RoomVertex =
         (position = Vec3(x, y, z), uv = Vec2(u, w))
 
       val faces = Arr(
@@ -345,7 +352,8 @@ type PaintingPanels = (img: FragmentPanel)
       // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
       val right = Up.cross(inwardNormal)
       def corner(su: Double, sv: Double, u: Double, w: Double): RoomVertex =
-        val pos = center + right * (su * width / 2.0) + Up * (sv * height / 2.0)
+        val pos =
+          center + right * (su * width / 2.0) + Up * (sv * height / 2.0)
         (position = pos, uv = Vec2(u, w))
       val wallForm = form(
         Arr(
@@ -502,21 +510,28 @@ type PaintingPanels = (img: FragmentPanel)
       )
       for painting <- wall.paintings do aboveGround.push(painting.shape)
 
-    val mirror = MirrorReflection(
+    // Approach B — per-pixel Gaussian. Swap back to `MirrorReflection(...)`
+    // for the mip-pyramid baseline (see src/utils/mirror/design-plan.md).
+    val mirror = GaussianMirrorReflection(
       p,
       shapes = aboveGround,
       vpName = "vp",
       alphaScale = RoomHeight,
-      blurStrength = 62.0,
-      stretch = 0.04,
-      mipLevels = 6,
+      blurStrength = 12.0,
+      blurRatioVertical = 2.0,
     )
+
+    // Canvas size in physical pixels — the floor turns its `fragCoord` into a
+    // screen uv with it, because the reflection panel is sub-resolution and no
+    // longer matches the scene's pixel grid 1:1.
+    val canvasRes = p.binding[Vec2]
 
     val reflStrength = 0.35
 
     type FloorUniforms = (
         vp: VertexUniform[Mat4],
         samp: FragmentUniform[Sampler],
+        res: FragmentUniform[Vec2],
     )
     type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
 
@@ -536,7 +551,12 @@ type PaintingPanels = (img: FragmentPanel)
             base := ctx.textures
               .tex(ctx.in.uv, ctx.bindings.samp)
               .xyz,
-            refl := ctx.textures.reflTex.load(ivec2(ctx.fragCoord.xy)),
+            // UV sample, not a 1:1 load: the reflection panel runs at a
+            // fraction of the canvas resolution.
+            refl := ctx.textures.reflTex(
+              ctx.fragCoord.xy / ctx.bindings.res,
+              ctx.bindings.samp,
+            ),
             falloff := (1.0 - refl.a).max(0.1),
             mix := falloff * reflStrength,
             ctx.out.color := vec4(base * (1.0 - mix) + refl.rgb * mix, 1.0),
@@ -548,6 +568,7 @@ type PaintingPanels = (img: FragmentPanel)
         "samp" := sampler,
         "tex" := floorTex,
         "reflTex" := mirror.resultPanel,
+        "res" := canvasRes,
       )
 
     // HDR scene panel — supplies the scene `vp` to all its shapes.
@@ -595,6 +616,7 @@ type PaintingPanels = (img: FragmentPanel)
 
     p.onResize: (w, h) =>
       cam.set(aspect = w / h)
+      canvasRes.set(Vec2(w, h))
 
     animate: tpf =>
       input.update(tpf)
@@ -604,4 +626,5 @@ type PaintingPanels = (img: FragmentPanel)
       mirror.paint(vp)
       p.paint(scenePanel)
       bloom.paint()
+      // p.show(mirror.resultPanel)
       p.show(bloom.resultPanel)

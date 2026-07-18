@@ -293,16 +293,12 @@ object MirrorReflection:
         val t = LetFloat("t")
         val lod = VarFloat("lod")
         val s = LetFloat("s")
-        val colSharp = LetVec4("colSharp")
         Block(
           // Sharp (mip-0) distance at this pixel drives the LOD; the color and
           // the falloff distance are then both read pre-blurred at that LOD, so
           // the falloff edge softens in lockstep with the color.
           t := ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).a,
           lod := (1.0 + t * ctx.bindings.blurStrength).log2.min(maxBlur),
-          // colSharp := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod),
-          // lod := (1.0 + colSharp.a * ctx.bindings.blurStrength).log2
-          //   .min(maxBlur),
           // Vertical stretch (anisotropy): smear a few extra taps downward in uv
           // (away from the plane). Scaled by distance `t`, so the contact line
           // (t≈0) stays sharp and far reflections elongate — the glossy look.
