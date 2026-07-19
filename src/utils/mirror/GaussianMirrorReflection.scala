@@ -13,23 +13,23 @@ import trivalibs.utils.js.*
 /** Blurred planar mirror reflection with a **per-pixel Gaussian** blur radius
   * (e.g. a glossy floor). Approach B — see `design-plan.md`.
   *
-  * Same idea as [[MirrorReflection]]: `shapes` are rendered a second time from a
-  * camera reflected across a mirror `plane`, and a bake pass reconstructs each
-  * fragment's distance from the plane out of that render's **depth buffer** into
-  * alpha. The difference is *how the blur happens*.
+  * Same idea as [[MirrorReflection]]: `shapes` are rendered a second time from
+  * a camera reflected across a mirror `plane`, and a bake pass reconstructs
+  * each fragment's distance from the plane out of that render's **depth
+  * buffer** into alpha. The difference is *how the blur happens*.
   *
   * [[MirrorReflection]] blurs into a mip pyramid and picks a discrete LOD per
-  * pixel. Here a **separable Gaussian cascade** runs at one resolution, and each
-  * pass reads the per-pixel distance from alpha and scales its own step size by
-  * it. The blur radius is therefore a *continuous* function of distance — there
-  * is no pyramid, no LOD, and no mip content to interpolate between, which is
-  * what makes this immune to the artifact class that parked Approach A (the
-  * defect there was created by the tent downsample chain itself; see
+  * pixel. Here a **separable Gaussian cascade** runs at one resolution, and
+  * each pass reads the per-pixel distance from alpha and scales its own step
+  * size by it. The blur radius is therefore a *continuous* function of distance
+  * — there is no pyramid, no LOD, and no mip content to interpolate between,
+  * which is what makes this immune to the artifact class that parked Approach A
+  * (the defect there was created by the tent downsample chain itself; see
   * `design-plan.md` § Milestone A1).
   *
-  * Alpha rides through the same kernel as color, so the distance mask softens in
-  * lockstep with the reflection and a blurred silhouette is never re-sharpened by
-  * a crisp falloff.
+  * Alpha rides through the same kernel as color, so the distance mask softens
+  * in lockstep with the reflection and a blurred silhouette is never
+  * re-sharpened by a crisp falloff.
   *
   * Vertical passes scale their step by [[setBlurRatioVertical]], giving the
   * symmetric vertical-stronger anisotropy of a glossy floor smear.
@@ -53,9 +53,9 @@ trait GaussianMirrorReflection:
     */
   def mirrorScenePanel: Panel
 
-  /** Resolved reflection: blurred color (rgb) + blurred normalized distance from
-    * the mirror plane (alpha), at `resolutionScale` × canvas size. **Sample this
-    * by UV** — it does not match the consumer's pixel grid.
+  /** Resolved reflection: blurred color (rgb) + blurred normalized distance
+    * from the mirror plane (alpha), at `resolutionScale` × canvas size.
+    * **Sample this by UV** — it does not match the consumer's pixel grid.
     */
   def resultPanel: Panel
 
@@ -73,9 +73,9 @@ trait GaussianMirrorReflection:
   def setBlurStrength(v: Double): Unit
 
   /** Vertical:horizontal blur ratio. `1` = isotropic; `>1` makes the vertical
-    * blur wider than the horizontal, smearing the reflection away from the plane
-    * for a glossy "wet floor" look. Scaled per-pixel by distance, so the contact
-    * line stays sharp.
+    * blur wider than the horizontal, smearing the reflection away from the
+    * plane for a glossy "wet floor" look. Scaled per-pixel by distance, so the
+    * contact line stays sharp.
     */
   def setBlurRatioVertical(v: Double): Unit
 
@@ -92,8 +92,8 @@ object GaussianMirrorReflection:
 
   /** Build a depth-driven, per-pixel-Gaussian blurred planar reflection.
     *
-    * Wiring is the same as [[MirrorReflection]] except that the floor **samples**
-    * `resultPanel` by UV instead of loading it at `fragCoord`:
+    * Wiring is the same as [[MirrorReflection]] except that the floor
+    * **samples** `resultPanel` by UV instead of loading it at `fragCoord`:
     * {{{
     * val sceneVp = p.binding[Mat4]
     * scenePanel.bind("vp" := sceneVp)
@@ -132,9 +132,8 @@ object GaussianMirrorReflection:
     *   The mirror plane (CPU-only `Plane`; default the ground plane `y = 0`).
     * @param blurStrength
     *   Initial blur-ramp coefficient **and the pass budget**: the number of H/V
-    *   pass pairs is derived from it at construction (bigger ⇒ more passes, up
-    *   to `maxPassPairs`). Runtime-tunable within that budget via
-    *   [[setBlurStrength]].
+    *   pass pairs is derived from it at construction (bigger ⇒ more passes).
+    *   Runtime-tunable within that budget via [[setBlurStrength]].
     * @param blurRatioVertical
     *   Initial vertical:horizontal blur ratio (anisotropy). Runtime-tunable via
     *   [[setBlurRatioVertical]].
@@ -143,12 +142,9 @@ object GaussianMirrorReflection:
     *   [[setStrengthOffset]].
     * @param scaleFactor
     *   Geometric decay of the step size across the cascade: pass pair `k` steps
-    *   by `scaleFactor^k`. Large-to-small, like a standard blur cascade. Lower ⇒
-    *   faster decay ⇒ fewer passes for the same reach, but a coarser
+    *   by `scaleFactor^k`. Large-to-small, like a standard blur cascade. Lower
+    *   ⇒ faster decay ⇒ fewer passes for the same reach, but a coarser
     *   approximation of a true Gaussian.
-    * @param maxPassPairs
-    *   Hard cap on derived H/V pass pairs, so a large `blurStrength` cannot
-    *   silently cost dozens of full-screen passes.
     * @param resolutionScale
     *   Internal panel size as a fraction of the canvas. The reflection is
     *   blurred anyway, so `0.5` (default) costs a quarter of the fill for
@@ -156,8 +152,8 @@ object GaussianMirrorReflection:
     * @param clearColor
     *   RGBA the mirror render clears to where no shape draws.
     * @return
-    *   a [[GaussianMirrorReflection]] exposing `resultPanel` (sample this by UV)
-    *   and `mirrorScenePanel` (raw), plus `paint` and the runtime setters.
+    *   a [[GaussianMirrorReflection]] exposing `resultPanel` (sample this by
+    *   UV) and `mirrorScenePanel` (raw), plus `paint` and the runtime setters.
     * @throws scala.scalajs.js.JavaScriptException
     *   if `scaleFactor` is not in `(0, 1)` or `resolutionScale <= 0`.
     */
@@ -171,8 +167,7 @@ object GaussianMirrorReflection:
       blurStrength: Double = 2.0,
       blurRatioVertical: Double = 1.0,
       strengthOffset: Double = 0.0,
-      scaleFactor: Double = 0.6,
-      maxPassPairs: Int = 8,
+      scaleFactor: Double = 0.5,
       resolutionScale: Double = 0.5,
       clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
   ): GaussianMirrorReflection =
@@ -205,8 +200,9 @@ object GaussianMirrorReflection:
     // Pass budget: keep halving (by `scaleFactor`) until a pass's step drops
     // below one pixel, since a sub-pixel Gaussian step is a no-op. Capped.
     var passPairs = 1
-    var reach = blurStrength * scaleFactor
-    while reach > 1.0 && passPairs < maxPassPairs do
+    var reach =
+      blurStrength.max(blurStrength * blurRatioVertical) // * scaleFactor
+    while reach > 1.0 do
       reach *= scaleFactor
       passPairs += 1
 
@@ -217,6 +213,7 @@ object GaussianMirrorReflection:
       clearColor = clearColor,
       depthTest = true,
       shapes = shapes,
+      multisample = true,
     )
     // Panel-level VP under the runtime field name. `panel.bind` needs a literal
     // name, so write the public runtime-bindings dict directly.

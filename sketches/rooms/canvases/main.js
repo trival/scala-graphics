@@ -3498,7 +3498,7 @@ $p.p9 = (function() {
       aboveGround.push(Bindable_this$1);
       $m_sjs_js_ArrayOps$().ab(wall$3.bu, new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((painting$2) => (aboveGround.push(painting$2.gz) | 0))));
     }))(p$6)));
-    var mirror = $m_Lsketchlib_utils_mirror_GaussianMirrorReflection$().nd(p$6, aboveGround, "vp", $m_Lsketches_rooms_canvases_Canvases$package$().aL, null, $m_Ltrivalibs_graphics_geometry_Plane$().kB, 12.0, 2.0, 0.0, 0.6, 8, 0.5, new $c_T4(0.0, 0.0, 0.0, 0.0));
+    var mirror = $m_Lsketchlib_utils_mirror_GaussianMirrorReflection$().nd(p$6, aboveGround, "vp", $m_Lsketches_rooms_canvases_Canvases$package$().aL, null, $m_Ltrivalibs_graphics_geometry_Plane$().kB, 16.0, 2.0, 0.0, 0.5, 0.5, new $c_T4(0.0, 0.0, 0.0, 0.0));
     var ul$proxy2 = new $c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT($m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec2\uff3fVec2Buffer$());
     var uv$proxy2 = ul$proxy2.aE;
     var buffer = new ArrayBuffer(8);
@@ -3540,7 +3540,7 @@ $p.p9 = (function() {
         var $x_42 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$();
         var e$proxy4 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().a6().al(refl);
         var $x_41 = falloff.X($x_42.mB($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bh().bj((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b7(1.0)) + " - ") + e$proxy4.d) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.1)));
-        var $x_40 = mix.X($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().aa(falloff, 0.35));
+        var $x_40 = mix.X($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().aa(falloff, 0.45));
         var AssignTarget_this$8 = ctx$2$9.ay.a1("color");
         var value$proxy12 = $m_Ltrivalibs_graphics_math_gpu_vec4$().ak($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().lR($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bB(base$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().U(), $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bh().bj((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b7(1.0)) + " - ") + mix.d) + ")"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().U(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bB($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fG(refl), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().U(), mix)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
         return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_45.f(new ($d_T.r().C)([$x_44, $x_43, $x_41, $x_40, (((("  " + AssignTarget_this$8.Q) + " = ") + value$proxy12.d) + ";")]))), "", "\n", "");
@@ -3664,7 +3664,7 @@ $p.p9 = (function() {
     var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().n8(0.9, 1.0, 0.1, 100.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.7, 0.0));
     $m_Ltrivalibs_dev_devPreserve$().nf(cam, "camera");
     var input = $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$().o5(p$6.g9, true, 400.0, 5.0, true, (void 0));
-    var controller = new $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController(cam, input, 2.0, 3.0);
+    var controller = new $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController(cam, input, 2.0, 1.0);
     p$6.mD(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((v1$2, v2$2) => {
       var w = (+v1$2);
       var h = (+v2$2);
@@ -4802,7 +4802,7 @@ $p.constructor = $c_Lsketchlib_utils_mirror_GaussianMirrorReflection$;
 function $h_Lsketchlib_utils_mirror_GaussianMirrorReflection$() {
 }
 $h_Lsketchlib_utils_mirror_GaussianMirrorReflection$.prototype = $p;
-$p.nd = (function(p, shapes, vpName, alphaScale, camera, mirror, blurStrength, blurRatioVertical, strengthOffset, scaleFactor, maxPassPairs, resolutionScale, clearColor) {
+$p.nd = (function(p, shapes, vpName, alphaScale, camera, mirror, blurStrength, blurRatioVertical, strengthOffset, scaleFactor, resolutionScale, clearColor) {
   if (((scaleFactor <= 0.0) || (scaleFactor >= 1.0))) {
     var message$proxy1 = (("GaussianMirrorReflection scaleFactor must be in (0, 1) " + ("(got " + scaleFactor)) + ")");
     throw new $c_sjs_js_JavaScriptException(Error(message$proxy1)).aD;
@@ -4861,12 +4861,13 @@ $p.nd = (function(p, shapes, vpName, alphaScale, camera, mirror, blurStrength, b
   var uRes = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), p.e, uv$proxy6);
   var sampler = p.jy();
   var passPairs = 1;
-  var reach = (blurStrength * scaleFactor);
-  while (((reach > 1.0) && (passPairs < maxPassPairs))) {
+  var that = (blurStrength * blurRatioVertical);
+  var reach = (+Math.max(blurStrength, that));
+  while ((reach > 1.0)) {
     reach = (reach * scaleFactor);
     passPairs = ((1 + passPairs) | 0);
   }
-  var mirrorPanel = p.fE((void 0), (void 0), clearColor, true, (void 0), (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes, (void 0), (void 0));
+  var mirrorPanel = p.fE((void 0), (void 0), clearColor, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes, (void 0), (void 0));
   var dict$proxy1 = mirrorPanel.gQ;
   dict$proxy1[vpName] = uVp;
   var program = new $c_Ltrivalibs_graphics_shader_dsl_LayerProgram();

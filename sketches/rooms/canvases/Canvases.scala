@@ -517,7 +517,7 @@ type PaintingPanels = (img: FragmentPanel)
       shapes = aboveGround,
       vpName = "vp",
       alphaScale = RoomHeight,
-      blurStrength = 12.0,
+      blurStrength = 16.0,
       blurRatioVertical = 2.0,
     )
 
@@ -526,7 +526,7 @@ type PaintingPanels = (img: FragmentPanel)
     // longer matches the scene's pixel grid 1:1.
     val canvasRes = p.binding[Vec2]
 
-    val reflStrength = 0.35
+    val reflStrength = 0.45
 
     type FloorUniforms = (
         vp: VertexUniform[Mat4],
@@ -611,7 +611,7 @@ type PaintingPanels = (img: FragmentPanel)
         cam,
         input,
         sensitivity = 2.0,
-        speed = 3.0,
+        speed = 1.0,
       )
 
     p.onResize: (w, h) =>
