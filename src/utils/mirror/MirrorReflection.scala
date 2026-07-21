@@ -58,6 +58,17 @@ trait MirrorReflection:
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
+  /** Size the internal render + blur panels for a `w × h` canvas, including the
+    * `overscan` guard band, and re-derive the crop that takes the band back
+    * off. **Must be called before the first [[paint]]** and on every canvas
+    * resize; drive it from the sketch's own `p.onResize`, which fires
+    * immediately on registration and so covers the initial sizing too.
+    *
+    * [[resultPanel]] is not affected — it keeps tracking the canvas, so
+    * consumers still `load` it at their own `fragCoord`.
+    */
+  def resize(w: Double, h: Double): Unit
+
   /** Maximum blur — the Gaussian spread (σ) as a **percentage of canvas
     * height**, reached at `alphaScale` and held beyond it, ramping linearly
     * from sharp at the mirror plane. Being a share of the image rather than a
@@ -83,18 +94,14 @@ trait MirrorReflection:
   // temporary debug props
   def blurPanel: Panel
 
-// TODO — dedicated panel-size API (future enhancement)
-// ----------------------------------------------------
-// The mirror panels currently auto-scale to the canvas. Rendering the mirror at
-// a fraction of canvas resolution would cut cost (the reflection is blurred
-// anyway). As with `Bloom`, this would add an optional `scale`/`width`,`height`
-// on `apply` plus a runtime resize, decoupled from the canvas. The blur is
-// already resolution-free (textureDimensions-derived). The catch is the 1:1
-// `load(ivec2(fragCoord.xy))` reads: the resolve pass reads the mirror depth at
-// its own pixel (assumes resolve target == mirror render size), and consumers
-// read `resultPanel` at their own pixel (assumes resultPanel == their target
-// size). A sub-resolution mirror would make `resultPanel` smaller than the
-// scene, so the floor would need to UV-`sample` it instead of `load`.
+// TODO — sub-resolution mirror render (future enhancement)
+// --------------------------------------------------------
+// The mirror + blur panels are now explicitly sized (see `resize`), so running
+// them at a fraction of canvas resolution — the reflection is blurred anyway —
+// is a short step: scale `visW`/`visH` and expose the factor on `apply`. The
+// resolve pass already samples the blur panel by uv rather than loading it 1:1,
+// so only its `res`-independence needs a second look. `resultPanel` must stay
+// canvas-sized either way, since consumers read it at their own `fragCoord`.
 
 /** Factory for [[MirrorReflection]] — the trait carries the full overview, and
   * [[apply]] documents every constructor parameter (surfaced at the call site
@@ -144,6 +151,11 @@ object MirrorReflection:
     * val mirror = MirrorReflection(p, Arr(wall, ceil), vpName = "vp",
     *                               alphaScale = RoomHeight, blurStrength = 2.0)
     * floor.bind("reflTex" := mirror.resultPanel)
+    *
+    * p.onResize: (w, h) =>
+    *   cam.set(aspect = w / h)
+    *   mirror.resize(w, h)      // required — the util registers no callback
+    *
     * animate: _ =>
     *   val vp = cam.viewProjMat
     *   sceneVp.set(vp)
@@ -151,8 +163,10 @@ object MirrorReflection:
     *   p.paint(scenePanel)
     * }}}
     *
-    * No resize handling is needed — panels auto-scale to the canvas and the
-    * blur is resolution-free.
+    * [[MirrorReflection.resize]] must be driven from the consumer's own
+    * `p.onResize` — the internal panels carry an `overscan` guard band, so they
+    * cannot simply track the canvas. `resultPanel` still does, so the floor
+    * keeps loading it 1:1.
     *
     * Generic over `S <: AnyShape` because `Arr` is invariant — a concrete
     * `Arr[Shape[U, P]]` would not conform to `Arr[AnyShape]`, so `S` threads
@@ -203,9 +217,18 @@ object MirrorReflection:
     *   Blur-pyramid depth (must be `>= 2`); it caps the blur radius at
     *   `2^(mipLevels-1) - 1` pixels. Since `blurStrength` is relative to canvas
     *   height, size this for the *largest* canvas you target — each level
-    *   doubles the reach, so 6 levels (31px) suit ~1080p at `blurStrength =
-    *   2` and 4K wants 7. Construction logs a warning if the current canvas
+    *   doubles the reach, so 6 levels (31px) suit ~1080p at `blurStrength = 2`
+    *   and 4K wants 7. Construction logs a warning if the current canvas
     *   already exceeds it.
+    * @param overscan
+    *   Width of the guard band around the reflected render, in multiples of the
+    *   blur's σ. The mirror scene is rendered through a correspondingly widened
+    *   frustum and cropped back in the resolve pass, so that pixels near the
+    *   frame edge blur against real geometry instead of the clamped-to-edge
+    *   border — without it, a large `blurStrength` smears the border inward.
+    *   `3` (default) covers ~99.7% of the kernel; `0` disables the band. Costs
+    *   `((v + 2·overscan·σ) / v)²` in fill (~1.3× at the defaults), capped at
+    *   2× per axis.
     * @param clearColor
     *   RGBA the mirror render clears to where no shape draws (matters only if
     *   the reflected view has gaps; default transparent black).
@@ -225,10 +248,13 @@ object MirrorReflection:
       blurStrength: Double = 2.0,
       stretch: Double = 0.0,
       mipLevels: Int = 6,
+      overscan: Double = 3.0,
       clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
   ): MirrorReflection =
     if mipLevels < 2 then
       throw jsError(s"MirrorReflection mipLevels must be >= 2 (got $mipLevels)")
+    if overscan < 0.0 then
+      throw jsError(s"MirrorReflection overscan must be >= 0 (got $overscan)")
 
     val reflMat = mirror.reflectionMat
     // Max blur radius the pyramid can reach, in mip-0 pixels: each mip level
@@ -263,6 +289,13 @@ object MirrorReflection:
     val uInvVp = p.binding[Mat4]
     val uBlurStrength = p.binding(blurStrength * strengthScale)
     val uStretch = p.binding(stretch)
+    // Height of the *visible* frame in blur-panel pixels — the panel itself is
+    // wider by the guard band, and the blur radius is a share of the visible
+    // image, not of the panel. Kept current by `applySizing`.
+    val uVisHeight = p.binding(0.0)
+    // Visible frame → overscanned panel uv: `uv * crop.xy + crop.zw`. Identity
+    // `(1, 1, 0, 0)` when there is no guard band.
+    val uCrop = p.binding(Vec4(1.0, 1.0, 0.0, 0.0))
     // Trilinear (mipmapFilter = Linear) so the resolve's fractional-LOD color
     // sample interpolates smoothly across the blur pyramid.
     val sampler = p.samplerLinear
@@ -351,30 +384,47 @@ object MirrorReflection:
     )
 
     // ----- resolve: distance → blur LOD, sample blurred color + distance --
-    type ResolveU = (blurStrength: Float, stretch: Float, samp: Sampler)
+    type ResolveU = (
+        blurStrength: Float,
+        stretch: Float,
+        visHeight: Float,
+        crop: Vec4,
+        samp: Sampler,
+    )
     type ResolveP = (col: FragmentPanel)
     val resolveShade = p.layerShade[ResolveU, ResolveP]: program =>
       program.frag: ctx =>
-        val uv = ctx.in.uv
+        val uv = LetVec2("uv")
         val t = LetFloat("t")
         val h = LetFloat("h")
         val radius = LetFloat("radius")
         val lod = LetFloat("lod")
         val s = LetFloat("s")
         Block(
+          // This pass is the crop: the blur pyramid carries a guard band of
+          // real geometry around the visible frame (so edge pixels don't blur
+          // against the clamped border), and every read below goes through the
+          // remapped uv that picks the visible sub-rect back out. Identity when
+          // `overscan = 0`.
+          uv := ctx.in.uv * ctx.bindings.crop.xy + ctx.bindings.crop.zw,
           h := texHeight(ctx.textures.col),
           // Sharp (mip-0) distance at this pixel drives the LOD; the color and
           // the falloff distance are then both read pre-blurred at that LOD, so
-          // the falloff edge softens in lockstep with the color.
-          t := ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).a,
+          // the falloff edge softens in lockstep with the color. Sampled rather
+          // than loaded 1:1 — the blur panel is overscanned, so its pixel grid
+          // no longer lines up with this target's.
+          t := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, 0.0).a,
           // Blur radius ramps linearly with distance — 1 pixel at the plane,
           // `blurStrength × height` at `alphaScale` (where `t` clamps) and flat
           // beyond. `blurStrength` is a *fraction of canvas height*, so the blur
           // covers the same share of the image — and so of any object in it — at
-          // every resolution. `.log2` converts the radius into a mip LOD; the
-          // clamp catches a resolution whose radius outruns the pyramid (see the
+          // every resolution. That share is of the *visible* frame, hence
+          // `visHeight` rather than the panel's own `h`, which includes the
+          // guard band. `.log2` converts the radius into a mip LOD; the clamp
+          // catches a resolution whose radius outruns the pyramid (see the
           // construction-time warning).
-          radius := (1.0 + t * ctx.bindings.blurStrength * h).min(maxRadius),
+          radius := (1.0 + t * ctx.bindings.blurStrength
+            * ctx.bindings.visHeight).min(maxRadius),
           lod := radius.log2,
           // Vertical stretch (anisotropy): a few extra taps that smear the
           // reflection away from the plane. The spacing is measured in *this
@@ -416,6 +466,8 @@ object MirrorReflection:
             "col" := _blurPanel,
             "blurStrength" := uBlurStrength,
             "stretch" := uStretch,
+            "visHeight" := uVisHeight,
+            "crop" := uCrop,
             "samp" := sampler,
           ),
       ),
@@ -424,9 +476,66 @@ object MirrorReflection:
     new MirrorReflection:
       val mirrorScenePanel = mirrorPanel
       val resultPanel = resolvePanel
+      // Visible frame, the strength knobs the guard band is derived from, and
+      // the NDC scale that widens the reflected frustum to cover the
+      // overscanned panel. All re-derived by `applySizing`.
+      private var visW = 0.0
+      private var visH = 0.0
+      private var curStrength = blurStrength
+      private var curStretch = stretch
+      private var frustumScaleX = 1.0
+      private var frustumScaleY = 1.0
+
+      /** Size the render + blur panels to the visible frame *plus a guard band*
+        * wide enough to hold the blur's reach, widen the reflected frustum to
+        * match, and re-derive the crop the resolve pass applies.
+        *
+        * The band exists because the pyramid samples with `ClampToEdge` (WebGPU
+        * has no border mode): without it, every tap falling outside the panel
+        * returns the border texel, so the frame edges smear inward — and worse
+        * as the radius grows. Rendering a wider frustum fills that margin with
+        * real geometry instead.
+        *
+        * Depends on both strength knobs, so the setters re-run it.
+        */
+      private def applySizing(): Unit =
+        if visH > 0.0 then
+          // σ in panel pixels — `curStrength` is a percentage of the visible
+          // height, the same quantity the resolve pass rebuilds from
+          // `visHeight`.
+          val sigma = curStrength * 0.01 * visH
+          // The anisotropy here is the resolve's four stretch taps rather than
+          // a wider kernel: they reach `MaxStretchSpacing` radii at
+          // `stretch = 1`, so the vertical band has to cover that much more.
+          val vRatio = 1.0 + curStretch * MaxStretchSpacing
+          val mx = (overscan * sigma).ceil.min(visW * 0.5)
+          val my = (overscan * sigma * vRatio).ceil.min(visH * 0.5)
+          val pw = (visW + mx * 2.0).toInt
+          val ph = (visH + my * 2.0).toInt
+          mirrorPanel.set(width = pw, height = ph)
+          _blurPanel.set(width = pw, height = ph)
+          uVisHeight.set(visH)
+          // Widening the frustum is a plain NDC scale on the reflected VP —
+          // shrinking clip x/y by exactly the panel's growth factor puts the
+          // original view back in the centre at unchanged texel density. It
+          // leaves z alone, so the bake pass's `invVp` reconstruction stays
+          // exact.
+          frustumScaleX = visW / pw
+          frustumScaleY = visH / ph
+          uCrop.set(Vec4(frustumScaleX, frustumScaleY, mx / pw, my / ph))
+
+      def resize(w: Double, h: Double): Unit =
+        visW = w.toInt.max(1).toDouble
+        visH = h.toInt.max(1).toDouble
+        applySizing()
       def setBlurStrength(v: Double): Unit =
         uBlurStrength.set(v * strengthScale)
-      def setStretch(v: Double): Unit = uStretch.set(v)
+        curStrength = v
+        applySizing()
+      def setStretch(v: Double): Unit =
+        uStretch.set(v)
+        curStretch = v
+        applySizing()
       def paint(vp: Maybe[Mat4]): Unit =
         val cameraVP = vp.orElse(
           camera
@@ -438,7 +547,10 @@ object MirrorReflection:
             )
             .viewProjMat,
         )
-        val m = cameraVP * reflMat
+        // Pre-multiply in NDC to widen the frustum onto the overscanned panel
+        // (identity when there is no guard band).
+        val m = Mat4.fromScale(frustumScaleX, frustumScaleY, 1.0) *
+          (cameraVP * reflMat)
         uVp.set(m)
         uInvVp.set(m.inverse)
         p.paint(mirrorPanel, _blurPanel, resolvePanel)

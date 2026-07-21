@@ -59,6 +59,9 @@ trait GaussianMirrorReflection:
   /** Resolved reflection: blurred color (rgb) + blurred normalized distance
     * from the mirror plane (alpha), at `resolutionScale` × canvas size.
     * **Sample this by UV** — it does not match the consumer's pixel grid.
+    *
+    * Already cropped back to the visible frame, so its uv space is the
+    * consumer's screen uv regardless of the `overscan` guard band.
     */
   def resultPanel: Panel
 
@@ -180,6 +183,15 @@ object GaussianMirrorReflection:
     *   Internal panel size as a fraction of the canvas. The reflection is
     *   blurred anyway, so `0.5` (default) costs a quarter of the fill for
     *   virtually no visible loss.
+    * @param overscan
+    *   Width of the guard band around the reflected render, in multiples of
+    *   the blur's σ. The mirror scene is rendered through a correspondingly
+    *   widened frustum and cropped back afterwards, so that pixels near the
+    *   frame edge blur against real geometry instead of the clamped-to-edge
+    *   border — without it, a large `blurStrength` smears the border inward.
+    *   `3` (default) covers ~99.7% of the kernel; `0` disables the band and
+    *   the crop pass entirely. Costs `((v + 2·overscan·σ) / v)²` in fill (~1.3×
+    *   at the defaults), capped at 2× per axis.
     * @param clearColor
     *   RGBA the mirror render clears to where no shape draws.
     * @return
@@ -200,6 +212,7 @@ object GaussianMirrorReflection:
       strengthOffset: Double = 0.0,
       scaleFactor: Double = 0.6,
       resolutionScale: Double = 0.5,
+      overscan: Double = 3.0,
       clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
   ): GaussianMirrorReflection =
     if scaleFactor <= 0.0 || scaleFactor >= 1.0 then
@@ -211,6 +224,10 @@ object GaussianMirrorReflection:
       throw jsError(
         s"GaussianMirrorReflection resolutionScale must be > 0 " +
           s"(got $resolutionScale)",
+      )
+    if overscan < 0.0 then
+      throw jsError(
+        s"GaussianMirrorReflection overscan must be >= 0 (got $overscan)",
       )
 
     // `blurStrength` is a percentage of canvas height. The shade multiplies by
@@ -250,8 +267,17 @@ object GaussianMirrorReflection:
     val uRatioVertical = p.binding(blurRatioVertical)
     val uStrengthOffset = p.binding(strengthOffset)
     // Sub-resolution pixel size of the internal panels — `gaussianBlur9` needs
-    // it to turn pixel offsets into uv steps. Kept current by `resize`.
+    // it to turn pixel offsets into uv steps. This is the *overscanned* size,
+    // margins included, since that is the grid the taps step across. Kept
+    // current by `applySizing`.
     val uRes = p.binding[Vec2]
+    // Height of the *visible* frame in panel pixels — `uRes.y` minus the guard
+    // band. The blur radius is a share of the visible image, not of the panel,
+    // so the two must not be conflated (see `applySizing`).
+    val uVisHeight = p.binding(0.0)
+    // Visible frame → overscanned panel uv: `uv * crop.xy + crop.zw`. Identity
+    // `(1, 1, 0, 0)` when there is no guard band.
+    val uCrop = p.binding(Vec4(1.0, 1.0, 0.0, 0.0))
     val sampler = p.samplerLinear
 
     // Pass budget: shrink the step by `scaleFactor` until it reaches the native
@@ -326,6 +352,7 @@ object GaussianMirrorReflection:
         strengthOffset: Float,
         passScale: Float,
         res: Vec2,
+        visHeight: Float,
         samp: Sampler,
     )
     type BlurP = (tex: FragmentPanel)
@@ -339,11 +366,13 @@ object GaussianMirrorReflection:
           // Per-pixel plane distance, co-blurred by every previous pass — so the
           // radius field softens along with the color it gates.
           a := ctx.textures.tex.sample(uv, ctx.bindings.samp).a,
-          // `blurStrength` is the horizontal radius as a share of panel height —
-          // hence the `res.y` — so the blur covers the same fraction of the
-          // image, and of any object in it, at every resolution. The vertical
-          // pass scales it by `ratioVertical` on top (see the pass budget).
-          dist := a * ctx.bindings.blurStrength * ctx.bindings.res.y
+          // `blurStrength` is the horizontal radius as a share of the *visible*
+          // frame's height — hence `visHeight` rather than `res.y`, which
+          // includes the guard band — so the blur covers the same fraction of
+          // the image, and of any object in it, at every resolution and at any
+          // overscan. The vertical pass scales it by `ratioVertical` on top
+          // (see the pass budget).
+          dist := a * ctx.bindings.blurStrength * ctx.bindings.visHeight
             * ctx.bindings.passScale + ctx.bindings.strengthOffset,
           ctx.out.color := Blur.gaussianBlur9(
             ctx.textures.tex,
@@ -376,6 +405,7 @@ object GaussianMirrorReflection:
           "strengthOffset" := uStrengthOffset,
           "passScale" := passScale,
           "res" := uRes,
+          "visHeight" := uVisHeight,
           "samp" := sampler,
         )
 
@@ -396,22 +426,58 @@ object GaussianMirrorReflection:
 
     val blurPanel = p.panel(format = TextureFormat.Rgba16Float)
 
+    // ----- crop the guard band back off ------------------------------------
+    // The blur runs on an overscanned panel so that pixels near the frame edge
+    // gather real scene content instead of the clamped-to-edge border. This
+    // pass resamples the visible sub-rect back out, which keeps `resultPanel`
+    // aligned with the consumer's screen uv exactly as it was before overscan
+    // existed — consumers need no knowledge that the guard band is there.
+    type CropU = (crop: Vec4, samp: Sampler)
+    type CropP = (tex: FragmentPanel)
+    val cropShade = p.layerShade[CropU, CropP]: program =>
+      program.frag: ctx =>
+        ctx.out.color := ctx.textures.tex.sample(
+          ctx.in.uv * ctx.bindings.crop.xy + ctx.bindings.crop.zw,
+          ctx.bindings.samp,
+        )
+
+    // At `overscan = 0` there is no band to crop, so the pass would be a plain
+    // copy — skip it entirely and hand the blur panel out directly.
+    val cropPanel: Opt[Panel] =
+      if overscan > 0.0 then
+        p.panel(
+          format = TextureFormat.Rgba16Float,
+          layers = Arr(
+            p
+              .layer(cropShade)
+              .bind("tex" := blurPanel, "crop" := uCrop, "samp" := sampler),
+          ),
+        )
+      else null
+
     new GaussianMirrorReflection:
       val mirrorScenePanel = mirrorPanel
-      val resultPanel = blurPanel
-      // Current sub-resolution height and strength knobs — the three inputs to
-      // the pass budget. Kept here so any of them changing can re-derive it.
-      private var curHeight = 0.0
+      val resultPanel = cropPanel.getOr(blurPanel)
+      // Current strength knobs — together with the visible height below, the
+      // three inputs to both the pass budget and the guard-band width. Kept
+      // here so any of them changing can re-derive them.
       private var curStrength = blurStrength
       private var curRatio = blurRatioVertical
+      // Visible sub-resolution frame, and the NDC scale that widens the
+      // reflected frustum to cover the overscanned panel. Both re-derived by
+      // `applySizing`.
+      private var visW = 0.0
+      private var visH = 0.0
+      private var frustumScaleX = 1.0
+      private var frustumScaleY = 1.0
 
       /** Re-derive the pass count and hand the panel its layer list. Cheap: the
         * layers are cached, so this only builds an `Arr` of existing references
         * (and constructs pairs the first time a deeper cascade is needed).
         */
       private def rebuildLayers(): Unit =
-        if curHeight > 0.0 then
-          val pairs = neededPairs(curHeight, curStrength, curRatio)
+        if visH > 0.0 then
+          val pairs = neededPairs(visH, curStrength, curRatio)
           ensurePairs(pairs)
           val layers = Arr[AnyLayer](bakeLayer)
           var i = 0
@@ -420,25 +486,69 @@ object GaussianMirrorReflection:
             i += 1
           blurPanel.set(layers = layers)
 
+      /** Size the render + blur panels to the visible frame *plus a guard band*
+        * wide enough to hold the blur's reach, widen the reflected frustum to
+        * match, and re-derive the crop that takes the band back off.
+        *
+        * The band exists because the blur samples with `ClampToEdge` (WebGPU
+        * has no border mode): without it, every tap that falls outside the
+        * panel returns the border texel, so the frame edges smear inward — and
+        * worse as the radius grows. Rendering a wider frustum fills that
+        * margin with real geometry instead.
+        *
+        * `overscan` σ of margin covers the kernel's reach (3σ ≈ 99.7% of the
+        * Gaussian). The half-dimension cap bounds the cost at extreme blur
+        * settings — past it the band is partial and some edge bleed returns,
+        * which still beats a panel growing without bound.
+        *
+        * Depends on both strength knobs, so the setters re-run it.
+        */
+      private def applySizing(): Unit =
+        if visH > 0.0 then
+          // σ in panel pixels. `curStrength` is a percentage of the visible
+          // height (the `0.01`), matching what the blur shade reconstructs
+          // from `visHeight`.
+          val sigma = curStrength * 0.01 * visH
+          val mx = (overscan * sigma).ceil.min(visW * 0.5)
+          val my = (overscan * sigma * curRatio.max(1.0)).ceil.min(visH * 0.5)
+          val pw = (visW + mx * 2.0).toInt
+          val ph = (visH + my * 2.0).toInt
+          mirrorPanel.set(width = pw, height = ph)
+          blurPanel.set(width = pw, height = ph)
+          uRes.set(Vec2(pw.toDouble, ph.toDouble))
+          uVisHeight.set(visH)
+          // Widening the frustum is a plain NDC scale on the reflected VP —
+          // shrinking clip x/y by exactly the panel's growth factor puts the
+          // original view back in the centre at unchanged texel density. It
+          // leaves z alone, so the bake pass's `invVp` reconstruction stays
+          // exact.
+          frustumScaleX = visW / pw
+          frustumScaleY = visH / ph
+          uCrop.set(
+            Vec4(frustumScaleX, frustumScaleY, mx / pw, my / ph),
+          )
+          rebuildLayers()
+
       // `panel(...)` has no scale option, so the sub-resolution size is wired by
       // hand. Driven by the consumer rather than a `p.onResize` registration of
       // our own, so resize ownership stays in one visible place in the sketch.
       def resize(w: Double, h: Double): Unit =
         val sw = (w * resolutionScale).toInt.max(1)
         val sh = (h * resolutionScale).toInt.max(1)
-        mirrorPanel.set(width = sw, height = sh)
-        blurPanel.set(width = sw, height = sh)
-        uRes.set(Vec2(sw.toDouble, sh.toDouble))
-        curHeight = sh.toDouble
-        rebuildLayers()
+        visW = sw.toDouble
+        visH = sh.toDouble
+        // The crop target is the visible frame — the guard band lives only on
+        // the panels feeding it.
+        if cropPanel.notNull then cropPanel.get.set(width = sw, height = sh)
+        applySizing()
       def setBlurStrength(v: Double): Unit =
         uBlurStrength.set(v * strengthScale)
         curStrength = v
-        rebuildLayers()
+        applySizing()
       def setBlurRatioVertical(v: Double): Unit =
         uRatioVertical.set(v)
         curRatio = v
-        rebuildLayers()
+        applySizing()
       def setStrengthOffset(v: Double): Unit = uStrengthOffset.set(v)
       def paint(vp: Maybe[Mat4]): Unit =
         val cameraVP = vp.orElse(
@@ -451,7 +561,11 @@ object GaussianMirrorReflection:
             )
             .viewProjMat,
         )
-        val m = cameraVP * reflMat
+        // Pre-multiply in NDC to widen the frustum onto the overscanned panel
+        // (identity when there is no guard band).
+        val m = Mat4.fromScale(frustumScaleX, frustumScaleY, 1.0) *
+          (cameraVP * reflMat)
         uVp.set(m)
         uInvVp.set(m.inverse)
-        p.paint(mirrorPanel, blurPanel)
+        if cropPanel.notNull then p.paint(mirrorPanel, blurPanel, cropPanel.get)
+        else p.paint(mirrorPanel, blurPanel)

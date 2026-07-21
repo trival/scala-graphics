@@ -324,6 +324,7 @@ val TexScale = 164.0
 
     p.onResize: (w, h) =>
       cam.set(aspect = w / h)
+      mirror.resize(w, h)
 
     animate: tpf =>
       input.update(tpf)

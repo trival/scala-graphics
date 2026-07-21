@@ -513,25 +513,25 @@ type PaintingPanels = (img: FragmentPanel)
 
     val wallColor = (0.90, 0.90, 0.90, 0.0)
 
-    // val mirror = MirrorReflection(
-    //   p,
-    //   shapes = aboveGround,
-    //   vpName = "vp",
-    //   alphaScale = RoomHeight,
-    //   blurStrength = 5.0,
-    //   stretch = 2.04,
-    //   clearColor = wallColor,
-    // )
-    val mirror = GaussianMirrorReflection(
+    val mirror = MirrorReflection(
       p,
       shapes = aboveGround,
       vpName = "vp",
       alphaScale = RoomHeight,
       blurStrength = 5.0,
-      blurRatioVertical = 3.0,
+      stretch = 1.5,
       clearColor = wallColor,
-      // resolutionScale = 1,
     )
+    // val mirror = GaussianMirrorReflection(
+    //   p,
+    //   shapes = aboveGround,
+    //   vpName = "vp",
+    //   alphaScale = RoomHeight,
+    //   blurStrength = 5.0,
+    //   blurRatioVertical = 3.0,
+    //   clearColor = wallColor,
+    //   // resolutionScale = 1,
+    // )
 
     // Canvas size in physical pixels — the floor turns its `fragCoord` into a
     // screen uv with it, because the reflection panel is sub-resolution and no

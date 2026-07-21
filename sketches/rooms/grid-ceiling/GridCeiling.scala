@@ -707,6 +707,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
 
       p.onResize: (cw, ch) =>
         cam(aspect = cw.toDouble / ch)
+        mirror.resize(cw, ch)
 
       // Bake the (static) noise tiles once, with mip chains.
       p.paint(rowTile, colTile, groundTile, ceilTile, boxTile)
