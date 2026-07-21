@@ -6,6 +6,7 @@ import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
+import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.BufferBinding
 import trivalibs.graphics.geometry.{*, given}
@@ -510,15 +511,26 @@ type PaintingPanels = (img: FragmentPanel)
       )
       for painting <- wall.paintings do aboveGround.push(painting.shape)
 
-    // Approach B — per-pixel Gaussian. Swap back to `MirrorReflection(...)`
-    // for the mip-pyramid baseline (see src/utils/mirror/design-plan.md).
+    val wallColor = (0.90, 0.90, 0.90, 0.0)
+
+    // val mirror = MirrorReflection(
+    //   p,
+    //   shapes = aboveGround,
+    //   vpName = "vp",
+    //   alphaScale = RoomHeight,
+    //   blurStrength = 5.0,
+    //   stretch = 2.04,
+    //   clearColor = wallColor,
+    // )
     val mirror = GaussianMirrorReflection(
       p,
       shapes = aboveGround,
       vpName = "vp",
       alphaScale = RoomHeight,
-      blurStrength = 16.0,
-      blurRatioVertical = 2.0,
+      blurStrength = 5.0,
+      blurRatioVertical = 3.0,
+      clearColor = wallColor,
+      // resolutionScale = 1,
     )
 
     // Canvas size in physical pixels — the floor turns its `fragCoord` into a
@@ -526,7 +538,7 @@ type PaintingPanels = (img: FragmentPanel)
     // longer matches the scene's pixel grid 1:1.
     val canvasRes = p.binding[Vec2]
 
-    val reflStrength = 0.45
+    val reflStrength = 0.35
 
     type FloorUniforms = (
         vp: VertexUniform[Mat4],
@@ -557,7 +569,7 @@ type PaintingPanels = (img: FragmentPanel)
               ctx.fragCoord.xy / ctx.bindings.res,
               ctx.bindings.samp,
             ),
-            falloff := (1.0 - refl.a).max(0.1),
+            falloff := (1.0 - refl.a * 0.4),
             mix := falloff * reflStrength,
             ctx.out.color := vec4(base * (1.0 - mix) + refl.rgb * mix, 1.0),
           )
@@ -617,6 +629,7 @@ type PaintingPanels = (img: FragmentPanel)
     p.onResize: (w, h) =>
       cam.set(aspect = w / h)
       canvasRes.set(Vec2(w, h))
+      mirror.resize(w, h)
 
     animate: tpf =>
       input.update(tpf)

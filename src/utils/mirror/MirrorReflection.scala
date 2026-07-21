@@ -9,6 +9,7 @@ import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.blur.Blur
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.js.*
+import trivalibs.utils.numbers.NumExt.given
 
 /** Blurred planar mirror reflection (e.g. a glossy floor).
   *
@@ -57,13 +58,25 @@ trait MirrorReflection:
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
-  /** How fast blur ramps with distance from the plane (LOD coefficient). */
+  /** Maximum blur — the Gaussian spread (σ) as a **percentage of canvas
+    * height**, reached at `alphaScale` and held beyond it, ramping linearly
+    * from sharp at the mirror plane. Being a share of the image rather than a
+    * pixel count, it keeps the same perceived blur relative to the objects in
+    * the scene on any display; and being σ, the same value gives the same
+    * spread in [[sketchlib.utils.mirror.GaussianMirrorReflection]]. `1` is
+    * already a strong blur and the useful band is roughly `1`–`5`. Clips at
+    * what the pyramid can reach (`2^(mipLevels-1) - 1` pixels of mip radius),
+    * so a big enough canvas needs a deeper one.
+    */
   def setBlurStrength(v: Double): Unit
 
-  /** Vertical stretch of the reflection (anisotropy). `0` = isotropic; higher
-    * values smear the reflection downward (away from the plane) more, giving a
-    * glossy "wet floor" elongation. Scaled per-pixel by plane distance, so the
-    * contact line stays sharp.
+  /** Vertical stretch of the reflection (anisotropy), as a **0..1 fraction of
+    * the maximum artifact-free stretch**. `0` = isotropic; `1` smears the
+    * reflection downward (away from the plane) as far as the blur can hide the
+    * gaps between the taps, giving a glossy "wet floor" elongation. The smear
+    * is measured against each pixel's own blur radius, so it grows with plane
+    * distance for free and the contact line stays sharp. Values above `1` keep
+    * working but the four taps start separating into visible ghosts.
     */
   def setStretch(v: Double): Unit
 
@@ -90,6 +103,23 @@ trait MirrorReflection:
   */
 object MirrorReflection:
 
+  /** Tap spacing at `stretch = 1`, as a multiple of that pixel's own blur
+    * radius. The stretch is four taps at `0, s, 2s, 3s`, each read at the
+    * pixel's blur LOD — so as long as `s` stays within a couple of radii the
+    * footprints overlap and read as one smear. Push past that and they separate
+    * into visible ghosts, which is why `stretch` maps `0..1` onto `0..this`.
+    */
+  private val MaxStretchSpacing = 2.0
+
+  /** Height of `tex`'s mip 0 in pixels. Derived from `textureDimensions` rather
+    * than a `res` uniform so the blur and stretch stay resolution-free — same
+    * reasoning as `Blur`'s `*Auto` kernels, and it keeps this util free of any
+    * resize bookkeeping.
+    */
+  private val texHeight: WgslFn[(tex: Texture2D), Float] =
+    WgslFn.raw("mirror_tex_height"):
+      """  return f32(textureDimensions(tex).y);"""
+
   /** Build a depth-driven blurred planar reflection for `shapes`.
     *
     * Each frame, the shapes are re-rendered from the camera reflected across
@@ -112,7 +142,7 @@ object MirrorReflection:
     * val sceneVp = p.binding[Mat4]
     * scenePanel.bind("vp" := sceneVp)          // shapes read "vp" panel-level
     * val mirror = MirrorReflection(p, Arr(wall, ceil), vpName = "vp",
-    *                               alphaScale = RoomHeight, blurStrength = 62.0)
+    *                               alphaScale = RoomHeight, blurStrength = 2.0)
     * floor.bind("reflTex" := mirror.resultPanel)
     * animate: _ =>
     *   val vp = cam.viewProjMat
@@ -152,17 +182,30 @@ object MirrorReflection:
     *   The util derives the reflection matrix from it and bakes its
     *   `normal`/`d` into the resolve shade's distance, so any plane works.
     * @param blurStrength
-    *   Initial blur-ramp coefficient: higher ⇒ the reflection blurs out faster
-    *   with distance from the plane. Runtime-tunable via [[setBlurStrength]].
+    *   Initial maximum blur, as the Gaussian spread (σ) in **percent of canvas
+    *   height** — useful band roughly `1`–`5`. It ramps linearly from sharp at
+    *   the mirror plane to `blurStrength%` at `alphaScale`, then stays flat —
+    *   so this sets *how blurry* the far end gets while `alphaScale` sets
+    *   *where* it gets there. Relative to the image rather than in pixels, so
+    *   the perceived blur holds constant against object size across resolutions
+    *   and device pixel ratios; and denominated in σ, so the same value means
+    *   the same spread in [[GaussianMirrorReflection]]. Clips at the pyramid's
+    *   reach, `2^(mipLevels-1) - 1` pixels of mip radius, which is what
+    *   `mipLevels` must be sized for. Runtime-tunable via [[setBlurStrength]].
     * @param stretch
-    *   Initial vertical stretch (anisotropy) of the reflection in uv units. `0` =
-    *   isotropic (no stretch); higher smears the reflection downward (away from
-    *   the plane), giving a glossy elongation. Scaled per-pixel by plane
-    *   distance so the contact line stays sharp. Runtime-tunable via
-    *   [[setStretch]].
+    *   Initial vertical stretch (anisotropy), as a **0..1 fraction of the
+    *   maximum artifact-free stretch** — `0` is isotropic, `1` is as far as the
+    *   blur can smear without the taps separating into ghosts. Resolution- and
+    *   scene-scale-independent: the smear is measured against each pixel's own
+    *   blur radius, so it also ramps with plane distance for free and the
+    *   contact line stays sharp. Runtime-tunable via [[setStretch]].
     * @param mipLevels
-    *   Blur-pyramid depth (must be `>= 2`); the maximum blur LOD is
-    *   `mipLevels - 1`. 6 covers a tall room; fewer for a shallow blur.
+    *   Blur-pyramid depth (must be `>= 2`); it caps the blur radius at
+    *   `2^(mipLevels-1) - 1` pixels. Since `blurStrength` is relative to canvas
+    *   height, size this for the *largest* canvas you target — each level
+    *   doubles the reach, so 6 levels (31px) suit ~1080p at `blurStrength =
+    *   2` and 4K wants 7. Construction logs a warning if the current canvas
+    *   already exceeds it.
     * @param clearColor
     *   RGBA the mirror render clears to where no shape draws (matters only if
     *   the reflected view has gaps; default transparent black).
@@ -188,14 +231,37 @@ object MirrorReflection:
       throw jsError(s"MirrorReflection mipLevels must be >= 2 (got $mipLevels)")
 
     val reflMat = mirror.reflectionMat
-    val maxBlur = (mipLevels - 1).toDouble
+    // Max blur radius the pyramid can reach, in mip-0 pixels: each mip level
+    // doubles it, and the top level is `mipLevels - 1`. The resolve ramps the
+    // radius from 1 at the plane to `blurStrength × canvasHeight` at
+    // `alphaScale`; beyond `maxRadius` it clips, saturating the blur *before*
+    // `alphaScale`. Since the requested radius now scales with resolution, the
+    // pyramid has to be deep enough for the largest canvas in play — warn if the
+    // current one already outruns it (each extra mip level doubles the reach).
+    val maxRadius = (mipLevels - 1).toDouble.exp2 - 1.0
+    // `blurStrength` is the *perceived* blur (σ) as a percentage of canvas
+    // height; the shade wants a nominal mip radius. The tent chain blurs wider
+    // than the radius it is asked for — each `tentBlur2dAuto` step taps ±4
+    // source texels, so the levels accumulate to roughly 1.6× the nominal radius
+    // — hence the divide. With it, `blurStrength` denotes the same physical
+    // spread here as in `GaussianMirrorReflection`, so the two are swappable at
+    // equal values. Percent keeps the useful band at readable 1..5.
+    val TentChainGain = 1.6
+    val strengthScale = 0.01 / TentChainGain
+    if blurStrength * strengthScale * p.height > maxRadius then
+      log(
+        s"MirrorReflection: blurStrength $blurStrength% of height ${p.height} " +
+          s"needs a ${(blurStrength * strengthScale * p.height).round} px mip " +
+          s"radius, beyond the reach of $mipLevels mip levels ($maxRadius px) " +
+          s"— the blur will saturate before alphaScale. Raise mipLevels.",
+      )
     // Mirror plane baked into the resolve shade: distance = n·worldPos - d.
     val pn = mirror.normal
     val pd = mirror.d
 
     val uVp = p.binding[Mat4]
     val uInvVp = p.binding[Mat4]
-    val uBlurStrength = p.binding(blurStrength)
+    val uBlurStrength = p.binding(blurStrength * strengthScale)
     val uStretch = p.binding(stretch)
     // Trilinear (mipmapFilter = Linear) so the resolve's fractional-LOD color
     // sample interpolates smoothly across the blur pyramid.
@@ -291,31 +357,52 @@ object MirrorReflection:
       program.frag: ctx =>
         val uv = ctx.in.uv
         val t = LetFloat("t")
-        val lod = VarFloat("lod")
+        val h = LetFloat("h")
+        val radius = LetFloat("radius")
+        val lod = LetFloat("lod")
         val s = LetFloat("s")
         Block(
+          h := texHeight(ctx.textures.col),
           // Sharp (mip-0) distance at this pixel drives the LOD; the color and
           // the falloff distance are then both read pre-blurred at that LOD, so
           // the falloff edge softens in lockstep with the color.
           t := ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).a,
-          lod := (1.0 + t * ctx.bindings.blurStrength).log2.min(maxBlur),
-          // Vertical stretch (anisotropy): smear a few extra taps downward in uv
-          // (away from the plane). Scaled by distance `t`, so the contact line
-          // (t≈0) stays sharp and far reflections elongate — the glossy look.
-          s := t * ctx.bindings.stretch,
+          // Blur radius ramps linearly with distance — 1 pixel at the plane,
+          // `blurStrength × height` at `alphaScale` (where `t` clamps) and flat
+          // beyond. `blurStrength` is a *fraction of canvas height*, so the blur
+          // covers the same share of the image — and so of any object in it — at
+          // every resolution. `.log2` converts the radius into a mip LOD; the
+          // clamp catches a resolution whose radius outruns the pyramid (see the
+          // construction-time warning).
+          radius := (1.0 + t * ctx.bindings.blurStrength * h).min(maxRadius),
+          lod := radius.log2,
+          // Vertical stretch (anisotropy): a few extra taps that smear the
+          // reflection away from the plane. The spacing is measured in *this
+          // pixel's blur
+          // radius*, so `stretch` is a plain 0..1 dial: the taps always stay in
+          // the same proportion to the blur that hides the seams between them,
+          // and the ramp with distance comes for free (radius is 1 texel at the
+          // contact line, so `t≈0` stays sharp whatever `stretch` is).
+          s := ctx.bindings.stretch * MaxStretchSpacing * radius / h,
+          // Gather *upward* (−v, toward the plane) so the content smears
+          // *downward*, away from it: a pixel takes color from what sits above
+          // it, which is what drags the reflection down into its own tail. The
+          // taps and the visible smear point in opposite directions — sampling
+          // +v here would bleed the reflection up into the empty background
+          // above it instead.
           ctx.out.color :=
             ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod) * 0.4
               + ctx.textures.col
-                .sampleLevel(uv + vec2(0.0, s), ctx.bindings.samp, lod) * 0.3
+                .sampleLevel(uv - vec2(0.0, s), ctx.bindings.samp, lod) * 0.3
               + ctx.textures.col
                 .sampleLevel(
-                  uv + vec2(0.0, s * 2.0),
+                  uv - vec2(0.0, s * 2.0),
                   ctx.bindings.samp,
                   lod,
                 ) * 0.2
               + ctx.textures.col
                 .sampleLevel(
-                  uv + vec2(0.0, s * 3.0),
+                  uv - vec2(0.0, s * 3.0),
                   ctx.bindings.samp,
                   lod,
                 ) * 0.1,
@@ -337,7 +424,8 @@ object MirrorReflection:
     new MirrorReflection:
       val mirrorScenePanel = mirrorPanel
       val resultPanel = resolvePanel
-      def setBlurStrength(v: Double): Unit = uBlurStrength.set(v)
+      def setBlurStrength(v: Double): Unit =
+        uBlurStrength.set(v * strengthScale)
       def setStretch(v: Double): Unit = uStretch.set(v)
       def paint(vp: Maybe[Mat4]): Unit =
         val cameraVP = vp.orElse(

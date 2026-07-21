@@ -9,6 +9,7 @@ import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.blur.Blur
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.js.*
+import trivalibs.utils.numbers.NumExt.given
 
 /** Blurred planar mirror reflection with a **per-pixel Gaussian** blur radius
   * (e.g. a glossy floor). Approach B — see `design-plan.md`.
@@ -41,7 +42,9 @@ import trivalibs.utils.js.*
   *
   * All internal panels run at `resolutionScale` × canvas size, so
   * [[resultPanel]] is generally **smaller than the consuming surface** —
-  * consumers must UV-`sample` it, not `load` it at their own `fragCoord`.
+  * consumers must UV-`sample` it, not `load` it at their own `fragCoord`. That
+  * sizing is driven by [[resize]], which the consumer calls from its own
+  * `p.onResize`; this util registers no resize callback of its own.
   *
   * Per frame call [[paint]] (after setting the scene VP, before painting the
   * scene that samples `resultPanel`).
@@ -65,17 +68,32 @@ trait GaussianMirrorReflection:
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
-  /** Global multiplier on every pass's step size — how fast blur ramps with
-    * distance from the plane. Rescales within the pass budget fixed at
-    * construction; pushing far beyond the construction-time `blurStrength` just
-    * clips the maximum radius rather than adding passes.
+  /** Size the internal panels to `resolutionScale × (w, h)` and re-derive the
+    * blur cascade for that size. **Must be called before the first [[paint]]**
+    * — the panel has no layers until it is — and on every canvas resize; drive
+    * it from the sketch's own `p.onResize`, which fires immediately on
+    * registration and so covers the initial sizing too.
+    */
+  def resize(w: Double, h: Double): Unit
+
+  /** Maximum **horizontal** blur — the Gaussian spread (σ) as a **percentage of
+    * canvas height**, reached at `alphaScale` and held beyond it, ramping
+    * linearly from 0 at the mirror plane. Being a share of the image rather
+    * than a pixel count, it keeps the same perceived blur relative to the
+    * objects in the scene on any display; and being σ, the same value gives the
+    * same spread in [[sketchlib.utils.mirror.MirrorReflection]]. The useful
+    * band is roughly `1`–`5`. The vertical spread is this times
+    * [[setBlurRatioVertical]]. Changing it re-derives the pass count, so a
+    * larger value genuinely reaches further rather than clipping.
     */
   def setBlurStrength(v: Double): Unit
 
-  /** Vertical:horizontal blur ratio. `1` = isotropic; `>1` makes the vertical
-    * blur wider than the horizontal, smearing the reflection away from the
+  /** Vertical:horizontal blur ratio, applied on top of `blurStrength`: the
+    * vertical radius is `blurStrength × ratio` while the horizontal stays at
+    * `blurStrength`. `1` = isotropic; `>1` smears the reflection away from the
     * plane for a glossy "wet floor" look. Scaled per-pixel by distance, so the
-    * contact line stays sharp.
+    * contact line stays sharp. Like [[setBlurStrength]], this re-derives the
+    * pass count for the wider axis.
     */
   def setBlurRatioVertical(v: Double): Unit
 
@@ -99,8 +117,13 @@ object GaussianMirrorReflection:
     * scenePanel.bind("vp" := sceneVp)
     * val mirror = GaussianMirrorReflection(p, Arr(wall, ceil), vpName = "vp",
     *                                       alphaScale = RoomHeight,
-    *                                       blurStrength = 62.0)
+    *                                       blurStrength = 2.0)
     * floor.bind("reflTex" := mirror.resultPanel, "reflSamp" := p.samplerLinear)
+    *
+    * p.onResize: (w, h) =>
+    *   cam.set(aspect = w / h)
+    *   mirror.resize(w, h)      // required — the util registers no callback
+    *
     * animate: _ =>
     *   val vp = cam.viewProjMat
     *   sceneVp.set(vp)
@@ -131,12 +154,20 @@ object GaussianMirrorReflection:
     * @param mirror
     *   The mirror plane (CPU-only `Plane`; default the ground plane `y = 0`).
     * @param blurStrength
-    *   Initial blur-ramp coefficient **and the pass budget**: the number of H/V
-    *   pass pairs is derived from it at construction (bigger ⇒ more passes).
-    *   Runtime-tunable within that budget via [[setBlurStrength]].
+    *   Initial maximum **horizontal** blur, as the Gaussian spread (σ) in
+    *   **percent of canvas height** (useful band roughly `1`–`10`), reached at
+    *   `alphaScale` and ramping linearly from 0 at the plane. Relative to the
+    *   image rather than in pixels, so the perceived blur holds constant
+    *   against object size across resolutions and device pixel ratios; and
+    *   denominated in σ, so the same value means the same spread in
+    *   [[MirrorReflection]]. Together with `blurRatioVertical` and the panel
+    *   height it also determines **the pass count**, re-derived on every
+    *   [[resize]] and on either strength setter. Runtime-tunable via
+    *   [[setBlurStrength]].
     * @param blurRatioVertical
-    *   Initial vertical:horizontal blur ratio (anisotropy). Runtime-tunable via
-    *   [[setBlurRatioVertical]].
+    *   Initial vertical:horizontal blur ratio (anisotropy), multiplied on top
+    *   of `blurStrength` — `2` gives a vertical radius of `2 × blurStrength`.
+    *   Runtime-tunable via [[setBlurRatioVertical]].
     * @param strengthOffset
     *   Initial constant radius floor in pixels. Runtime-tunable via
     *   [[setStrengthOffset]].
@@ -167,7 +198,7 @@ object GaussianMirrorReflection:
       blurStrength: Double = 2.0,
       blurRatioVertical: Double = 1.0,
       strengthOffset: Double = 0.0,
-      scaleFactor: Double = 0.5,
+      scaleFactor: Double = 0.6,
       resolutionScale: Double = 0.5,
       clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
   ): GaussianMirrorReflection =
@@ -182,6 +213,32 @@ object GaussianMirrorReflection:
           s"(got $resolutionScale)",
       )
 
+    // `blurStrength` is a percentage of canvas height. The shade multiplies by
+    // `res.y` to get the target blur in panel pixels; what is left is the
+    // conversion from that to a first-pass `gaussianBlur9` direction.
+    //
+    // Note this is NOT a divide by the kernel's nominal radius (4.5px, the
+    // "9px diameter" at `dir = 1`). That names where the outermost tap sits, and
+    // the taps are weighted, so the actual spread is much narrower — converting
+    // through the nominal radius under-blurs by ~2.5×. Deriving it instead:
+    //
+    //   one pass at `dir = D`, from the tap offsets and weights:
+    //     σ² = 2(0.3162·1.3846² + 0.0703·3.2308²)·D² = 2.68·D²  ⇒  σ = 1.64·D
+    //   the cascade sums variance geometrically:
+    //     σ = 1.64·D₀·√(Σ scaleFactor^2k) = 1.64·D₀·√(1/(1−scaleFactor²))
+    val SigmaPerDirSinglePass = 1.64
+    val cascadeGain = (1.0 / (1.0 - scaleFactor * scaleFactor)).sqrt
+    val sigmaPerDir = SigmaPerDirSinglePass * cascadeGain
+    //
+    // So `blurStrength` denotes σ directly — the same physical spread that
+    // `MirrorReflection` derives its mip radius from, which is what makes the
+    // two swappable at equal values without either referring to the other.
+    //
+    // A percentage is scale-free, so `resolutionScale` does not appear here: x%
+    // of the sub-resolution height is the same share of the image as x% of the
+    // canvas height.
+    val strengthScale = 0.01 / sigmaPerDir
+
     val reflMat = mirror.reflectionMat
     // Mirror plane baked into the bake shade: distance = n·worldPos - d.
     val pn = mirror.normal
@@ -189,22 +246,33 @@ object GaussianMirrorReflection:
 
     val uVp = p.binding[Mat4]
     val uInvVp = p.binding[Mat4]
-    val uBlurStrength = p.binding(blurStrength)
+    val uBlurStrength = p.binding(blurStrength * strengthScale)
     val uRatioVertical = p.binding(blurRatioVertical)
     val uStrengthOffset = p.binding(strengthOffset)
     // Sub-resolution pixel size of the internal panels — `gaussianBlur9` needs
-    // it to turn pixel offsets into uv steps. Kept current by `onResize` below.
+    // it to turn pixel offsets into uv steps. Kept current by `resize`.
     val uRes = p.binding[Vec2]
     val sampler = p.samplerLinear
 
-    // Pass budget: keep halving (by `scaleFactor`) until a pass's step drops
-    // below one pixel, since a sub-pixel Gaussian step is a no-op. Capped.
-    var passPairs = 1
-    var reach =
-      blurStrength.max(blurStrength * blurRatioVertical) // * scaleFactor
-    while reach > 1.0 do
-      reach *= scaleFactor
-      passPairs += 1
+    // Pass budget: shrink the step by `scaleFactor` until it reaches the native
+    // kernel width (`dir = 1`, the 9px-diameter blur). That last pass is not
+    // optional — the wide passes leave sampling gaps between their five taps,
+    // and each following pass closes the gaps of the one before it, so the
+    // cascade is only artifact-free if it *ends* at the native width. Going
+    // finer than that adds nothing, hence `> 1.0` rather than a fixed count.
+    // Depends on resolution and on both runtime strength knobs, so it is
+    // recomputed by `rebuildLayers` rather than fixed at construction.
+    def neededPairs(
+        subResHeight: Double,
+        strength: Double,
+        ratio: Double,
+    ): Int =
+      var pairs = 1
+      var reach = strength * strengthScale * subResHeight * ratio.max(1.0)
+      while reach > 1.0 do
+        reach *= scaleFactor
+        pairs += 1
+      pairs
 
     // ----- mirror render --------------------------------------------------
     // MSAA off: the result is blurred, so anti-aliasing the source is moot.
@@ -243,7 +311,7 @@ object GaussianMirrorReflection:
           t := ((vec3(pn.x, pn.y, pn.z)
             .dot(worldPos) - pd) / alphaScale).clamp01,
           ctx.out.color :=
-            vec4(ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).xyz, t),
+            vec4(ctx.textures.col.load(ivec2(ctx.fragCoord.xy)).rgb, t),
         )
 
     // ----- separable Gaussian pass ----------------------------------------
@@ -271,8 +339,12 @@ object GaussianMirrorReflection:
           // Per-pixel plane distance, co-blurred by every previous pass — so the
           // radius field softens along with the color it gates.
           a := ctx.textures.tex.sample(uv, ctx.bindings.samp).a,
-          dist := a * ctx.bindings.blurStrength * ctx.bindings.passScale
-            + ctx.bindings.strengthOffset,
+          // `blurStrength` is the horizontal radius as a share of panel height —
+          // hence the `res.y` — so the blur covers the same fraction of the
+          // image, and of any object in it, at every resolution. The vertical
+          // pass scales it by `ratioVertical` on top (see the pass budget).
+          dist := a * ctx.bindings.blurStrength * ctx.bindings.res.y
+            * ctx.bindings.passScale + ctx.bindings.strengthOffset,
           ctx.out.color := Blur.gaussianBlur9(
             ctx.textures.tex,
             ctx.bindings.samp,
@@ -288,15 +360,13 @@ object GaussianMirrorReflection:
 
     // Layer 0 bakes from the mirror render; the rest ping-pong on this panel
     // (an unbound `tex` input resolves to the panel's own previous contents).
-    val blurLayers = Arr[AnyLayer]()
-    blurLayers.push(
-      p.layer(bakeShade)
-        .bind(
-          "col" := mirrorPanel,
-          "depth" := mirrorPanel.binding(depth = true),
-          "invVp" := uInvVp,
-        ),
-    )
+    val bakeLayer = p
+      .layer(bakeShade)
+      .bind(
+        "col" := mirrorPanel,
+        "depth" := mirrorPanel.binding(depth = true),
+        "invVp" := uInvVp,
+      )
 
     def blurLayer(shade: Shade[BlurU, BlurP], passScale: Double): AnyLayer =
       p.layer(shade)
@@ -309,35 +379,66 @@ object GaussianMirrorReflection:
           "samp" := sampler,
         )
 
-    // Large-to-small cascade: pass pair k steps by `scaleFactor^k`.
-    var k = 0
-    var passScale = 1.0
-    while k < passPairs do
-      blurLayers.push(blurLayer(blurShadeH, passScale))
-      blurLayers.push(blurLayer(blurShadeV, passScale))
-      passScale *= scaleFactor
-      k += 1
+    // Cache of H/V pass pairs, flat: pair `k` is at `2k`, `2k+1`, and steps by
+    // `scaleFactor^k`. The pair count depends on resolution and on both strength
+    // knobs, so the panel's layer list is rebuilt whenever those change — but
+    // each pair's bindings (and its literal `passScale`) only depend on `k`, so
+    // the layers themselves are built once and reused. Shrinking just takes
+    // fewer from the front; growing appends.
+    val pairCache = Arr[AnyLayer]()
+    var cachedScale = 1.0
 
-    val blurPanel = p.panel(
-      format = TextureFormat.Rgba16Float,
-      layers = blurLayers,
-    )
+    def ensurePairs(n: Int): Unit =
+      while pairCache.length < n * 2 do
+        pairCache.push(blurLayer(blurShadeH, cachedScale))
+        pairCache.push(blurLayer(blurShadeV, cachedScale))
+        cachedScale *= scaleFactor
 
-    // ----- sub-resolution sizing ------------------------------------------
-    // `panel(...)` has no scale option, so wire the size by hand. `onResize`
-    // fires immediately on registration, which also sets the initial size.
-    p.onResize: (w, h) =>
-      val sw = (w * resolutionScale).toInt.max(1)
-      val sh = (h * resolutionScale).toInt.max(1)
-      mirrorPanel.set(width = sw, height = sh)
-      blurPanel.set(width = sw, height = sh)
-      uRes.set(Vec2(sw.toDouble, sh.toDouble))
+    val blurPanel = p.panel(format = TextureFormat.Rgba16Float)
 
     new GaussianMirrorReflection:
       val mirrorScenePanel = mirrorPanel
       val resultPanel = blurPanel
-      def setBlurStrength(v: Double): Unit = uBlurStrength.set(v)
-      def setBlurRatioVertical(v: Double): Unit = uRatioVertical.set(v)
+      // Current sub-resolution height and strength knobs — the three inputs to
+      // the pass budget. Kept here so any of them changing can re-derive it.
+      private var curHeight = 0.0
+      private var curStrength = blurStrength
+      private var curRatio = blurRatioVertical
+
+      /** Re-derive the pass count and hand the panel its layer list. Cheap: the
+        * layers are cached, so this only builds an `Arr` of existing references
+        * (and constructs pairs the first time a deeper cascade is needed).
+        */
+      private def rebuildLayers(): Unit =
+        if curHeight > 0.0 then
+          val pairs = neededPairs(curHeight, curStrength, curRatio)
+          ensurePairs(pairs)
+          val layers = Arr[AnyLayer](bakeLayer)
+          var i = 0
+          while i < pairs * 2 do
+            layers.push(pairCache(i))
+            i += 1
+          blurPanel.set(layers = layers)
+
+      // `panel(...)` has no scale option, so the sub-resolution size is wired by
+      // hand. Driven by the consumer rather than a `p.onResize` registration of
+      // our own, so resize ownership stays in one visible place in the sketch.
+      def resize(w: Double, h: Double): Unit =
+        val sw = (w * resolutionScale).toInt.max(1)
+        val sh = (h * resolutionScale).toInt.max(1)
+        mirrorPanel.set(width = sw, height = sh)
+        blurPanel.set(width = sw, height = sh)
+        uRes.set(Vec2(sw.toDouble, sh.toDouble))
+        curHeight = sh.toDouble
+        rebuildLayers()
+      def setBlurStrength(v: Double): Unit =
+        uBlurStrength.set(v * strengthScale)
+        curStrength = v
+        rebuildLayers()
+      def setBlurRatioVertical(v: Double): Unit =
+        uRatioVertical.set(v)
+        curRatio = v
+        rebuildLayers()
       def setStrengthOffset(v: Double): Unit = uStrengthOffset.set(v)
       def paint(vp: Maybe[Mat4]): Unit =
         val cameraVP = vp.orElse(

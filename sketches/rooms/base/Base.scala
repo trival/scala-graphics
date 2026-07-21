@@ -226,7 +226,7 @@ val TexScale = 164.0
       shapes = Arr(wallShapeW, ceilShape),
       vpName = "vp",
       alphaScale = RoomHeight,
-      blurStrength = 62.0,
+      blurStrength = 10.0,
       mipLevels = 6,
     )
 

@@ -512,7 +512,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         Arr(rowShape, colShape, ceilShape, boxShape),
         vpName = "mvp",
         alphaScale = ceilingY / 2.0,
-        blurStrength = 60.0,
+        blurStrength = 3.2,
         mipLevels = 6,
       )
 
