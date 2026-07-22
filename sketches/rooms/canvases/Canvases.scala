@@ -36,36 +36,45 @@ val TexScale = 48.0
 
 val Up = Vec3(0.0, 1.0, 0.0)
 
+// How far from a room edge the normal-dependent noise term is fully faded
+// out, in world metres — keeps corners seam-free.
+val EdgeFadeWorld = 0.05
+
+// Contact darkening in the floor/wall junction, over the same distance.
+val ContactDarken = 0.93 // brightness multiplier right at the edge
+
 // Painting drop-shadow shaping. The shadow box matches the canvas footprint
 // exactly; the soft edge + downward bias are shaped by `shadowMask`.
-val ShadowTopFadeMul = 0.5
-val ShadowBotFadeMul = 2.5
-val ShadowGradTop = 0.28 // strength fraction at the canvas top edge
-val ShadowFadeWorld = 0.06 // penumbra width in world metres
-val ShadowStrength = 0.2
+val ShadowBotFadeMul = 2.8
+val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
+val ShadowFadeWorld = 0.10 // penumbra width in world metres
+val ShadowStrength = 0.4
 
 /** Soft, directional painting drop-shadow for one rect, in wall-local UV.
   * `rect = (centerX, centerY, halfW, halfH)`, `fade = (fadeU, fadeV)` is the
   * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
   * `worldFade / wallHeight` so the penumbra is isotropic in world space
-  * regardless of wall aspect. Returns ~0 above the canvas, rising to 1 under
-  * it.
+  * regardless of wall aspect. The shadow is uniform in strength inside the box;
+  * only the edge falloff varies (tight above, broad below).
   */
 def shadowMask(uv: Vec2Expr, rect: Vec4Expr, fade: Vec2Expr): FloatExpr =
   val hx = rect.z
   val hy = rect.w
   val dx = uv.x - rect.x
-  val dy = uv.y - rect.y // +Y is down
-  // Horizontal containment — symmetric soft edge.
-  val hMask = dx.abs.smoothstep(hx + fade.x, hx)
-  // Vertical containment — tight fade above the top edge, broad below the
-  // bottom edge (the cast shadow pools under the canvas).
-  val upper = dy.smoothstep(-hy - fade.y * ShadowTopFadeMul, -hy)
-  val lower = dy.smoothstep(hy + fade.y * ShadowBotFadeMul, hy)
-  // Top→bottom gradient inside the box: ShadowGradTop at top → 1 at bottom.
-  val grad = ((dy + hy) / (2.0 * hy + 0.0001)).clamp01
-  val vert = grad * (1.0 - ShadowGradTop) + ShadowGradTop
-  hMask * upper * lower * vert
+  // +Y is down; the vertical box is nudged down so the light comes from
+  // slightly above — the top edge stays lit, the bottom shadow is exposed.
+  val dy = uv.y - rect.y - fade.y * ShadowDropMul
+  // Horizontal containment — symmetric soft edge, centred *on* the canvas
+  // edge: half the penumbra falls on the wall beyond the canvas, half stays
+  // hidden behind it (light leaking in around the slightly offset canvas).
+  val hMask = dx.abs.smoothstep(hx + fade.x * 0.5, hx - fade.x * 0.5)
+  // Vertical containment — same edge-centred falloff, tight above the top
+  // edge, broad below the bottom one (the cast shadow pools under the canvas).
+  val upperFade = fade.x
+  val lowerFade = fade.y * ShadowBotFadeMul
+  val upper = dy.smoothstep(-hy - upperFade * 0.5, -hy + upperFade * 0.5)
+  val lower = dy.smoothstep(hy + lowerFade * 0.5, hy - lowerFade * 0.5)
+  hMask * upper * lower
 
 /** A painting to hang on a wall. `image` is any `Panel` (its content is the
   * consumer's concern). `sideStretch` is the front:side texel-density ratio — a
@@ -152,28 +161,48 @@ type PaintingPanels = (img: FragmentPanel)
     // Pre-render: Simulate ambient lighting 3D-noise fields and generated halo light strips.
     // -----------------------------------------------------------------------
 
+    // Distance from `wp` to the nearest room edge, ignoring the boundary
+    // planes the surface itself lies in (a wall never "approaches" its own
+    // plane). Adding a large constant on the surface's own axis takes it out
+    // of the `min`.
+    def edgeDist(wp: Vec3Expr, normal: Vec3Expr): FloatExpr =
+      val Far = 1000.0
+      val dx = (RoomWidth / 2.0 - wp.x.abs) + normal.x.abs * Far
+      val dy = wp.y.min(RoomHeight - wp.y) + normal.y.abs * Far
+      val dz = (RoomDepth / 2.0 - wp.z.abs) + normal.z.abs * Far
+      dx.min(dy).min(dz)
+
+    // Contact shadow as a function of the distance to the junction: darkest at
+    // 0, back to full brightness `EdgeFadeWorld` away.
+    def contact(dist: FloatExpr): FloatExpr =
+      lerp(ContactDarken, 1.0, dist.smoothstep(0.0, EdgeFadeWorld))
+
     def roomNoise(wp: Vec3Expr, normal: Vec3Expr) =
       val scaledWp = vec3(
         wp.x + wp.y * 0.2,
         wp.y * 0.3,
         wp.z * 0.8 + wp.y * 0.2,
       )
+      // The normal-dependent term gives each orientation its own look, which
+      // would otherwise meet as a hard seam in the corners. Fade it out over
+      // `EdgeFadeWorld` so the edge itself is uniform across all surfaces.
+      val edge = edgeDist(wp, normal).smoothstep(0.0, EdgeFadeWorld)
       lerp(
         0.68,
         1.0,
         ((Noise
           .fbm3(
-            scaledWp * 0.15,
+            scaledWp * 0.10,
             freqMul = 3.6,
             ampMul = 0.12,
-            seed = vec3(140),
+            seed = vec3(120),
           ) +
           Noise.fbm3(
-            scaledWp.cross(normal) * 0.2,
+            scaledWp.cross(normal) * 0.15,
             freqMul = 2.1,
             ampMul = 0.25,
             seed = vec3(70),
-          ) * 0.3)
+          ) * 0.3 * edge)
           / 1.3).fit1101,
       )
 
@@ -184,7 +213,12 @@ type PaintingPanels = (img: FragmentPanel)
 
     // Floor — plain tinted noise.
     val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
-      vec4(vec3(0.80, 0.78, 0.75) * roomNoise(wp, normal), 1.0)
+      // Contact shadow in the wall junction — distance to the nearest wall.
+      vec4(
+        vec3(0.80, 0.78, 0.75) * roomNoise(wp, normal)
+          * contact(edgeDist(wp, normal)),
+        1.0,
+      )
 
     // Ceiling — tinted noise + HDR halo light strips along V; 6 strips across U.
     val ceilTex = TextureBaker.bakeBlock(
@@ -200,7 +234,7 @@ type PaintingPanels = (img: FragmentPanel)
       val lf = LetFloat("lf")
       val halo = LetVec3("halo")
       Block(
-        col := vec3(0.88, 0.88, 0.87) * roomNoise(wp, normal),
+        col := vec3(0.86, 0.86, 0.85) * roomNoise(wp, normal),
         s := (uv.x * 6.0 + 0.5).fract,
         band := s.abs.smoothstep(0.05, 0.02),
         lf := uv.y.smoothstep(0.05, 0.15)
@@ -213,11 +247,12 @@ type PaintingPanels = (img: FragmentPanel)
 
     // Single wall noise baker - shadows go on top in a separate layer.
     val wallBaker = TextureBaker(p): (wp, normal, _) =>
+      // Matching contact shadow along the bottom border — height above floor.
       vec4(
         vec3(0.96, 0.96, 0.95).lerp(
-          vec3(0.89, 0.89, 0.88),
-          wp.y.smoothstep(4.7, 5.5),
-        ) * roomNoise(wp, normal),
+          vec3(0.88, 0.88, 0.87),
+          wp.y.smoothstep(4.6, 5.5),
+        ) * roomNoise(wp, normal) * contact(wp.y),
         1.0,
       )
 
@@ -513,32 +548,31 @@ type PaintingPanels = (img: FragmentPanel)
 
     val wallColor = (0.90, 0.90, 0.90, 0.0)
 
-    val mirror = MirrorReflection(
-      p,
-      shapes = aboveGround,
-      vpName = "vp",
-      alphaScale = RoomHeight,
-      blurStrength = 5.0,
-      stretch = 1.5,
-      clearColor = wallColor,
-    )
-    // val mirror = GaussianMirrorReflection(
+    // val mirror = MirrorReflection(
     //   p,
     //   shapes = aboveGround,
     //   vpName = "vp",
     //   alphaScale = RoomHeight,
     //   blurStrength = 5.0,
-    //   blurRatioVertical = 3.0,
+    //   stretch = 1.5,
     //   clearColor = wallColor,
-    //   // resolutionScale = 1,
     // )
+    val mirror = GaussianMirrorReflection(
+      p,
+      shapes = aboveGround,
+      vpName = "vp",
+      alphaScale = RoomHeight,
+      blurStrength = 5.0,
+      blurRatioVertical = 3.0,
+      clearColor = wallColor,
+    )
 
     // Canvas size in physical pixels — the floor turns its `fragCoord` into a
     // screen uv with it, because the reflection panel is sub-resolution and no
     // longer matches the scene's pixel grid 1:1.
     val canvasRes = p.binding[Vec2]
 
-    val reflStrength = 0.35
+    val reflStrength = 0.25
 
     type FloorUniforms = (
         vp: VertexUniform[Mat4],
