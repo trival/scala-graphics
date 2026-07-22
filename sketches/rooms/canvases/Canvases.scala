@@ -50,6 +50,14 @@ val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
 val ShadowFadeWorld = 0.10 // penumbra width in world metres
 val ShadowStrength = 0.4
 
+// Surface tints. Authored once as CPU vectors and used directly in the shader
+// bakers below — `vec3(…)` lifts them into the GPU domain.
+val FloorTint = Vec3(0.80, 0.78, 0.75)
+val CeilTint = Vec3(0.86, 0.86, 0.85)
+val WallTintLow = Vec3(0.96, 0.96, 0.95)
+val WallTintHigh = Vec3(0.88, 0.88, 0.87)
+val HaloColor = Vec3(8.0, 7.6, 6.8) // HDR — drives the ceiling strip bloom
+
 /** Soft, directional painting drop-shadow for one rect, in wall-local UV.
   * `rect = (centerX, centerY, halfW, halfH)`, `fade = (fadeU, fadeV)` is the
   * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
@@ -215,7 +223,7 @@ type PaintingPanels = (img: FragmentPanel)
     val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
       // Contact shadow in the wall junction — distance to the nearest wall.
       vec4(
-        vec3(0.80, 0.78, 0.75) * roomNoise(wp, normal)
+        vec3(FloorTint) * roomNoise(wp, normal)
           * contact(edgeDist(wp, normal)),
         1.0,
       )
@@ -234,13 +242,13 @@ type PaintingPanels = (img: FragmentPanel)
       val lf = LetFloat("lf")
       val halo = LetVec3("halo")
       Block(
-        col := vec3(0.86, 0.86, 0.85) * roomNoise(wp, normal),
+        col := vec3(CeilTint) * roomNoise(wp, normal),
         s := (uv.x * 6.0 + 0.5).fract,
         band := s.abs.smoothstep(0.05, 0.02),
         lf := uv.y.smoothstep(0.05, 0.15)
           * (1.0 - uv.y).smoothstep(0.05, 0.15),
         band *= lf,
-        halo := band * vec3(8.0, 7.6, 6.8),
+        halo := band * vec3(HaloColor),
         col += halo,
         color := vec4(col, 1.0),
       )
@@ -249,8 +257,8 @@ type PaintingPanels = (img: FragmentPanel)
     val wallBaker = TextureBaker(p): (wp, normal, _) =>
       // Matching contact shadow along the bottom border — height above floor.
       vec4(
-        vec3(0.96, 0.96, 0.95).lerp(
-          vec3(0.88, 0.88, 0.87),
+        vec3(WallTintLow).lerp(
+          vec3(WallTintHigh),
           wp.y.smoothstep(4.6, 5.5),
         ) * roomNoise(wp, normal) * contact(wp.y),
         1.0,
@@ -546,7 +554,7 @@ type PaintingPanels = (img: FragmentPanel)
       )
       for painting <- wall.paintings do aboveGround.push(painting.shape)
 
-    val wallColor = (0.90, 0.90, 0.90, 0.0)
+    val wallColor = Vec4(0.90, 0.90, 0.90, 0.0)
 
     // val mirror = MirrorReflection(
     //   p,

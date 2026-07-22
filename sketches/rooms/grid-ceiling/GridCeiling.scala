@@ -579,7 +579,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       val scenePanel = p
         .panel(
           format = TextureFormat.Rgba16Float,
-          clearColor = (fogColor.x, fogColor.y, fogColor.z, 1.0),
+          clearColor = Vec4(fogColor, 1.0),
           depthTest = true,
           multisample = true,
           shapes = Arr(groundShape, ceilShape, rowShape, colShape, boxShape),

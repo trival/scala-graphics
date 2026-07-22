@@ -231,7 +231,8 @@ object MirrorReflection:
     *   2× per axis.
     * @param clearColor
     *   RGBA the mirror render clears to where no shape draws (matters only if
-    *   the reflected view has gaps; default transparent black).
+    *   the reflected view has gaps; default transparent black). An
+    *   `(r, g, b, a)` tuple converts implicitly.
     * @return
     *   a [[MirrorReflection]] exposing `resultPanel` (sample this) and
     *   `mirrorScenePanel` (raw), plus `paint` / `setBlurStrength`.
@@ -249,7 +250,7 @@ object MirrorReflection:
       stretch: Double = 0.0,
       mipLevels: Int = 6,
       overscan: Double = 3.0,
-      clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
+      clearColor: Vec4 = Vec4(0.0),
   ): MirrorReflection =
     if mipLevels < 2 then
       throw jsError(s"MirrorReflection mipLevels must be >= 2 (got $mipLevels)")

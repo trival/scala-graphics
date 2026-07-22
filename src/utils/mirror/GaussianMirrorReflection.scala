@@ -193,7 +193,8 @@ object GaussianMirrorReflection:
     *   the crop pass entirely. Costs `((v + 2·overscan·σ) / v)²` in fill (~1.3×
     *   at the defaults), capped at 2× per axis.
     * @param clearColor
-    *   RGBA the mirror render clears to where no shape draws.
+    *   RGBA the mirror render clears to where no shape draws. An
+    *   `(r, g, b, a)` tuple converts implicitly.
     * @return
     *   a [[GaussianMirrorReflection]] exposing `resultPanel` (sample this by
     *   UV) and `mirrorScenePanel` (raw), plus `paint` and the runtime setters.
@@ -213,7 +214,7 @@ object GaussianMirrorReflection:
       scaleFactor: Double = 0.6,
       resolutionScale: Double = 0.5,
       overscan: Double = 3.0,
-      clearColor: (Double, Double, Double, Double) = (0.0, 0.0, 0.0, 0.0),
+      clearColor: Vec4 = Vec4(0.0),
   ): GaussianMirrorReflection =
     if scaleFactor <= 0.0 || scaleFactor >= 1.0 then
       throw jsError(
