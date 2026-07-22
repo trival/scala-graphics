@@ -45,7 +45,7 @@ val ContactDarken = 0.93 // brightness multiplier right at the edge
 
 // Painting drop-shadow shaping. The shadow box matches the canvas footprint
 // exactly; the soft edge + downward bias are shaped by `shadowMask`.
-val ShadowBotFadeMul = 2.8
+val ShadowBotFadeMul = 3.0
 val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
 val ShadowFadeWorld = 0.10 // penumbra width in world metres
 val ShadowStrength = 0.4

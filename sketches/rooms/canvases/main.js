@@ -3047,7 +3047,7 @@ function $c_Lsketches_rooms_canvases_Canvases$package$() {
   this.gC = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0);
   this.iE = 0.05;
   this.kv = 0.93;
-  this.kw = 2.8;
+  this.kw = 3.0;
   this.kx = 0.25;
   this.iF = 0.1;
   this.ky = 0.4;
