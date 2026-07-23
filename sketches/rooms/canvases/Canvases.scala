@@ -38,7 +38,7 @@ val Up = Vec3(0.0, 1.0, 0.0)
 
 // How far from a room edge the normal-dependent noise term is fully faded
 // out, in world metres — keeps corners seam-free.
-val EdgeFadeWorld = 0.05
+val EdgeFadeWorld = 0.08
 
 // Contact darkening in the floor/wall junction, over the same distance.
 val ContactDarken = 0.93 // brightness multiplier right at the edge
@@ -48,13 +48,13 @@ val ContactDarken = 0.93 // brightness multiplier right at the edge
 val ShadowBotFadeMul = 3.0
 val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
 val ShadowFadeWorld = 0.10 // penumbra width in world metres
-val ShadowStrength = 0.4
+val ShadowStrength = 0.38
 
 // Surface tints. Authored once as CPU vectors and used directly in the shader
 // bakers below — `vec3(…)` lifts them into the GPU domain.
 val FloorTint = Vec3(0.80, 0.78, 0.75)
 val CeilTint = Vec3(0.86, 0.86, 0.85)
-val WallTintLow = Vec3(0.96, 0.96, 0.95)
+val WallTintLow = Vec3(0.97, 0.97, 0.96)
 val WallTintHigh = Vec3(0.88, 0.88, 0.87)
 val HaloColor = Vec3(8.0, 7.6, 6.8) // HDR — drives the ceiling strip bloom
 
@@ -97,14 +97,30 @@ case class PaintingSpec(
 )
 
 /** A painting hung on a wall: its scene shape, its per-painting `model` matrix
-  * binding (mutable, for animation in a later milestone) and the wall-local UV
-  * data its baked shadow needs.
+  * binding, and the wall-local UV data its shadow instance needs. Both `model`
+  * and `shadowRect` are mutable bindings so a swaying painting can drive its
+  * own model matrix and move its shadow with it each frame. `basePos` /
+  * `baseRect` are the resting values the sway offsets from.
   */
 case class Painting(
     model: BufferBinding[Mat4, ?],
     shape: AnyShape,
-    shadowRect: Vec4, // UV-space (centerX, centerY, halfW, halfH)
+    shadowRect: BufferBinding[Vec4, ?], // UV (centerX, centerY, halfW, halfH)
     shadowFade: Vec2, // per-axis penumbra width in UV
+    basePos: Vec3, // resting world position (sway offsets Y from here)
+    baseRect: Vec4, // resting shadow rect (sway moves centerY)
+    rotY: Double, // wall orientation about Y
+    wallHeight: Double, // for mapping a world Y offset → UV shadow move
+)
+
+/** A painting animated in a vertical sine rhythm: distinct `phase` and a
+  * slightly varying `speed` per painting, `amp` metres of travel.
+  */
+case class Sway(
+    painting: Painting,
+    phase: Double,
+    speed: Double,
+    amp: Double,
 )
 
 /** One wall side: its quad geometry (local UV [0,1], v down) and the paintings
@@ -264,18 +280,31 @@ type PaintingPanels = (img: FragmentPanel)
         1.0,
       )
 
-    // Shadow layer — draw a shadow on top of the sampled texture.
-    type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
-    type ShadowP = (prev: FragmentPanel)
-    val shadowLayerShade = p.layerShade[ShadowU, ShadowP]: program =>
+    // The wall texture is composited each time it is baked: first a copy layer
+    // lays the pre-baked noise into the target, then one shadow instance per
+    // painting darkens its rect on top via multiplicative blending. One draw per
+    // shadow accumulating via fixed-function blending — no ping-pong, no
+    // per-pass full-texture read/write — so re-baking a moving wall every frame
+    // is cheap.
+
+    // Copy layer — write the pre-baked noise texture into the composite target.
+    type CopyU = (samp: Sampler)
+    type CopyP = (tex: FragmentPanel)
+    val copyShade = p.layerShade[CopyU, CopyP]: program =>
       program.frag: ctx =>
-        val base = LetVec4("base")
+        ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
+
+    // Shadow instance — outputs a per-pixel darkening factor `1 - strength·mask`.
+    // Under `BlendState.Multiply` (color = dst·src) each instance multiplies the
+    // target, so overlapping shadows compound exactly as a stacked chain would.
+    type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
+    val shadowShade = p.layerShade[ShadowU]: program =>
+      program.frag: ctx =>
         val sm = LetFloat("sm")
         Block(
-          base := ctx.textures.prev.load(ivec2(ctx.fragCoord.xy)),
           sm := shadowMask(ctx.in.uv, ctx.bindings.rect, ctx.bindings.fade),
           ctx.out.color :=
-            vec4(base.xyz * (1.0 - ctx.bindings.strength * sm), base.w),
+            vec4(vec3(1.0 - ctx.bindings.strength * sm), 1.0),
         )
 
     // -----------------------------------------------------------------------
@@ -430,34 +459,51 @@ type PaintingPanels = (img: FragmentPanel)
       val shape = p
         .shape(paintingForm(spec), paintingShade, cullMode = CullMode.None)
         .bind("model" := model, "samp" := sampler, "img" := spec.image)
+      val baseRect = Vec4(
+        u / wall.width,
+        1.0 - v / wall.height,
+        (spec.width / 2.0) / wall.width,
+        (spec.height / 2.0) / wall.height,
+      )
       val painting = Painting(
-        model,
-        shape,
-        Vec4(
-          u / wall.width,
-          1.0 - v / wall.height,
-          (spec.width / 2.0) / wall.width,
-          (spec.height / 2.0) / wall.height,
-        ),
-        Vec2(ShadowFadeWorld / wall.width, ShadowFadeWorld / wall.height),
+        model = model,
+        shape = shape,
+        shadowRect = p.binding(baseRect),
+        shadowFade =
+          Vec2(ShadowFadeWorld / wall.width, ShadowFadeWorld / wall.height),
+        basePos = pos,
+        baseRect = baseRect,
+        rotY = wall.rotY,
+        wallHeight = wall.height,
       )
       wall.paintings.push(painting)
       painting
 
-    // Bake one wall texture: noise prepared by the shared baker, painting
-    // shadow drawn on top by the shadow layer. Call after the paintings are up.
-    def bakeWallTex(wall: Wall): Panel =
+    // Composite one wall texture: a copy layer lays the pre-baked noise, then
+    // one multiplicatively-blended shadow instance per painting darkens its
+    // rect on top. Returns the panel — for animated walls re-`p.paint` it each
+    // frame after moving the paintings' shadow rects. No painting cap.
+    def compositeWallTex(wall: Wall): Panel =
       val (ww, wh) = texSize(wall.width, wall.height)
-      val panel = wallBaker.prepare(wall.form, ww, wh)
-      val painting = wall.paintings(0)
+      val noiseTex = wallBaker(wall.form, ww, wh)
+      val copy = p
+        .layer(copyShade)
+        .bind("samp" := sampler, "tex" := noiseTex)
       val shadow = p
-        .layer(shadowLayerShade)
-        .bind(
+        .layer(shadowShade, blendState = BlendState.Multiply)
+        .bind("strength" := ShadowStrength)
+      for painting <- wall.paintings do
+        shadow.instances.add(
           "rect" := painting.shadowRect,
           "fade" := painting.shadowFade,
-          "strength" := ShadowStrength,
         )
-      panel.set(layer = shadow)
+      val panel =
+        p.panel(
+          width = ww,
+          height = wh,
+          mips = true,
+          layers = Arr(copy, shadow),
+        )
       p.paint(panel)
       panel
 
@@ -523,17 +569,48 @@ type PaintingPanels = (img: FragmentPanel)
     // Pre-render the painting image panels once.
     imagePanels.foreach(p.paint(_))
 
+    // Paintings per wall: the wide walls (left/right, along the room depth)
+    // carry 4, the narrow ones (front/back) carry 3. Same image/color per wall;
+    // only the size varies per painting.
+    val counts = Arr(3, 3, 4, 4) // front, back, left, right
+    // The wide walls (indices 2, 3) animate their paintings.
+    def isAnimated(wallIndex: Int): Boolean = wallIndex >= 2
+
+    // Paintings on the animated walls, each swaying vertically.
+    val sways = Arr[Sway]()
+
+    // Keep paintings this far from each wall's side edges.
+    val WallSideMargin = 0.5
+
     for i <- 0 until walls.length do
       val wall = walls(i)
       val img = imagePanels(i)
-      val pw = randInRange(0.9, 1.7)
-      val ph = randInRange(0.7, 1.4)
-      hang(
-        wall,
-        PaintingSpec(width = pw, height = ph, depth = 0.05, image = img),
-        u = wall.width / 2.0,
-        v = 1.7,
-      )
+      val count = counts(i)
+      // Evenly spaced along the wall's inset span, each in its own slot centre,
+      // with a slight random horizontal + vertical offset.
+      val span = wall.width - 2.0 * WallSideMargin
+      for j <- 0 until count do
+        val pw = randInRange(0.9, 1.7)
+        val ph = randInRange(0.7, 1.4)
+        val slot = WallSideMargin + span * (j + 0.5) / count
+        val u = slot + randInRange(-0.12, 0.12)
+        val v = 1.75 + randInRange(-0.18, 0.18)
+        val painting = hang(
+          wall,
+          PaintingSpec(width = pw, height = ph, depth = 0.05, image = img),
+          u = u,
+          v = v,
+        )
+        // Distinct starting phase + a slightly varying speed per painting.
+        if isAnimated(i) then
+          sways.push(
+            Sway(
+              painting,
+              phase = randInRange(0.0, Tau),
+              speed = randInRange(0.6, 1.0),
+              amp = randInRange(0.14, 0.22),
+            ),
+          )
 
     // -----------------------------------------------------------------------
     // Scene rendering
@@ -546,8 +623,13 @@ type PaintingPanels = (img: FragmentPanel)
     // All above-ground scene shapes (ceiling + walls + paintings) — these also
     // feed the floor mirror.
     val aboveGround = Arr[AnyShape](ceilShape)
-    for wall <- walls do
-      val wallTex = bakeWallTex(wall)
+    // Composite wall textures that must be re-baked each frame (the animated
+    // walls, whose shadows move with their swaying paintings).
+    val animatedPanels = Arr[Panel]()
+    for i <- 0 until walls.length do
+      val wall = walls(i)
+      val wallTex = compositeWallTex(wall)
+      if isAnimated(i) then animatedPanels.push(wallTex)
       aboveGround.push(
         p.shape(wall.form, texturedShade, cullMode = CullMode.None)
           .bind("samp" := sampler, "tex" := wallTex),
@@ -673,7 +755,37 @@ type PaintingPanels = (img: FragmentPanel)
       canvasRes.set(Vec2(w, h))
       mirror.resize(w, h)
 
+    var time = 0.0
+
     animate: tpf =>
+      time += tpf
+      val t = time / 1000.0
+      // Sway the animated paintings vertically, moving each one's model matrix
+      // and its shadow rect together.
+      sways.foreach: sw =>
+        val pt = sw.painting
+        val s = sw.amp * (t * sw.speed + sw.phase).sin
+        pt.model.set(
+          Mat4.fromTranslationRotationScale(
+            pt.basePos + Up * s,
+            Quat.fromRotationY(pt.rotY),
+            Vec3(1.0, 1.0, 1.0),
+          ),
+        )
+        // Painting up by `s` metres → v grows → shadow rect centre moves up
+        // (v is measured downward, so subtract).
+        pt.shadowRect.set(
+          Vec4(
+            pt.baseRect.x,
+            pt.baseRect.y - s / pt.wallHeight,
+            pt.baseRect.z,
+            pt.baseRect.w,
+          ),
+        )
+      // Re-composite the animated walls (noise copy + moved shadow instances)
+      // before the scene samples their textures.
+      animatedPanels.foreach(p.paint(_))
+
       input.update(tpf)
       controller.update(tpf)
       val vp = cam.viewProjMat
