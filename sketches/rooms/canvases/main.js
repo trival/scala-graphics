@@ -3041,7 +3041,7 @@ function $p_Lsketches_rooms_canvases_Canvases$package$__patternPanel$1__Ltrivali
     Bindable_this.i[idx] = b;
   }
   Bindable_this.O = null;
-  return p$5.bs(256, 256, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this, (void 0));
+  return p$5.bs(256, 256, (void 0), (void 0), (void 0), (void 0), true, (void 0), (void 0), (void 0), (void 0), Bindable_this, (void 0));
 }
 function $p_Lsketches_rooms_canvases_Canvases$package$__isAnimated$1__I__Z($thiz, wallIndex) {
   return (wallIndex >= 2);
@@ -3072,10 +3072,10 @@ function $c_Lsketches_rooms_canvases_Canvases$package$() {
   this.gf = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0);
   this.iV = 0.08;
   this.kM = 0.93;
-  this.kP = 3.0;
+  this.kP = 2.7;
   this.kQ = 0.25;
   this.iW = 0.1;
-  this.kR = 0.38;
+  this.kR = 0.44;
   this.kN = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.8, 0.78, 0.75);
   this.kL = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.86, 0.86, 0.85);
   this.kT = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.97, 0.97, 0.96);

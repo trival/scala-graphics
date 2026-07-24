@@ -45,10 +45,10 @@ val ContactDarken = 0.93 // brightness multiplier right at the edge
 
 // Painting drop-shadow shaping. The shadow box matches the canvas footprint
 // exactly; the soft edge + downward bias are shaped by `shadowMask`.
-val ShadowBotFadeMul = 3.0
+val ShadowBotFadeMul = 2.7
 val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
 val ShadowFadeWorld = 0.10 // penumbra width in world metres
-val ShadowStrength = 0.38
+val ShadowStrength = 0.44
 
 // Surface tints. Authored once as CPU vectors and used directly in the shader
 // bakers below — `vec3(…)` lifts them into the GPU domain.
@@ -525,6 +525,7 @@ type PaintingPanels = (img: FragmentPanel)
         width = 256,
         height = 256,
         layer = p.layer(imgShade).bind("color" := c),
+        mips = true,
       )
 
     // Four walls, each from the room box's extent, facing inward.
