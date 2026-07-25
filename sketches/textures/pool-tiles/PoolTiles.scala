@@ -9,7 +9,8 @@ import trivalibs.graphics.painter.*
 import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.color.Color
 import trivalibs.graphics.shader.lib.coords.Polar
-import trivalibs.graphics.shader.lib.random.{Hash, Simplex}
+import trivalibs.graphics.shader.lib.random.Hash
+import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.numbers.NumExt.given
@@ -126,7 +127,8 @@ import trivalibs.utils.numbers.NumExt.given
           rnd := Hash.hash21(idx.bitsToU32),
           nz := Simplex.simplexNoise2d(idx * 0.2).fit1101,
           test := nz * 0.7 + rnd * 0.3,
-          tileVal := ((rnd.fit0111 * 0.7).round + idx.x + idx.y * 50.0).rem(3.0),
+          tileVal := ((rnd.fit0111 * 0.7).round + idx.x + idx.y * 50.0)
+            .rem(3.0),
           tileRnd := Hash.hash1(tileVal.toU32 + 345.u),
 
           col := (test > 0.5).select(
@@ -134,7 +136,7 @@ import trivalibs.utils.numbers.NumExt.given
             Color.hsv2rgb(vec3(tileRnd * 0.5 + 0.15, 0.3 - tileRnd * 0.1, 0.7)),
           ),
 
-          ctx.out.color := vec4(col.pow(2.2), 1.0),
+          ctx.out.color := vec4(col, 1.0),
         )
 
     val uRes = p.binding[Vec2]

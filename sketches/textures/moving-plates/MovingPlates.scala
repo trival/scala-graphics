@@ -335,7 +335,7 @@ import trivalibs.utils.numbers.NumExt.given
           vec3(0.0),
           ground.mix(vec3(0.0), (shadow * 0.7).clamp01),
         ))
-        stmts += (ctx.out.color := vec4(col.pow(2.2), 1.0))
+        stmts += (ctx.out.color := vec4(col.pow(0.5), 1.0))
         Block(stmts)
 
     val uRes = p.binding[Vec2]

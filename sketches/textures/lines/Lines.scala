@@ -6,7 +6,8 @@ import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
 import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.lib.random.{Hash, Simplex}
+import trivalibs.graphics.shader.lib.random.Hash
+import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
@@ -127,7 +128,10 @@ import trivalibs.utils.numbers.NumExt.given
 
         // One line variant → (vec4(color, intensity), height). Inlines like the
         // Rust `compute_line` closure.
-        def computeLine(segOff: Double, lineXOff: Double): (Vec4Expr, FloatExpr) =
+        def computeLine(
+            segOff: Double,
+            lineXOff: Double,
+        ): (Vec4Expr, FloatExpr) =
           val segment = lineSeg + segOff
           val x = lineX + lineXOff
           val noise =
@@ -185,7 +189,7 @@ import trivalibs.utils.numbers.NumExt.given
           for j <- 0 until 3 do
             stmts += (col := col.mix(lineV(j).xyz, lineV(j).w))
 
-        stmts += (ctx.out.color := vec4(col.pow(2.2), 1.0))
+        stmts += (ctx.out.color := vec4(col, 1.0))
         Block(stmts)
 
     val uRes = p.binding[Vec2]

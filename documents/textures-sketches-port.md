@@ -113,6 +113,31 @@ duplicate a lot of WGSL — e.g. moving_plates' `quadrantColor` (called from 4
   bundle discipline (build-time expression emitters, like `Noise.fbm3`).
 - Rust `frame` is seconds; feed `time += tpf * 0.001` in `animate`.
 
+### Gamma: drop the Rust output `powf` — divide its exponent by 2.2
+
+**Every Rust texture shader ends in a `powf(n)` that must be re-derived, not
+copied.** The Rust painter configured an **sRGB** surface
+(`surface_caps.formats[0]`, `repomix-painter.xml:8484` → `Bgra8UnormSrgb`), so
+the hardware applied a linear→sRGB encode (≈ `pow(1/2.2)`) on every write. Our
+painter configures the canvas with `gpu.getPreferredCanvasFormat()`
+(`trivalibs/src/graphics/painter/painter.scala:1852`), which returns the
+**non**-sRGB `bgra8unorm`/`rgba8unorm` — no hardware encode at all. Copying the
+Rust `powf` verbatim therefore darkens the image with nothing to undo it, which
+is exactly the bug this port hit.
+
+So the port exponent is the Rust one **divided by 2.2**:
+
+- `powf(2.2)` was pure pre-compensation (net 1.0) → **drop it entirely**. Done in
+  pool-tiles and lines.
+- `powf(1.2)` in moving_plates was an artistic tweak on top (net ≈ 0.545) → keep
+  a fractional power. The sketch ships `pow(0.5)`, chosen by eye and preferred
+  over the arithmetically exact 0.545.
+
+Decided against "fixing" this library-side (configuring an sRGB canvas view via
+`viewFormats`): the no-sRGB setup is the preferred behaviour going forward, and
+switching would shift every sketch already tuned against it. The remaining ports
+handle the exponent per sketch, by eye.
+
 ## Library addition: `.rem` (floored / euclidean remainder)
 
 WGSL's `%` is the **truncated** remainder — its sign follows the dividend, so
@@ -178,8 +203,8 @@ loops, direct translation of `pool_tiles.rs`:
   `test = n*0.7 + rnd*0.3`;
   `val = ((rnd.fit0111*0.7).round + idx.x + 50*idx.y).rem(3.0)` (new `.rem`);
   `tileRnd = Hash.hash1(val.toU32 + 345.u)`.
-- `(test > 0.5).select(hsv2rgb(warm), hsv2rgb(cool))`, output
-  `vec4(color.pow(2.2), 1)`.
+- `(test > 0.5).select(hsv2rgb(warm), hsv2rgb(cool))`, output `vec4(color, 1)`
+  (Rust's `powf(2.2)` dropped — see "Gamma" above).
 
 **`sketches/textures/lines/Lines.scala`** (`@main def lines`) — port
 `lines_1.rs`, `LINE_COUNT = 20`:
@@ -198,7 +223,7 @@ loops, direct translation of `pool_tiles.rs`:
   the running color with `col := col.mix(line.color, line.intensity)` in sorted
   order. A Scala loop over the **3 pass offsets** (0, 100, 200) emits all three
   passes, starting from `col := vec3(1)`.
-- Output `vec4(col.pow(2.2), 1)`.
+- Output `vec4(col, 1)` (Rust's `powf(2.2)` dropped — see "Gamma" above).
 
 **`sketches/textures/moving-plates/MovingPlates.scala`**
 (`@main def movingPlates`) — port `moving_plates.rs`, `NUM_TILES = 15`. The hard
@@ -226,7 +251,8 @@ one. `tile` is a plain inline Scala `def`; `quadrantColor` is a `WgslFn.dsl`
   `uvTile = fract(uvScaled)-0.5`, `idx = floor(uvScaled)+11`; compute `cc` + 8
   neighbor tiles as `LetVec3`; pick the quadrant with `ifChain` on
   `uvTile.x`/`.y` signs, each calling `quadrantColor` with the Rust-specified
-  neighbor/dir triples into a `VarVec3 col`; output `vec4(col.pow(1.2), 1)`.
+  neighbor/dir triples into a `VarVec3 col`; output `vec4(col.pow(0.5), 1)`
+  (Rust's `powf(1.2)` regamma'd — see "Gamma" above).
 
 ## Verification
 
