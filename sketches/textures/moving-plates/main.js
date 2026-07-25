@@ -1799,7 +1799,7 @@ $p.es = (function() {
       var a$proxy24 = col.f($m_Ltrivalibs_graphics_math_gpu_expr$package$().c2($m_Ltrivalibs_graphics_math_gpu_expr$package$().aF(miss, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().e().c(0.5)), $m_Ltrivalibs_graphics_math_gpu_vec3$().x(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().er(ground, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().I(), $m_Ltrivalibs_graphics_math_gpu_vec3$().x(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().dR($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().N(shadow, 0.7)))));
       stmts.push(a$proxy24);
       var AssignTarget_this = ctx.cV.eJ("color");
-      var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_vec4$().k($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().eA(col, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().I(), 1.2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().e().c(1.0));
+      var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_vec4$().k($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().eA(col, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().I(), 2.2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().e().c(1.0));
       var a$proxy25 = (((("  " + AssignTarget_this.cT) + " = ") + value$proxy1.a) + ";");
       stmts.push(a$proxy25);
       var $x_1 = $m_Ltrivalibs_graphics_math_gpu_expr$package$Block$().dO(stmts);

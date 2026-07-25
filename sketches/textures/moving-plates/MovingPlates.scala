@@ -2,7 +2,8 @@ package sketches.textures.moving_plates
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document
-import sketchlib.shaders.{Shapes, Uv}
+import sketchlib.shaders.Shapes
+import sketchlib.shaders.Uv
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
@@ -224,22 +225,55 @@ import trivalibs.utils.numbers.NumExt.given
 
         stmts += ifChain(
           (uvTile.y < 0.0) && (uvTile.x < 0.0),
-          Block(n1 := tl, n2 := tc, n3 := cl, d1 := dirTL, d2 := dirTC, d3 := dirCL),
+          Block(
+            n1 := tl,
+            n2 := tc,
+            n3 := cl,
+            d1 := dirTL,
+            d2 := dirTC,
+            d3 := dirCL,
+          ),
         ).elseIf(
           (uvTile.y < 0.0) && (uvTile.x >= 0.0),
-          Block(n1 := tr, n2 := tc, n3 := cr, d1 := dirTR, d2 := dirTC, d3 := dirCR),
+          Block(
+            n1 := tr,
+            n2 := tc,
+            n3 := cr,
+            d1 := dirTR,
+            d2 := dirTC,
+            d3 := dirCR,
+          ),
         ).elseIf(
           uvTile.x < 0.0,
-          Block(n1 := bl, n2 := bc, n3 := cl, d1 := dirBL, d2 := dirBC, d3 := dirCL),
+          Block(
+            n1 := bl,
+            n2 := bc,
+            n3 := cl,
+            d1 := dirBL,
+            d2 := dirBC,
+            d3 := dirCL,
+          ),
         ).elseDo(
-          Block(n1 := br, n2 := bc, n3 := cr, d1 := dirBR, d2 := dirBC, d3 := dirCR),
+          Block(
+            n1 := br,
+            n2 := bc,
+            n3 := cr,
+            d1 := dirBR,
+            d2 := dirBC,
+            d3 := dirCR,
+          ),
         )
 
         // tiles[0] = center; tiles[1..3] = the quadrant neighbors.
         val tiles = Arr[Vec3Expr](cc, n1, n2, n3)
         val dirs = Arr[Vec2Expr](vec2(0.0), d1, d2, d3)
         val uvs =
-          Arr(LetVec2("quv0"), LetVec2("quv1"), LetVec2("quv2"), LetVec2("quv3"))
+          Arr(
+            LetVec2("quv0"),
+            LetVec2("quv1"),
+            LetVec2("quv2"),
+            LetVec2("quv3"),
+          )
 
         for i <- 0 until 4 do
           stmts += (uvs(i) := (uvTile - dirs(i)) * (1.0 - tiles(i).y * 0.14))
@@ -301,7 +335,7 @@ import trivalibs.utils.numbers.NumExt.given
           vec3(0.0),
           ground.mix(vec3(0.0), (shadow * 0.7).clamp01),
         ))
-        stmts += (ctx.out.color := vec4(col.pow(1.2), 1.0))
+        stmts += (ctx.out.color := vec4(col.pow(2.2), 1.0))
         Block(stmts)
 
     val uRes = p.binding[Vec2]
