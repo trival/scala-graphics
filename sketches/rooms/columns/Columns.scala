@@ -132,7 +132,7 @@ private val ColsXHalf = 4
             ctx.in.normal.fit1101,
             (uv.x < 0.2) || (uv.y < 0.2),
           ),
-          ctx.out.color := vec4(col.pow(2.2), 1.0),
+          ctx.out.color := vec4(col, 1.0),
         )
 
     // -----------------------------------------------------------------------

@@ -497,7 +497,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         .shape(boxForm, renderShade, cullMode = CullMode.None)
         .bind(
           "tex" := boxTile,
-          "tint" := Vec3(0.48, 0.47, 0.47),
+          "tint" := Vec3(0.28, 0.27, 0.27),
           "samp" := clampSamp,
         )
 
@@ -656,7 +656,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
             lod := (1 + f * blurStrength).log2.min(fadeMips - 1),
             col := ctx.textures.col.sampleLevel(uv, ctx.bindings.samp, lod).xyz,
             ctx.out.color := vec4(
-              col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f).pow(2.2),
+              col.mix(vec3(fogColor.x, fogColor.y, fogColor.z), f),
               1.0,
             ),
           )
