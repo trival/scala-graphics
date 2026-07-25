@@ -1,6 +1,18 @@
 # Porting the Rust `textures/` shaders to Scala DSL sketches
 
-Status: **planning** · Scope: 3 new sketches under `sketches/textures/`
+Status: **all built** — pool-tiles ✅, lines ✅, moving-plates ✅ · Scope: 3 new
+sketches under `sketches/textures/` · awaiting in-browser (naga) validation
+
+> Progress: `.rem` added to gpu `FloatExpr` + CPU `NumExt` (euclidean). Shared
+> `sketchlib.shaders.Uv.aspectPreserving` (`src/shaders/Uv.scala`) and
+> `sketchlib.shaders.Shapes.roundedRect`/`roundedRectSmooth`
+> (`src/shaders/Shapes.scala`) added. All three sketches written, compiling, and
+> listed in `sketches/index.html`; each carries the original Rust shader source
+> as a top-of-file reference comment. Note: moving-plates uses an `ifChain` to
+> pick the 3 quadrant neighbors + dirs into vars and runs the ground/shadow
+> logic once (instead of the planned `WgslFn.dsl`, since the DSL's call-syntax
+> tops out at arity 6 and `quadrantColor` needed 8 params). Build-time unrolling
+> loops in the sketches use Scala `for`, not `while` (see "Loops" below).
 
 ## Context
 
@@ -44,18 +56,26 @@ All math/primitive helpers already exist in the trivalibs shader lib:
 - **Control flow** (`graphics/math/gpu/expr.scala`): `when`, `ifElse`,
   `ifChain(..).elseIf(..).elseDo(..)`, and branchless select. Prefer the
   **extension form `cond.select(onTrue, onFalse)`** (expr.scala:489) — it reads
-  clearer and matches Rust's `if cond { onTrue } else { onFalse }` arg order (the
-  free `select(onFalse, onTrue, cond)` is the same thing, reversed).
+  clearer and matches Rust's `if cond { onTrue } else { onFalse }` arg order
+  (the free `select(onFalse, onTrue, cond)` is the same thing, reversed).
 
 ### Loops: Scala-level, unrolled at build time
 
-The DSL is expression/AST-based (each op emits WGSL), so a **Scala-level
-`for`/`while` loop at build time generates (unrolls) the WGSL** — exactly how
-`Noise.fbm3` (`src/shaders/Noise.scala`) folds octaves with a Scala `while`
-accumulating into a `var acc: FloatExpr`. Every Rust `for i in 0..n` /
-fixed-size array becomes a Scala loop over a build-time `Array`/`Arr` of
+The DSL is expression/AST-based (each op emits WGSL), so a **Scala-level loop at
+build time generates (unrolls) the WGSL**. Every Rust `for i in 0..n` /
+fixed-size array becomes a Scala loop over a build-time `Seq`/`Arr` of
 exprs/locals that emits statements into the `Block`; nothing is hand-copied per
-iteration. `Block(stmts*)` accepts a splatted build-time `Seq[Stmt]`.
+iteration. `Block(stmts*)` accepts a splatted build-time `Seq[Stmt]`, and
+`Block(stmts: Arr[Stmt])` an accumulated array.
+
+**Use `for`, not `while`, in these sketches.** The unrolling runs once per
+sketch at build time, so there is no runtime cost to pay for and readability
+wins — `for (a, b) <- sortPairs` / `for i <- 0 until 4` say what they mean.
+(Rust needed `while` only because its GPU-shader compilation didn't support
+`for`; that constraint doesn't carry over.) The `while` discipline stays where
+it belongs: library code in `trivalibs/` and shared `src/` helpers on a
+render-loop path — e.g. `Noise.fbm3` (`src/shaders/Noise.scala`) folding octaves
+into a `var acc: FloatExpr`. See the `sketch-loop-style` convention.
 
 Gotcha: when a Scala loop emits statements that reassign a `Var*` local inside a
 `when`, declare that local's first `:=` at the function/block top level (before
@@ -97,15 +117,15 @@ duplicate a lot of WGSL — e.g. moving_plates' `quadrantColor` (called from 4
 
 WGSL's `%` is the **truncated** remainder — its sign follows the dividend, so
 `(-1.0) % 3.0 == -1.0`. There is **no builtin euclidean modulo**. Rust's
-`NumExt::rem` is euclidean: always in `[0, |b|)` for any sign of `a`/`b`, which is
-what these shaders rely on. It's a genuinely useful, reusable op, so add it to the
-library as the generic euclidean form (`abs` on the divisor, so it holds for
-negative divisors too — not just the positive constants used here):
+`NumExt::rem` is euclidean: always in `[0, |b|)` for any sign of `a`/`b`, which
+is what these shaders rely on. It's a genuinely useful, reusable op, so add it
+to the library as the generic euclidean form (`abs` on the divisor, so it holds
+for negative divisors too — not just the positive constants used here):
 
-- **gpu `FloatExpr.rem(other)`** in `trivalibs/src/graphics/math/gpu/float_expr.scala`
-  (alongside `fit1101`/`clamp01`), emitting
-  `${a} - floor(${a} / abs(${b})) * abs(${b})`. This is what pool_tiles calls:
-  `(…).rem(3.0)`.
+- **gpu `FloatExpr.rem(other)`** in
+  `trivalibs/src/graphics/math/gpu/float_expr.scala` (alongside
+  `fit1101`/`clamp01`), emitting `${a} - floor(${a} / abs(${b})) * abs(${b})`.
+  This is what pool_tiles calls: `(…).rem(3.0)`.
 - **CPU `NumExt.rem`** in `trivalibs/src/utils/numbers.scala` (the trait at
   ~L79 + its Double/Float impls) for CPU parity, body
   `a - (a / b.abs).floor * b.abs`.
@@ -175,10 +195,9 @@ loops, direct translation of `pool_tiles.rs`:
   then bubble-sorts by height with branchless compare-swaps: a Scala loop over
   the pair sequence `(0,1),(1,2),(0,1)` emits each compare-swap (temp `Let`s via
   `(h_a > h_b).select(..)` → reassign both slots); then a Scala loop blends onto
-  the running
-  color with `col := col.mix(line.color, line.intensity)` in sorted order. A
-  Scala loop over the **3 pass offsets** (0, 100, 200) emits all three passes,
-  starting from `col := vec3(1)`.
+  the running color with `col := col.mix(line.color, line.intensity)` in sorted
+  order. A Scala loop over the **3 pass offsets** (0, 100, 200) emits all three
+  passes, starting from `col := vec3(1)`.
 - Output `vec4(col.pow(2.2), 1)`.
 
 **`sketches/textures/moving-plates/MovingPlates.scala`**
