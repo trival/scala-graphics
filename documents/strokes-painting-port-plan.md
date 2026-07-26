@@ -159,6 +159,12 @@ single-buffer `set` path is unchanged for existing call sites. Also manually
 checked live (all examples + all sketches) after deploying — no regressions
 found.
 
+Side effect of this phase: trivalibs examples now have a manual deploy path
+(`trivalibs/build-dist.ts` + `wrangler.jsonc` + `bun run deploy`), unlike the
+sketch repo's Cloudflare-automatic Vite build — see `trivalibs/README.md`
+"Development". Future example additions (phase 2a, etc.) just need `bun run
+deploy` run once after landing.
+
 ---
 
 ## 3. Phase 2 — `line2d` in trivalibs
