@@ -7,8 +7,8 @@ import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
 import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.lib.color.Color
-import trivalibs.graphics.shader.lib.coords.Polar
+import trivalibs.graphics.shader.lib.color.*
+import trivalibs.graphics.shader.lib.coords.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.graphics.shader.{*, given}
@@ -103,14 +103,14 @@ import trivalibs.utils.numbers.NumExt.given
           uv := Uv.aspectPreserving(ctx.in.uv, ctx.bindings.res),
 
           // ripple drop 1
-          pc := Polar.cartToPolar(uv - drop1),
+          pc := (uv - drop1).cartToPolar,
           pc := vec2(pc.x + (pc.x * 10.1 - t * 3.0).sin.pow(6.0) * 0.003, pc.y),
-          uv := Polar.polarToCart(pc) + drop1,
+          uv := pc.polarToCart + drop1,
 
           // ripple drop 2
-          pc := Polar.cartToPolar(uv - drop2),
+          pc := (uv - drop2).cartToPolar,
           pc := vec2(pc.x + (pc.x * 8.5 - t * 1.8).sin.pow(8.0) * 0.0055, pc.y),
-          uv := Polar.polarToCart(pc) + drop2,
+          uv := pc.polarToCart + drop2,
 
           uv := uv - 0.5,
           uv := uv * (50.0 * mix(1.0, 0.6, uv.y) * mix(1.0, 0.85, uv.x)),
@@ -132,8 +132,8 @@ import trivalibs.utils.numbers.NumExt.given
           tileRnd := Hash.hash1(tileVal.toU32 + 345.u),
 
           col := (test > 0.5).select(
-            Color.hsv2rgb(vec3(0.6, 0.1, tileVal / 2.5 + tileRnd * 0.3)),
-            Color.hsv2rgb(vec3(tileRnd * 0.5 + 0.15, 0.3 - tileRnd * 0.1, 0.7)),
+            vec3(0.6, 0.1, tileVal / 2.5 + tileRnd * 0.3).hsv2rgb,
+            vec3(tileRnd * 0.5 + 0.15, 0.3 - tileRnd * 0.1, 0.7).hsv2rgb,
           ),
 
           ctx.out.color := vec4(col, 1.0),

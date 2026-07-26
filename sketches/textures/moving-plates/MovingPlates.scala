@@ -8,7 +8,7 @@ import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
 import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.lib.color.Color
+import trivalibs.graphics.shader.lib.color.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
@@ -324,13 +324,11 @@ import trivalibs.utils.numbers.NumExt.given
             ),
           )
 
-        val ground = Color.hsv2rgbSmooth(
-          vec3(
-            gHue,
-            0.7 + gHeight * 0.15,
-            (gHeight * 0.45 + 0.55) * (gLight * 0.9 + 0.1),
-          ),
-        )
+        val ground = vec3(
+          gHue,
+          0.7 + gHeight * 0.15,
+          (gHeight * 0.45 + 0.55) * (gLight * 0.9 + 0.1),
+        ).hsv2rgbSmooth
         stmts += (col := (miss > 0.5).select(
           vec3(0.0),
           ground.mix(vec3(0.0), (shadow * 0.7).clamp01),

@@ -179,7 +179,9 @@ deliverable:
   `Arr[Line[T]].toBufferedGeometries(…)`.
 - **New** `trivalibs/test/geometry/Line2d.test.scala` — parity with the Rust
   tests plus `splitAtAngle` and buffer-shape cases.
-- `Lerp[Unit]` added to `trivalibs/src/graphics/geometry/package.scala`.
+- `Lerp[Unit]` added to `trivalibs/src/graphics/geometry/package.scala` — since
+  moved with the rest of `Lerp` to `trivalibs/src/graphics/math/interpolation.scala`
+  (phase 3).
 
 `toBufferedGeometries` is the API the multi-buffer form consumes: it threads
 `totalLength`, `prevDirection` / `nextDirection` and alternates
@@ -250,7 +252,7 @@ already in NDC after the divide.
 
 ---
 
-## 4. Phase 3 — CPU helper gaps (trivalibs)
+## 4. Phase 3 — CPU helper gaps (trivalibs) ✅ done
 
 Ported from the Rust originals; needed by phase 4.
 
@@ -266,6 +268,60 @@ Ported from the Rust originals; needed by phase 4.
   CPU-computed colors match shader-side conversions.
 - `Vec2` / `Vec3` immutable ops — `quadraticBezier` / `cubicBezier`
   (`repomix-trivalibs-core.xml` L1888–1946).
+
+**Gate: passed.** `bun run check` + `bun run test` in `trivalibs/` (whole suite
+green, 16 new tests across `test/math/Bezier.test.scala`,
+`test/math/CpuColorCoords.test.scala`, `test/utils/Random.test.scala`), all
+trivalibs examples rebuild, all 10 sketches rebuild.
+
+**As implemented**, deviating from the sketch above:
+
+- **CPU/GPU helper naming settled as a library-wide convention** (now in
+  `trivalibs/CLAUDE.md`): a helper with both a CPU and a shader form gets **one
+  name, dispatched by receiver type**, never two namespaces. So the CPU color
+  conversions are extensions on `Vec3` (`c.hsv2rgb`), and
+  `shader/lib/color.scala` gained matching `Vec3Expr` extensions —
+  `Color.hsv2rgb(c)` becomes `c.hsv2rgb` in shader bodies. The `WgslFn` objects
+  stay the definition site; the extensions are `inline` and erase to identical
+  WGSL (verified by diffing the built `main.js`). This mirrors how `NumExt` and
+  `Vec*ImmutableOpsG` already unify CPU and GPU math.
+- **Full parity, not just the two conversions the plan listed.** CPU side has
+  `hsv2rgb` + `Smooth` / `Smoother`, `hsl2rgb`, `rgb2hsv`,
+  `rgb2hsl` — every WGSL variant. Coords got the same treatment in the same
+  touch (**new** `math/cpu/coords.scala`: `polarToCart` / `cartToPolar`).
+- Existing call sites converted to the extension form as idiomatic examples:
+  `sketches/textures/pool-tiles/PoolTiles.scala` (4 `Polar.*`, 2 `Color.*`) and
+  `sketches/textures/moving-plates/MovingPlates.scala` (1 `Color.*`).
+- The color / coords extensions are generic over any `Vec3`/`Vec2` with the
+  `*Base` + `*ImmutableOps` givens, so they work on the mutable classes and the
+  `*Tuple` variants alike (tuples need `import …math.cpu.given`, having no
+  companion implicit scope).
+- Random helpers landed in `utils/random.scala` as planned, plus
+  `randIntInRange`. `shuffle()` mutates in place and `shuffled()` returns a
+  copy — a single method that did both would have been a footgun. `pick()`
+  throws `jsError` on an empty array.
+- Bezier landed as statics on the immutable-ops traits, matching Rust's argument
+  order: `Vec2.cubicBezier(t, a, c1, c2, b)`. Control points are named `c1`/`c2`
+  rather than Rust's `u`/`v` — they are control points, not tangents.
+- CPU noise is **not** part of this phase (nothing needs it), but the API surface
+  is recorded in
+  [independent-todos.md](../trivalibs/documents/independent-todos.md) so it lands
+  under the same mirroring rule when it does.
+- **`Lerp` moved to `trivalibs/src/graphics/math/interpolation.scala`** (**new**)
+  out of `graphics/geometry/package.scala`. It is a math primitive that geometry
+  happens to be the main consumer of; with `mix`/`lerp` on the vec ops traits and
+  the Bézier statics beside them, interpolation now has one home. Only
+  `geometry/grid.scala` needed a new import — every other consumer already
+  imports `graphics.math.*` — so no re-export shim was left behind.
+- **Bézier deliberately *not* folded into a `Lerp`/`Interpolate` type class.**
+  `Lerp` exists because it is abstracted over (`Line[T]`, `Quad.subdivide`,
+  `Grid.subdivide`, `splitByPlane` are generic in the vertex type). Bézier has no
+  polymorphic consumer — every call site knows it holds a `Vec2` — and the
+  statics compile to plain arithmetic where a derived given would cost a summon
+  plus a virtual call per point. `interpolation.scala` carries a note on when to
+  revisit: the day a generic curve/spline builder appears, add
+  `Interpolate[T] extends Lerp[T]` there with the vector instances delegating to
+  the existing statics.
 
 ---
 
@@ -371,11 +427,15 @@ Keeping the painting's output a plain panel texture is what keeps that door open
 | `trivalibs/examples/random_lines/`                | **new** — port of the Rust multi-buffer form example                |
 | `trivalibs/src/graphics/geometry/line2d.scala`    | **new** — `Line`, `LineVertex`, `toBufferedGeometry`                |
 | `trivalibs/test/geometry/Line2d.test.scala`       | **new** — Rust test parity                                          |
-| `trivalibs/src/graphics/geometry/package.scala`   | add `Lerp[Unit]`                                                    |
+| `trivalibs/src/graphics/geometry/package.scala`   | add `Lerp[Unit]` (later moved out, see below)                       |
 | `trivalibs/examples/bevel_lines_2d/`              | **new** — bevel-lines port (line geometry verification)             |
 | `trivalibs/src/utils/random.scala`                | `randInt`, `randBool`, `randNormal*`, `pick`, `shuffle`, `randVec*` |
-| `trivalibs/src/graphics/math/cpu/color.scala`     | **new** — CPU `hsv2rgb` / `rgb2hsv`                                 |
+| `trivalibs/src/graphics/math/cpu/color.scala`     | **new** — CPU color conversions (receiver extensions)               |
+| `trivalibs/src/graphics/math/cpu/coords.scala`    | **new** — CPU `polarToCart` / `cartToPolar`                         |
+| `trivalibs/src/graphics/shader/lib/color.scala`   | `Vec3Expr` extensions mirroring the CPU names                       |
+| `trivalibs/src/graphics/shader/lib/coords.scala`  | `Vec2Expr` extensions mirroring the CPU names                       |
 | `trivalibs/src/graphics/math/vec2.scala` (+ vec3) | `cubicBezier` / `quadraticBezier`                                   |
+| `trivalibs/src/graphics/math/interpolation.scala` | **new** — `Lerp` moved out of the geometry package                  |
 | `sketches/strokes/tile-strokes/`                  | **new** — painting sketch + `Painting.scala`                        |
 
 ## 8. Verification
@@ -402,6 +462,6 @@ brush texture matching the Rust original.
 - [x] Phase 0 — plan docs (this file + dependent updates)
 - [x] Phase 1 — multi-buffer `Form` + `examples/random_lines`
 - [x] Phase 2 — `line2d.scala` + tests + `examples/bevel_lines_2d`
-- [ ] Phase 3 — CPU helpers (random, color, bezier)
+- [x] Phase 3 — CPU helpers (random, color, coords, bezier)
 - [ ] Phase 4a — tiling + strokes, flat color
 - [ ] Phase 4b — brush shader
