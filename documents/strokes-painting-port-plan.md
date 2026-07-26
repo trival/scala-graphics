@@ -338,7 +338,7 @@ on walls is separate future work, not part of this plan — see §6.
 
 Two sub-phases, each independently viewable.
 
-### 4a — Tiling + strokes, flat color
+### 4a — Tiling + strokes, flat color ✅ done
 
 Port `painting.rs` (L2434–2721) into a `Painting.scala` beside the sketch:
 
@@ -376,7 +376,36 @@ Scala `Layer`):
 
 Frag shader at this stage: flat `color` with the two edge falloffs, no noise.
 
-### 4b — Brush shader
+**As implemented.** Two files under `sketches/strokes/tile-strokes/`:
+`Painting.scala` (the CPU model — tiles, palette, strokes; no GPU types) and
+`TileStrokesSketch.scala` (shades, panels, paint loop). Package
+`sketches.strokes.tile_strokes`, entry point `@main def tileStrokes()`.
+Deviations from the sketch above:
+
+- **`randomSplit` inserts one value, not `idx + 1`.** The Rust original pushes
+  an interpolated value after _every_ element up to the chosen index — a bug
+  that makes the palette grow unpredictably and strips `colorCount` of its
+  meaning. With a single insertion, `createPainting(w, h, n)` yields exactly `n`
+  hues, which is plainly what the code intends (`hues.pop()` at the end only
+  makes sense against that reading).
+- **No `pow(2.2)` on the output color.** The Rust frag gamma-corrects; this repo
+  removed that everywhere (commits `2d3062c`, `1a616d9` — `vec4(col.pow(2.2),
+  1.0)` → `vec4(col, 1.0)`), so it is dropped here too, as the plan asked to
+  check.
+- **`form.set(geometries = …)`**, not `setAll` — phase 1 landed the plural
+  parameter on `set` instead of a separate method.
+- **`randOffset` is bound and updated but unread** by the 4a shader; it exists
+  so 4b is a shader-body edit with no plumbing change. Likewise the frag body
+  starts from an explicit `base := 0.0` that 4b replaces with the fbm term.
+- **The painting is fixed at the canvas size it saw at init.** Both painting
+  panels are sized explicitly, so a window resize rescales the shown image
+  rather than repainting — same as Rust, and repainting hundreds of tiles per
+  resize event would be far too costly.
+
+**Gate: passed.** Visually confirmed at `:3000/strokes/tile-strokes/` — tiled
+color fields with visible stroke structure.
+
+### 4b — Brush shader ✅ done
 
 Port `line_vert` / `line_frag` (L3886–3934) to the shader DSL:
 
@@ -389,6 +418,67 @@ Port `line_vert` / `line_frag` (L3886–3934) to the shader DSL:
 - The Rust `pow(2.2)` is a gamma correction — check it against this repo's
   current convention (commits `2d3062c`, `1a616d9` removed unnecessary gamma
   correction) before keeping it.
+
+**As implemented.** The frag body is the Rust one line for line, with two
+deviations: **no `pow(2.2)`** (checked as the plan asked — this repo strips
+gamma correction, see 4a), and the octave count is written `4.i`, the library's
+own literal-to-`IntExpr` idiom (`examples/noise_tests` uses `5.i`) rather than a
+type ascription. Everything else — the `/4.0`, both `pow(10)` edge falloffs, the
+`+0.3` clamp, the `smoothstep(1.0, 0.90)` end fade — is unchanged.
+
+### 4c — Animation: the travelling brush
+
+Not in `strokes/1`'s `main.rs`, which only prepaints and then shows a still
+image. The behaviour comes from the earlier
+`sketches/strokes/1/old_code/tile-fields/` version —
+`get_painting_animated_layer` (`repomix-rust-sketches.xml` L813–878), whose
+`TileData.line_geometries: Vec<Vec<BufferedGeometry>>` is **one geometry per
+added point**:
+
+```rust
+l.add(points[0]);
+for i in 1..points.len() {
+    l.add(points[i]);
+    line_frames.push(l.clone());   // a frame per point
+}
+```
+
+each frame emitted with `total_length: Some(total_length)` — the *finished*
+stroke's length, not the partial one's.
+
+Ported as a brush that travels along its path, drawn on a panel of its own and
+only committed to the painting once the tile is finished:
+
+- **A fourth panel.** `strokePanel` (was `paintingPanel`) holds only the part of
+  the current stroke the brush has reached; `canvasPanel` is the painting;
+  **`displayPanel`** is new and is what gets shown — one layer sampling both and
+  compositing `mix(canvas.rgb, stroke.rgb, stroke.a)`. That is what lets a
+  half-drawn stroke be visible without entering the permanent canvas.
+- **Per frame:** advance the brush by `tpf · BrushPointsPerSecond / 1000`
+  points, redraw `strokePanel` from `stroke.linesUpTo(segIdx, ptIdx)`, and
+  `p.paintAndShow(displayPanel)`. `canvasPanel` is untouched.
+- **On completion:** redraw the stroke whole, `p.paint(canvasPanel)` to blot it
+  in, wipe `strokePanel`, and rest `TilePauseMs` before the next tile.
+- `MaxBrushStepsPerFrame = 12` caps per-frame catch-up, and hitting the cap
+  drops the backlog — a backgrounded tab hands back one enormous `tpf`, which
+  would otherwise fast-forward a whole stroke in one frame.
+- `PrepaintPasses = 3` complete passes still run during `init`, so the first
+  frame shows a finished painting rather than a canvas filling in one tile at a
+  time.
+
+Two supporting changes:
+
+- **Library:** `Arr[Line[T]].toBufferedGeometries` gained
+  **`totalLength: Opt[Double] = null`**. It otherwise derives the length `uv.x`
+  is normalised against by summing the lines it is given — which for a *partial*
+  stroke renormalises over the growing prefix every frame, so the bristle
+  texture visibly crawls backwards as the brush advances. Passing the finished
+  stroke's length pins it, exactly as the Rust props struct did.
+- **Sketch:** `TileStrokes` (finished `Line`s) became **`TileStroke`**, which
+  keeps the raw per-segment curve points plus the finished `totalLength`, and
+  builds `Line` fragments on demand via `linesUpTo(segIdx, ptIdx)` — chaining
+  `lenOffset` across completed segments so `uv.x` stays continuous. Rendering
+  the whole stroke is the same call with the indices saturated.
 
 ---
 
@@ -437,6 +527,7 @@ Keeping the painting's output a plain panel texture is what keeps that door open
 | `trivalibs/src/graphics/math/vec2.scala` (+ vec3) | `cubicBezier` / `quadraticBezier`                                   |
 | `trivalibs/src/graphics/math/interpolation.scala` | **new** — `Lerp` moved out of the geometry package                  |
 | `sketches/strokes/tile-strokes/`                  | **new** — painting sketch + `Painting.scala`                        |
+| `trivalibs/src/graphics/geometry/line2d.scala`    | `toBufferedGeometries(totalLength = …)` for partial strokes (4c)    |
 
 ## 8. Verification
 
@@ -463,5 +554,6 @@ brush texture matching the Rust original.
 - [x] Phase 1 — multi-buffer `Form` + `examples/random_lines`
 - [x] Phase 2 — `line2d.scala` + tests + `examples/bevel_lines_2d`
 - [x] Phase 3 — CPU helpers (random, color, coords, bezier)
-- [ ] Phase 4a — tiling + strokes, flat color
-- [ ] Phase 4b — brush shader
+- [x] Phase 4a — tiling + strokes, flat color
+- [x] Phase 4b — brush shader
+- [x] Phase 4c — animation (travelling brush, merged per completed tile)
