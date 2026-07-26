@@ -60,7 +60,7 @@ each phase lands on already-verified ground.
 
 ---
 
-## 2. Phase 1 — Multiple geometry buffers per `Form`
+## 2. Phase 1 — Multiple geometry buffers per `Form` ✅ done
 
 **Edit:** `trivalibs/src/graphics/painter/form.scala`,
 `trivalibs/src/graphics/painter/painter.scala`
@@ -109,28 +109,55 @@ Library code ⇒ bundle discipline: `Arr`, `while`, no varargs on the hot path.
 This supersedes the `Form.set()` destroy-always TODO in
 [independent-todos.md](../trivalibs/documents/independent-todos.md).
 
+**As implemented**, deviating from the sketch above in three places:
+
+- No separate `setAll` — `set` (and `painter.form`) gained the plural params
+  `geometries` / `verticesAll` beside `geometry` / `vertices`, matching the
+  singular/plural sugar `Panel.set` already uses. Plural wins when both are
+  given. Existing call sites are untouched.
+- The draw loop lives inside `drawCall` in `renderShapeOnPass` and skips
+  buffers with `vertexCount == 0`; index binding is keyed on `indexCount > 0`
+  (a form buffer whose geometry carries no indices reports 0 rather than
+  keeping a stale index buffer).
+- `setIndexBuffer(buffer, format, offset, size)` had to be added to the WebGPU
+  facade for the live-slice bind. Writes are padded to 4 bytes as well as
+  allocations: an odd `uint16` index count makes `writeBuffer` reject the
+  write, which the old single-buffer path would also have hit as soon as
+  `line2d` produced odd-length triangle-strip indices.
+
+Not ported: Rust's `new_with_sizes` / `with_size` capacity pre-allocation. The
+grow-only path reaches the same high-water mark after the first few uploads.
+
 ### 1a. `trivalibs/examples/random_lines/`
 
 The Rust painter has a dedicated example for exactly this feature
 (`repomix-painter.xml` L3325–3478). Port it, so the multi-buffer + grow/reuse
 path is verified in the library itself before anything depends on it:
 
-- `generateAllLines()` — 1–10 lines, each 1–10 quad segments (six vertices per
-  segment, triangle list), random start/end in NDC, width `0.06`.
+- `generateAllLines()` — 1–20 lines, each 1–20 quad segments (six vertices per
+  segment, triangle list), random start/end in NDC, width `0.06` (bumped from
+  the Rust original's 1–10 range once running, to stress the buffer-count
+  churn harder).
 - One form created with all buffers up front; every second the whole set is
   regenerated with a **different line count and different vertex counts** and
-  pushed via `form.setAll(...)`, plus a new random color. That fluctuation is
-  the actual test: buffers must be added, reused when the data fits, and
-  reallocated when it grows.
+  pushed via `form.set(verticesAll = ...)`, plus a new random color. That
+  fluctuation is the actual test: buffers must be added, reused when the data
+  fits, and reallocated when it grows.
 - Single `Shape`, `Attribs = (position: Vec2)`,
   `Uniforms = (color: FragmentUniform[Vec3])`, white clear, multisampled,
   `paintAndShow` in `animate`.
 
-**Gate:** line count visibly changes each second, no validation errors, no stale
-geometry from a previous (larger) frame in the draw.
+**Gate: passed.** Deployed to
+[trivalibs-examples.trivialspace.net/random_lines](https://trivalibs-examples.trivialspace.net/random_lines/)
+and visually confirmed — line count and color visibly change every second, no
+validation errors, no stale geometry from a previous (larger) frame leaking
+into the draw.
 
-Also rebuild `base-triangle`, `tests/bloom`, `rooms/base` — the single-buffer
-`set` path must stay behaviour-identical.
+Regression: all 10 sketches rebuild (`bun run sketches`), all trivalibs
+examples rebuild (`bun run examples:build`), and `bun run test` is green — the
+single-buffer `set` path is unchanged for existing call sites. Also manually
+checked live (all examples + all sketches) after deploying — no regressions
+found.
 
 ---
 
@@ -338,8 +365,8 @@ brush texture matching the Rust original.
 
 ## 9. Progress
 
-- [ ] Phase 0 — plan docs (this file + dependent updates)
-- [ ] Phase 1 — multi-buffer `Form` + `examples/random_lines`
+- [x] Phase 0 — plan docs (this file + dependent updates)
+- [x] Phase 1 — multi-buffer `Form` + `examples/random_lines`
 - [ ] Phase 2 — `line2d.scala` + tests + `examples/bevel_lines_2d`
 - [ ] Phase 3 — CPU helpers (random, color, bezier)
 - [ ] Phase 4a — tiling + strokes, flat color
