@@ -22,25 +22,40 @@ import trivalibs.utils.random.*
 class Color(val hue: Double, val lightness: Double)
 
 /** One rectangle of the subdivided canvas, in pixel coordinates with `top`
-  * growing downwards.
+  * growing downwards. `color` is a `var` — [[Painting.recolorRandomTile]]
+  * reassigns it so the composition drifts over a long run.
   */
 class Tile(
     val top: Double,
     val left: Double,
     val width: Double,
     val height: Double,
-    val color: Color,
+    var color: Color,
 )
 
-/** A finished tiling: the canvas dimensions, the tiles, and the base brush
-  * width the strokes are drawn with.
+/** A finished tiling: the canvas dimensions, the tiles, the base brush width
+  * the strokes are drawn with, and the hue palette the tiles were coloured
+  * from.
   */
 class Painting(
     val width: Double,
     val height: Double,
     val brushSize: Double,
     val tiles: Arr[Tile],
-)
+    val palette: Arr[Color],
+):
+  /** Move one random tile onto a different palette colour.
+    *
+    * The change only shows once that tile's turn comes round again, so the
+    * composition drifts rather than flickering. A single-colour palette has
+    * nothing to switch to, so this is a no-op there.
+    */
+  def recolorRandomTile(): Unit =
+    if palette.length > 1 then
+      val tile = tiles.pick()
+      var next = palette.pick()
+      while next eq tile.color do next = palette.pick()
+      tile.color = next
 
 /** One tile's brush stroke, kept as the raw curve points of each zig-zag
   * segment rather than as finished geometry — so it can be rendered *partially*
@@ -58,36 +73,71 @@ class TileStroke(
     val brushSize: Double,
     val color: Vec3,
 ):
+  /** Each segment's finished length. Handed to `Line.plannedLength` so a
+    * half-drawn fragment normalises `localUv.x` against what it *will* measure,
+    * not what it measures so far — otherwise its end fade renormalises and
+    * slides every frame the brush advances.
+    */
+  private val segmentLengths: Arr[Double] =
+    val lengths = Arr[Double]()
+    for seg <- segments do
+      var sum = 0.0
+      for i <- 0 until seg.length - 1 do sum += seg(i).distance(seg(i + 1))
+      lengths += sum
+    lengths
+
   /** Length of the *finished* stroke. Held fixed while the brush is still
     * travelling, so `uv.x` keeps its final scale instead of restretching over
     * the growing prefix every frame.
     */
   val totalLength: Double =
     var sum = 0.0
-    for seg <- segments do
-      for i <- 0 until seg.length - 1 do sum += seg(i).distance(seg(i + 1))
+    for l <- segmentLengths do sum += l
     sum
 
   /** The stroke as `Line` fragments, drawn only as far as point `ptIdx` of
     * segment `segIdx` — everything before that segment is complete, everything
     * after is absent. `lenOffset` still chains across fragments, so `uv.x` runs
     * continuously and the brush texture reads as one mark.
+    *
+    * `frac` slides the tip on between point `ptIdx` and the next one, so the
+    * brush moves continuously instead of hopping a whole curve point at a time.
+    * It is ignored at a segment's final point, where there is nothing left to
+    * interpolate towards — the tip rests there for one step while the brush
+    * turns the corner.
+    *
+    * A fragment left with a single vertex (tip exactly on a segment's first
+    * point) is dropped rather than emitted degenerate.
     */
-  def linesUpTo(segIdx: Int, ptIdx: Int): Arr[Line[Unit]] =
+  def linesUpTo(segIdx: Int, ptIdx: Int, frac: Double = 0.0): Arr[Line[Unit]] =
     val lines = Arr[Line[Unit]]()
+    val lastSeg = segIdx.min(segments.length - 1)
+    val partial = segIdx <= lastSeg
     var offset = 0.0
-    for s <- 0 to segIdx.min(segments.length - 1) do
+
+    for s <- 0 to lastSeg do
       val pts = segments(s)
-      val upTo = if s == segIdx then ptIdx.min(pts.length - 1) else pts.length - 1
       val line = Line(brushSize, offset)
-      for i <- 0 to upTo do line.add(pts(i))
-      offset += line.totalLength
-      lines += line
+
+      if s == lastSeg && partial then
+        val upTo = ptIdx.min(pts.length - 1)
+        for i <- 0 to upTo do line.add(pts(i))
+        if frac > 0.0 && upTo + 1 < pts.length then
+          line.add(pts(upTo).lerp(pts(upTo + 1), frac))
+      else for pt <- pts do line.add(pt)
+
+      // What this fragment measures when finished — for every fragment but the
+      // last that is just its own length, but the last one may still be growing.
+      line.plannedLength = segmentLengths(s)
+
+      offset += segmentLengths(s)
+      if line.vertCount >= 2 then lines += line
+
     lines
 
   /** The finished stroke — every segment, every point. */
   def lines: Arr[Line[Unit]] =
-    linesUpTo(segments.length - 1, Int.MaxValue)
+    linesUpTo(Int.MaxValue, Int.MaxValue)
 
 // ---------------------------------------------------------------------------
 // Tiling
@@ -96,9 +146,9 @@ class TileStroke(
 /** Split `tile` into 2..`maxSplits` strips along its longer axis, or return it
   * unchanged when it is already at `minSize`.
   *
-  * The axis is picked from the aspect ratio nudged by
-  * `splitDirectionVariance`, so near-square tiles go either way; the cut
-  * positions are evenly spaced then jittered by `splitVariance`.
+  * The axis is picked from the aspect ratio nudged by `splitDirectionVariance`,
+  * so near-square tiles go either way; the cut positions are evenly spaced then
+  * jittered by `splitVariance`.
   */
 def subdivideTile(
     tile: Tile,
@@ -180,11 +230,18 @@ def createPainting(width: Double, height: Double, colorCount: Int): Painting =
     val newTiles = Arr[Tile]()
     for tile <- tiles do
       val maxSplits = randInt(3) + 2
-      for t <- subdivideTile(tile, brushSize * 3.0, maxSplits, 0.5, 0.5, getColor)
+      for t <- subdivideTile(
+          tile,
+          brushSize * 3.0,
+          maxSplits,
+          0.5,
+          0.5,
+          getColor,
+        )
       do newTiles += t
     tiles = newTiles
 
-  Painting(width, height, brushSize, tiles)
+  Painting(width, height, brushSize, tiles, colors)
 
 /** Resolve a tile's [[Color]] to RGB, jittered per call — hue drifts slightly,
   * saturation is biased low, lightness spreads widely. Called once per tile per
@@ -287,7 +344,13 @@ def strokeForTile(painting: Painting, tile: Tile): TileStroke =
 
   val segments = Arr[Arr[Vec2]]()
   for i <- 0 until points.length - 1 do
-    segments += makeCurve(tile.width, brushSize, points(i), points(i + 1), isLeft)
+    segments += makeCurve(
+      tile.width,
+      brushSize,
+      points(i),
+      points(i + 1),
+      isLeft,
+    )
     isLeft = !isLeft
 
   TileStroke(segments, brushSize, calculateColor(tile.color))

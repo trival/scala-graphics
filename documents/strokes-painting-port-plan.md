@@ -419,12 +419,12 @@ Port `line_vert` / `line_frag` (L3886–3934) to the shader DSL:
   current convention (commits `2d3062c`, `1a616d9` removed unnecessary gamma
   correction) before keeping it.
 
-**As implemented.** The frag body is the Rust one line for line, with two
-deviations: **no `pow(2.2)`** (checked as the plan asked — this repo strips
-gamma correction, see 4a), and the octave count is written `4.i`, the library's
-own literal-to-`IntExpr` idiom (`examples/noise_tests` uses `5.i`) rather than a
-type ascription. Everything else — the `/4.0`, both `pow(10)` edge falloffs, the
-`+0.3` clamp, the `smoothstep(1.0, 0.90)` end fade — is unchanged.
+**As implemented.** The frag body started as the Rust one line for line, with
+two deviations: **no `pow(2.2)`** (checked as the plan asked — this repo strips
+gamma correction, see 4a), and the octave count written `4.i`, the library's own
+literal-to-`IntExpr` idiom (`examples/noise_tests` uses `5.i`) rather than a type
+ascription. The along-stroke falloffs were then reworked for the animation — see
+"absolute end fades" in 4c.
 
 ### 4c — Animation: the travelling brush
 
@@ -455,8 +455,19 @@ only committed to the painting once the tile is finished:
   compositing `mix(canvas.rgb, stroke.rgb, stroke.a)`. That is what lets a
   half-drawn stroke be visible without entering the permanent canvas.
 - **Per frame:** advance the brush by `tpf · BrushPointsPerSecond / 1000`
-  points, redraw `strokePanel` from `stroke.linesUpTo(segIdx, ptIdx)`, and
-  `p.paintAndShow(displayPanel)`. `canvasPanel` is untouched.
+  points, redraw `strokePanel` from
+  `stroke.linesUpTo(segIdx, ptIdx, frac)`, and `p.paintAndShow(displayPanel)`.
+  `canvasPanel` is untouched.
+- **The tip is interpolated between curve points** (`frac`, the sub-point
+  remainder of the advance). Rust stepped a whole point at a time, which at a
+  slow brush speed reads as hopping — points are up to 35 px apart, so at 25
+  points/s the tip would jump every ~40 ms. Interpolating decouples brush speed
+  from frame rate entirely: the brush moves every frame, just less far, so the
+  pace can be tuned freely without costing smoothness. A segment's final point
+  has nothing to interpolate towards, so the tip rests there for one step —
+  which is exactly where the brush turns the corner. Because consecutive
+  segments share an endpoint, restarting the next segment at point 0 keeps the
+  tip continuous across the turn.
 - **On completion:** redraw the stroke whole, `p.paint(canvasPanel)` to blot it
   in, wipe `strokePanel`, and rest `TilePauseMs` before the next tile.
 - `MaxBrushStepsPerFrame = 12` caps per-frame catch-up, and hitting the cap
@@ -465,6 +476,63 @@ only committed to the painting once the tile is finished:
 - `PrepaintPasses = 3` complete passes still run during `init`, so the first
   frame shows a finished painting rather than a canvas filling in one tile at a
   time.
+- **Composition drift** (not in Rust, which fixes each tile's hue at creation):
+  every `TilesPerRecolor = 15` finished tiles, `Painting.recolorRandomTile()`
+  moves one random tile onto a *different* entry of the painting's own palette.
+  `Tile.color` became a `var` and `Painting` now carries the `palette` the tiles
+  were coloured from. A fixed count rather than a fraction of the tiling is
+  deliberate: a coarse painting holds its base colours for many passes, while a
+  heavily subdivided one — where any single tile matters less — keeps visibly
+  shifting. The change only surfaces when that tile's turn next comes round, so
+  the composition drifts rather than flickering.
+
+**The growing fragment's `localUv.x`.** Rust's along-stroke falloff is
+`localUv.x.fit0111.abs.pow(10)`, and `localUv.x` is normalised over the
+fragment's *own* length (`line2d.scala` — `(topLen - lenOffset) / …`). A
+fragment is one zig-zag traverse, so that fade sits at the tile's left and right
+edges — a defining part of the look. On the **growing** fragment, though, the
+denominator changes every frame, so the fade is a fixed fraction of a moving
+target: nearly absent when the stroke starts, then stretching and sliding as the
+fragment lengthens. Rust never saw this because its fragments were always
+complete.
+
+Note this only ever affected the *last* fragment; every completed one has a
+fixed length and was stable all along. So the fix is to tell the growing
+fragment what it will finish at, not to change the fade:
+
+- **Library:** `Line` gained **`plannedLength: Opt[Double]`** — the length the
+  line will have once fully built. `toBufferedGeometry` normalises `localUv.x`
+  against it instead of `totalLength`. A half-drawn fragment's `localUv.x` then
+  only reaches the fraction actually drawn, so its start fade holds still and no
+  end fade appears until the tip really is the end; the geometry's own end cap
+  already tapers the unfinished tip.
+- **Sketch:** `TileStroke` precomputes `segmentLengths`, and `linesUpTo` sets
+  `plannedLength` on every fragment (a no-op for the complete ones).
+
+The frag shader keeps Rust's falloffs unchanged — both `pow(10)` terms plus the
+`uv.x.smoothstep(1.0, 0.90)` end fade — with one addition the static original had
+no need for:
+
+**A tip taper.** With `localUv.x` pinned to the planned length, no end fade
+reaches the travelling tip, and the geometry's own end cap is a sharp point over
+half a brush width — so the moving end reads as a hard straight cut. One extra
+uniform fixes it: **`brushTip: Vec2`** = `(how far the brush has got, how long
+its taper is)`, both as fractions of the finished stroke, i.e. directly
+comparable to `uv.x`. The shader multiplies in
+`(brushTip.x - uv.x).smoothstep(0, brushTip.y)`, which lands on 1 everywhere
+further back — every completed fragment included — and tapers only over the last
+`brushSize · TipFadeBrushWidths` before the tip. No new varying: `uv.x` already
+spans the whole stroke, and the CPU already knows the tip position from the last
+fragment's `lenOffset + totalLength`.
+
+**A wrong turn worth recording.** The first attempt replaced the per-fragment
+falloff with an absolute one — a `len` varying carrying the `length` attrib plus
+`tipLength` / `fadeLength` uniforms, fading `smoothstep(0, fadeLength)` in from
+each end of the *stroke*. That removed the stretching but was the wrong
+scope: a tile's stroke runs top-to-bottom, so "both ends of the stroke" renders
+as a gradient across the tile's top and bottom edges, and the horizontal
+per-traverse fade disappears entirely. Fades here belong per fragment, not per
+stroke.
 
 Two supporting changes:
 
@@ -476,9 +544,10 @@ Two supporting changes:
   stroke's length pins it, exactly as the Rust props struct did.
 - **Sketch:** `TileStrokes` (finished `Line`s) became **`TileStroke`**, which
   keeps the raw per-segment curve points plus the finished `totalLength`, and
-  builds `Line` fragments on demand via `linesUpTo(segIdx, ptIdx)` — chaining
-  `lenOffset` across completed segments so `uv.x` stays continuous. Rendering
-  the whole stroke is the same call with the indices saturated.
+  builds `Line` fragments on demand via `linesUpTo(segIdx, ptIdx, frac)` —
+  chaining `lenOffset` across completed segments so `uv.x` stays continuous, and
+  dropping a trailing single-vertex fragment rather than emitting it degenerate.
+  Rendering the whole stroke is the same call with the indices saturated.
 
 ---
 
@@ -527,7 +596,7 @@ Keeping the painting's output a plain panel texture is what keeps that door open
 | `trivalibs/src/graphics/math/vec2.scala` (+ vec3) | `cubicBezier` / `quadraticBezier`                                   |
 | `trivalibs/src/graphics/math/interpolation.scala` | **new** — `Lerp` moved out of the geometry package                  |
 | `sketches/strokes/tile-strokes/`                  | **new** — painting sketch + `Painting.scala`                        |
-| `trivalibs/src/graphics/geometry/line2d.scala`    | `toBufferedGeometries(totalLength = …)` for partial strokes (4c)    |
+| `trivalibs/src/graphics/geometry/line2d.scala`    | partial-stroke support (4c): `toBufferedGeometries(totalLength = …)` + `Line.plannedLength` |
 
 ## 8. Verification
 

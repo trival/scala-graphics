@@ -40,17 +40,26 @@ import trivalibs.utils.random.*
 //
 // ANIMATION — a brush travelling along its path. `PrepaintPasses` complete
 // passes run during init, so the first frame already shows a finished painting.
-// From then on one tile is picked at a time and its stroke is drawn point by
-// point at `BrushPointsPerSecond`: every frame `strokePanel` is redrawn with
-// the stroke *as far as the brush has got*, and `displayPanel` shows it riding
-// over the painting. Only when the stroke finishes is it merged into
+// From then on one tile is picked at a time and its stroke is drawn along its
+// path at `BrushPointsPerSecond`: every frame `strokePanel` is redrawn with the
+// stroke *as far as the brush has got*, and `displayPanel` shows it riding over
+// the painting. The tip is interpolated between curve points, so brush speed is
+// independent of frame rate — slowing the brush lengthens the stroke rather
+// than making it step. Only when the stroke finishes is it merged into
 // `canvasPanel` — one `p.paint(canvasPanel)` — after which strokePanel is
 // cleared, the brush rests for `TilePauseMs`, and the next tile begins.
 //
-// Partial strokes are rendered with `toBufferedGeometries(totalLength = …)`
-// pinned to the *finished* stroke's length. Without it `uv.x` would renormalise
-// over the growing prefix each frame and the bristle texture would visibly
-// crawl backwards as the brush advances.
+// Every `TilesPerRecolor` finished tiles, one tile is moved onto a different
+// colour from the painting's palette, so the composition itself drifts over a
+// long run instead of only its brushwork.
+//
+// A partial stroke has to be told the lengths it will *finish* at, in two
+// places, or anything keyed on a uv renormalises every frame as the brush
+// advances: `toBufferedGeometries(totalLength = …)` pins `uv.x` to the whole
+// stroke's final length, and `Line.plannedLength` (set in `linesUpTo`) pins
+// each fragment's `localUv.x` to its own. Without the first the bristle texture
+// crawls backwards; without the second the per-fragment end fade stretches and
+// slides along the growing fragment.
 // ---------------------------------------------------------------------------
 
 type Attribs = LineAttribs
@@ -59,6 +68,9 @@ type LineUniforms = (
     size: VertexUniform[Vec2],
     color: FragmentUniform[Vec3],
     randOffset: FragmentUniform[Vec2],
+    // (how far the brush has got, how long its taper is) — both as fractions of
+    // the finished stroke, i.e. in the same units as `uv.x`
+    brushTip: FragmentUniform[Vec2],
 )
 
 type BgUniforms = (color: Vec3)
@@ -73,17 +85,37 @@ type DisplayPanels = (canvasTex: FragmentPanel, strokeTex: FragmentPanel)
 val ColorCount = 5
 
 /** Complete passes over the tile set painted before the first frame. Each pass
-  * re-randomises stroke paths and per-tile shades, so the paint builds up depth.
+  * re-randomises stroke paths and per-tile shades, so the paint builds up
+  * depth.
   */
 val PrepaintPasses = 3
 
 /** How fast the brush travels, in stroke points per second. A tile's stroke is
-  * a few hundred points, so this sets the pace of the whole piece.
+  * a couple of hundred points, so this sets the pace of the whole piece.
+  *
+  * Free to tune: the tip is interpolated between points, so slowing this down
+  * lengthens the stroke without costing smoothness — the brush still moves
+  * every frame, just less far.
   */
-val BrushPointsPerSecond = 40.0
+val BrushPointsPerSecond = 25.0
 
-/** How long the brush rests after finishing a tile, before starting the next. */
+/** How long the brush rests after finishing a tile, before starting the next.
+  */
 val TilePauseMs = 400.0
+
+/** How far the brush tip tapers off, in brush half-widths. An absolute
+  * distance, so the tip keeps the same softness however far along the stroke it
+  * is; the geometry's end cap alone is a sharp point and reads as a hard cut.
+  */
+val TipFadeBrushWidths = 2.0
+
+/** Tiles painted between one tile being moved onto a different palette colour.
+  *
+  * A fixed count rather than a fraction of the tiling on purpose: a coarse
+  * painting holds its base colours for many passes, while a heavily subdivided
+  * one — where any single tile matters less — keeps visibly shifting.
+  */
+val TilesPerRecolor = 15
 
 /** Ceiling on brush steps advanced in a single frame — keeps a long stall (a
   * backgrounded tab) from turning into one enormous catch-up frame.
@@ -115,8 +147,9 @@ val MaxBrushStepsPerFrame = 12
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>
-        val base = LetFloat("base")
+        val base = VarFloat("base")
         val edgeFade = LetFloat("edgeFade")
+        val tipFade = LetFloat("tipFade")
         val alpha = LetFloat("alpha")
         Block(
           // The bristle texture: fbm simplex over the stroke's own uv, offset
@@ -128,15 +161,32 @@ val MaxBrushStepsPerFrame = 12
             2.0,
             0.7,
           ) / 4.0,
-          // Two falloffs, both biting only right at the rim thanks to the
-          // 10th power: localUv.x fades this fragment's two ends (so the
-          // brush lifts slightly at each zig-zag turn), uv.y fades the
-          // stroke's two long edges across its width.
+          // base := base.pow(2.0),
+
+          // Two falloffs, both biting only right at the rim thanks to the 10th
+          // power: localUv.x fades this fragment's two ends — one zig-zag
+          // traverse, so those are the tile's left and right edges — and uv.y
+          // fades the stroke's two long sides across its width.
+          //
+          // Both are normalised, and both are stable even mid-animation: uv.y
+          // spans the brush width, which never grows, and localUv.x is
+          // normalised against `Line.plannedLength`, the fragment's *finished*
+          // length (see linesUpTo). Without that the growing fragment would
+          // renormalise every frame and its end fade would visibly slide.
           edgeFade :=
-            ctx.in.localUv.x.fit0111.abs.pow(10.0) +
+            ctx.in.localUv.x.fit0111.abs.pow(20.0) +
               ctx.in.uv.y.fit0111.abs.pow(10.0),
+          // Taper off at the brush tip, so the moving end reads as bristles
+          // lifting rather than a cut. Measured backwards from where the brush
+          // has got to, so it rides along with it and leaves everything further
+          // back untouched — including every already-finished fragment, which
+          // sits far behind and lands on 1.
+          tipFade := (ctx.bindings.brushTip.x - ctx.in.uv.x)
+            .smoothstep(0.0, ctx.bindings.brushTip.y),
+          // uv.x spans the whole stroke against its finished length, so this
+          // only bites once the brush actually nears the end.
           alpha := (base - edgeFade + 0.3).clamp01 *
-            ctx.in.uv.x.smoothstep(1.0, 0.90),
+            ctx.in.uv.x.smoothstep(1.0, 0.90) * tipFade,
           ctx.out.color := vec4(ctx.bindings.color, alpha),
         )
 
@@ -164,6 +214,7 @@ val MaxBrushStepsPerFrame = 12
     val size = p.binding(Vec2(painting.width, painting.height))
     val color = p.binding[Vec3]
     val randOffset = p.binding[Vec2]
+    val brushTip = p.binding[Vec2]
     val bgColor = p.binding(calculateColor(painting.tiles.pick().color))
 
     // ---- panels ----------------------------------------------------------
@@ -189,7 +240,12 @@ val MaxBrushStepsPerFrame = 12
           alpha = BlendFn(BlendFactor.One, BlendFactor.One, BlendOp.Max),
         ),
       )
-      .bind("size" := size, "color" := color, "randOffset" := randOffset)
+      .bind(
+        "size" := size,
+        "color" := color,
+        "randOffset" := randOffset,
+        "brushTip" := brushTip,
+      )
 
     val strokePanel = p.panel(
       width = painting.width.toInt,
@@ -200,7 +256,8 @@ val MaxBrushStepsPerFrame = 12
 
     // No clearColor => the panel loads its previous contents, so each paint
     // adds to what is already there.
-    val canvasLayer = p.layer(canvasShade, blendState = BlendState.Alpha)
+    val canvasLayer = p
+      .layer(canvasShade, blendState = BlendState.Alpha)
       .bind("src" := bgPanel, "samp" := p.samplerLinear)
 
     val canvasPanel = p.panel(
@@ -225,14 +282,30 @@ val MaxBrushStepsPerFrame = 12
 
     val NoGeometry = Arr[BufferedGeometry[LineAttribsBuffer]]()
 
-    /** Draw `stroke` into strokePanel, up to point `ptIdx` of segment `segIdx`.
-      * The panel clears first, so this replaces whatever was there.
+    /** Draw `stroke` into strokePanel, up to point `ptIdx` of segment `segIdx`
+      * plus `frac` of the way to the next point. The panel clears first, so
+      * this replaces whatever was there.
       */
-    def drawStroke(stroke: TileStroke, segIdx: Int, ptIdx: Int): Unit =
+    def drawStroke(
+        stroke: TileStroke,
+        segIdx: Int,
+        ptIdx: Int,
+        frac: Double = 0.0,
+    ): Unit =
+      val lines = stroke.linesUpTo(segIdx, ptIdx, frac)
+      // Where the brush has got to: the last fragment's start plus however much
+      // of it is drawn. Expressed as a fraction of the finished stroke so the
+      // shader can compare it against uv.x directly.
+      val tip =
+        if lines.length == 0 then 0.0
+        else
+          val last = lines(lines.length - 1)
+          (last.lenOffset + last.totalLength) / stroke.totalLength
+      brushTip.set(
+        Vec2(tip, stroke.brushSize * TipFadeBrushWidths / stroke.totalLength),
+      )
       form.set(geometries =
-        stroke
-          .linesUpTo(segIdx, ptIdx)
-          .toBufferedGeometries(totalLength = stroke.totalLength),
+        lines.toBufferedGeometries(totalLength = stroke.totalLength),
       )
       p.paint(strokePanel)
 
@@ -276,9 +349,10 @@ val MaxBrushStepsPerFrame = 12
     // has got. `startTile` below advances `next` and resets the rest.
     var stroke = strokeForTile(painting, order(next))
     var segIdx = 0
-    var ptIdx = 1
-    var advance = 0.0 // fractional brush steps carried between frames
+    var ptIdx = 0
+    var advance = 0.0 // how far past `ptIdx` the tip currently sits, in [0, 1)
     var pauseLeft = 0.0
+    var sinceRecolor = 0
     next += 1
     useStroke(stroke)
 
@@ -290,16 +364,19 @@ val MaxBrushStepsPerFrame = 12
       stroke = strokeForTile(painting, order(next))
       next += 1
       segIdx = 0
-      ptIdx = 1
+      ptIdx = 0
       advance = 0.0
       useStroke(stroke)
 
-    /** Move the brush on by one point. Returns true once the stroke is done. */
+    /** Move the brush on by one point. Returns true once the stroke is done.
+      * Segments meet at a shared endpoint, so restarting the next one at point
+      * 0 keeps the tip's position continuous across a corner.
+      */
     def stepBrush(): Boolean =
       ptIdx += 1
       if ptIdx >= stroke.segments(segIdx).length then
         segIdx += 1
-        ptIdx = 1
+        ptIdx = 0
       segIdx >= stroke.segments.length
 
     animate: tpf =>
@@ -307,7 +384,7 @@ val MaxBrushStepsPerFrame = 12
         pauseLeft -= tpf
         if pauseLeft <= 0.0 then
           startTile()
-          drawStroke(stroke, segIdx, ptIdx)
+          drawStroke(stroke, segIdx, ptIdx, advance)
       else
         advance += tpf * BrushPointsPerSecond / 1000.0
         var done = false
@@ -327,6 +404,13 @@ val MaxBrushStepsPerFrame = 12
           mergeStroke()
           clearStroke()
           pauseLeft = TilePauseMs
-        else drawStroke(stroke, segIdx, ptIdx)
+
+          // Every so often, nudge the composition: one tile takes a different
+          // colour from the palette, which shows next time its turn comes up.
+          sinceRecolor += 1
+          if sinceRecolor >= TilesPerRecolor then
+            sinceRecolor = 0
+            painting.recolorRandomTile()
+        else drawStroke(stroke, segIdx, ptIdx, advance)
 
       p.paintAndShow(displayPanel)
