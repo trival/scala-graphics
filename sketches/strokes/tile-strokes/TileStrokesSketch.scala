@@ -178,7 +178,7 @@ val MaxBrushStepsPerFrame = 16
           // length (see linesUpTo). Without that the growing fragment would
           // renormalise every frame and its end fade would visibly slide.
           edgeFade :=
-            ctx.in.localUv.x.fit0111.abs.pow(14.0) +
+            ctx.in.localUv.x.fit0111.abs.pow(13.0) +
               ctx.in.uv.y.fit0111.abs.pow(10.0),
           // Taper off at the brush tip, so the moving end reads as bristles
           // lifting rather than a cut. Measured backwards from where the brush
