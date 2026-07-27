@@ -165,7 +165,7 @@ val MaxBrushStepsPerFrame = 16
               0.8,
             )
             .fit1101 / 4.0 + 0.08,
-          base := base.pow(0.9) - 0.06,
+          base := base.pow(0.9) - 0.04,
 
           // Two falloffs, both biting only right at the rim thanks to the 10th
           // power: localUv.x fades this fragment's two ends — one zig-zag
