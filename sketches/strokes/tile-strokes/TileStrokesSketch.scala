@@ -99,9 +99,11 @@ val PrepaintPasses = 3
   */
 val BrushPointsPerSecond = 25.0
 
-/** How long the brush rests after finishing a tile, before starting the next.
+/** How long the brush rests after finishing a tile, before starting the next —
+  * a random duration in this range, rerolled every time a tile finishes.
   */
-val TilePauseMs = 400.0
+val TilePauseMsMin = 500.0
+val TilePauseMsMax = 3000.0
 
 /** How far the brush tip tapers off, in brush half-widths. An absolute
   * distance, so the tip keeps the same softness however far along the stroke it
@@ -406,7 +408,7 @@ val MaxBrushStepsPerFrame = 16
           drawStroke(stroke, Int.MaxValue, Int.MaxValue)
           mergeStroke()
           clearStroke()
-          pauseLeft = TilePauseMs
+          pauseLeft = randInRange(TilePauseMsMin, TilePauseMsMax)
 
           // Every so often, nudge the composition: one tile takes a different
           // colour from the palette, which shows next time its turn comes up.
