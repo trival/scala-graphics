@@ -156,12 +156,12 @@ val MaxBrushStepsPerFrame = 12
           // per tile so no two strokes share a pattern. /4 keeps it well under
           // the +0.3 base, so it modulates coverage rather than driving it.
           base := Simplex.fbmSimplex2d(
-            ctx.in.uv * 2.0 + ctx.bindings.randOffset,
+            ctx.in.uv * 1.0 + ctx.bindings.randOffset,
             4.i,
             2.0,
             0.7,
-          ) / 4.0,
-          // base := base.pow(2.0),
+          ) / 4.0 + 0.25,
+          base := base.pow(0.6),
 
           // Two falloffs, both biting only right at the rim thanks to the 10th
           // power: localUv.x fades this fragment's two ends — one zig-zag
@@ -174,7 +174,7 @@ val MaxBrushStepsPerFrame = 12
           // length (see linesUpTo). Without that the growing fragment would
           // renormalise every frame and its end fade would visibly slide.
           edgeFade :=
-            ctx.in.localUv.x.fit0111.abs.pow(20.0) +
+            ctx.in.localUv.x.fit0111.abs.pow(12.0) +
               ctx.in.uv.y.fit0111.abs.pow(10.0),
           // Taper off at the brush tip, so the moving end reads as bristles
           // lifting rather than a cut. Measured backwards from where the brush
