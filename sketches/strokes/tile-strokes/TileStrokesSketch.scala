@@ -115,12 +115,12 @@ val TipFadeBrushWidths = 2.0
   * painting holds its base colours for many passes, while a heavily subdivided
   * one — where any single tile matters less — keeps visibly shifting.
   */
-val TilesPerRecolor = 15
+val TilesPerRecolor = 8
 
 /** Ceiling on brush steps advanced in a single frame — keeps a long stall (a
   * backgrounded tab) from turning into one enormous catch-up frame.
   */
-val MaxBrushStepsPerFrame = 12
+val MaxBrushStepsPerFrame = 16
 
 @main def tileStrokes(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -155,13 +155,15 @@ val MaxBrushStepsPerFrame = 12
           // The bristle texture: fbm simplex over the stroke's own uv, offset
           // per tile so no two strokes share a pattern. /4 keeps it well under
           // the +0.3 base, so it modulates coverage rather than driving it.
-          base := Simplex.fbmSimplex2d(
-            ctx.in.uv * 1.0 + ctx.bindings.randOffset,
-            4.i,
-            2.0,
-            0.7,
-          ) / 4.0 + 0.25,
-          base := base.pow(0.6),
+          base := Simplex
+            .fbmSimplex2d(
+              ctx.in.uv * 1.0 + ctx.bindings.randOffset,
+              4.i,
+              2.2,
+              0.8,
+            )
+            .fit1101 / 4.0 + 0.08,
+          base := base.pow(0.9) - 0.06,
 
           // Two falloffs, both biting only right at the rim thanks to the 10th
           // power: localUv.x fades this fragment's two ends — one zig-zag
@@ -174,7 +176,7 @@ val MaxBrushStepsPerFrame = 12
           // length (see linesUpTo). Without that the growing fragment would
           // renormalise every frame and its end fade would visibly slide.
           edgeFade :=
-            ctx.in.localUv.x.fit0111.abs.pow(12.0) +
+            ctx.in.localUv.x.fit0111.abs.pow(13.0) +
               ctx.in.uv.y.fit0111.abs.pow(10.0),
           // Taper off at the brush tip, so the moving end reads as bristles
           // lifting rather than a cut. Measured backwards from where the brush
@@ -186,7 +188,7 @@ val MaxBrushStepsPerFrame = 12
           // uv.x spans the whole stroke against its finished length, so this
           // only bites once the brush actually nears the end.
           alpha := (base - edgeFade + 0.3).clamp01 *
-            ctx.in.uv.x.smoothstep(1.0, 0.90) * tipFade,
+            ctx.in.uv.x.smoothstep(1.0, 0.87) * tipFade,
           ctx.out.color := vec4(ctx.bindings.color, alpha),
         )
 
@@ -237,7 +239,8 @@ val MaxBrushStepsPerFrame = 12
         // so overlapping strokes inside one batch don't darken each other.
         blendState = BlendState(
           color = BlendFn(BlendFactor.One, BlendFactor.Zero, BlendOp.Add),
-          alpha = BlendFn(BlendFactor.One, BlendFactor.One, BlendOp.Max),
+          alpha =
+            BlendFn(BlendFactor.One, BlendFactor.OneMinusSrcAlpha, BlendOp.Add),
         ),
       )
       .bind(

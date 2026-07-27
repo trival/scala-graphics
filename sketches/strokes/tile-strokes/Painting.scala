@@ -53,9 +53,7 @@ class Painting(
   def recolorRandomTile(): Unit =
     if palette.length > 1 then
       val tile = tiles.pick()
-      var next = palette.pick()
-      while next eq tile.color do next = palette.pick()
-      tile.color = next
+      tile.color = palette.pick()
 
 /** One tile's brush stroke, kept as the raw curve points of each zig-zag
   * segment rather than as finished geometry — so it can be rendered *partially*
