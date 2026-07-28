@@ -55,6 +55,32 @@ bundle-size discipline applies to library code in `trivalibs/` (see
 `trivalibs/CLAUDE.md`) — and to shared sketch utilities under `src/` (see
 below), but not to individual sketches.
 
+Two qualifications to that latitude:
+
+- **No `enum`, even in sketch code.** A Scala `enum` compiles to a class
+  hierarchy plus `$values` / `ordinal` / `fromOrdinal` machinery — that is
+  runtime weight for something that wants to be a constant, not a readability
+  convenience. Use the opaque-type pattern instead
+  (`trivalibs/src/graphics/painter/enums.scala`), aliasing whatever type the
+  value is actually _used_ as: `String` when it crosses into WebGPU, `Double`
+  when it is arithmetic, `Int` when it indexes.
+
+  ```scala
+  opaque type Facing = Double
+  object Facing:
+    val Inward: Facing = 1.0
+    val Outward: Facing = -1.0
+    extension (f: Facing) inline def sign: Double = f
+  ```
+
+- **Code you already know is headed for `src/` should be written to library
+  discipline from the start**, even while it still lives in a sketch. Sketch
+  latitude is for one-off code; when a plan explicitly names a cluster as a
+  future extraction candidate, that cluster is library code that has not moved
+  yet. Applying the discipline up front costs nothing and avoids a rewrite at
+  extraction time. This is a per-region judgement, not a per-file one — the same
+  sketch can hold a disciplined core and convenient one-off code around it.
+
 ## Shared sketch utilities (`src/`)
 
 Reusable helpers shared across multiple sketches live under `src/` in the
@@ -124,6 +150,14 @@ Metals only loads one config:
 - When doing floating point math, prefer trivalibs NumExt extensions instead of
   math library methods if possible. I.e. `x.sin` instead of `math.sin(x)`,
   `x.sqrt` instead of `math.sqrt(x)`, etc.
+- **`u` / `v` / `uv` mean normalized `[0,1]` texture coordinates — nothing
+  else.** A parameter carrying world units (metres) gets an explicit name saying
+  what it measures and from where: `centerHeight`, `centerFromLeft`,
+  `heightAboveFloor`. The two conventions routinely meet inside one function
+  body — a hang position in metres next to a genuinely normalized rect — and
+  reusing `u`/`v` for both is how that becomes a bug rather than a style
+  quibble. The same rule catches texture coordinates scaled by world distance:
+  if `u` can exceed 1, it is not a UV.
 - in sketches and shader dsl, don't use Float type, literals with `f` suffix or
   .toFloat conversions. Just use Double and let the shader DSL and painter lib
   handle the conversions. In JS context all numbers are doubles, and all
