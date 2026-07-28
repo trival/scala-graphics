@@ -260,8 +260,8 @@ an abstraction, and a parameter object is the wrong end to pull on here: the set
 of things rooms want to vary is not enumerable, so a config type either grows
 without bound or blocks the next variation (see **Part 6**, _Granularity matters
 more than layering_). Shared functions should take the few values they actually
-use, and a sketch that needs different behavior should be able to substitute
-its own code rather than ask for a new field.
+use, and a sketch that needs different behavior should be able to substitute its
+own code rather than ask for a new field.
 
 ### 2. Curation is user space — the stage provides walls, not a hang
 
@@ -331,8 +331,8 @@ one stage, reuse is coming **by construction** — the second exhibition trigger
 it, not some speculative third shape sketch.
 
 What gets extracted is narrower than "the stage", though: a **modular set of
-functions**, mostly geometry and behavior, not a room builder. Part 6's _What
-to extract first_ lists the candidates and the bar they have to clear.
+functions**, mostly geometry and behavior, not a room builder. Part 6's _What to
+extract first_ lists the candidates and the bar they have to clear.
 
 ---
 
@@ -398,7 +398,7 @@ idiomatically**, each with a clear account of what it tunes:
 | World-space noise + normal-varied noise | the material read; the core of the illusion            |
 | Edge fade                               | how rounded corners appear where materials meet        |
 | Grime line                              | dirt at the floor junction, not light                  |
-| Tints per surface                       | wall / soffit / floor material color                  |
+| Tints per surface                       | wall / soffit / floor material color                   |
 | Prebaking                               | what is cached at init vs computed per frame           |
 | Grid raster + light plane               | the ceiling, the light, and the bloom it drives        |
 | Walls as hangable surfaces              | where canvases can go, and how their shadows composite |
@@ -431,8 +431,8 @@ Arbitrary nesting under `sketches/` is already supported by the build
 **Copy-first is the design, not a compromise.** The repo already treats
 `sketches/base-triangle/` as a starter template (`graphics/CLAUDE.md`); the room
 templates are a second, richer family of the same thing. Duplication between
-rooms is expected — what must not duplicate is the fiddly geometry and
-behavior, which is precisely the extraction list.
+rooms is expected — what must not duplicate is the fiddly geometry and behavior,
+which is precisely the extraction list.
 
 So the bar for `grid-canvases` is not only that it looks right, but that someone
 — human or agent — can open it cold, understand why it is built this way, and
@@ -1112,7 +1112,9 @@ def isInside(pxz: Vec2): Boolean
 ### The clamp
 
 ```scala
-def confine(pos: Vec3, margin: Double): Vec3 =
+// `eyeY` pins the walking plane; pass `pos.y` instead to leave height free
+// (the dev-mode fly-around, see below).
+def confine(pos: Vec3, margin: Double, eyeY: Double): Vec3 =
   val pxz = Vec2(pos.x, pos.z)
   val (q, d) = nearestBoundary(pxz)
   val inside = isInside(pxz)
@@ -1120,7 +1122,7 @@ def confine(pos: Vec3, margin: Double): Vec3 =
     if !inside then q + inwardAt(q) * margin      // recover: push back in
     else if d < margin then q + (pxz - q) / d * margin
     else pxz
-  Vec3(fixed.x, pos.y.clamp(MinEye, Height - HeadRoom), fixed.y)
+  Vec3(fixed.x, eyeY, fixed.y)
 ```
 
 Two things worth noting about this shape:
@@ -1149,9 +1151,7 @@ resolution here.
 
 ```scala
 val WallClearance = 0.5   // meters from any wall, including canvas faces
-val EyeHeight     = 1.7   // camera spawn height
-val MinEye        = 0.4
-val HeadRoom      = 0.4   // clamps below the raster, not into it
+val EyeHeight     = 1.7   // fixed; the camera walks on this plane
 ```
 
 `PerspectiveCamera(… pos = Vec3(0, 1.7, 0))` at `Canvases.scala:736-752` already
@@ -1159,9 +1159,34 @@ uses 1.7; this just names it. Note `WallClearance = 0.5` also keeps the camera
 clear of the hung canvases, which stand `depth/2 + 0.02` off the wall
 (`Canvases.scala:446-456`) — at most ~0.05 m, well inside the margin.
 
-Vertical freedom (Space / Shift) stays, just bounded. Locking `y` to `EyeHeight`
-outright would be the more disciplined gallery-walk feel; it is a one-line
-change if the free vertical turns out to be more distracting than useful.
+### The eye height is locked; free vertical is a dev tool
+
+`y` is pinned to `EyeHeight`. Space / Shift free movement stays, but **only as a
+development and debugging affordance** — a way to fly around and inspect the
+room, not something a visitor gets. The shipped experience is a walk on one
+plane.
+
+`trivalibs.dev` already computes exactly the right gate: `devMode` is
+`import.meta.hot.isDefined`, true under the Vite dev server and false in a built
+sketch (`trivalibs/src/dev/dev.scala:43`). It is currently `private`, so
+**exposing it is a small additive trivalibs change** and better than a
+hand-rolled constant a sketch can ship in the wrong state.
+
+```scala
+cam.pos = footprint.confine(
+  cam.pos,
+  WallClearance,
+  eyeY = if devMode then cam.pos.y else EyeHeight,
+)
+```
+
+**This is a geometry decision as much as a camera one.** With `y` fixed, nothing
+above eye height is ever visible from below — and the floor mirror only shows
+undersides, never tops. So **author for the locked eye plane**: top caps on
+free-standing walls (Part 4) are unnecessary, and so is any other upward-facing
+surface the room might otherwise need. Flying in dev will reveal those gaps;
+that is expected, the same way noclip reveals a level's backstage, and not a
+defect to fix.
 
 ---
 
@@ -1195,9 +1220,16 @@ What then falls out with no further work:
 
 What genuinely remains to add, and it is small:
 
-1. **A top cap.** One quad strip along the ring at `y = ring.height`, baked with
-   the same noise. At eye height 1.7 you do not see the top of a 2.5 m partition
-   — but you see it in the floor mirror, so it cannot be omitted.
+1. **No top cap.** With `y` locked to `EyeHeight` (Part 3), the top of a
+   partition taller than 1.7 m is never visible: the camera cannot rise above
+   it, and the floor mirror reflects to below the floor, so it sees undersides
+   and an upward-facing cap is back-facing from there. Omit it.
+
+   Flying in dev mode will show the open top. That is expected and is not worth
+   geometry. A partition **shorter** than eye height is a different case — a
+   plinth or a low divider does need its top, and gets it because it is
+   genuinely in view.
+
 2. **Nothing for the baker** — `topY` is already a per-bake uniform (Part 5.1),
    so a partition of any height reuses the same pipeline as every wall.
 3. **A decision about the free vertical ends** if a partition is an open
@@ -1261,15 +1293,84 @@ Given that, take the tint too. Once a uniform block exists, keeping tint out on
 the "applied to the result" principle buys nothing and costs a second mechanism.
 
 Scope: one type parameter, `TextureBaker[U]`, with `U` concatenated onto the
-existing `BakeUniforms`, and a per-call `bind` alongside the existing `model`
-binding in `prepare` (`Bake.scala:68-88`). **One real snag**: the existing
-expression-vs-block selection is by _lambda arity_ (3-arg vs 4-arg,
-`Bake.scala:168-196`). Adding a `bindings` argument makes the two forms 4-arg
-and 5-arg, so the uniform-carrying expression form collides with the current
-block form. Scala will not resolve that on the lambda's return type. Give the
-uniform variants **distinct factory names** (`TextureBaker.withUniforms` /
-`bakeWith`) rather than trying to overload through it. That keeps the change
-additive — nothing existing moves.
+existing `BakeUniforms`. There are two sides to it, and they are easy to
+conflate:
+
+**Reading the values, shader side.** The fragment needs `ctx.bindings.<name>`,
+and the current factories hide `ctx` entirely by destructuring it into
+`(worldPos, normal, uv)`. Selection between the expression and block forms is by
+**lambda arity** (3-arg vs 4-arg, `Bake.scala:168-196`), so adding a `bindings`
+argument to the existing shapes would put the uniform-carrying expression form
+at 4 args, colliding with the block form — and Scala will not resolve that on
+the lambda's return type.
+
+The way out is to go **down** in arity rather than up: hand the uniform-carrying
+form the whole context instead of pieces of it.
+
+| Arity | Form                                     | For                                       |
+| ----- | ---------------------------------------- | ----------------------------------------- |
+| 1     | `ctx => Block`                           | full access — uniforms, and anything else |
+| 3     | `(worldPos, normal, uv) => Vec4Expr`     | existing shorthand                        |
+| 4     | `(worldPos, normal, uv, color) => Block` | existing shorthand                        |
+
+**One new form, not two.** With the whole `ctx` in hand `ctx.out.color` is
+reachable, so a separate `color` parameter is redundant — and there is no reason
+to add an expression variant either, since `ctx.out.color := …` is already the
+one line an expression form would have saved. Shorthands earn their place for
+the common destructured case; a shorthand for something the full context hands
+you anyway is just another overload to disambiguate.
+
+No collision, no new factory names, and nothing existing moves. Better still,
+`ctx => Block` **is `program.frag`'s own signature**, so the 1-arg form is a
+straight pass-through to it — the escape hatch is not a new concept but the
+underlying DSL surfacing when a bake needs it. The generated vertex stage still
+does its work; only the fragment body is written by hand.
+
+**Setting the values, CPU side.** This should be **`.bind` with exactly the
+semantics it has everywhere else** — `shape.bind`, `panel.bind`, `layer.bind`,
+`instances.add` (`painter/shape.scala:47`, `painter/panel.scala:313`): named
+`BindPair`s via `:=`, accepting a raw value or a `BufferBinding`, arity
+overloads, returning `this.type` so calls chain.
+
+```scala
+baker.prepare(form, w, h).bind("topY" := 4.5, "tint" := WallTintLow)
+```
+
+`prepare` already returns an unpainted `Panel` (`Bake.scala:68-88`), which is
+exactly the seam this needs — bind, then `p.paint`.
+
+**`apply` stays uniform-free.** It paints immediately, so supporting uniforms
+there would mean taking bind pairs in the call and inventing a parameter shape
+that exists nowhere else in the painter. Not worth it: `apply` (and the one-shot
+`bake` / `bakeBlock` helpers, `Bake.scala:199,213`) remain the convenience for
+the no-uniform case, and anything with uniforms routes through `prepare` →
+`.bind` → `p.paint`. The gate is explicit, reads clearly, and adds no API — and
+it makes baking with unset uniforms structurally impossible rather than merely
+discouraged.
+
+**Bind at shape level, because only that is typechecked.** The two `bind`s are
+not equivalent:
+
+- `Bindable.bind` — used by `Shape`, `Layer`, `Instance` — runs `processEntry`
+  (`painter/shape.scala:228-253`), which is `inline` and does
+  `derive.containsName[N, U]` and `derive.checkUniformFieldType[N, V, U]`. A
+  wrong name or a wrong value type is a **compile error**.
+- `Panel.bind` runs `processPanelEntry` (`painter/panel.scala:280-298`), which
+  just writes into a string-keyed `runtimeBindings` dict. **No name check, no
+  type check** — the caller is responsible for getting both right.
+
+Since the whole point of `TextureBaker[U]` is a typed uniform schema, routing
+its bindings through the unchecked path would throw away most of what the type
+parameter buys. So shape level, and the cost is that `prepare` currently builds
+the shape internally and hands back only the `Panel` (`Bake.scala:68-88`) — the
+typed `bind` is not reachable from what it returns.
+
+Surfacing it is the remaining design question, and the options are all small:
+return a named tuple `(panel, shape)` and bind on `.shape`; return a thin handle
+whose `bind` delegates to the shape and which knows how to paint; or have
+`prepare` take the pairs and forward them. **This is what `TextureBaker`'s short
+planning pass at step 3 is for** — the direction is settled, the ergonomics are
+not.
 
 **When:** at step 3, when the bakers are first written against varying `topY` —
 not deferred to Part 4. Step 1 alone would survive without it, but every step
@@ -1417,18 +1518,18 @@ copying a documented template (see _The deliverable is a readable template_),
 not calling a function.
 
 The useful sorting rule: **extract what contains no look decision.** Geometry
-and behavior are shareable because they are either right or wrong; taste is
-not, because it is re-tuned per room and per exhibition.
+and behavior are shareable because they are either right or wrong; taste is not,
+because it is re-tuned per room and per exhibition.
 
 Clear candidates, roughly in order of how obviously they pay:
 
-| Candidate                                           | Why                                                                                                                                          |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Candidate                                           | Why                                                                                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `confine` / `nearestBoundary` / `isInside`          | Pure behavior, no look decision at all. Should never be a manual section in a sketch file — this is the strongest case in the whole design. |
-| `Ring` / `Footprint`, `floorEdges` / `ceilingEdges` | Plain data plus derivation. Every room needs it; none of it is a taste call.                                                                 |
-| Wall derivation from a ring edge                    | The `(center, width, height, rotY, inwardNormal)` frame, currently hand-written per wall. Mechanical.                                        |
-| `clipLine(edges, origin, dir)`                      | Self-contained 2D geometry, fiddly to get right, identical everywhere.                                                                       |
-| `edgeSetDist` / `cornerDist` shader emitters        | Build-time WGSL assembly over ring data. Bulky to write inline, no taste in it.                                                              |
+| `Ring` / `Footprint`, `floorEdges` / `ceilingEdges` | Plain data plus derivation. Every room needs it; none of it is a taste call.                                                                |
+| Wall derivation from a ring edge                    | The `(center, width, height, rotY, inwardNormal)` frame, currently hand-written per wall. Mechanical.                                       |
+| `clipLine(edges, origin, dir)`                      | Self-contained 2D geometry, fiddly to get right, identical everywhere.                                                                      |
+| `edgeSetDist` / `cornerDist` shader emitters        | Build-time WGSL assembly over ring data. Bulky to write inline, no taste in it.                                                             |
 
 Deliberately **not** extracted, because they are where the look lives:
 `roomNoise`'s tuning, the tint composition, the raster shading, beam profiles,
@@ -1695,9 +1796,10 @@ with the first-person controller and check:
   is hanging in front of the surfaces being judged.
 - **Confinement (step 2):** hold forward into each wall — the camera stops 0.5 m
   short and the view never clips through. Walk diagonally into a wall and
-  confirm it _slides_ rather than sticking. Hold Space / Shift and confirm the
-  vertical bounds. Later, in the O-shape, walk a full lap around the inner box
-  and confirm the clearance holds on its outer faces too.
+  confirm it _slides_ rather than sticking. Hold Space / Shift: under the dev
+  server it flies, and in a built sketch it does nothing. Later, in the O-shape,
+  walk a full lap around the inner box and confirm the clearance holds on its
+  outer faces too.
 - **After step 3:**
   - Looking forward at eye height, the light plane is hidden behind the raster
     and there is no bloom.
@@ -1786,9 +1888,9 @@ accident. None blocks step 1.
 - **Concave camera creep.** If the single-nearest-point clamp lets the camera
   into a concave wedge, run `confine` twice per frame. Do not reach for general
   multi-constraint resolution (Part 3).
-- **Free vertical.** Space / Shift movement stays bounded; locking `y` to
-  `EyeHeight` is the more disciplined gallery feel and a one-line change (Part
-  3).
+- ~~Free vertical~~ — **decided**: `y` is locked to `EyeHeight`, Space / Shift
+  is a dev-only inspection tool (Part 3). Consequence: author for the locked eye
+  plane, so no top caps on partitions taller than 1.7 m.
 - **Coincident beam families.** If three families at a triple point read badly,
   stagger each family's `gridY` by a few millimeters (Part 2).
 - **Perimeter spacing.** Inset light openings shrink by one beam width at every
@@ -1837,6 +1939,11 @@ Two mismatches to resolve rather than assume:
 
 **Small trivalibs additions**
 
+- **Expose `devMode` from `trivalibs.dev`.** Already computed correctly from
+  `import.meta.hot` (`dev/dev.scala:43`), just `private`. Needed to gate the
+  free-vertical camera as a dev-only tool (Part 3), and useful for any other
+  "development affordance that must not ship" — better than a hand-rolled
+  constant a sketch can leave in the wrong state. Needed at step 2.
 - **`Quad.fromDimensions` with an explicit tangent.** The existing overload
   (`polygon.scala:63`) infers the in-plane orientation from world up, flipping
   reference for near-vertical normals. Beam soffits need the tangent given, not
@@ -1844,7 +1951,11 @@ Two mismatches to resolve rather than assume:
   beside the current one; generic quad construction, so it belongs in
   `trivalibs` rather than the sketch. Needed at step 3.
 - **Per-bake uniforms on `TextureBaker`** — `src/utils/bake/`, not `trivalibs`.
-  Also step 3; see Part 5.1.
+  Also step 3; see Part 5.1 for the intended shape: a `ctx => Block` overload,
+  `apply` left uniform-free, and binding at **shape** level so it is
+  typechecked. **Gets a short planning pass** before it is written; what is open
+  is only how to surface the shape's typed `bind` through `prepare`, which today
+  returns just a `Panel`.
 
 **Build only if a room wants it**
 
