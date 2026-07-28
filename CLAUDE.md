@@ -44,9 +44,64 @@ sketches/<path>/
 └── main.js          # scala-cli output (checked into git, for now)
 ```
 
-`sketches/base-triangle/` is the starter template — `cp -r` it to seed a new
+`sketches/base-triangle/` is the minimal starter — `cp -r` it to seed a new
 sketch. The Scala `package` should mirror the path (e.g.
 `package sketches.geometry.voronoi`).
+
+### Kinds of sketch
+
+Three folders are reserved by purpose; everything else keeps a domain folder.
+
+| Kind             | Where                                                | What it is                                                                                                                                                                 |
+| ---------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Template**     | `sketches/templates/`                                | Documented starting point. Enables a whole situation, meant to be read and copied.                                                                                         |
+| **Test**         | `sketches/tests/`                                    | Single-feature check of a `src/` util that has real machinery and renders something on its own — `bloom`, `texture-bake`. Minimal and focused, like `trivalibs/examples/`. |
+| **Experiment**   | `sketches/experiments/`                              | Unfinished or failed attempt at an idea, effect or scene. Kept as proof of concept, **not** intended to be continued.                                                      |
+| _Regular sketch_ | domain folder (`rooms/`, `textures/`, `strokes/`, …) | Everything else — finished results and work in progress alike.                                                                                                             |
+
+A regular sketch is **finished** (`rooms/canvases`, `rooms/base`, the
+`textures/` and `strokes/` sketches) or **in progress** (`rooms/columns`). One
+that turns out to be a tried-but-incomplete attempt moves to `experiments/`
+rather than being deleted or left to look unfinished — individual aspects of it
+stay extractable later.
+
+Add a test sketch whenever a `src/` util grows past a small function into
+something with its own rendering behavior; that is what makes it checkable at
+all.
+
+**Only templates carry documentation.** The shared baseline in this repo is
+carried mostly by a few readable template sketches that get copied and tuned,
+not by a framework — shared utilities under `src/` are a thin layer for the
+parts nobody wants to re-read or re-derive.
+
+- **Templates** live under **`sketches/templates/`** and are meant to be opened
+  cold, by humans and by AI agents, and copied. They explain non-obvious
+  decisions in comments beside the code, make clear which constants are tunable
+  and which are structural, and record deliberate _non_-decisions — why an
+  effect was left out — where an editor will hit them. The longer "why" goes in
+  a sibling `PLAN.md`. Say so in the file header too.
+
+  They work like `trivalibs/examples/` one scale up: an example exercises a
+  single library feature, a template enables a whole **situation** and shows the
+  relevant features in idiomatic interconnection, each with an account of what
+  it tunes. As with examples, **templates are additive** — a variant setup
+  (different structure, an extra effect) becomes a **new template kept
+  alongside**, not a flag on an existing one, and existing templates keep
+  working. `sketches/base-triangle/` is the trivial one; a room-template family
+  is being built deliberately (see `documents/grid-ceiling-rooms-plan.md`).
+
+- **Everything else** — regular sketches, experiments, tests — does **not**.
+  This is most of `sketches/`, including `rooms/canvases/`. Comment them
+  normally and sparsely. A multi-line prose justification attached to code that
+  is obvious to its author is exactly the noise trivalibs is designed to
+  eliminate: the whole library exists to keep the signal-to-noise ratio of
+  graphics prototyping high, and explanatory ballast works directly against
+  that. Their constants also change constantly while tuning, so prose about them
+  goes stale quickly.
+
+Do not turn a regular sketch into a template by commenting it. If it turns out
+to be worth reusing, that is the moment to make a deliberate template out of it,
+with all sketch specific details removed.
 
 Sketches are **user code**: Scala convenience shorthands (`for`-comprehensions,
 string interpolation, etc.) are fine in one-off sketch code under `sketches/` —
@@ -151,10 +206,10 @@ Metals only loads one config:
   math library methods if possible. I.e. `x.sin` instead of `math.sin(x)`,
   `x.sqrt` instead of `math.sqrt(x)`, etc.
 - **`u` / `v` / `uv` mean normalized `[0,1]` texture coordinates — nothing
-  else.** A parameter carrying world units (metres) gets an explicit name saying
+  else.** A parameter carrying world units (meters) gets an explicit name saying
   what it measures and from where: `centerHeight`, `centerFromLeft`,
   `heightAboveFloor`. The two conventions routinely meet inside one function
-  body — a hang position in metres next to a genuinely normalized rect — and
+  body — a hang position in meters next to a genuinely normalized rect — and
   reusing `u`/`v` for both is how that becomes a bug rather than a style
   quibble. The same rule catches texture coordinates scaled by world distance:
   if `u` can exceed 1, it is not a UV.
@@ -172,7 +227,9 @@ Metals only loads one config:
   (Scala identifiers, comments, scaladoc, markdown docs, plan files, commit
   messages, PRs). Both `graphics/` and the `trivalibs/` submodule. The codebase
   has been swept; any new "colour" is a regression and should be rewritten in
-  the same touch.
+  the same touch. The same goes for other US/UK spelling pairs: "center" not
+  "centre", "meter" not "metre", "gray" not "grey", etc. Prefer US spelling in
+  prose too, for consistency with the codebase.
 - **Per-frame `update` methods take `tpf`** (milliseconds since the last frame,
   as `animate` provides) — not an absolute timestamp. E.g. `input.update(tpf)`,
   `controller.update(tpf)`. This keeps stepping consistent, pauses/resumes

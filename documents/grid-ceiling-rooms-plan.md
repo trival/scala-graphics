@@ -43,17 +43,17 @@ an addition rather than a restructuring. **Part 4** states the three hooks this
 costs and what they buy.
 
 **Conventions for all room sketches** (worth stating once, and worth promoting
-to `CLAUDE.md` if it holds up): the unit is the **metre** throughout — every
-dimension, offset, fade width and margin in these sketches is metres, no
+to `CLAUDE.md` if it holds up): the unit is the **meter** throughout — every
+dimension, offset, fade width and margin in these sketches is meters, no
 normalized or arbitrary scales. Default **eye height is 1.7 m**, and the default
 **wall clearance is 0.5 m**.
 
-Because metres and normalized coordinates coexist in the same file, **`u` / `v`
+Because meters and normalized coordinates coexist in the same file, **`u` / `v`
 / `uv` are reserved for normalized `[0,1]` texture coordinates and nothing
-else.** Anything carrying metres gets an explicit name saying what it measures
+else.** Anything carrying meters gets an explicit name saying what it measures
 from — `centerHeight`, `centerFromLeft`, `heightAboveFloor`. `canvases` violates
 this in `hang(wall, spec, u, v)` (`Canvases.scala:446`), where `u` and `v` are
-metres along the wall and up from the floor while the very same function
+meters along the wall and up from the floor while the very same function
 computes a genuinely normalized `baseRect` right below them. That is a trap, not
 a style quibble: the two conventions meet inside one body.
 
@@ -93,10 +93,17 @@ shape exists.
 
 ## New sketch
 
-`sketches/rooms/grid-canvases/` — `cp -r sketches/rooms/canvases` as the seed,
-package `sketches.rooms.gridcanvases`, `@main def roomsGridCanvases()`. Delete
-the copied `main.js` and rebuild. Carry a fresh `PLAN.md` (this document,
-trimmed) into the sketch dir per the repo convention.
+`sketches/templates/rooms/grid-canvases/` — `cp -r sketches/rooms/canvases` as
+the seed, package `sketches.templates.rooms.gridcanvases`,
+`@main def roomsGridCanvases()`. Delete the copied `main.js` and rebuild. Carry
+a fresh `PLAN.md` (this document, trimmed) into the sketch dir per the repo
+convention.
+
+Write it as a **template meant to be read and copied**, not just as a sketch
+that runs — see _The deliverable is a readable template_. Decisions get their
+rationale in comments beside the code; the `PLAN.md` carries the longer why; the
+file header says it is a template. The exhibition sketches later copied from it
+are outcomes, not templates, and stay lean.
 
 **The sketch starts as the room shell only — no canvases, no shadows, no
 animation.** The subject here is the space: footprint, surfaces, edge treatment,
@@ -165,38 +172,96 @@ the head of the file**, the way `canvases` already does with its tints and
 `Shadow*` constants (`Canvases.scala:29-59`), and make sure nothing tunable
 hides further down. The block is at least: room dimensions, `GridSpacing` /
 `StripWidth` / `StripHeight` / `CofferDepth`, `LightColor`, all surface tints,
-`EdgeFadeWorld` / `ContactDarken`, the wall lighting profile
-(`TopFadeDepth`), and the bloom constants.
+`EdgeFadeWorld` (corner rounding) and `GrimeWidth` / `GrimeDarken` (the floor
+line — separate constants, see Part 1), the wall tint gradient (`TopFadeDepth`),
+and the bloom constants.
 
 **These are set by looking, not by deriving — and the method is imitation, not
 simulation.** Nothing in this room is a light model. The wall gradient, the
-contact darkening, the raster occlusion and the world-space noise are all
-**shader tricks that reproduce an observed impression**, tuned by eye until they
-convince. The noise is the clearest case: a world-space FBM modulating surface
-brightness has no physical justification whatever, and it is one of the most
-convincing parts of `canvases`.
+floor grime and the world-space noise are all **shader tricks that reproduce an
+observed impression**, tuned by eye until they convince. The noise is the
+clearest case, and the most important one: a world-space FBM modulating surface
+brightness, plus a second noise slightly varied by surface normal, has no
+physical justification whatever and is precisely what makes `canvases` read as a
+real space rather than a rendering.
 
-Two consequences worth holding onto:
+### No ambient occlusion by default. Deliberately.
+
+Stated plainly because it is easy to reintroduce by accident, under other names,
+while believing you are being physical:
+
+**Do not darken edges, corners, or junctions.** Not where walls meet, not where
+the grid meets a wall, not where beams cross, not under the raster. A real
+exhibition space is lit by a huge diffuse source — clouded sky, or broad uniform
+area lights — and bounced around a white interior until light reaches
+essentially everywhere equally. Corners do not go dark. Adding occlusion there
+produces the recognisable look of a game engine, and against this subject it
+reads as **artificial, not more realistic**.
+
+The realism comes from the opposite direction: near-uniform brightness with a
+slight world-space noise, varied slightly by normal. That is the whole effect.
+
+**The one darkening that stays is `contact` at the floor line, and it is dirt,
+not light.** It imitates grime accumulating where the wall meets the floor. That
+is why it belongs only there, and why it does not generalize to any other edge
+in the room. Worth naming it accordingly (`grime` / `GrimeWidth` /
+`GrimeDarken`) in the new sketch, since calling it `contact` is what invited the
+mistake — and worth giving it its own width, since `canvases` shares
+`EdgeFadeWorld` between grime and corner rounding only by coincidence (Part 1).
+
+#### AO as an available module, off by default
+
+The objection above is to AO being **on by default and arrived at by accident**,
+not to having it. It is a good tool, and this design is unusually well placed to
+offer it cheaply: the geometry is static and the surfaces are already baked, so
+an occlusion term is **another contribution in the ambience stack** (Part 6),
+paid once at init and free at runtime. That is a better fit here than a
+real-time post-process over a position/normal target — which stays the right
+answer for dynamic scenes, and is what the painter's multi-render-target support
+is for, but is the expensive way to solve a problem that bakes away.
+
+And it is barely a module at all: **AO here is the same edge-distance field,
+applied to brightness instead of to the noise.** `edgeDist` / `cornerDist` are
+already computed and already correct at concave corners; an occlusion term is a
+second consumer of them.
+
+What it does **not** share is the constant. `EdgeFadeWorld` is tuned for a
+different job entirely — making corners read as slightly **rounded**, one noise
+blending into the other over a short distance. It models a material and a
+softness, not light absorption, and an occlusion falloff would want its own
+radius, almost certainly a larger one. Give AO its own tunable rather than
+reusing `EdgeFadeWorld`; per _Do not derive a constant that could be a
+constant_, two terms with different jobs get different knobs even when they read
+the same field.
+
+So a prebaked AO term is a legitimate future module (listed under _Deferred and
+open_), and the work is a new constant plus one wire, not new machinery. It is
+still not part of the initial implementation, and nothing should darken an edge
+until a room asks for it by name.
+
+Two further consequences worth holding onto:
 
 - **Do not derive a constant that could be a constant.** A value computed from
   two others looks principled, hides an assumption nobody can see, and couples
   things that want to be adjusted independently. Physical reasoning in this
-  document is only ever explaining what *shape* a term should have — never what
+  document is only ever explaining what _shape_ a term should have — never what
   number belongs in it.
 - **Keep the raw shader composable.** The ambience texture is built by stacking
   small shader-level terms, and that composition has to stay open and editable —
-  reachable building blocks, not a sealed `bakeAmbience(style)` that only accepts
-  parameters. Being able to reach into a shader and add a term that is wrong
-  everywhere except where you are looking is the point; it is why `trivalibs`
-  puts shader code and CPU geometry logic side by side in the first place, and
-  the extracted utils must not close that door (see **Part 6**, _Ambience as a
-  stack of modules_).
+  reachable building blocks, not a sealed `bakeAmbience(style)` that only
+  accepts parameters. Being able to reach into a shader and add a term that is
+  wrong everywhere except where you are looking is the point; it is why
+  `trivalibs` puts shader code and CPU geometry logic side by side in the first
+  place, and the extracted utils must not close that door (see **Part 6**,
+  _Ambience as a stack of modules_).
 
-Do **not** wrap it in a `RoomStyle` case class yet. Grouping named constants is
-not an abstraction; a parameter object only earns its keep once the room
-_builder_ moves to `src/utils/room/` and needs an argument. At that point this
-block becomes that argument almost verbatim — which is a reason to keep it
-cohesive now, not a reason to formalize it now.
+Do **not** wrap it in a `RoomStyle` case class. Grouping named constants is not
+an abstraction, and a parameter object is the wrong end to pull on here: the set
+of things rooms want to vary is not enumerable, so a config type either grows
+without bound or blocks the next variation (see **Part 6**, _Granularity matters
+more than layering_). Shared functions should take the few values they actually
+use, and a sketch that needs different behavior should be able to substitute
+its own code rather than ask for a new field.
 
 ### 2. Curation is user space — the stage provides walls, not a hang
 
@@ -214,7 +279,7 @@ Which reclassifies most of what `canvases` does with its paintings. Its
 randomized sizes (`randInRange(0.9, 1.7)` by `randInRange(0.7, 1.4)`,
 `Canvases.scala:592-593`), its even `count`-per-wall spacing, its 1.75 m hang
 height, its sway on the wide walls, and its diagonal-grid `imgShade` /
-`patternPanel` / 4-colour palette — none of it is a template to generalize. **It
+`patternPanel` / 4-color palette — none of it is a template to generalize. **It
 is one room's curation**, made when there was no real content to curate. Read as
 stage requirements these are actively misleading, and none of them should be
 ported back as if they were room infrastructure.
@@ -230,20 +295,20 @@ What the stage owes the curator is an **affordance**, not a policy:
 | lighting the pieces will be seen under                               | which walls are used at all                |
 
 So `hang` stays exactly as general as it is now — a wall-local position in
-metres plus an arbitrary `PaintingSpec` — but with its parameters **renamed off
+meters plus an arbitrary `PaintingSpec` — but with its parameters **renamed off
 `u` / `v`**, per the convention above:
 
 ```scala
 def hang(
     wall: Wall,
     spec: PaintingSpec,
-    centerFromLeft: Double, // metres along the wall from its left edge,
+    centerFromLeft: Double, // meters along the wall from its left edge,
                             // "left" as seen standing in the room facing it
-    centerHeight: Double,   // metres up from the floor
+    centerHeight: Double,   // meters up from the floor
 ): Painting
 ```
 
-Both name the **piece's centre**, which is what they always located — `canvases`
+Both name the **piece's center**, which is what they always located — `canvases`
 just never said so. What does **not** carry over is any rule about what to pass
 them.
 
@@ -262,11 +327,116 @@ obstruct it.
 ### What this does to the extraction question
 
 It shortens the fuse considerably. If every exhibition is its own sketch sharing
-one stage, the stage is shared code **by construction** — the second exhibition
-triggers the extraction, not some speculative third shape sketch. Not just
-`Footprint`, but the whole room-construction path (walls, bakers, raster,
-coffer) is headed for `src/utils/room/`, which is what the next section is
-about.
+one stage, reuse is coming **by construction** — the second exhibition triggers
+it, not some speculative third shape sketch.
+
+What gets extracted is narrower than "the stage", though: a **modular set of
+functions**, mostly geometry and behavior, not a room builder. Part 6's _What
+to extract first_ lists the candidates and the bar they have to clear.
+
+---
+
+## The deliverable is a readable template
+
+Worth stating plainly, because it changes what "finished" means: the shared
+baseline we actually want is **not primarily a library**. It is a small set of
+**template sketches that read well** — that say what they do, and why each
+decision went the way it did — which someone starts from by copying and tuning.
+The utility functions are the thin layer underneath, carrying only the parts
+nobody wants to re-read.
+
+No such template exists yet. `sketches/rooms/*` are proofs of concept and
+experiments; **this plan is the work of turning that into a template family**,
+starting with `grid-canvases`.
+
+That split explains why the extraction stays so small. **The library carries
+what you do not want to read again; the template carries what you do.** Camera
+confinement is library because nobody wants to re-derive a point-in-polygon
+clamp. The noise tuning, the tint composition and the raster shading are
+template, because they are exactly what a new room wants to open up and change.
+
+**This applies to templates only, and there are none yet.** The distinction
+matters and is easy to blur:
+
+- **`canvases` is not a template.** It is a proof of concept and a play with
+  animated canvases — an outcome that happens to be well commented in places.
+  Its `Canvases.scala:188-191` note on the `+ normal.abs * Far` trick is a good
+  model for the _style_ of a template comment, but the sketch itself is not one
+  and should not be maintained as one.
+- **This plan is what creates the templates.** `grid-canvases` is the first:
+  built to be read and copied, explaining non-obvious decisions in comments
+  beside the code, with the longer "why" in its `PLAN.md`. Deliberate
+  _non_-decisions belong there too, especially _No ambient occlusion by default_
+  — without it stated where someone edits the shading, the next reader adds
+  corner darkening believing they are improving realism.
+- **The exhibition sketches built from it are outcomes, and stay lean.** A
+  finetuned scene should not be commented like a template. Explaining code that
+  is obvious to its author is precisely the noise `trivalibs` exists to
+  eliminate, and tuned constants move constantly, so comments about them are
+  stale on arrival.
+
+Mark templates as such in the file header; leave outcomes unmarked and quiet. If
+an outcome later proves worth reusing, promoting it to a template is a
+deliberate act, not something that happens by accumulating comments.
+
+### Templates are a family, like `trivalibs/examples/`
+
+The closest existing model is the library's own examples: each one exercises a
+distinct feature, stays scoped, proves it works, and shows idiomatic usage.
+Previous examples are never deleted and must keep compiling
+(`trivalibs/CLAUDE.md`).
+
+Room templates follow that pattern with one difference in scope: an example
+demonstrates **a feature**, a template enables **a situation** — virtual
+exhibitions of images in virtual spaces. So a template is broader by design, and
+its job is to show the pieces this document has identified **working together
+idiomatically**, each with a clear account of what it tunes:
+
+| Piece                                   | What it tunes                                          |
+| --------------------------------------- | ------------------------------------------------------ |
+| Footprint rings                         | the room's shape, and everything derived from it       |
+| World-space noise + normal-varied noise | the material read; the core of the illusion            |
+| Edge fade                               | how rounded corners appear where materials meet        |
+| Grime line                              | dirt at the floor junction, not light                  |
+| Tints per surface                       | wall / soffit / floor material color                  |
+| Prebaking                               | what is cached at init vs computed per frame           |
+| Grid raster + light plane               | the ceiling, the light, and the bloom it drives        |
+| Walls as hangable surfaces              | where canvases can go, and how their shadows composite |
+| Camera confinement                      | where the visitor can stand                            |
+
+**Variants become new templates, not new options.** Adding AO prebaking, or a
+different grid structure, means a **new template with that setup** — kept
+alongside, kept compiling — rather than a flag on an existing one. This is the
+same conclusion _Granularity matters more than layering_ reaches from the code
+side: the space of wanted variations is not enumerable, so it is expressed by
+having several worked examples rather than one configurable thing.
+
+**They need their own folder.** Kinds of sketch should not be intermixed — the
+distinction is the point, and it has to be visible in the tree. The repo-wide
+taxonomy now lives in `graphics/CLAUDE.md`:
+
+```
+sketches/templates/rooms/grid-canvases/   ← template  (this plan's output)
+sketches/tests/bloom/                     ← single-feature util check
+sketches/experiments/grid-ceiling/        ← tried, not continued
+sketches/rooms/canvases/                  ← regular sketch, finished
+sketches/rooms/columns/                   ← regular sketch, in progress
+```
+
+Arbitrary nesting under `sketches/` is already supported by the build
+(`graphics/CLAUDE.md`), so this needs no tooling change —
+`bun run sketch templates/rooms/grid-canvases` and
+`/templates/rooms/grid-canvases/` in the dev server work as-is.
+
+**Copy-first is the design, not a compromise.** The repo already treats
+`sketches/base-triangle/` as a starter template (`graphics/CLAUDE.md`); the room
+templates are a second, richer family of the same thing. Duplication between
+rooms is expected — what must not duplicate is the fiddly geometry and
+behavior, which is precisely the extraction list.
+
+So the bar for `grid-canvases` is not only that it looks right, but that someone
+— human or agent — can open it cold, understand why it is built this way, and
+change one thing confidently.
 
 ---
 
@@ -275,19 +445,21 @@ about.
 `graphics/CLAUDE.md` gives sketch code latitude for Scala conveniences. Very
 little of this sketch qualifies for it.
 
-The section above and **Part 6** together establish that the **entire stage** is
-shared code by construction: every exhibition is a sketch reusing it, and
-`canvases` gets rewritten on top of it as the acceptance test. So almost
-everything here is library code that has not been extracted yet:
+The section above and **Part 6** establish that a good part of this sketch is
+headed for `src/utils/room/` as shared functions — and that `canvases` gets
+rewritten on top of them as the acceptance test. Not all of it moves (Part 6,
+_What to extract first_), but enough does, and it is not knowable in advance
+exactly which lines. So write to library discipline anything that is geometry,
+maths or behavior, and keep the latitude for the parts that carry a look
+decision:
 
-| Written to library discipline                                             | Sketch-convenient                           |
-| ------------------------------------------------------------------------- | ------------------------------------------- |
-| `Ring` / `Footprint`, `edgeSetDist`, `cornerDist`, `edgeDist`, `clipLine` | the tunable constant block                  |
-| `confine` / `nearestBoundary` / `isInside`                                | curation — the hang list, positions, sizes  |
-| wall / floor / ceiling builders, `mkWall`                                 | content generation (`imgShade`-equivalents) |
-| the bakers, `roomNoise`, `contact`, the contribution stack                | the `@main` wiring itself                   |
-| beam families, raster, coffer, light plane                                |                                             |
-| `hang` and the shadow path                                                |                                             |
+| Written to library discipline                                             | Sketch-convenient                                    |
+| ------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `Ring` / `Footprint`, `edgeSetDist`, `cornerDist`, `edgeDist`, `clipLine` | the tunable constant block                           |
+| `confine` / `nearestBoundary` / `isInside`                                | `roomNoise` tuning, tint composition, raster shading |
+| wall / floor / ceiling builders, `mkWall`                                 | curation — the hang list, positions, sizes           |
+| beam construction and clipping                                            | content generation (`imgShade`-equivalents)          |
+| `hang` and the shadow path                                                | the `@main` wiring itself                            |
 
 The discipline that applies:
 
@@ -363,10 +535,10 @@ This works because everything that would care is handled elsewhere:
   opaque full-height wall, so the cut-out is occluded from every point the
   camera can reach — and the camera cannot reach it, because `confine` (Part 3)
   keeps it inside the rings.
-- The **contact darkening does not come from the mesh**. It is
+- The **grime line does not come from the mesh**. It is
   `contact(edgeSetDist(pxz, floorEdges))`, evaluated per fragment against the
   ring edges, so it darkens along the true plan boundary regardless of how far
-  the quad extends past it.
+  the quad extends past it. Same for the noise edge fade.
 - The **UV was already bounding-box-parameterized** — texel density comes from
   `texSize(bbW, bbD)` at a uniform `TexScale`. Matching the geometry to that
   frame makes the quad's UV simply its own `[0,1]²`, instead of a polygon mesh
@@ -483,11 +655,9 @@ Derived, in this order:
   One tunable, same curve, and a 2.5 m partition's own top rim now gets the same
   treatment with no extra code.
 
-  It composes with `contact(WallTopY - wp.y)` (Part 2) rather than fighting it:
-  both darken the top edge, at deliberately different widths — a tight crevice
-  band at `EdgeFadeWorld` where wall meets beam, and this much broader settling
-  at `TopFadeDepth`. Separate knobs so one can be sharpened while the other is
-  softened.
+  Note this is a **broad tint gradient over ~0.9 m, not an edge effect**. There
+  is no darkening where the wall meets the beam above it; see _No ambient
+  occlusion by default_.
 
 ### Shader side
 
@@ -529,7 +699,7 @@ whole of the free-standing-wall change later.
 
 **Height is a stand-in for the real predicate, and it does not hold forever.**
 `ceilingEdges` wants to know what **bounds the ceiling surface**, which is not
-the same as what reaches it. A column reaches the ceiling and must *not* clip
+the same as what reaches it. A column reaches the ceiling and must _not_ clip
 the raster — the beams rest on it, they do not stop at it — whereas an O-shape's
 inner box both reaches and interrupts. Height cannot tell those apart.
 
@@ -577,22 +747,22 @@ constant.
 prerequisite rather than a nicety** (Part 5.1). `wallBaker` today is a single
 shared baker (`Canvases.scala:273`) with the height baked into its expression,
 and `TextureBaker` exposes no per-bake uniforms (`Bake.scala:20-23`) — so a
-scalar that varies per wall can only vary by **specializing the shade**, i.e. one
-shade, one pipeline, per distinct value.
+scalar that varies per wall can only vary by **specializing the shade**, i.e.
+one shade, one pipeline, per distinct value.
 
 That is the wrong default, and it scales badly in exactly the direction this
 design is heading: pillars, many-sided round polygons, several free-standing
-objects inside one complex room. Pass `topY` (and tints, fade widths, per-surface
-term selectors) as **uniforms**, and one pipeline bakes every wall in the room
-regardless of shape or height.
+objects inside one complex room. Pass `topY` (and tints, fade widths,
+per-surface term selectors) as **uniforms**, and one pipeline bakes every wall
+in the room regardless of shape or height.
 
-Note what does *not* move: the **edge set stays unrolled** into the shader as
+Note what does _not_ move: the **edge set stays unrolled** into the shader as
 build-time constants. It is structure, not a scalar, and turning it into a
 uniform is the separate array-uniform question that Part 5.2 declines. So the
 rule is: scalars and vectors that vary per surface → uniforms; the plan's
 geometry → constants.
 
-For a rectangular plan this reduces exactly to the current box behaviour, which
+For a rectangular plan this reduces exactly to the current box behavior, which
 is the check for step 1: the new sketch's floor and walls should look
 indistinguishable from `canvases`.
 
@@ -600,13 +770,24 @@ indistinguishable from `canvases`.
 `roomNoise`'s `scaledWp` is already world-space and shape-agnostic, and the
 `edge` fade factor picks up the new `edgeDist` automatically.
 
-One deliberate addition: walls currently take `contact(wp.y)` only, so they
-darken at the floor but not in the vertical corners. With `cornerDist` available
-this becomes `contact(wp.y.min(cornerDist(wp.xz)))` — concave corners (an L's
-inner corner, an O's outer corners) get the same soft darkening as the floor
-line, which is exactly the "contact line as in canvases, everywhere" ask. Convex
-corners get it too; if that reads wrong on the L, gate it by a per-wall CPU flag
-rather than by shader math.
+**`edgeDist` feeds the noise fade, and nothing else.** The whole point of
+generalizing it to arbitrary plans is that the normal-dependent noise term keeps
+fading out cleanly at every geometry edge — including the concave corners a box
+does not have. It is not an occlusion distance: no corner, junction or edge in
+this room gets darkened for it (see _No ambient occlusion by default_).
+
+`contact` stays exactly where `canvases` has it, on `wp.y` alone — the floor
+grime line. `cornerDist` exists only to keep the noise fade correct in vertical
+corners.
+
+**Split `EdgeFadeWorld` in two while porting.** `canvases` uses the one constant
+for both jobs — `contact` is `dist.smoothstep(0.0, EdgeFadeWorld)` and the noise
+fade is `edgeDist(…).smoothstep(0.0, EdgeFadeWorld)` — but they are unrelated
+quantities that happen to have been given the same number. One is how far a
+corner reads as **rounded**, blending one noise into the other; the other is how
+wide a band of **grime** collects at the floor. Give them separate tunables
+(`EdgeFadeWorld` and, say, `GrimeWidth`) so neither drags the other when tuned.
+Start both at 0.08 to keep step 1 pixel-identical, then let them diverge.
 
 ---
 
@@ -615,8 +796,8 @@ rather than by shader math.
 ### Vertical layout
 
 ```
-  y = lightY   = CeilY + CofferDepth  ── luminous plane, HDR, faces down
-       ↑ CofferDepth (≈ 1.0–1.5 m)    ── coffer reveal walls, one per ring edge
+  y = lightY   = CeilY + CofferDepth  ── luminous plane, HDR, faces down,
+       ↑ CofferDepth (≈ 1.0–1.5 m)    ──   overhanging the plan; open at the sides
   y = CeilY    = Height               ── raster top
        ↓ StripHeight (≈ 0.25 m)       ── the beams; at a wall, the perimeter
   y = WallTopY = CeilY − StripHeight  ──   beam's outer face IS the wall plane
@@ -632,20 +813,31 @@ slower apparent motion on the light. No trick needed; `CofferDepth` is the knob.
 The `grid-ceiling` sketch works the same way (`GridCeiling.scala:201`).
 
 **The room wall stops at `WallTopY`, not at `CeilY`.** Above that the perimeter
-beam's outer face continues the same plane up to `CeilY`, and the coffer reveal
-wall continues it to `lightY`. Three surfaces, one continuous plane, no overlap.
-Letting the wall run the full height instead would put it coplanar with the
-perimeter beam's outer face and z-fight. `WallTopY` is therefore the `topY` that
-Part 1's `edgeDist` takes for room walls, and it is the height canvases hang
-against.
+beam's outer face continues the same plane up to `CeilY`, and above that the
+coffer is simply open — two surfaces, one continuous plane, no overlap.
 
-The **coffer reveal walls** are short quads from `CeilY` to `lightY`, one per
-edge in `ceilingEdges` — literally
-`mkWall(center = at (CeilY + CofferDepth/2), width = edge length, height = CofferDepth, …)`,
-reusing the same function. Without them you see void through the raster at
-grazing angles. Note this and every other consumer in Part 2 reads
-`ceilingEdges`, never `floorEdges`: the ceiling assembly is bounded only by what
-actually reaches it.
+The substantive half of this is that `WallTopY` is where the **visible** wall
+ends, so it is the `topY` Part 1's `edgeDist` takes for room walls and the
+height canvases hang against. That holds however the geometry is built: the band
+above it is behind the beam either way.
+
+Capping the geometry there too is tidiness rather than a fix. A full-height wall
+would be coplanar with the perimeter beam's outer face, but that face points out
+of the room and is not among the three emitted per beam, so nothing would
+actually z-fight from anywhere the camera can go. Still worth capping — it keeps
+the geometry from carrying a hidden sliver, and makes the mesh agree with the
+`topY` the shading already uses.
+
+**The coffer needs no reveal walls.** The raster occluding a luminous plane
+already reads as a recess; nothing has to be built to close its sides. The only
+real risk is seeing _past_ the light plane's edge on a shallow ray through a gap
+near a wall, and the fix for that is to **make the light plane wider than the
+plan** — overhang it by a margin so every ray through the raster lands on it.
+How much is a look decision; a deeper `CofferDepth` lets shallower rays through
+and wants more overhang.
+
+Note that every consumer in Part 2 reads `ceilingEdges`, never `floorEdges`: the
+ceiling assembly is bounded only by what actually reaches it.
 
 ### Snapping the plan to the grid — perimeter beams for free
 
@@ -654,7 +846,7 @@ room from the grid**. Place beam centerlines at `k · GridSpacing`, then put eac
 wall plane flush with the outer face of the beam nearest the wanted extent:
 
 ```scala
-// wanted ≈ half-extent in metres; the result is the snapped half-extent
+// wanted ≈ half-extent in meters; the result is the snapped half-extent
 def snapHalfExtent(wanted: Double): Double =
   val k = ((wanted - StripWidth / 2.0) / GridSpacing).round
   k * GridSpacing + StripWidth / 2.0
@@ -713,10 +905,30 @@ calls it three times at 60°. That is the whole difference.
 
 Geometry per beam: build the three visible faces directly in the beam's own
 frame — `(center, dir, perp = perp(dir), Up)` — rather than from an axis-aligned
-`Box`. This is the same "derive a local frame from a direction" move `mkWall`
-already makes with `right = Up.cross(inwardNormal)` (`Canvases.scala:418-441`),
-and it is what makes an odd-angle beam no different from an axis-aligned one.
-Each face takes a band in a UV atlas as in `GridCeiling.scala:71-143`.
+`Box`, which is what makes an odd-angle beam no different from an axis-aligned
+one. Each face takes a band in a UV atlas as in `GridCeiling.scala:71-143`.
+
+**Use the existing helper, with one caveat.**
+`Quad.fromDimensions(width, height, normal, pivot, uvAtPivot)`
+(`trivalibs/src/graphics/geometry/polygon.scala:63`) already builds exactly this
+— an oriented quad from a center, two dimensions and a normal, with UV — and
+`Columns.scala:52` and `GridCeiling.scala:157` both use it. For **walls** it is
+a drop-in: it derives `uDir = up.cross(n)` (line 72), the identical frame
+`mkWall` computes by hand as `right = Up.cross(inwardNormal)`
+(`Canvases.scala:418-441`), so `mkWall` can just call it.
+
+The caveat is that **the in-plane orientation is inferred, not given**. For a
+near-vertical normal it swaps its reference to `-Z` (line 71). That is a sane
+default and fine for a floor or ceiling quad, but wrong for a **beam soffit**:
+its normal is `-Y`, so every soffit would get `u` running along world `-Z`
+regardless of which way its beam points, and the atlas band would not run along
+the beam.
+
+So the beam builder needs a variant taking an **explicit tangent** —
+`fromDimensions(width, height, normal, tangent, pivot, …)` — rather than
+inferring one. That is a small additive overload in `polygon.scala` next to the
+existing one, and it is the right place for it: this is generic quad
+construction, not room logic. Noted in _Deferred and open_.
 
 Uniform texel density across beams of differing length is a **budget** question,
 not a coordinate one. Size the atlas for the longest beam and give each beam
@@ -760,101 +972,47 @@ Beams **interpenetrate at crossings** — two families already share volume wher
 they cross, and a third makes triple points. This is accepted, not a bug;
 `grid-ceiling` does the same and the depth buffer resolves it. If three
 coincident families read badly, stagger each family's `gridY` by a few
-millimetres.
+millimeters.
 
 ### Raster shading
 
-This is where "soft-edged and integrated" is won or lost. Bake the atlas with
-`TextureBaker` (`src/utils/bake/Bake.scala`), sampling the **same** `roomNoise`
-at world position so the strips belong to the same field as the walls.
+The beams are **the same material as the walls** — white concrete — so they get
+the same treatment, not a special one. Bake the atlas with `TextureBaker`
+(`src/utils/bake/Bake.scala`) sampling the same `roomNoise` at world position,
+with the same `edgeDist`-driven fade of the normal-dependent term at every
+geometry edge. That is the whole integration story: one material, one noise
+field, continuous across the room, its orientation-varying component fading out
+wherever surfaces meet.
 
-**The raster has its own edge collection.** A 12 × 18 raster has ~200 beam
-crossings, and every crossing is a junction of exactly the kind the floor/wall
-contact line handles. A grid with no darkening at its intersections reads as
-pasted-on; a real coffered ceiling has visible occlusion in the pockets and at
-the beam joins. So the crossings are a first-class input to the bake, not
-something to ignore.
+**No junction darkening.** Beam crossings, the beam/wall meeting, the pockets
+between beams — none of them darken. Under a large diffuse source above the grid
+the light reaches into all of it near-equally, and adding occlusion there is the
+game-engine look this design is explicitly avoiding (see _No ambient occlusion
+by default_). The beams read as sitting in the ceiling because they are lit like
+the ceiling and share its noise field, not because their corners are shaded.
 
-They do **not** need an edge list. Each family is uniformly spaced, so its
-distance field is one `fract` expression — measured along the family's
-perpendicular, which is what makes it angle-agnostic:
+That reasoning is specific to a **perpendicular** grid, and worth revisiting for
+the hexagon's triangular raster. Three families at 60° meet in far sharper
+wedges than two at 90°, and a narrow wedge admits much less of the hemisphere —
+so those junctions plausibly _do_ sit darker, and the triple points most of all.
+Revisit it there on its own merits rather than inheriting this decision; it is
+the one place in the design where junction darkening might earn its keep.
 
-```scala
-/** Distance from an XZ point to the nearest beam centerline of family `f`.
-  * `n = perp(f.dir)` and `f.spacing` are CPU constants.
-  */
-def familyDist(pxz: Vec2Expr, f: BeamFamily): FloatExpr =
-  val t = pxz.dot(vec2(perp(f.dir))) - f.phase
-  ((t + f.spacing / 2.0).mod(f.spacing) - f.spacing / 2.0).abs
-```
+This removes an apparatus rather than adding one: there is no per-family
+distance field, no `occ` product over families, and no radial `crossDist` closed
+form. `edgeSetDist` remains, feeding the noise fade.
 
-For `dir = (1,0)` this is exactly the axis-aligned form; for a hexagon's 60°
-family it is the same expression with a different constant.
+Two things do vary per face, and neither is an edge effect:
 
-**Occlusion compounds multiplicatively, per occluder — there is no "crossing
-distance" term:**
-
-```scala
-var occ = contact(edgeSetDist(pxz, ceilingEdges))   // the wall junction
-families.foreach: f =>
-  occ *= contact(familyDist(pxz, f))
-```
-
-On a beam run one factor applies; at a crossing two multiply and it goes darker;
-at a hexagon's triple point three do. No metric assumption, no lattice
-assumption, any number of families at any angles. It is also the same
-compounding trick the painting shadows already use under `BlendState.Multiply`
-(`canvases/PLAN.md:92-104`) — occlusion from independent occluders multiplies.
-
-Resist the closed form `crossDist = length(vec2(dCol, dRow))` here. It is the
-exact distance to a lattice point, but only for **two perpendicular** families;
-on a hexagon's three families at 60° the metric is skewed and the junctions are
-triple points, so it fails silently rather than visibly.
-
-Note what the first line already is: a **perimeter beam sits exactly on the wall
-line**, so its occlusion term _is_ `contact(edgeSetDist(pxz, ceilingEdges))`,
-which the design needs anyway for the wall junction. With the plan snapped to
-the grid there is no separate perimeter beam to account for — the outermost
-family beam already lands there, and both terms describe the same occluder. The
-snap is what makes these two agree instead of double-darkening.
-
-Three terms then build the strip surface:
-
-1. **Junction darkening** — the `occ` product above, reusing the existing
-   `contact` unchanged, at a slightly wider fade than the floor's
-   `EdgeFadeWorld` since these pockets are the strongest occlusion in the room.
-   This is the term that makes the raster sit _in_ the ceiling.
-2. **No normal-dependent noise.** The strips are 0.10 × 0.25 m; the orientation
-   term would seam at every one of the many hard 90° edges and read as dirt at
-   that scale. Pass `edge = 0` for strip surfaces so only the continuous
-   positional FBM survives — automatically seam-free against each other, the
-   coffer, and the walls. Term 1 now supplies the structure that this gives up,
-   which is why dropping it is safe here and was not obviously safe before.
-3. **Per-face orientation, analytically — and anchored to concrete values.**
-   Hard geometric edges _want_ a real shading break; it is the noise, not the
-   shading, that must stay continuous. Two faces, two opposite treatments:
-   - **Downward faces** (the beam soffits, all that is seen from eye height)
-     take `CeilTint` — literally the canvases ceiling colour
-     (`Canvases.scala:56`, `Vec3(0.86, 0.86, 0.85)`), flat. This is the point:
-     the underside of the raster _is_ the ceiling plane as far as the eye is
-     concerned, so it should be the ceiling's colour, not a variant of the wall.
-     The old `ceilTex` is deleted, but its tint survives here.
-   - **Inner side faces** get the **inverse** of the wall's top fade —
-     brightening upward toward the light, `(wp.y - WallTopY) / StripHeight`
-     driving a lerp from the wall's darkest value up to a lighter value at
-     `CeilY`.
-
-   The two meet exactly at `WallTopY`: the wall arrives at its darkest there,
-   the beam's side face starts at that same value and brightens upward into the
-   pocket. Continuous in value, opposite in gradient — which is what reads as
-   light spilling down from the coffer rather than as two surfaces that happen
-   to touch. Both fades are anchored to `WallTopY` / `StripHeight`, so retuning
-   `StripHeight` keeps them locked together.
-
-The same `occ` product also darkens the **light plane** and the **coffer
-walls**, not just the strips — that is what puts the raster's shadow into the
-luminous recess behind it, and it is why the term is defined over XZ rather than
-per surface.
+1. **Soffit tint.** Downward faces — all that is seen from eye height — take
+   `CeilTint` (`Canvases.scala:56`, `Vec3(0.86, 0.86, 0.85)`) rather than the
+   wall tint. The underside of the raster _is_ the ceiling plane as far as the
+   eye is concerned, so it takes the ceiling's color. The old `ceilTex` is
+   deleted; its tint survives here.
+2. **The normal-varied noise term.** Kept, not suppressed. It is the thing that
+   makes surfaces at different orientations read as the same material lit from
+   the same room, and `roomNoise` already fades it toward edges, so the many
+   hard 90° corners on a thin beam stay seam-free without special-casing them.
 
 ### Raster: what is deliberately deferred
 
@@ -881,13 +1039,13 @@ current ceiling is (`Canvases.scala:248-270`):
 ```
 HDR base (≈ 4.0–8.0, above the bloom threshold of 1.0)
   × roomNoise(wp, normal)                  // subtle, keeps it from reading flat
-  × contact(edgeSetDist(wp.xz, ceilingEdges)) // soft vignette into the coffer corner
+  // no vignette toward the walls — the light plane is uniform
 ```
 
 Uniform rather than striped — the raster already supplies all the structure, and
 the existing `s := (uv.x * 6.0 + 0.5).fract` strip layout is expressed in
 _ceiling UV_, which on an L or H would run its end-caps through mid-air over the
-cut-out. If bands are wanted later, express them in world metres
+cut-out. If bands are wanted later, express them in world meters
 (`(wp.x * StripsPerMetre).fract`) and cap them with `edgeSetDist`, not UV.
 
 The `HaloColor` constant (`Canvases.scala:59`) becomes `LightColor`, and the
@@ -906,18 +1064,13 @@ reflection reads as a soft blur rather than a second bloom —
 
 - **Wall tint gradient.** Unchanged from `canvases` in values and curve, just
   re-anchored to `(WallTopY - wp.y).smoothstep(TopFadeDepth, 0.0)` per Part 1.
-- **The wall's contact darkening ends exactly at the grid contact.** The band
-  under the raster is `contact(WallTopY - wp.y)` — darkest where the wall meets
-  the perimeter beam's bottom edge, faded out `EdgeFadeWorld` below it. Not
-  `CeilY`: the wall does not reach `CeilY`, and anchoring the fade there would
-  leave a visible discontinuity at the beam's edge. This is the tight crevice
-  term; it multiplies with the much wider `TopFadeDepth` settling from the tint
-  gradient, and both darken the same edge at independently tunable widths. Walls
-  therefore end up with contact darkening at floor, grid, and corners.
-- **Mirror.** `aboveGround` must gain the raster shapes, the coffer walls and
-  the light plane. `alphaScale` (`Canvases.scala:655`) becomes `lightY`, not
-  `RoomHeight`. The raster reflected in the floor is a large part of the payoff
-  here — check it early.
+- **No darkening where the wall meets the grid.** `contact` stays on the floor
+  line only, as grime. The wall/beam junction gets the noise fade and nothing
+  else (see _No ambient occlusion by default_).
+- **Mirror.** `aboveGround` must gain the raster shapes and the light plane.
+  `alphaScale` (`Canvases.scala:655`) becomes `lightY`, not `RoomHeight`. The
+  raster reflected in the floor is a large part of the payoff here — check it
+  early.
 - **Scene panel** is already `Rgba16Float` (`Canvases.scala:711-722`); no
   change.
 
@@ -995,7 +1148,7 @@ resolution here.
 ### Defaults
 
 ```scala
-val WallClearance = 0.5   // metres from any wall, including canvas faces
+val WallClearance = 0.5   // meters from any wall, including canvas faces
 val EyeHeight     = 1.7   // camera spawn height
 val MinEye        = 0.4
 val HeadRoom      = 0.4   // clamps below the raster, not into it
@@ -1030,15 +1183,15 @@ height. That collapse is the point — one code path covers both.
 
 What then falls out with no further work:
 
-| Consumer                             | Edge set                 | Result                                                       |
-| ------------------------------------ | ------------------------ | ------------------------------------------------------------ |
-| Floor contact + noise fade           | `floorEdges`             | darkened contact line around the partition, same as any wall |
-| Camera confinement                   | `floorEdges`             | 0.5 m clearance, walk around it                              |
-| Wall geometry + canvases             | all rings                | both faces hangable via `facing`                             |
-| Ceiling / coffer walls / light plane | `ceilingEdges`           | unaffected, no contact line                                  |
-| Raster clipping                      | `ceilingEdges`           | grid runs over it uninterrupted                              |
-| Wall lighting profile                | absolute `topY - wp.y`   | its own top rim grazes and shadows just like a full wall's   |
-| Wall noise edge fade                 | per-surface `topY`       | fades against its own open top rim                           |
+| Consumer                   | Edge set               | Result                                                       |
+| -------------------------- | ---------------------- | ------------------------------------------------------------ |
+| Floor contact + noise fade | `floorEdges`           | darkened contact line around the partition, same as any wall |
+| Camera confinement         | `floorEdges`           | 0.5 m clearance, walk around it                              |
+| Wall geometry + canvases   | all rings              | both faces hangable via `facing`                             |
+| Ceiling / light plane      | `ceilingEdges`         | unaffected, no contact line                                  |
+| Raster clipping            | `ceilingEdges`         | grid runs over it uninterrupted                              |
+| Wall lighting profile      | absolute `topY - wp.y` | its own top rim grazes and shadows just like a full wall's   |
+| Wall noise edge fade       | per-surface `topY`     | fades against its own open top rim                           |
 
 What genuinely remains to add, and it is small:
 
@@ -1196,8 +1349,8 @@ Four layers, each usable without the ones above it:
 | 1. Plan         | `Ring` / `Footprint`, `edgeSetDist`, `cornerDist`, `edgeDist`, `clipLine`, `confine` | ✓          | ✓                  |
 | 2. Surfaces     | floor + wall forms from the footprint; a plain ceiling plane                         | ✓          | floor + walls only |
 | 3. Shading kit  | `roomNoise`, `contact`, the bakers, the surface-contribution stack, `hang` + shadows | ✓          | ✓                  |
-| 4a. Beam raster | `BeamFamily` / `Beam`, generators, `clipLine`, the `occ` field                       | —          | ✓                  |
-| 4b. Coffer      | coffer reveal walls, the HDR light plane                                            | —          | ✓                  |
+| 4a. Beam raster | `BeamFamily` / `Beam`, generators, `clipLine`                                        | —          | ✓                  |
+| 4b. Coffer      | the overhanging HDR light plane                                                      | —          | ✓                  |
 
 Layer 4 is additive and opt-in, and **4a and 4b are separable**. Grid rooms take
 both; a courtyard under open sky takes the raster with no ceiling behind it at
@@ -1212,6 +1365,81 @@ Explicitly **do not** introduce a `Ceiling` trait with two implementations.
 There are two cases, they share nothing but a height, and a polymorphic seam
 here would cost more than the ten lines of quad it replaces — the same judgement
 that killed the original `Wall` kit (`canvases/PLAN.md:40-71`).
+
+### Granularity matters more than layering
+
+Layers are the coarse story. The finer one matters more, and it is the actual
+lesson of the abandoned `Wall` kit (`canvases/PLAN.md:40-71`): **there are too
+many knobs here for an off-the-shelf solution, and the knobs are set by eye.**
+
+A configuration surface only works when the space of wanted variations is known
+and enumerable. It is not, here. Every room is re-tuned against its content,
+most decisions are visual rather than derived, and the interesting ones are the
+details — which is exactly the regime where a parameter object grows without
+bound and still cannot express the next thing someone wants.
+
+So the target is not "a builder with enough options". It is:
+
+> **Any single step must be replaceable by hand-written sketch code, without
+> giving up the rest.**
+
+Which means the shared code is **small free functions over plain data**, and
+every intermediate value is something a sketch can construct itself:
+
+- `Arr[Beam]` is plain data → a hexagonal room can hand-build its raster inline
+  and still use the shared atlas layout, bake and clip.
+- `Arr[Ring]` is plain data → a room with an odd plan can construct rings
+  directly rather than going through a generator.
+- The bake terms are shader expressions → a room can drop one, add one, or
+  rewrite the composition entirely while keeping `roomNoise` and the distance
+  fields.
+
+The test to apply at extraction time is not "can this be configured?" but **"can
+a sketch replace this one step inline and keep everything downstream?"** If a
+variation requires a new flag on a shared type, that is a signal the seam is in
+the wrong place — the sketch should have been able to substitute its own code
+there instead.
+
+This is also the answer to most of the open questions in _Deferred and open_.
+Junction darkening in a triangular raster, a different beam profile, a room that
+wants its ceiling built by hand: none of these need to be anticipated, because
+none of them require permission from the shared code.
+
+### What to extract first — and the bar it has to clear
+
+**A modular collection of functions, not a rooms engine.** The baseline to beat
+is already decent: `canvases` builds everything by hand — geometry, shaders,
+compositing — in under 800 lines, because `trivalibs` is built so that raw code
+stays concise. So the bar for a helper is not "this could be shared", it is
+**"this removes real bulk or real fiddliness from a sketch"**. Everything else
+stays hand-written, and that is a fine outcome — the reuse mechanism for it is
+copying a documented template (see _The deliverable is a readable template_),
+not calling a function.
+
+The useful sorting rule: **extract what contains no look decision.** Geometry
+and behavior are shareable because they are either right or wrong; taste is
+not, because it is re-tuned per room and per exhibition.
+
+Clear candidates, roughly in order of how obviously they pay:
+
+| Candidate                                           | Why                                                                                                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `confine` / `nearestBoundary` / `isInside`          | Pure behavior, no look decision at all. Should never be a manual section in a sketch file — this is the strongest case in the whole design. |
+| `Ring` / `Footprint`, `floorEdges` / `ceilingEdges` | Plain data plus derivation. Every room needs it; none of it is a taste call.                                                                 |
+| Wall derivation from a ring edge                    | The `(center, width, height, rotY, inwardNormal)` frame, currently hand-written per wall. Mechanical.                                        |
+| `clipLine(edges, origin, dir)`                      | Self-contained 2D geometry, fiddly to get right, identical everywhere.                                                                       |
+| `edgeSetDist` / `cornerDist` shader emitters        | Build-time WGSL assembly over ring data. Bulky to write inline, no taste in it.                                                              |
+
+Deliberately **not** extracted, because they are where the look lives:
+`roomNoise`'s tuning, the tint composition, the raster shading, beam profiles,
+the grime line. These stay in the sketch even when the same lines appear twice —
+duplication is cheaper here than a shared function that has to be
+re-parameterized every time a room is re-tuned.
+
+If boilerplate still accumulates once these exist, that is the moment to look at
+the patterns and add a further simplification **on top of the function library**
+— not to design that layer now. Identify the minimal pieces first; go further
+after more sketches have been built.
 
 ### Open rooms and the sky
 
@@ -1237,30 +1465,30 @@ down to two things it must not assume:
 2. **The mirror pass needs the same background.** This is the one that breaks
    quietly. `GaussianMirrorReflection` renders the reflected scene against its
    own `clearColor` (`Canvases.scala:658`); with an open room and a mirrored
-   ground, the reflection would show flat clear colour exactly where the sky
+   ground, the reflection would show flat clear color exactly where the sky
    belongs — a mirror that reflects everything but the thing most visible in it.
-   The background pass has to run in the reflection too, or its clear colour has
+   The background pass has to run in the reflection too, or its clear color has
    to be driven from the sky.
 
 Two things fall out for free, worth knowing before anyone rebuilds them:
 
-- **The wall tint gradient generalizes.** It is anchored to metres below the
+- **The wall tint gradient generalizes.** It is anchored to meters below the
   ceiling line and mentions no coffer, so an open room keeps it unchanged — the
   sky is just a different bright thing above the same beams.
-- **`occ` already is a ground shadow.** The raster occlusion field is defined
-  over XZ — a straight-down projection — which is precisely the shadow the beams
-  cast on the floor under overhead light. Same field, different strength and
-  fade width. An outdoor courtyard gets beam shadows on its ground with no new
-  machinery.
+- **Beam shadows on the ground are a separate, optional decision.** A courtyard
+  under a _clouded_ sky has none, for the same reason its corners do not darken.
+  One under a _directional_ sun does — but that is a real shadow with a
+  direction, not the vertical projection this plan once carried, and it should
+  be built deliberately if a sketch wants it.
 - **Bloom carries over unchanged.** It thresholds scene luminance and does not
-  care what produced it, so an HDR sky trips it exactly as the light plane does —
-  the scene panel is already `Rgba16Float`. The whole "look up and it blooms"
-  behaviour transfers too, and for the same reason it needs no view-direction
+  care what produced it, so an HDR sky trips it exactly as the light plane does
+  — the scene panel is already `Rgba16Float`. The whole "look up and it blooms"
+  behavior transfers too, and for the same reason it needs no view-direction
   gate: in a grid room the raster occludes the light plane, in a courtyard it
   occludes the sky, and either way the bright surface is only on screen when you
   look up through the gaps.
 
-  One caveat: the tuning that keeps the *mirrored* copy below threshold after
+  One caveat: the tuning that keeps the _mirrored_ copy below threshold after
   `reflStrength` (`GridCeiling.scala:218-220`) gets harder, not easier. A
   reflected sky is a large region of near-threshold luminance rather than a few
   thin strips, so a floor that re-blooms is a more likely failure here.
@@ -1278,12 +1506,12 @@ time:
    from a beam constant. (`edgeDist` already takes `topY` per surface, so that
    half is done.)
 
-2. **Which wall shading terms apply.** Part 2 adds `contact(WallTopY − wp.y)`,
-   which `canvases` has no equivalent of — it darkens only at the floor. The
-   tint gradient is shared but anchored differently. So the wall bake
-   must be a **composition of independent terms the room selects** — floor
-   contact, corner contact, ceiling contact, a lighting gradient — not one fixed
-   `wallBaker` formula with the grid's choices hardcoded.
+2. **Which wall shading terms apply.** The tint gradient is shared with
+   `canvases` but anchored differently, and a grid room's `topY` is not its room
+   height. So the wall bake must be a **composition of independent terms the
+   room selects** — floor contact, corner contact, ceiling contact, a lighting
+   gradient — not one fixed `wallBaker` formula with the grid's choices
+   hardcoded.
 
 Neither is a large change; both are much cheaper to keep in mind now than to
 untangle from a working grid room later.
@@ -1313,7 +1541,7 @@ Its stack would be:
 | 1     | base noise + tint, dimmed                              | write    |
 | 2     | wall tint gradient (`topY − wp.y`)                     | multiply |
 | 3     | **one spot per hung piece**, from curation's positions | additive |
-| 4     | contact terms — floor, corners, grid                   | multiply |
+| 4     | floor grime line                                       | multiply |
 | 5     | one drop shadow per hung piece                         | multiply |
 
 Two things to note. **The order is load-bearing**: the spot has to precede the
@@ -1347,30 +1575,42 @@ above record.
 ## Files
 
 Everything lands in **one new file**,
-`sketches/rooms/grid-canvases/GridCanvases.scala`, plus `index.html`, `PLAN.md`
-and the generated `main.js`.
+`sketches/templates/rooms/grid-canvases/GridCanvases.scala`, plus `index.html`,
+`PLAN.md` and the generated `main.js`.
 
 Read-and-port references (all existing, all reused rather than reinvented):
 
-| Source                                                 | What to take                                                                                                                          |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `sketches/rooms/canvases/Canvases.scala`               | the entire sketch as the base; `mkWall`, `hang`, `shadowMask`, `compositeWallTex`, `roomNoise`, `contact`, mirror/bloom/camera wiring |
-| `sketches/rooms/grid-ceiling/GridCeiling.scala:71-143` | `rowStrips` / `colStrips` UV-atlas strip construction                                                                                 |
-| `src/utils/bake/Bake.scala`                            | `TextureBaker` / `TextureBaker.bakeBlock`, `BakeVertex`                                                                               |
-| `src/utils/bloom/Bloom.scala`                          | unchanged                                                                                                                             |
-| `src/utils/mirror/GaussianMirrorReflection.scala`      | unchanged                                                                                                                             |
-| `src/shaders/Noise.scala`                              | `Noise.fbm3`                                                                                                                          |
-| `trivalibs/src/graphics/geometry/shapes.scala`         | `Box`, `Quad`, `Mesh`, face helpers                                                                                                   |
+| Source                                                       | What to take                                                                                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `sketches/rooms/canvases/Canvases.scala`                     | the entire sketch as the base; `mkWall`, `hang`, `shadowMask`, `compositeWallTex`, `roomNoise`, `contact`, mirror/bloom/camera wiring |
+| `sketches/experiments/grid-ceiling/GridCeiling.scala:71-143` | `rowStrips` / `colStrips` UV-atlas strip construction (an experiment — see below)                                                     |
+| `src/utils/bake/Bake.scala`                                  | `TextureBaker` / `TextureBaker.bakeBlock`, `BakeVertex`                                                                               |
+| `src/utils/bloom/Bloom.scala`                                | unchanged                                                                                                                             |
+| `src/utils/mirror/GaussianMirrorReflection.scala`            | unchanged                                                                                                                             |
+| `src/shaders/Noise.scala`                                    | `Noise.fbm3`                                                                                                                          |
+| `trivalibs/src/graphics/geometry/shapes.scala`               | `Box`, `Mesh`, face helpers                                                                                                           |
+| `trivalibs/src/graphics/geometry/polygon.scala`              | `Quad.fromDimensions` / `fromDimensionsCenter` — oriented quads from center + dimensions + normal                                     |
 
-No changes to `trivalibs/`. One change to `src/`: **per-bake uniforms on
-`TextureBaker`** at step 3 (Part 5.1). Part 5 covers why the other library
-additions that looked implied are not needed.
+Two library changes, both at step 3 and both additive: **per-bake uniforms on
+`TextureBaker`** in `src/utils/bake/` (Part 5.1), and an **explicit-tangent
+overload of `Quad.fromDimensions`** in `trivalibs/src/graphics/geometry/`
+(_Raster geometry_). Part 5 covers why the other library additions that looked
+implied are not needed.
 
-Nearly all of it is nonetheless headed for `src/utils/room/`, triggered by the
-second exhibition or the second shape. It is written to library discipline from
-the start (see _The discipline boundary inside the sketch_), so that extraction
-should be a move, not a rewrite. Only the thin outer shell — the tunable block,
-curation, and the `@main` wiring — stays behind.
+**`grid-ceiling` is an experiment, and the port respects that.** It tried tiled
+grids, a tiled ground texture, fog and DOF, and was judged not generally usable
+and visually unconvincing; it is kept as proof of concept, not continued. What
+this plan takes from it is one specific mechanism — the UV-atlas strip
+construction — and explicitly _not_ its tiling machinery, its fog/DOF resolve or
+its overall structure. Its move to `sketches/experiments/grid-ceiling/` is
+pending; the line references above stay valid either way.
+
+A subset is nonetheless headed for `src/utils/room/` as free functions — see
+Part 6, _What to extract first_ — triggered by the second exhibition or the
+second shape. Those parts are written to library discipline from the start (see
+_The discipline boundary inside the sketch_), so that extraction is a move
+rather than a rewrite. What carries a look decision stays in the sketch, even
+when it repeats.
 
 ---
 
@@ -1385,20 +1625,21 @@ curation, and the `@main` wiring — stays behind.
    Carry the Part 4 hooks (`facing`, `Ring.height`, edge sets, `topY`) even
    though nothing exercises them yet.
 2. **Camera confinement.** `nearestBoundary` / `isInside` / `confine` plus the
-   named metre defaults. Independent of everything else and makes every later
+   named meter defaults. Independent of everything else and makes every later
    shape immediately walkable, so it is worth having before the ceiling work
    rather than after.
 3. **Grid ceiling.** Snap the plan to the lattice, drop the wall top to
-   `WallTopY`, raise the light plane, add coffer walls and the raster, re-tune
-   the wall gradient and bloom. This is the step with taste in it — expect to
-   iterate on `CofferDepth`, `GridSpacing`, `StripHeight` and `LightColor`, and
-   expect the room to be judged here. It is also where **per-bake uniforms land
-   in `TextureBaker`** (Part 5.1) — `topY` starts varying here, and adding them
-   now is cheaper than migrating specialized bakers later.
+   `WallTopY`, raise the light plane, add the raster, re-tune the wall gradient
+   and bloom. This is the step with taste in it — expect to iterate on
+   `CofferDepth`, `GridSpacing`, `StripHeight`, `LightColor` and the light
+   plane's overhang, and expect the room to be judged here. It is also where
+   **per-bake uniforms land in `TextureBaker`** (Part 5.1) — `topY` starts
+   varying here, and adding them now is cheaper than migrating specialized
+   bakers later.
 4. **Restore the hanging affordance** — `paintingForm` / `hang` / `shadowMask` /
    `compositeWallTex` verbatim from `canvases`. This is stage work: it makes
    walls hangable, and stops there. Prove it with the crudest possible curation:
-   a couple of fixed-size pieces at fixed positions, flat colour, not moving.
+   a couple of fixed-size pieces at fixed positions, flat color, not moving.
    Deliberately _not_ `canvases`' randomized sizes, even spacing or sway — those
    are that room's curation and reproducing them here would encode one
    exhibition's taste into the stage. Nothing moving at this step is crudeness,
@@ -1417,18 +1658,21 @@ curation, and the `@main` wiring — stays behind.
    stay the bounding-box quad. The O-shape is the one that exercises `facing`,
    so do it before step 8. The hexagon is where a **triangular raster** (three
    `BeamFamily` at 60°) becomes the interesting choice — data, not new code.
-7. **Shared room utilities** — the extraction to `src/utils/room/`, triggered by
-   the second exhibition or the second shape, whichever comes first. Layer it
-   per **Part 6** so the grid ceiling is opt-in, break the two couplings listed
-   there, and **rewrite `canvases` on top of it as the acceptance test** — same
-   look, flat ceiling, `u`/`v` renamed in passing. This is also where the
-   hanging machinery becomes a real utility and **both static and animated
-   shadows land as first-class cases**, replacing `canvases`' index-based
-   `isAnimated(i)`. `Sway` returns here, as one option among two, not as a
-   default.
+7. **Shared room functions** — the extraction to `src/utils/room/`, triggered by
+   the second exhibition or the second shape, whichever comes first. Start from
+   Part 6's _What to extract first_ list — camera confinement, rings/footprint,
+   wall derivation, `clipLine`, the two shader distance emitters — and stop
+   there. Keep them as free functions over plain data so any step can be
+   replaced inline (_Granularity matters more than layering_), break the two
+   couplings listed there, and **rewrite `canvases` on top of them as the
+   acceptance test** — same look, flat ceiling, `u`/`v` renamed in passing. This
+   is also where the hanging machinery becomes a real utility and **both static
+   and animated shadows land as first-class cases**, replacing `canvases`'
+   index-based `isAnimated(i)`. `Sway` returns here, as one option among two,
+   not as a default.
 8. **Free-standing walls** (Part 4): an `Outward` ring at partial height, plus
-   the top cap. Should be additive — the baker already takes `topY` as a
-   uniform from step 3, so no new pipelines.
+   the top cap. Should be additive — the baker already takes `topY` as a uniform
+   from step 3, so no new pipelines.
 
 ---
 
@@ -1437,11 +1681,11 @@ curation, and the `@main` wiring — stays behind.
 The Vite dev server is assumed already running on port 3000 — do not start it.
 
 ```bash
-bun run sketch rooms/grid-canvases        # → sketches/rooms/grid-canvases/main.js
+bun run sketch templates/rooms/grid-canvases   # → …/grid-canvases/main.js
 ```
 
-Then at `http://localhost:3000/rooms/grid-canvases/`, walk the room with the
-first-person controller and check:
+Then at `http://localhost:3000/templates/rooms/grid-canvases/`, walk the room
+with the first-person controller and check:
 
 - **After step 1:** side-by-side with `http://localhost:3000/rooms/canvases/` —
   floor contact line, corner noise fade, wall gradient, ceiling halos and floor
@@ -1459,23 +1703,22 @@ first-person controller and check:
     and there is no bloom.
   - Tilting up, the light opens through the raster gaps and bloom ramps in.
   - Walking sideways, the light plane visibly lags the raster.
-  - No hard seam where the raster meets the walls; the strips darken into the
-    junction.
-  - The beam crossings are visibly darker than the beam runs, so the raster sits
-    _in_ the ceiling rather than floating in front of it. This is the term most
-    likely to need its fade width retuned away from `EdgeFadeWorld`.
+  - No hard seam where the raster meets the walls — and no dark line there
+    either. The beams read as the same material as the walls, continuously lit,
+    with only the noise varying.
+  - Beam crossings are **not** darker than the beam runs. If they are, an
+    occlusion term has crept back in.
   - Every wall is bordered by a beam flush with its plane, and the light
     openings are inset by one beam width all round — no opening runs into a
     corner.
-  - At the wall/beam junction the value is continuous: the wall arrives at its
-    darkest, the beam's side face starts there and brightens upward. Look for a
-    seam or a value jump at `WallTopY` — that is the failure mode, and it means
-    the two fades are anchored to different heights.
+  - At the wall/beam junction the value is continuous — same material, same
+    lighting, only the noise differing. A visible value jump at `WallTopY` means
+    the tint gradient and the beam shading disagree about where the wall ends.
   - The wall reads as `canvases` does — broadly even, settling slightly darker
     in the top band — with that band now sitting against `WallTopY` rather than
     the old absolute `4.6 … 5.5`. How deep and how dark is a look decision;
     expect to move `TopFadeDepth` by eye rather than check it against a number.
-  - The beam soffits read as the same colour as the `canvases` ceiling.
+  - The beam soffits read as the same color as the `canvases` ceiling.
   - The floor mirror shows the raster and the recessed light, and the reflected
     light does not itself bloom.
 - **After step 4 (hanging affordance):** shadows land as they do in `canvases`,
@@ -1495,9 +1738,20 @@ first-person controller and check:
   darkening and noise fade wrap it as cleanly as a box corner; confirm the
   raster is cut to the plan with no strips floating outside it.
 
-Use `bun run sketch:watch rooms/grid-canvases` while iterating on step 3's
-constants. There are no tests in this repo — the sketch running correctly in the
-browser is the check.
+Use `bun run sketch:watch templates/rooms/grid-canvases` while iterating on step
+3's constants. There are no tests in this repo — the sketch running correctly in
+the browser is the check.
+
+**One check that is not visual**, and it applies to this sketch because it is a
+template. Read the finished file cold, as someone who has not seen this
+document: are the non-obvious decisions explained where they are made? Is it
+clear which constants are meant to be tuned and which are structural? Would
+someone changing the room shape, or adding a partition, know where to touch? A
+template that only makes sense next to this plan has not met the bar.
+
+The opposite check applies from step 5 on, once exhibition sketches exist: those
+are outcomes, and comments explaining obvious code are a defect there, not a
+virtue.
 
 ---
 
@@ -1518,19 +1772,28 @@ accident. None blocks step 1.
 
 **Decisions waiting on seeing it run**
 
-- **Convex corners.** `contact(wp.y.min(cornerDist(…)))` darkens concave *and*
-  convex corners alike. If convex reads wrong on the L, gate it with a per-wall
-  CPU flag rather than shader math (Part 1).
+- **Junction darkening in the hexagon's triangular raster.** Ruled out for
+  perpendicular grids on the grounds that a 90° wedge admits most of the
+  hemisphere. Three families at 60° meet far more sharply, and the triple points
+  more sharply still, so the same argument does not carry — decide it there by
+  looking, not by inheritance (Part 2). Note this needs no accommodation in the
+  shared code: that sketch can build its raster shading inline and keep
+  everything else (see _Granularity matters more than layering_).
+- **Corner noise fade on concave plans.** `cornerDist` fades the
+  normal-dependent noise at concave and convex corners alike. If the L's convex
+  corner reads wrong, gate it with a per-wall CPU flag rather than shader math
+  (Part 1). This is a fade, not a darkening.
 - **Concave camera creep.** If the single-nearest-point clamp lets the camera
   into a concave wedge, run `confine` twice per frame. Do not reach for general
   multi-constraint resolution (Part 3).
 - **Free vertical.** Space / Shift movement stays bounded; locking `y` to
-  `EyeHeight` is the more disciplined gallery feel and a one-line change (Part 3).
+  `EyeHeight` is the more disciplined gallery feel and a one-line change (Part
+  3).
 - **Coincident beam families.** If three families at a triple point read badly,
-  stagger each family's `gridY` by a few millimetres (Part 2).
+  stagger each family's `gridY` by a few millimeters (Part 2).
 - **Perimeter spacing.** Inset light openings shrink by one beam width at every
-  wall; `GridSpacing` near the perimeter may want to differ from the field
-  (Part 2).
+  wall; `GridSpacing` near the perimeter may want to differ from the field (Part
+  2).
 - **Floating partitions.** A free-standing wall may need a soft downward-cast
   darkening on the floor to sit convincingly — a shadow-shaped term, not a
   lighting model (Part 4).
@@ -1554,26 +1817,45 @@ rooms do not. Four findings, each already recorded where it applies:
   case that forces `boundsCeiling` (Part 1).
 - **They want the raster without a ceiling behind it** — open sky, no coffer, no
   light plane. This is the case that splits Part 6's layer 4 into 4a / 4b, and
-  the first consumer of _Open rooms and the sky_: a sky or cloud shader above the
-  beams, plus the same field reused as beam shadows on the ground.
+  the first consumer of _Open rooms and the sky_: a sky or cloud shader above
+  the beams, plus the same field reused as beam shadows on the ground.
 - **Column placement is another generator**, `columnRings(families, edges)`
   emitting rings at chosen beam intersections, alongside `familyBeams` and
   `perimeterBeams` (Part 2).
 
 Two mismatches to resolve rather than assume:
 
-- **Wall alignment.** `Columns.scala:215-241` puts the walls on the **centerline**
-  of the outermost beam; `snapHalfExtent` (Part 2) puts them flush with its outer
-  **face**. Both are legitimate; the snap needs an alignment parameter rather
-  than one baked-in choice.
+- **Wall alignment.** `Columns.scala:215-241` puts the walls on the
+  **centerline** of the outermost beam; `snapHalfExtent` (Part 2) puts them
+  flush with its outer **face**. Both are legitimate; the snap needs an
+  alignment parameter rather than one baked-in choice.
 - **Scale.** `ColSpace = 12 m`, `ColHeight = 40 m`, ground 200 m — against this
   plan's `GridSpacing = 0.55 m`. Good stress test that nothing is hardcoded to
   room scale, but `TexScale = 48` texels/m does not survive it: a bounding-box
   floor over that courtyard would be ~4600 × 9200 px. Large spaces need a lower
   `TexScale`, or a tiling floor rather than a single baked quad.
 
+**Small trivalibs additions**
+
+- **`Quad.fromDimensions` with an explicit tangent.** The existing overload
+  (`polygon.scala:63`) infers the in-plane orientation from world up, flipping
+  reference for near-vertical normals. Beam soffits need the tangent given, not
+  guessed, or their atlas `u` will not run along the beam. An additive overload
+  beside the current one; generic quad construction, so it belongs in
+  `trivalibs` rather than the sketch. Needed at step 3.
+- **Per-bake uniforms on `TextureBaker`** — `src/utils/bake/`, not `trivalibs`.
+  Also step 3; see Part 5.1.
+
 **Build only if a room wants it**
 
+- **Prebaked ambient occlusion**, as one module in the ambience stack. Off by
+  default and deliberately absent from the initial implementation (see _No
+  ambient occlusion by default_) — but near-free to add, because it reuses the
+  **existing edge-distance field**, applied to brightness rather than to the
+  noise. It needs its own falloff radius, not `EdgeFadeWorld`, which is tuned to
+  round corners off rather than to absorb light. Static geometry and
+  already-baked surfaces mean it costs nothing at runtime; a real-time MRT
+  post-process is the fallback for dynamic scenes, not for this one.
 - **Ambience module stack** — dimmed walls plus prebaked spots at hang
   positions. The strongest available lever on mood; the mechanism already exists
   in `compositeWallTex` (Part 6).
