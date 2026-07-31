@@ -48,6 +48,30 @@ sketches/<path>/
 sketch. The Scala `package` should mirror the path (e.g.
 `package sketches.geometry.voronoi`).
 
+### Always register a sketch in `sketches/index.html`
+
+`sketches/index.html` is the navigation entry point for everything in this repo
+— it is what the dev server opens at `/`, and it is how any sketch is actually
+reached. **Every sketch gets an entry there, without exception**: experiments,
+tests, templates, work in progress and finished sketches alike. A sketch that
+runs but is not linked is a sketch nobody finds.
+
+This is part of creating or moving a sketch, not a follow-up chore:
+
+- **New sketch** → add its link in the same change that creates the directory,
+  under the matching `<div class="category">` (add the category if it is the
+  first of its kind). Categories mirror the folder structure.
+- **Moved or renamed sketch** → update the `href` and heading in the same
+  change. A dead link here is as much a breakage as a broken build.
+- **Deleted sketch** → remove its entry.
+- **Changed controls or subject** → update the `<p>` description. It carries
+  whatever a visitor needs to know before clicking: the interaction (`WASD /
+  arrows to move · Space / Shift up·down · drag to look`) or a one-line
+  description of what is on screen. One short line, no prose.
+
+Keep the entries in the same order as the plan or roadmap that produced them,
+so a template family reads top to bottom in the order it was built.
+
 ### Kinds of sketch
 
 Three folders are reserved by purpose; everything else keeps a domain folder.

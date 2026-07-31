@@ -286,13 +286,14 @@ ported back as if they were room infrastructure.
 
 What the stage owes the curator is an **affordance**, not a policy:
 
-| The stage provides                                                   | The exhibition decides                     |
-| -------------------------------------------------------------------- | ------------------------------------------ |
-| a wall's frame — `center`, `width`, `height`, `rotY`, `inwardNormal` | how many pieces, and where                 |
-| its usable span and `WallTopY` (what is actually hangable)           | size, aspect, physical dimensions          |
-| `hang(wall, spec, centerFromLeft, centerHeight)` — place a piece     | content panels, and how they are generated |
-| the shadow compositing path a hung piece needs                       | whether anything is animated               |
-| lighting the pieces will be seen under                               | which walls are used at all                |
+| The stage provides                                                   | The exhibition decides                                 |
+| -------------------------------------------------------------------- | ------------------------------------------------------ |
+| a wall's frame — `center`, `width`, `height`, `rotY`, `inwardNormal` | how many pieces, and where                             |
+| its usable span and `WallTopY` (what is actually hangable)           | size, aspect, physical dimensions                      |
+| `hang(wall, spec, centerFromLeft, centerHeight)` — place a piece     | content panels, and how they are generated             |
+| the shadow compositing path a hung piece needs                       | whether anything is animated                           |
+| lighting the pieces will be seen under                               | which walls are used at all                            |
+| a wall surface that accepts its own artwork texture and tint         | whether a wall carries artwork, and at what resolution |
 
 So `hang` stays exactly as general as it is now — a wall-local position in
 meters plus an arbitrary `PaintingSpec` — but with its parameters **renamed off
@@ -316,6 +317,122 @@ The content half of the seam is unchanged and still exactly right: an exhibition
 supplies panels, and the room knows nothing about how they were made — a shader
 layer, a CPU-built stroke pipeline, a loaded image. The widening adds placement,
 sizing and animation to the curator's side; it takes nothing off it.
+
+### The wall surface is curation too — and it is not one image
+
+Hanging a piece is not the only thing a wall can carry. Four scenarios, all
+curatorial, all of which a room should be able to choose per wall:
+
+1. **Nothing.** The wall participates in the room's ambience and that is all.
+   This is the base case and needs no mechanism.
+2. **Its own tint.** Already free — Part 5.1 takes tint as a per-bake uniform,
+   so a differently-tinted wall is a bind, not a shade.
+3. **Its own artwork on the wall surface itself** — a generative drawing
+   occupying the wall rather than a canvas hung on it. Prebaked, or live, or
+   animated.
+4. **Both**: a wall carrying its own artwork _and_ hung pieces casting shadows
+   onto it.
+
+Scenarios 3 and 4 are the ones the design as written would obstruct, and the
+obstruction is not where it looks. Wall and canvas **geometry** are already
+properly decoupled — `hang` takes a wall frame plus a spec, `Wall` carries no
+painting list, and each wall binds a `Panel` whatever produced it. The coupling
+is one level down:
+
+> **`compositeWallTex` flattens the entire wall surface into one panel, at one
+> resolution, with one update rate.**
+
+Both of those are wrong for artwork:
+
+- **Resolution.** `AmbienceTexScale` is 48 texels/m because the ambience field
+  is smooth low-frequency noise — a 6 m wall bakes to 288 px, and that is
+  correct and deliberately cheap. A generative artwork on that same wall wants
+  something like 2048. Compositing both into one panel forces the ambience bake
+  up to the artwork's resolution: ~50× the texels for a field with no content at
+  that frequency.
+- **Update rate.** Animating anything on a wall today re-runs the whole
+  composite — the copy layer plus every shadow instance — every frame. An
+  animated wall artwork would drag the static ambience bake along with it.
+
+**The seam belongs at the wall shade, not in a composite bake.** A room that
+wants artwork walls writes a shade sampling the ambience texture and the artwork
+texture as independent inputs, each with its own resolution and its own repaint
+schedule. A room without them samples one texture and is unchanged. The shade is
+sketch code either way — see _There is no shared wall shade_ below.
+
+What makes this cheap rather than a restructuring: **the shadow path does not
+move.** A drop shadow is soft by construction (`ShadowFadeWorld`), so it carries
+no high-frequency content and sits happily at ambience resolution — it stays
+inside the existing composite, and the artwork combines with the result at the
+shade. Multiply is commutative, so the ambience stack's load-bearing ordering
+(_Ambience as a stack of modules_) is not violated. Scenario 4 then needs no new
+machinery at all.
+
+So a wall has **three independent axes, none implying the others**:
+
+| Axis                    | Optional? | Owns                                  |
+| ----------------------- | --------- | ------------------------------------- |
+| ambience                | no        | `AmbienceTexScale`, the bake, shadows |
+| its own surface artwork | yes       | its own resolution and update rate    |
+| hung pieces             | yes       | its own geometry and shadows          |
+
+Three consequences, all cheap to take before the code exists:
+
+- **Name it `AmbienceTexScale`, not `TexScale`.** The generic name is what would
+  invite someone to raise it globally to sharpen an artwork — which is exactly
+  the ~50× mistake above. (The columns courtyard already shows the constant does
+  not survive a scale change either; see _Deferred and open_.)
+- **Artwork resolution is given, not derived** from `wall.width × scale`. Per
+  _Do not derive a constant that could be a constant_: a generative piece has
+  its own natural pixel size and need not match the wall's aspect.
+- **Mips and anisotropy matter for artwork** in a way they do not for ambience.
+  A high-resolution wall seen at a grazing angle is the worst case for both, and
+  a grazing wall is the normal way you see one while walking a room.
+
+**There is no shared wall shade, so there is nothing to make optional.** This is
+worth stating because the obvious-looking alternatives — one shade that always
+samples an artwork texture defaulting to 1×1 white, or a flag selecting between
+two shared shades — are both wrong for the same reason, and both are what you
+reach for if you assume a shared wall shade exists.
+
+It does not. `texturedShade` (`Canvases.scala:313-322`) is a **five-line
+pass-through**: sample one texture at `uv`, write it. It is shared between walls
+and the ceiling only because it is generic "draw a textured quad", not because it
+knows anything about walls. Every look decision is already in the baked panel, on
+the other side of it.
+
+So a room that wants artwork walls **writes its own shade** — a handful of lines
+sampling two panels and combining them however that room wants. A room with only
+hung canvases keeps the pass-through and samples one. Neither carries anything
+for the other: no ghost texture, no flag, no unused binding, and only the
+pipelines each room actually uses.
+
+This is _Granularity matters more than layering_ applied exactly as written. The
+test there is "can a sketch replace this one step inline and keep everything
+downstream?" — and here it is trivially yes, because the step is five lines, the
+upstream (baked panels, distance fields) is untouched and the downstream (shape
+construction, the mirror's `aboveGround` list) neither knows nor cares which
+shade drew the wall. What is shared is **the panels and the fields, not the
+sampling**, which is the same seam that keeps `roomNoise` tuning and tint
+composition in the sketch.
+
+The duplication this accepts is five lines of pass-through per room, which is
+well under the bar a shared helper has to clear.
+
+**And if it turns out to be the identical five lines every time, extract a
+helper for exactly that case — that is fine, not a reversal.** The objection
+above is to a shared shade every room must route through and parameterize, not
+to a shared shade being *available*. A helper covering the default setup is a
+shortcut a room takes or ignores; a room wanting artwork walls, or anything else
+unforeseen, still writes its own and gives up nothing downstream. That is the
+same relationship the extraction list already has with the rest of the sketch,
+and the condition to check is just the usual one: it must stay a **producer of a
+shade a room can decline**, never a seam everything is required to pass through.
+
+Which is also the signal to watch for. If the shared version starts growing
+parameters to cover cases that are nearly-but-not-quite the default, that is the
+1×1-white mistake arriving by increments — at that point the room in question
+should have written its own five lines instead.
 
 One practical note for whoever curates first: real content has real aspect
 ratios (`tile-strokes` already builds to an explicit
@@ -540,9 +657,9 @@ This works because everything that would care is handled elsewhere:
   ring edges, so it darkens along the true plan boundary regardless of how far
   the quad extends past it. Same for the noise edge fade.
 - The **UV was already bounding-box-parameterized** — texel density comes from
-  `texSize(bbW, bbD)` at a uniform `TexScale`. Matching the geometry to that
-  frame makes the quad's UV simply its own `[0,1]²`, instead of a polygon mesh
-  sampling a frame it does not fill.
+  `texSize(bbW, bbD)` at a uniform `AmbienceTexScale`. Matching the geometry to
+  that frame makes the quad's UV simply its own `[0,1]²`, instead of a polygon
+  mesh sampling a frame it does not fill.
 
 The costs are a rectangle's worth of overdraw (~25% wasted fill for an L, never
 shaded to anything anyone sees) and one weakened invariant worth noting:
@@ -618,8 +735,8 @@ Derived, in this order:
 
 - **Floor / ceiling forms.** One quad each, spanning the rings' bounding box, at
   `y = 0` and `y = CeilY`, with UV its own `[0,1]²`. Sized `texSize(bbW, bbD)`
-  so the uniform `TexScale = 48` texels/m holds. The light plane (Part 2) is a
-  third copy at `y = lightY`.
+  so the uniform `AmbienceTexScale = 48` texels/m holds. The light plane
+  (Part 2) is a third copy at `y = lightY`.
 
 - **Wall paintings — not a stage concern at all.** `canvases`' positional
   `counts = Arr(3, 3, 4, 4)` / `isAnimated(i) = i >= 2`
@@ -1664,6 +1781,13 @@ That is the whole reason to note this now: it costs nothing today, and it is the
 concrete case that says the wall bake wants to be an open stack rather than a
 formula with two more terms bolted on. Build it only if a room ever wants it.
 
+**The stack is not where wall artwork goes.** Everything in it shares one
+resolution and one repaint schedule, which is right for ambience terms and wrong
+for a generative wall surface — see _The wall surface is curation too_. Artwork
+combines with the stack's result at the **wall shade**, one level out. Keeping
+that distinction is what lets the stack stay a single-resolution bake without
+that becoming a limit on what a wall can show.
+
 ### What it means for this sketch
 
 Nothing changes in steps 1–6 — build the grid ceiling directly, no seams, no
@@ -1933,9 +2057,10 @@ Two mismatches to resolve rather than assume:
   alignment parameter rather than one baked-in choice.
 - **Scale.** `ColSpace = 12 m`, `ColHeight = 40 m`, ground 200 m — against this
   plan's `GridSpacing = 0.55 m`. Good stress test that nothing is hardcoded to
-  room scale, but `TexScale = 48` texels/m does not survive it: a bounding-box
-  floor over that courtyard would be ~4600 × 9200 px. Large spaces need a lower
-  `TexScale`, or a tiling floor rather than a single baked quad.
+  room scale, but `AmbienceTexScale = 48` texels/m does not survive it: a
+  bounding-box floor over that courtyard would be ~4600 × 9200 px. Large spaces
+  need a lower `AmbienceTexScale`, or a tiling floor rather than a single baked
+  quad.
 
 **Small trivalibs additions**
 
