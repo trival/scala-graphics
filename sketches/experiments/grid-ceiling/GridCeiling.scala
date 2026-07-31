@@ -1,4 +1,4 @@
-package sketches.rooms.gridceiling
+package sketches.experiments.gridceiling
 
 import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.document

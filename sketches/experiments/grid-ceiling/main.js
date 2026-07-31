@@ -2376,7 +2376,7 @@ $p.nj = (function(xs, seed) {
   }
   return ((rangeState === 2) ? this.o7(initial, rangeDiff, prev, seed) : this.ay(h, n));
 });
-function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__fbm$1__I__I__D__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr($thiz, FbmOctaves$2, domainPeriod$1, FbmGain$2, domainPos) {
+function $p_Lsketches_experiments_gridceiling_GridCeiling$package$__fbm$1__I__I__D__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr($thiz, FbmOctaves$2, domainPeriod$1, FbmGain$2, domainPos) {
   var acc = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().o().h(0.0);
   var freq = 1;
   var amp = 1.0;
@@ -2401,7 +2401,7 @@ function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__fbm$1__I__I__D__Lt
   }
   return $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().gM($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().mX($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().j5(acc, totalAmp)));
 }
-function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeShade$1__I__D__Ltrivalibs_graphics_painter_Painter__D__I__Ltrivalibs_graphics_painter_Shade($thiz, FbmOctaves$1, FbmGain$1, p$1, NoiseScale$1, domainPeriod) {
+function $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeShade$1__I__D__Ltrivalibs_graphics_painter_Painter__D__I__Ltrivalibs_graphics_painter_Shade($thiz, FbmOctaves$1, FbmGain$1, p$1, NoiseScale$1, domainPeriod) {
   var program = new $c_Ltrivalibs_graphics_shader_dsl_Program();
   var d = ({});
   var ctx = new $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_VertexOut("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(d), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
@@ -2438,7 +2438,7 @@ function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeShade$1__I__D_
   $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().j = reg$2;
   try {
     var n = new $c_Ltrivalibs_graphics_math_gpu_LetExpr("n");
-    var x0$2 = n.z($p_Lsketches_rooms_gridceiling_GridCeiling$package$__fbm$1__I__I__D__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr($thiz, FbmOctaves$1, domainPeriod, FbmGain$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ll(ctx$2.as.k("worldPos"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().ao(), NoiseScale$1)));
+    var x0$2 = n.z($p_Lsketches_experiments_gridceiling_GridCeiling$package$__fbm$1__I__I__D__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr($thiz, FbmOctaves$1, domainPeriod, FbmGain$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ll(ctx$2.as.k("worldPos"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().ao(), NoiseScale$1)));
     var AssignTarget_this$1 = ctx$2.ak.a2("color");
     var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec4$().an($m_Ltrivalibs_graphics_math_gpu_vec3$().bj(n), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().o().h(1.0));
     var $x_5 = $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs([x0$2, (((("  " + AssignTarget_this$1.U) + " = ") + value$proxy3.f) + ";")]), "", "\n", "");
@@ -2507,7 +2507,7 @@ function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeShade$1__I__D_
   var bgls = [];
   return new $c_Ltrivalibs_graphics_painter_Shade(id, module, vbl, null, null, $m_Ltrivalibs_graphics_shader_layouts$().N(p$1.g, bgls), false, dict, dict$2);
 }
-function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form($thiz, p$2, faces) {
+function $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form($thiz, p$2, faces) {
   var mesh$proxy1 = $m_Ltrivalibs_graphics_geometry_Mesh$().mx(faces, null, 0, new $c_Ltrivalibs_graphics_geometry_package$package$$anon$1(0));
   var vl = new $c_Ltrivalibs_graphics_geometry_VertexLayout$named(new $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons($m_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$(), new $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons($m_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$(), $m_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$())));
   var f = ((v$3, ref$3) => {
@@ -2593,19 +2593,19 @@ function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltriva
   }
   return p$2.mZ($x_1, (void 0), (void 0), (void 0), (void 0), (void 0));
 }
-function $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel($thiz, p$3, w, h, faces, shade) {
-  var shape$1 = p$3.g7($p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form($thiz, p$3, faces), shade, "none", (void 0));
+function $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel($thiz, p$3, w, h, faces, shade) {
+  var shape$1 = p$3.g7($p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form($thiz, p$3, faces), shade, "none", (void 0));
   return p$3.b9(w, h, (void 0), (void 0), (void 0), (void 0), true, (void 0), (void 0), shape$1, (void 0), (void 0), (void 0));
 }
 /** @constructor */
-function $c_Lsketches_rooms_gridceiling_GridCeiling$package$() {
+function $c_Lsketches_experiments_gridceiling_GridCeiling$package$() {
 }
-$p = $c_Lsketches_rooms_gridceiling_GridCeiling$package$.prototype = new $h_O();
-$p.constructor = $c_Lsketches_rooms_gridceiling_GridCeiling$package$;
+$p = $c_Lsketches_experiments_gridceiling_GridCeiling$package$.prototype = new $h_O();
+$p.constructor = $c_Lsketches_experiments_gridceiling_GridCeiling$package$;
 /** @constructor */
-function $h_Lsketches_rooms_gridceiling_GridCeiling$package$() {
+function $h_Lsketches_experiments_gridceiling_GridCeiling$package$() {
 }
-$h_Lsketches_rooms_gridceiling_GridCeiling$package$.prototype = $p;
+$h_Lsketches_experiments_gridceiling_GridCeiling$package$.prototype = $p;
 $p.aJ = (function(c, u, v) {
   return new $c_T2(c, new $c_Ltrivalibs_graphics_math_cpu_Vec2(u, v));
 });
@@ -2620,7 +2620,7 @@ $p.m7 = (function(n, length, xCenter, startZ, step, gridY, sw, sh, tileWorld, vT
   while ((i < n)) {
     var box = $m_Ltrivalibs_graphics_geometry_Box$().j8(new $c_Ltrivalibs_graphics_math_cpu_Vec3(xCenter, gridY, (startZ + (i * step))), length, sh, sw);
     var vb = (i * perStripVn);
-    var f = ((tileWorld, vb, vH) => ((c$2, uvw$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2, (c$2.v / tileWorld), (vb + (uvw$2.t * vH)))))(tileWorld, vb, vH);
+    var f = ((tileWorld, vb, vH) => ((c$2, uvw$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2, (c$2.v / tileWorld), (vb + (uvw$2.t * vH)))))(tileWorld, vb, vH);
     var $x_4 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0 = box.fI;
     var x1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0);
@@ -2634,7 +2634,7 @@ $p.m7 = (function(n, length, xCenter, startZ, step, gridY, sw, sh, tileWorld, vT
     var x0$3 = box.fJ;
     var x1$3 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0);
     faces.push($x_4.aH($x_3, $x_2, $x_1, f(x0$3, x1$3)));
-    var f$1 = ((tileWorld, vb, vH) => ((c$2$1, uvw$2$1) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$1, (c$2$1.v / tileWorld), ((vb + vH) + (uvw$2$1.t * vH)))))(tileWorld, vb, vH);
+    var f$1 = ((tileWorld, vb, vH) => ((c$2$1, uvw$2$1) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$1, (c$2$1.v / tileWorld), ((vb + vH) + (uvw$2$1.t * vH)))))(tileWorld, vb, vH);
     var $x_8 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0$4 = box.fH;
     var x1$4 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0);
@@ -2648,7 +2648,7 @@ $p.m7 = (function(n, length, xCenter, startZ, step, gridY, sw, sh, tileWorld, vT
     var x0$7 = box.fG;
     var x1$7 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0);
     faces.push($x_8.aH($x_7, $x_6, $x_5, f$1(x0$7, x1$7)));
-    var f$2 = ((tileWorld, vb, vH, vB) => ((c$2$2, uvw$2$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$2, (c$2$2.v / tileWorld), ((vb + (2.0 * vH)) + (uvw$2$2.w * vB)))))(tileWorld, vb, vH, vB);
+    var f$2 = ((tileWorld, vb, vH, vB) => ((c$2$2, uvw$2$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$2, (c$2$2.v / tileWorld), ((vb + (2.0 * vH)) + (uvw$2$2.w * vB)))))(tileWorld, vb, vH, vB);
     var $x_12 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0$8 = box.f3;
     var x1$8 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0);
@@ -2677,7 +2677,7 @@ $p.lv = (function(n, length, zCenter, startX, step, gridY, sw, sh, tileWorld, vT
   while ((i < n)) {
     var box = $m_Ltrivalibs_graphics_geometry_Box$().j8(new $c_Ltrivalibs_graphics_math_cpu_Vec3((startX + (i * step)), gridY, zCenter), sw, sh, length);
     var vb = (i * perStripVn);
-    var f = ((tileWorld, vb, vH) => ((c$2, uvw$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2, (c$2.w / tileWorld), (vb + (uvw$2.t * vH)))))(tileWorld, vb, vH);
+    var f = ((tileWorld, vb, vH) => ((c$2, uvw$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2, (c$2.w / tileWorld), (vb + (uvw$2.t * vH)))))(tileWorld, vb, vH);
     var $x_4 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0 = box.fG;
     var x1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0);
@@ -2691,7 +2691,7 @@ $p.lv = (function(n, length, zCenter, startX, step, gridY, sw, sh, tileWorld, vT
     var x0$3 = box.fI;
     var x1$3 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0);
     faces.push($x_4.aH($x_3, $x_2, $x_1, f(x0$3, x1$3)));
-    var f$1 = ((tileWorld, vb, vH) => ((c$2$1, uvw$2$1) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$1, (c$2$1.w / tileWorld), ((vb + vH) + (uvw$2$1.t * vH)))))(tileWorld, vb, vH);
+    var f$1 = ((tileWorld, vb, vH) => ((c$2$1, uvw$2$1) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$1, (c$2$1.w / tileWorld), ((vb + vH) + (uvw$2$1.t * vH)))))(tileWorld, vb, vH);
     var $x_8 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0$4 = box.fJ;
     var x1$4 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0);
@@ -2705,7 +2705,7 @@ $p.lv = (function(n, length, zCenter, startX, step, gridY, sw, sh, tileWorld, vT
     var x0$7 = box.fH;
     var x1$7 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0);
     faces.push($x_8.aH($x_7, $x_6, $x_5, f$1(x0$7, x1$7)));
-    var f$2 = ((tileWorld, vb, vH, vB) => ((c$2$2, uvw$2$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$2, (c$2$2.w / tileWorld), ((vb + (2.0 * vH)) + (uvw$2$2.v * vB)))))(tileWorld, vb, vH, vB);
+    var f$2 = ((tileWorld, vb, vH, vB) => ((c$2$2, uvw$2$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$2, (c$2$2.w / tileWorld), ((vb + (2.0 * vH)) + (uvw$2$2.v * vB)))))(tileWorld, vb, vH, vB);
     var $x_12 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
     var x0$8 = box.f3;
     var x1$8 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0);
@@ -2725,7 +2725,7 @@ $p.lv = (function(n, length, zCenter, startX, step, gridY, sw, sh, tileWorld, vT
 });
 $p.hV = (function(size, centerXZ, y, normal, tileWorld) {
   var center$proxy1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(centerXZ, y, centerXZ);
-  var f = ((pos$2, _$1$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(pos$2, (pos$2.v / tileWorld), (pos$2.w / tileWorld)));
+  var f = ((pos$2, _$1$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(pos$2, (pos$2.v / tileWorld), (pos$2.w / tileWorld)));
   var uvAtPivot = new $c_Ltrivalibs_graphics_math_cpu_Vec2(0.5, 0.5);
   var n = $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__normalize__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().a1(), normal, $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$());
   var x = n.t;
@@ -2753,7 +2753,7 @@ $p.hV = (function(size, centerXZ, y, normal, tileWorld) {
 });
 $p.lt = (function(size, height) {
   var box = $m_Ltrivalibs_graphics_geometry_Box$().j8(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, (0.5 * height), 0.0), size, height, size);
-  var f = ((c$2, uvw$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2, uvw$2.v, (0.0 + (0.2 * uvw$2.w))));
+  var f = ((c$2, uvw$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2, uvw$2.v, (0.0 + (0.2 * uvw$2.w))));
   var $x_24 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
   var x0 = box.fG;
   var x1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0);
@@ -2767,7 +2767,7 @@ $p.lt = (function(size, height) {
   var x0$3 = box.fH;
   var x1$3 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0);
   var $x_20 = $x_24.aH($x_23, $x_22, $x_21, f(x0$3, x1$3));
-  var f$1 = ((c$2$1, uvw$2$1) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$1, uvw$2$1.v, (0.2 + (0.2 * uvw$2$1.t))));
+  var f$1 = ((c$2$1, uvw$2$1) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$1, uvw$2$1.v, (0.2 + (0.2 * uvw$2$1.t))));
   var $x_19 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
   var x0$4 = box.fI;
   var x1$4 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0);
@@ -2781,7 +2781,7 @@ $p.lt = (function(size, height) {
   var x0$7 = box.fJ;
   var x1$7 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0);
   var $x_15 = $x_19.aH($x_18, $x_17, $x_16, f$1(x0$7, x1$7));
-  var f$2 = ((c$2$2, uvw$2$2) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$2, uvw$2$2.v, (0.4 + (0.2 * uvw$2$2.t))));
+  var f$2 = ((c$2$2, uvw$2$2) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$2, uvw$2$2.v, (0.4 + (0.2 * uvw$2$2.t))));
   var $x_14 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
   var x0$8 = box.fH;
   var x1$8 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0);
@@ -2795,7 +2795,7 @@ $p.lt = (function(size, height) {
   var x0$11 = box.fG;
   var x1$11 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0);
   var $x_10 = $x_14.aH($x_13, $x_12, $x_11, f$2(x0$11, x1$11));
-  var f$3 = ((c$2$3, uvw$2$3) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$3, uvw$2$3.w, (0.6000000000000001 + (0.2 * uvw$2$3.t))));
+  var f$3 = ((c$2$3, uvw$2$3) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$3, uvw$2$3.w, (0.6000000000000001 + (0.2 * uvw$2$3.t))));
   var $x_9 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
   var x0$12 = box.fG;
   var x1$12 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0);
@@ -2809,7 +2809,7 @@ $p.lt = (function(size, height) {
   var x0$15 = box.fI;
   var x1$15 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0);
   var $x_5 = $x_9.aH($x_8, $x_7, $x_6, f$3(x0$15, x1$15));
-  var f$4 = ((c$2$4, uvw$2$4) => $m_Lsketches_rooms_gridceiling_GridCeiling$package$().aJ(c$2$4, uvw$2$4.w, (0.8 + (0.2 * uvw$2$4.t))));
+  var f$4 = ((c$2$4, uvw$2$4) => $m_Lsketches_experiments_gridceiling_GridCeiling$package$().aJ(c$2$4, uvw$2$4.w, (0.8 + (0.2 * uvw$2$4.t))));
   var $x_4 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$();
   var x0$16 = box.fJ;
   var x1$16 = new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0);
@@ -2845,20 +2845,20 @@ $p.og = (function() {
     var x$3 = $doubleToInt(((4.294967296E9 * x$2_$_hi) + (x$2_$_lo >>> 0.0)));
     var noisePeriod = ((x$3 > 1) ? x$3 : 1);
     var NoiseScale = (noisePeriod / tileWorld);
-    var noiseBakeShade = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeShade$1__I__D__Ltrivalibs_graphics_painter_Painter__D__I__Ltrivalibs_graphics_painter_Shade(this, 4, 0.3, p$11, NoiseScale, noisePeriod);
+    var noiseBakeShade = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeShade$1__I__D__Ltrivalibs_graphics_painter_Painter__D__I__Ltrivalibs_graphics_painter_Shade(this, 4, 0.3, p$11, NoiseScale, noisePeriod);
     var gridTileU = $doubleToInt((24.0 * tileWorld));
     var gridTileV = $doubleToInt((24.0 * (1.75 * TileCells)));
     var planeTilePx = $doubleToInt((24.0 * tileWorld));
-    var rowTile = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, gridTileU, gridTileV, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().m7(TileCells, tileWorld, (0.5 * tileWorld), gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells), noiseBakeShade);
-    var colTile = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, gridTileU, gridTileV, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().lv(TileCells, tileWorld, (0.5 * tileWorld), gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells), noiseBakeShade);
-    var groundTile = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, planeTilePx, planeTilePx, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().hV(tileWorld, (0.5 * tileWorld), 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), tileWorld), noiseBakeShade);
-    var ceilTile = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, planeTilePx, planeTilePx, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().hV(tileWorld, (0.5 * tileWorld), 20.0, $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__negateVec__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().a1(), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$()), tileWorld), noiseBakeShade);
-    var boxTile = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, 1024, 1024, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().lt(7.0, 10.5), noiseBakeShade);
-    var rowForm = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().m7(rowCount, 340.0, 0.0, gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells));
-    var colForm = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().lv(colCount, 340.0, 0.0, gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells));
-    var groundForm = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().hV(340.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), tileWorld));
-    var ceilForm = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().hV(340.0, 0.0, 20.0, $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__negateVec__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().a1(), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$()), tileWorld));
-    var boxForm = $p_Lsketches_rooms_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_rooms_gridceiling_GridCeiling$package$().lt(7.0, 10.5));
+    var rowTile = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, gridTileU, gridTileV, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().m7(TileCells, tileWorld, (0.5 * tileWorld), gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells), noiseBakeShade);
+    var colTile = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, gridTileU, gridTileV, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().lv(TileCells, tileWorld, (0.5 * tileWorld), gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells), noiseBakeShade);
+    var groundTile = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, planeTilePx, planeTilePx, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().hV(tileWorld, (0.5 * tileWorld), 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), tileWorld), noiseBakeShade);
+    var ceilTile = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, planeTilePx, planeTilePx, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().hV(tileWorld, (0.5 * tileWorld), 20.0, $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__negateVec__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().a1(), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$()), tileWorld), noiseBakeShade);
+    var boxTile = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__bakeTile$1__Ltrivalibs_graphics_painter_Painter__I__I__sjs_js_Array__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_Panel(this, p$11, 1024, 1024, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().lt(7.0, 10.5), noiseBakeShade);
+    var rowForm = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().m7(rowCount, 340.0, 0.0, gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells));
+    var colForm = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().lv(colCount, 340.0, 0.0, gridStart, gridStep, 19.0, 0.15, 0.8, tileWorld, TileCells));
+    var groundForm = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().hV(340.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), tileWorld));
+    var ceilForm = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().hV(340.0, 0.0, 20.0, $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__negateVec__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().a1(), new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$()), tileWorld));
+    var boxForm = $p_Lsketches_experiments_gridceiling_GridCeiling$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$11, $m_Lsketches_experiments_gridceiling_GridCeiling$package$().lt(7.0, 10.5));
     var build$proxy2 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3) => {
       var body$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2) => {
         var $x_5 = $m_sjsr_package$();
@@ -3843,19 +3843,19 @@ $p.og = (function() {
     }))(p$11));
   })));
 });
-var $d_Lsketches_rooms_gridceiling_GridCeiling$package$ = new $TypeData().i($c_Lsketches_rooms_gridceiling_GridCeiling$package$, "sketches.rooms.gridceiling.GridCeiling$package$", ({
+var $d_Lsketches_experiments_gridceiling_GridCeiling$package$ = new $TypeData().i($c_Lsketches_experiments_gridceiling_GridCeiling$package$, "sketches.experiments.gridceiling.GridCeiling$package$", ({
   dh: 1
 }));
-var $n_Lsketches_rooms_gridceiling_GridCeiling$package$;
-function $m_Lsketches_rooms_gridceiling_GridCeiling$package$() {
-  if ((!$n_Lsketches_rooms_gridceiling_GridCeiling$package$)) {
-    $n_Lsketches_rooms_gridceiling_GridCeiling$package$ = new $c_Lsketches_rooms_gridceiling_GridCeiling$package$();
+var $n_Lsketches_experiments_gridceiling_GridCeiling$package$;
+function $m_Lsketches_experiments_gridceiling_GridCeiling$package$() {
+  if ((!$n_Lsketches_experiments_gridceiling_GridCeiling$package$)) {
+    $n_Lsketches_experiments_gridceiling_GridCeiling$package$ = new $c_Lsketches_experiments_gridceiling_GridCeiling$package$();
   }
-  return $n_Lsketches_rooms_gridceiling_GridCeiling$package$;
+  return $n_Lsketches_experiments_gridceiling_GridCeiling$package$;
 }
-function $s_Lsketches_rooms_gridceiling_roomsGridCeiling__main__AT__V(args) {
+function $s_Lsketches_experiments_gridceiling_roomsGridCeiling__main__AT__V(args) {
   try {
-    $m_Lsketches_rooms_gridceiling_GridCeiling$package$().og();
+    $m_Lsketches_experiments_gridceiling_GridCeiling$package$().og();
   } catch (e) {
     if (false) {
       $m_s_util_CommandLineParser$().om(e);
@@ -16427,4 +16427,4 @@ var $d_sjs_js_WrappedArray = new $TypeData().i($c_sjs_js_WrappedArray, "scala.sc
   aF: 1,
   a: 1
 }));
-$s_Lsketches_rooms_gridceiling_roomsGridCeiling__main__AT__V(new ($d_T.r().C)([]));
+$s_Lsketches_experiments_gridceiling_roomsGridCeiling__main__AT__V(new ($d_T.r().C)([]));
