@@ -111,6 +111,27 @@ and put the HDR light plane at `lightY = CeilY + CofferDepth`, overhanging the
 plan. `HaloColor` → `LightColor`. Mirror `aboveGround` gains the light plane and
 `alphaScale` becomes `lightY`.
 
+**What the plane emits is curation** (roadmap, _The light plane_) — halos, bulbs
+behind diffuse glass, sky, a color cast. The stage's side is only the quad, the
+`Rgba16Float` target, the `aboveGround` entry and bloom at `threshold = 1.0`.
+
+Ship a **minimal custom light shader**, not a uniform field: HDR base modulated
+by a low-frequency sine along each plan axis, periods in world meters and
+deliberately not multiples of each other. Roughly six lines, written as an
+obviously separate and swappable block rather than folded into the room
+construction. A flat plane would be simpler but reads as a stage decision — the
+slight undulation is what tells a reader the shader is theirs to replace.
+
+Meters rather than UV here because the blob size should not stretch when the
+room's aspect changes — **not** because UV is discouraged. A halo shader in the
+same slot would rightly use UV, since "six halos across" is a count, not a
+spacing (roadmap, _The light plane_). Say so in the comment, so the next reader
+picks by intent rather than by imitation.
+
+**Check (in addition to the below):** the undulation is visible but slight, and
+`LightWaveAmount` is the only knob that moves it. Set it to `0.0` and the plane
+goes flat — that is the "did I wire the right thing" test, not a mode to keep.
+
 This is deliberately a step with a wrong-looking result: an open glowing ceiling
 recess with nothing in front of it. That is what makes A5's occlusion legible.
 
@@ -262,11 +283,45 @@ notch. Fly in dev mode to see the phantom floor and confirm it is only reachable
 from there. This is the invariant the roadmap's "the region outside the plan is
 never visible" argument rests on; B is where it is first actually tested.
 
-### B5 — Template pass
+### B5 — A metric light shader, where it finally means something
 
-Same bar as A9. B's `PLAN.md` should be short and say what B adds over A —
-someone reading it should learn "an L is a 6-point ring and nothing else", which
-is the point of the template.
+**Swap in a light shader whose layout is anchored in world meters, and make that
+the point of this template's light plane.** A is where the choice was invisible;
+B is where it can be shown.
+
+On a rectangle, UV and meters differ only by a constant — same uniform spacing,
+different arithmetic to reach it — so A's metric sine is defensible but proves
+nothing. On an L the two diverge for a reason that is easy to state and easy to
+see: **the bounding box is not a room.** "N features across the plane" refers to
+a rectangle that neither leg of the L fills and no visitor can perceive, so the
+count is anchored to a frame that is not there. A metric spacing is perceptible
+everywhere, in both legs and across the notch.
+
+The shader that demonstrates this best: **discrete pools of light on the beam
+lattice** — the plan is already snapped to `GridSpacing`, so put an emitter
+every _k_ cells and let the light lattice and the raster above it agree. That
+agreement is only expressible in world meters, it reads as a deliberate
+architectural alignment rather than a texture, and it carries **continuously
+through the concave corner**, which is exactly what a bounding-box layout
+cannot do.
+
+It also happens to need no boundary treatment: discrete pools do not fade at the
+plan edge, and any pool falling outside is occluded by a wall like everything
+else out there.
+
+**Check:** stand in each leg in turn and confirm the light spacing reads the
+same in both, then stand at the notch and confirm the lattice runs through it
+without a seam or a phase jump. Look up and confirm the pools line up with the
+raster cells. Then the negative control: temporarily re-express the same layout
+in the plane's UV and observe it drift against the beams and change spacing
+between the legs — that is the demonstration, and it is worth doing once even
+though the result is thrown away.
+
+### B6 — Template pass
+
+Same bar as A9. B's `PLAN.md` should be short and say what B adds over A: an L
+is a 6-point ring and nothing else — plus the one thing that is _not_ free, the
+light layout, and why it moved to meters here rather than as a general rule.
 
 ---
 

@@ -294,6 +294,8 @@ What the stage owes the curator is an **affordance**, not a policy:
 | the shadow compositing path a hung piece needs                       | whether anything is animated                           |
 | lighting the pieces will be seen under                               | which walls are used at all                            |
 | a wall surface that accepts its own artwork texture and tint         | whether a wall carries artwork, and at what resolution |
+| an HDR light plane behind the raster, and bloom wired to it          | what the light plane emits — halos, bulbs, sky, color  |
+| a floor carrying ambience and the mirror composite                   | floor material — tiles, marble, wood, ground artwork   |
 
 So `hang` stays exactly as general as it is now — a wall-local position in
 meters plus an arbitrary `PaintingSpec` — but with its parameters **renamed off
@@ -397,9 +399,9 @@ reach for if you assume a shared wall shade exists.
 
 It does not. `texturedShade` (`Canvases.scala:313-322`) is a **five-line
 pass-through**: sample one texture at `uv`, write it. It is shared between walls
-and the ceiling only because it is generic "draw a textured quad", not because it
-knows anything about walls. Every look decision is already in the baked panel, on
-the other side of it.
+and the ceiling only because it is generic "draw a textured quad", not because
+it knows anything about walls. Every look decision is already in the baked
+panel, on the other side of it.
 
 So a room that wants artwork walls **writes its own shade** — a handful of lines
 sampling two panels and combining them however that room wants. A room with only
@@ -422,7 +424,7 @@ well under the bar a shared helper has to clear.
 **And if it turns out to be the identical five lines every time, extract a
 helper for exactly that case — that is fine, not a reversal.** The objection
 above is to a shared shade every room must route through and parameterize, not
-to a shared shade being *available*. A helper covering the default setup is a
+to a shared shade being _available_. A helper covering the default setup is a
 shortcut a room takes or ignores; a room wanting artwork walls, or anything else
 unforeseen, still writes its own and gives up nothing downstream. That is the
 same relationship the extraction list already has with the rest of the sketch,
@@ -440,6 +442,75 @@ ratios (`tile-strokes` already builds to an explicit
 content aspect and a hang scale. That is an observation about content, not a
 constraint the stage should encode — the stage's only obligation is not to
 obstruct it.
+
+### The floor too — and the mirror makes it the interesting one
+
+The same pattern, third surface: a floor may want tiles, marble, wood, or an
+artwork drawn on the ground, at its own resolution and its own update rate,
+independent of the ambience bake. Nothing here is new — it is the wall story
+again, and it needs no separate mechanism.
+
+In fact the floor is the **existence proof** for that whole argument.
+`floorShade` (`Canvases.scala:676-700`) already samples two panels — the baked
+ambience `tex` and the mirror's `reflTex` — and combines them in sketch code,
+each at its own resolution (the reflection panel is deliberately sub-resolution,
+which is why it samples by `fragCoord / res` rather than by `uv`). A material
+texture is a third input in a shade that is already shaped to take one.
+
+Two things are genuinely floor-specific, and both are worth knowing before
+someone designs a floor around them:
+
+**1. Material and reflection compete for the same budget.** The composite is a
+linear blend:
+
+```scala
+mix := falloff * reflStrength          // reflStrength = 0.25
+ctx.out.color := vec4(base * (1.0 - mix) + refl.rgb * mix, 1.0)
+```
+
+So a marble or artwork floor shows at `1 - mix` and every point of reflection
+strength is taken directly out of it. Pushing the mirror up washes the material
+out; a strong floor artwork makes the room stop reflecting. There is no
+equivalent tension on a wall, and it is a curatorial trade rather than a bug —
+but a floor artwork and a mirror-forward room are, to a real degree, alternative
+exhibitions rather than a combination to be tuned into existence.
+
+**2. A normal map perturbing the reflection costs nothing in the library.** The
+reflection is sampled in **screen space**, so displacing it is an offset applied
+to that sample inside the floor shade:
+
+```scala
+refl := ctx.textures.reflTex(ctx.fragCoord.xy / ctx.bindings.res + offset, samp)
+```
+
+`GaussianMirrorReflection` does not change at all. That buys ripples, an
+imperfect polish, brushed or worn stone — entirely in sketch code, exactly like
+every other look decision. Two caveats: keep offsets **small**, since a
+screen-space displacement pulls in fragments that were never reflected there and
+large offsets show it; and note the alpha channel carrying the normalized plane
+distance gets displaced along with the color, which is what you want, since the
+distance falloff should follow the perturbed sample.
+
+One budget note: the floor is the room's **largest** surface and its ambience
+bake already spans the whole bounding box. A high-resolution floor artwork is
+therefore the most expensive texture in the room by some margin — the one place
+where the resolution independence argued for above matters most, because raising
+`AmbienceTexScale` to get it would be worst here.
+
+### One pattern, every surface
+
+Walls, the light plane and the floor are three instances of the same seam, and
+it is worth stating once as a general rule rather than three times as special
+cases:
+
+> **The stage owns the geometry, the ambience field and the compositing
+> mechanism. What a surface _shows_ is curation — supplied as its own panel, at
+> its own resolution, on its own update schedule, sampled by a shade the sketch
+> writes.**
+
+A flat-ceiling room's ceiling is the fourth instance and needs no separate
+argument. The mechanism is the same in every case: **more inputs to a shade the
+room writes**, never more parameters on a shade the room is handed.
 
 ### What this does to the extraction question
 
@@ -1149,33 +1220,165 @@ whose walls are not parallel to a beam family) needs the explicit generator.
 
 ### The light plane
 
-The same bounding-box quad at `lightY`, normal down, baked with
-`TextureBaker.bakeBlock(…, format = TextureFormat.Rgba16Float)` exactly as the
-current ceiling is (`Canvases.scala:248-270`):
+The same bounding-box quad at `lightY`, normal down, rendered to an HDR target
+as the current ceiling is (`Canvases.scala:248-270`).
 
+**What it emits is curation, not stage.** The stage owns the plane's position,
+extent, orientation and format; **what fills it is a shader the exhibition
+supplies**, exactly like canvas content and wall artwork. Keep the halo strips.
+Make it light bulbs behind diffuse glass. Make it read as sky. Give it a color
+cast, or vary only its strength by noise across the plane. All of these are
+legitimate and none of them is the room's business — the coffer is a light
+_fixture_, and what is in the fixture is a look decision that gets re-tuned per
+exhibition like every other one.
+
+The stage's contract is small, and it is the whole of what a light shader has to
+satisfy:
+
+| The stage provides                                       | The exhibition decides                   |
+| -------------------------------------------------------- | ---------------------------------------- |
+| a downward-facing quad at `lightY`, overhanging the plan | what it emits, at any resolution         |
+| an `Rgba16Float` target so values above 1.0 survive      | baked once, or repainted live / animated |
+| inclusion in `aboveGround`, so it appears in the mirror  | color, structure, gradient, noise        |
+| bloom already wired at `threshold = 1.0`                 | how far above threshold, and where       |
+
+Four constraints any such shader must respect, all of them technical rather than
+aesthetic:
+
+1. **Above the bloom threshold where it should bloom** — that is the entire
+   mechanism by which looking up produces glare.
+2. **The mirrored copy must stay _below_ threshold after `reflStrength`**, or
+   the floor re-blooms instead of reading as a soft blur
+   (`GridCeiling.scala:218-220` documents that tuning). A brighter or larger
+   emitting region makes this harder, so it is checked per light shader, not
+   once.
+3. **Cover the overhang.** The plane is wider than the plan so shallow rays
+   through gaps near a wall still land on it; a shader that fades to black
+   before its own edge reintroduces exactly the failure the overhang exists to
+   prevent.
+4. **Anchor anything that reads as "the field ends here" to the plan boundary,
+   via `edgeSetDist` — not to the UV rectangle.** This is about the _boundary_,
+   not about the layout math, and the two are independent.
+
+**UV versus meters is not a rule here. Pick the math that matches the intent.**
+The two say different things and both are right sometimes:
+
+| Intent                                    | Natural math | Invariant under a room resize |
+| ----------------------------------------- | ------------ | ----------------------------- |
+| "N features spanning the plane" — 6 halos | UV           | the **count** stays 6         |
+| "features every 1.2 m" — a row of bulbs   | world meters | the **spacing** stays 1.2 m   |
+
+`canvases`' `s := (uv.x * 6.0 + 0.5).fract` is the first case and is exactly
+right: six halos across the plane is inherently a normalized statement, and
+computing what meter spacing yields six in a room of whatever size is work that
+buys nothing and has to be redone every time the room changes. Nor does it
+violate the `u`/`v` convention — those _are_ normalized coordinates here, used
+as such. (What the convention forbids is `u` carrying meters, or `u` scaled by
+world distance until it exceeds 1, which is the beam-atlas trap in _Raster
+geometry_. Neither is happening.)
+
+The thing that genuinely needs care on a non-rectangular plan is narrower, and
+it is the end-cap, not the strip layout. `lf := uv.y.smoothstep(0.05, 0.15) * …`
+fades the strips at the **bounding-box** edge. On a rectangle that edge is the
+wall. On an L it is not: along the two notch walls the bounding-box edge is
+somewhere else entirely, so the strips would run into those walls at full
+brightness while fading at the outer ones — a fade that appears at some walls
+and not others, which reads as a mistake because it is one.
+
+The fix is to cap with `edgeSetDist(pxz, ceilingEdges)` so the end-cap follows
+the plan. **The strip layout can stay in UV.** Layout math and boundary
+treatment are separate decisions, and only the second one cares what shape the
+room is.
+
+There _is_ a case where the layout math itself should move to meters, and it is
+worth naming because it is the only one: **on a non-rectangular plan the
+bounding box is not a room.** "N features across the plane" then anchors the
+count to a rectangle neither leg of an L fills and no visitor can perceive,
+while a metric spacing stays perceptible everywhere and carries continuously
+through the concave corner. The L-shaped template is where this gets
+demonstrated rather than asserted — see the room-templates implementation plan,
+step B5, which puts light pools on the beam lattice so the fixture and the
+raster agree.
+
+What is _not_ a problem: the light plane over an L's cut-out. Walls occlude it
+from everywhere the camera can reach, exactly as they occlude the phantom floor
+(Part 1), so whatever the layout does there is invisible.
+
+For **this** template the choice is a deliberately minimal custom shader: an HDR
+base, modulated by a **low-frequency sine along each of the two plan axes**.
+
+```scala
+// Light plane: HDR base with a slow undulation in strength. Deliberately
+// minimal — this is the shader you are meant to replace. Anything that emits
+// HDR will do: halo strips, bulbs behind diffuse glass, a sky, a color cast.
+val LightWaveMetersX = 5.0    // period along X, in meters
+val LightWaveMetersZ = 3.7    // along Z — intentionally not a multiple of X,
+                              // so the two never line up into a visible grid
+val LightWaveAmount  = 0.12   // ±12% on strength; stays well above threshold
+
+vec3(LightColor) * (
+  1.0 + LightWaveAmount * 0.5 * (
+    (wp.x * Tau / LightWaveMetersX).sin + (wp.z * Tau / LightWaveMetersZ).sin
+  )
+)
 ```
-HDR base (≈ 4.0–8.0, above the bloom threshold of 1.0)
-  × roomNoise(wp, normal)                  // subtle, keeps it from reading flat
-  // no vignette toward the walls — the light plane is uniform
-```
 
-Uniform rather than striped — the raster already supplies all the structure, and
-the existing `s := (uv.x * 6.0 + 0.5).fract` strip layout is expressed in
-_ceiling UV_, which on an L or H would run its end-caps through mid-air over the
-cut-out. If bands are wanted later, express them in world meters
-(`(wp.x * StripsPerMetre).fract`) and cap them with `edgeSetDist`, not UV.
+**A uniform field would have been the wrong thing to ship**, even though it is
+simpler. A template's job is to show the seam, and a flat plane is
+indistinguishable from a stage that decided the look for you — the reader has no
+reason to suspect the shader is theirs. A visible-but-slight variation says
+"this is a choice, and it is yours" at the exact place someone would edit it.
+The cost is about six lines.
 
-The `HaloColor` constant (`Canvases.scala:59`) becomes `LightColor`, and the
-existing `ceilTex` / `ceilForm` / halo block is deleted.
+It also demonstrates all four constraints rather than merely obeying them, which
+is what makes it an entry point rather than a placeholder:
+
+- It is **multiplicative on the base and bounded**, so it cannot cross below the
+  bloom threshold (1) or fade out toward the overhang (3) no matter how the
+  periods are tuned. That is why the amplitude is the knob and the base is not.
+- Only the amplitude interacts with the **mirror re-bloom** check (2), so
+  re-tuning the look does not silently break the floor.
+- It needs no boundary treatment at all (4), because it never fades — which is
+  what keeps a six-line example six lines.
+
+**Why meters here and not UV**, given that the previous section says either can
+be right: this is unevenness in the light, and its blob size should not change
+when the room does. In meters, resizing the room shows more or less of the same
+undulation; in UV, a long thin room would stretch it along one axis and a square
+one would not. That is the "fixed spacing" column of the table above. A halo
+shader in the same slot would rightly use UV instead — six halos is a count, not
+a spacing — and swapping one for the other is the point of the seam.
+
+Converting a wavelength in meters to angular frequency inside the expression is
+_not_ a violation of _Do not derive a constant that could be a constant_:
+`Tau / meters` is a unit conversion, not a hidden look assumption, and authoring
+the period in meters is what keeps the constant meaningful next to every other
+meter in the file.
+
+`LightColor` is this choice's tunable, sitting in the template's block like any
+other; it is not a stage-level constant, and a room whose light shader has no
+single color simply will not have one. The `HaloColor` constant
+(`Canvases.scala:59`) becomes `LightColor`, and the existing `ceilTex` /
+`ceilForm` / halo block is deleted.
+
+**"Looks like sky" is not the same as an open room.** A light plane painted to
+look like sky is still a bounded quad at `lightY`, so it parallaxes — it lags
+the raster as you walk, which is the whole coffer effect. A real sky (Part 6,
+_Open rooms and the sky_) is drawn at infinite distance and does **not**
+translate with the camera. Both are available and they look materially
+different; pick the one whose motion you want rather than discovering the
+difference afterwards.
 
 **Bloom needs no view-direction gate.** As in `grid-ceiling`, the light plane is
 the only above-threshold surface in the scene; the raster occludes it
 geometrically from low angles, so bloom emerges as you look up. Reuse the
 existing `Bloom(p, scenePanel, intensity = 0.002, threshold = 1.0, …)` at
-`Canvases.scala:724-731` unchanged and tune `LightColor` against it. Watch that
-the mirrored copy stays _below_ threshold after `reflStrength` so the floor
-reflection reads as a soft blur rather than a second bloom —
-`GridCeiling.scala:218-220` documents that exact tuning.
+`Canvases.scala:724-731` unchanged and tune the light shader against it — which
+is a per-exhibition tuning, since the light shader is curation.
+
+Note the gate stays geometric whatever the light shader is: it is the raster
+occluding the plane that produces the effect, so a room can change the fixture's
+appearance completely without touching how bloom behaves.
 
 ### Knock-on effects
 
