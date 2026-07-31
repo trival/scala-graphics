@@ -123,6 +123,8 @@ object Bloom:
       threshold: Double = 1.0,
       blurRadius: Double = 4.0,
       mipLevels: Int = 5,
+      toneKnee: Double = 1.0,
+      toneWhite: Double = 2.0,
   ): Bloom =
     if mipLevels < 2 then
       throw jsError(s"bloom mipLevels must be >= 2 (got $mipLevels)")
@@ -213,19 +215,49 @@ object Bloom:
 
     // ----- composite — scene + bloom * intensity → screen -----------------
     // Both inputs are full-res and screen-aligned, so read them 1:1 by pixel.
-    type CompositeU = (intensity: Float)
+    //
+    // SOFT CLIP. An HDR scene shown directly clamps everything above 1.0, and
+    // that clamp destroys MSAA along any edge against a bright emitter: with a
+    // 2.0 light behind a 0.85 surface, every sample above ~26 % coverage
+    // displays as pure white, so 4 of MSAA's 5 gradations collapse and the edge
+    // reads as a staircase however many samples were taken.
+    //
+    // `toneKnee` leaves everything below it untouched and maps `[knee, white]`
+    // linearly into `[knee, 1]`, so the room's own values do not shift while
+    // the emitter's edge keeps a real gradient.
+    //
+    // The default `toneKnee = 1.0` collapses the scale factor to zero, which is
+    // exactly today's hard clamp — so this changes nothing for a caller that
+    // does not ask for it.
+    val toneScale =
+      if toneWhite > toneKnee then (1.0 - toneKnee) / (toneWhite - toneKnee)
+      else 0.0
+    type CompositeU = (intensity: Float, knee: Float, toneScale: Float)
     type CompositePanels = (scene: FragmentPanel, bloom: FragmentPanel)
     val compositeShade = p.layerShade[CompositeU, CompositePanels]: program =>
       program.frag: ctx =>
         val coord = ivec2(ctx.fragCoord.xy)
-        ctx.out.color :=
-          ctx.textures.scene.load(coord)
-            + ctx.textures.bloom.load(coord) * ctx.bindings.intensity
+        val c = LetVec3("c")
+        val low = LetVec3("low")
+        Block(
+          c := (ctx.textures.scene.load(coord)
+            + ctx.textures.bloom.load(coord) * ctx.bindings.intensity).xyz,
+          // Below the knee this is `c` itself, so the term vanishes.
+          low := c.min(vec3(ctx.bindings.knee)),
+          ctx.out.color :=
+            vec4(low + (c - low) * ctx.bindings.toneScale, 1.0),
+        )
 
     val resultP = p.panel(
       layer = p
         .layer(compositeShade)
-        .bind("scene" := scene, "bloom" := bloomP, "intensity" := uIntensity),
+        .bind(
+          "scene" := scene,
+          "bloom" := bloomP,
+          "intensity" := uIntensity,
+          "knee" := toneKnee,
+          "toneScale" := toneScale,
+        ),
     )
 
     new Bloom:

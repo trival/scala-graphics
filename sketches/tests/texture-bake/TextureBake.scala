@@ -14,6 +14,7 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
+import trivalibs.utils.random.randInRange
 
 // ---------------------------------------------------------------------------
 // Verification sketch for `sketchlib.utils.bake.TextureBaker`.
@@ -28,12 +29,27 @@ import trivalibs.utils.numbers.NumExt.given
 //       the pattern lines up seamlessly across adjacent face edges;
 //   (b) normal-based tint — the new normal fragment input visibly tints each
 //       face by its orientation;
-//   (c) the curried baker reused across several geometries (one shade, six bakes).
+//   (c) the curried baker reused across several geometries (one shade, six bakes);
+//   (d) PER-BAKE UNIFORMS — each face bakes a filled disc whose radius and color
+//       come from its own bound values, through the one shared pipeline. This is
+//       the capability that lets a scalar vary per surface without specializing
+//       the shade into one WGSL compile per distinct value.
+//
+// What a failure looks like: (d) fails LOUDLY — if the uniforms do not reach the
+// bake, every face gets an identical disc (or none) instead of six visibly
+// different ones. That is why the radius is randomized rather than derived from
+// the face index: two faces can coincide by chance, six cannot.
 // ---------------------------------------------------------------------------
 
 val BoxSize = 2.0
 val TexSize = 256
 val NoiseScale = 1.4
+
+// Disc radius range, in UV — comfortably inside the face at the top end.
+val RadiusMin = 0.18
+val RadiusMax = 0.42
+// Soft edge width, in UV. Wide enough to read as deliberate at 256 px.
+val DiscSoftness = 0.02
 
 @main def textureBake(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -60,15 +76,40 @@ val NoiseScale = 1.4
         ),
       )
 
-    // ----- the baker: 3D noise sampled in world space, tinted by normal -------
-    val baker = TextureBaker(p): (worldPos, normal, uv, color) =>
+    // ----- the baker: 3D noise + normal tint, plus a per-bake disc ------------
+    //
+    // Two uniform fields, deliberately of different types: a scalar that
+    // participates in the baked computation (the disc's distance threshold) and
+    // a vector applied to the result. Both go through the one typed schema —
+    // binding a wrong name or a wrong value type is a compile error.
+    //
+    // This form takes the WHOLE fragment context (`ctx => Block`) rather than
+    // destructured `(worldPos, normal, uv, color)`, because that is what makes
+    // `ctx.bindings` reachable. Arity selects between the forms, so the
+    // uniform-carrying one goes DOWN to one argument rather than adding a fifth.
+    type FaceU = (
+        radius: FragmentUniform[Float],
+        discColor: FragmentUniform[Vec3],
+    )
+
+    val baker = TextureBaker[FaceU](p): ctx =>
       val n = LetFloat("n")
+      val base = LetVec3("base")
+      val d = LetFloat("d")
+      val disc = LetFloat("disc")
+      val r = ctx.bindings.radius
       Block(
         // FBM 3D noise — the expensive per-pixel result worth caching.
-        n := Noise.fbm3(worldPos * NoiseScale, seed = vec3(70)),
+        n := Noise.fbm3(ctx.in.worldPos * NoiseScale, seed = vec3(70)),
         // Tighten the noise into a visible band so the pattern reads clearly.
         // Tint each face by its orientation: normal (-1..1) → color (0..1).
-        color := vec4(normal.fit1101 * lerp(0.45, 1.0, n.fit1101), 1.0),
+        base := ctx.in.normal.fit1101 * lerp(0.45, 1.0, n.fit1101),
+        // Distance from the face center, in UV — a genuinely normalized use:
+        // the disc spans a fraction of the face, whatever the face measures.
+        d := (ctx.in.uv - vec2(0.5, 0.5)).length,
+        // Filled, soft-edged disc: 1 inside `radius`, 0 outside.
+        disc := d.smoothstep(r, r - DiscSoftness),
+        ctx.out.color := vec4(base.lerp(ctx.bindings.discColor, disc), 1.0),
       )
 
     // ----- runtime box shade: sample each face's baked panel by UV ------------
@@ -94,15 +135,26 @@ val NoiseScale = 1.4
     val box = Box(Vec3.zero, BoxSize, BoxSize, BoxSize)
     val faces = box.faces
     val shapes = Arr[AnyShape]()
-    var fi = 0
-    while fi < faces.length do
-      val form = faceForm(faces(fi)._1)
-      val tex = baker(form, TexSize, TexSize)
+    for face <- faces do
+      val form = faceForm(face._1)
+      // A baker carrying uniforms has no one-call `apply` — deliberately, since
+      // `apply` paints immediately and would bake before anything could bind.
+      // So: prepare, bind, paint. Binding is on the SHAPE, which is the
+      // typechecked one; `Panel.bind` is an unchecked string-keyed dict.
+      val bake = baker.prepare(form, TexSize, TexSize)
+      bake.shape.bind(
+        "radius" := randInRange(RadiusMin, RadiusMax),
+        "discColor" := Vec3(
+          randInRange(0.1, 1.0),
+          randInRange(0.1, 1.0),
+          randInRange(0.1, 1.0),
+        ),
+      )
+      p.paint(bake.panel)
       shapes.push(
         p.shape(form, sceneShade, cullMode = CullMode.Back)
-          .bind("mvp" := mvp, "samp" := sampler, "tex" := tex),
+          .bind("mvp" := mvp, "samp" := sampler, "tex" := bake.panel),
       )
-      fi += 1
 
     val scenePanel = p.panel(
       clearColor = (0.05, 0.06, 0.1, 1.0),

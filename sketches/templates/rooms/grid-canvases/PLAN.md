@@ -16,9 +16,64 @@ reader of *this sketch* needs.
 
 ## Status
 
-Being built. Current step: **A0 — scaffold**, an unmodified copy of
-`sketches/rooms/canvases`, repackaged. Everything below describes where it is
-going, not what it does yet.
+Being built. Done: **A0** (scaffold), **A1** (footprint replaces the box),
+**A2** (camera confinement), **A3** (library prerequisites), **A4** (coffer
+light), **A5** (raster geometry) and **A6** (raster shading).
+
+The room is now derived end to end from one `Ring` of four XZ points: walls from
+its edges, floor and ceiling from its bounding box, the grime line and noise
+fade from `edgeSetDist` against those edges. Paintings, shadows, the composite
+path and animation are stripped — the subject at this stage is the space.
+
+The same rings confine the walker: `confine` clamps the camera 0.5 m short of
+every surface after the controller moves it, and `y` is locked to eye height
+with free-fly surviving as a `devMode`-gated inspection tool.
+
+The wall baker takes `topY` as a **per-bake uniform**, so one pipeline bakes
+every wall in the room whatever its height. Nothing varies yet — every wall
+shares a top — which is exactly why it is worth doing now rather than after
+partitions and pillars have each accumulated a specialized shade.
+
+The room is now **derived from the ceiling beam lattice** rather than authored:
+`snapHalfExtent` puts each wall plane flush with the outer face of the nearest
+beam, so every wall gets its perimeter beam for free once the raster exists
+(6.5 → 6.70 m, 10.0 → 10.00 m). Walls stop at `WallTopY`, and an HDR light plane
+sits `CofferDepth` above the ceiling line, overhanging the plan.
+
+The raster is **a flat list of beam segments**, not a pair of axis-aligned
+grids — two `BeamFamily` calls at 90°, clipped to the plan by `clipLine`. A
+hexagon calls it three times at 60°; that is data, not new code. 32 beams here,
+and the outermost of each family sits flush with its wall, so every wall has its
+perimeter beam and the light openings are inset all round.
+
+The beams are **the same material as the walls** — same `roomNoise` at world
+position, same fade of the normal-varied term at every geometry edge, `CeilTint`
+on the soffits because the underside of the raster is the ceiling plane as far
+as the eye is concerned. Nothing darkens at a junction.
+
+The beams supply their own edge distance rather than going through `edgeDist`,
+whose vertical term assumes a surface spanning `0 … topY` — true of a wall,
+false of a beam at 5.25–5.50 m. The atlas row is the beam's unrolled
+cross-section, so `v` within a row locates you across it and the band boundaries
+are exactly the arrises. That is why one expression serves every beam at any
+angle with no per-beam frame.
+
+**Next: A7, the tuning pass** — `CofferDepth`, `GridSpacing`, `StripWidth`,
+`StripHeight`, `LightColor`, `TopFadeDepth` and bloom, all by eye. Then the
+hanging affordance (A8) and the template pass (A9).
+
+Two constants are **derived rather than tuned**, and should stay that way:
+`RoomWidth`/`RoomDepth` come from `snapHalfExtent` so every wall gets its
+perimeter beam, and `LightOverhang` comes from room span, coffer depth and eye
+height so no sightline can see past the light plane. Both are correctness
+bounds, not look decisions — change the wanted extents and the coffer depth, not
+these.
+
+Three fixes worth not undoing while tuning: the per-family soffit stagger
+(coplanar soffits z-fight), the beam atlas clearing to the material color rather
+than black (uncovered atlas texels otherwise bleed out as dark seams), and the
+`Bloom` soft clip (a hard clamp at 1.0 destroys MSAA on the beam silhouettes).
+See `documents/room-templates-implementation.md` for the full account.
 
 ## What the room is made of
 

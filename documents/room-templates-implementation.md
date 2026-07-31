@@ -4,26 +4,97 @@ Implementation sequencing for the first three room templates, derived from
 `grid-ceiling-rooms-plan.md`. That document is the _why_; this one is the order
 of work, and every step ends in something you can look at in the browser.
 
-| #     | Template                                | What it proves                                                 |
-| ----- | --------------------------------------- | -------------------------------------------------------------- |
-| **A** | `templates/rooms/grid-canvases`         | box plan, grid ceiling, coffer light, confinement, hanging     |
-| **B** | `templates/rooms/l-room`                | concave plan — the footprint generalization actually holds     |
-| **C** | `templates/rooms/hex-partitions`        | non-axis-aligned plan, triangular raster, free-standing walls  |
+| #     | Template                         | What it proves                                                |
+| ----- | -------------------------------- | ------------------------------------------------------------- |
+| **A** | `templates/rooms/grid-canvases`  | box plan, grid ceiling, coffer light, confinement, hanging    |
+| **B** | `templates/rooms/l-room`         | concave plan — the footprint generalization actually holds    |
+| **C** | `templates/rooms/hex-partitions` | non-axis-aligned plan, triangular raster, free-standing walls |
 
 Two naming/ordering calls made here rather than asked:
 
 - **B and C are named for their shape, not their content.** `grid-canvases`
   keeps the name the roadmap fixed; `l-room` and `hex-partitions` follow the
   same "what situation does this template enable" rule.
-- **The `src/utils/room/` extraction happens between B and C**, not after C.
-  The roadmap triggers it on "the second exhibition or the second shape,
-  whichever comes first" — B is that second shape, and doing it before C means
-  the hexagon is written against the extracted functions rather than being a
-  third copy that then has to be unpicked.
+- **The `src/utils/room/` extraction happens between B and C**, not after C. The
+  roadmap triggers it on "the second exhibition or the second shape, whichever
+  comes first" — B is that second shape, and doing it before C means the hexagon
+  is written against the extracted functions rather than being a third copy that
+  then has to be unpicked.
 
 Throughout: the Vite dev server is assumed running on port 3000 — do not start
 it. Each step's check is `bun run sketch <path>` followed by a look at
 `http://localhost:3000/<path>/`. Use `bun run sketch:watch` while tuning.
+
+---
+
+## STATUS — as of 2026-07-31
+
+**Template A is built through A6.** Next action is **A7**, the tuning pass,
+which the author is doing by eye before A8 starts.
+
+| Step                        | State                                                  |
+| --------------------------- | ------------------------------------------------------ |
+| A0 scaffold + taxonomy move | ✅ verified in browser                                 |
+| A1 footprint replaces box   | ✅ verified identical to `canvases`                    |
+| A2 camera confinement       | ✅ verified, incl. the devMode gate in `bun run build` |
+| A3 library prerequisites    | ✅ verified via `tests/texture-bake`                   |
+| A4 coffer light             | ✅ verified                                            |
+| A5 raster geometry          | ✅ verified                                            |
+| A6 raster shading           | ✅ verified, after four artifact fixes below           |
+| **A7 tuning pass**          | **next — author tuning by eye**                        |
+| A8 hanging affordance       | not started                                            |
+| A9 template pass            | not started                                            |
+
+### Library changes that landed alongside
+
+All additive; every existing sketch and the trivalibs test suite still pass.
+
+| Where                | What                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `trivalibs` math     | `.xz` swizzle on `Vec3`/`Vec4`, CPU and GPU — it was missing while `xy`/`yz` existed                                |
+| `trivalibs` dev      | `devMode` made public (was `private`), for dev-only affordances that must not ship                                  |
+| `trivalibs` geometry | `Quad.fromDimensions` with an explicit tangent, plus `fromDimensionsCenter`; the inferring form now delegates to it |
+| `src/utils/bake`     | `TextureBaker[U]` per-bake uniforms; `clearColor` on `prepare`/`apply`/`bake`/`bakeBlock`                           |
+| `src/utils/bloom`    | opt-in soft-clip tonemapping (`toneKnee`/`toneWhite`), default reproduces the old hard clamp exactly                |
+
+Unifying `Quad.fromDimensions` exposed a **real bug**: the inferring form used
+`up.cross(n)` unnormalized as its `u` direction, and `|up × n|` is 1 only when
+the two are perpendicular — so a 45°-tilted normal shrank the quad to 0.71× in
+both axes. Every call site passed an axis-aligned normal, so it never showed.
+Fixed, with two regression tests in `test/geometry/Shapes.test.scala`.
+
+### Artifacts found at A5/A6, and their causes
+
+Recorded because none was obvious from the symptom, and C will meet the same
+geometry.
+
+| Symptom                                              | Cause                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dashed shimmer along every beam crossing             | Both families' soffits at the same height are **coplanar**; a depth buffer resolves interpenetrating volumes, not coplanar faces. Fixed with a 0.6 mm per-family stagger — 80× depth precision at eye distance, 0.28 px subtended.                           |
+| Dark line at beam edges, from every camera position  | **Atlas texels no face covers** — partial coverage at band edges, bands whose face was culled, and the `u` tail of every beam shorter than the longest — were black, and filtering/mips bled them back in. Fixed by clearing the bake to the material color. |
+| Staircase on beam silhouettes despite 4× MSAA        | **No tonemap.** A hard clamp at 1.0 sent every edge sample above ~26 % coverage to pure white, collapsing 4 of MSAA's 5 gradations. Fixed by the soft clip in `Bloom`.                                                                                       |
+| Background visible in a thin strip near wall/ceiling | Shallow sightlines cleared the raster and **missed the light plane**. `LightOverhang` is now derived from room span, coffer depth and eye height rather than guessed (1.5 m → 3.51 m).                                                                       |
+
+Two of these were misdiagnosed first, and the record matters more than the fix:
+culling the perimeter beams' outer side faces made the dark line _worse_,
+because it left their atlas bands unwritten — which is what identified the real
+cause. And the background strip was initially blamed for the dark line; it is a
+genuine but separate defect.
+
+### Open items to pick up
+
+- **Beam ends get no edge fade.** Only the cross-section is faded; a shared
+  atlas cannot recover each beam's far end, because every beam's `u` range
+  differs. Watch for a seam where beams meet the walls.
+- **The background strip may not be fully understood.** It was reported as
+  appearing equally on the X and Z axes, which does _not_ fit the model used to
+  derive the overhang — that predicts Z failing across a much wider band, since
+  the requirement scales with the room's span. The derived overhang covers the
+  worst case on both axes, so if it still shows, the mechanism is a different
+  one and deserves a fresh look rather than a wider plane.
+- **`CeilTint` is currently used for both the soffits and the atlas clear
+  color.** Fine while they agree; if the soffit tint is re-tuned in A7, the
+  clear color should follow it.
 
 ---
 
@@ -34,9 +105,10 @@ machinery gets built; B and C are then mostly data.
 
 ### A0 — Scaffold and taxonomy
 
-Create `sketches/templates/rooms/grid-canvases/` from `cp -r sketches/rooms/canvases`,
-package `sketches.templates.rooms.gridcanvases`, `@main def roomsGridCanvases()`.
-Delete the copied `main.js`. Move `sketches/rooms/grid-ceiling/` →
+Create `sketches/templates/rooms/grid-canvases/` from
+`cp -r sketches/rooms/canvases`, package
+`sketches.templates.rooms.gridcanvases`, `@main def roomsGridCanvases()`. Delete
+the copied `main.js`. Move `sketches/rooms/grid-ceiling/` →
 `sketches/experiments/grid-ceiling/` (it is the experiment the raster mechanism
 is ported from; the taxonomy in `CLAUDE.md` already says so). Carry a trimmed
 `PLAN.md` into the sketch dir.
@@ -55,11 +127,12 @@ click through every link on `/` — all four rooms plus the two touched entries.
 ### A1 — Footprint replaces the box
 
 Introduce `Facing` / `Ring` / `Footprint`, `floorEdges` / `ceilingEdges`, the
-shader emitters `edgeSetDist` / `cornerDist`, and the generalized `edgeDist(wp,
-normal, edges, topY)`. Derive walls from ring edges via `mkWall` with computed
-`rotY`; floor and ceiling become bounding-box quads. Split `EdgeFadeWorld` into
-`EdgeFadeWorld` + `GrimeWidth`, both starting at 0.08. Re-anchor the wall tint
-gradient to `(WallTopY - wp.y).smoothstep(TopFadeDepth, 0.0)`.
+shader emitters `edgeSetDist` / `cornerDist`, and the generalized
+`edgeDist(wp, normal, edges, topY)`. Derive walls from ring edges via `mkWall`
+with computed `rotY`; floor and ceiling become bounding-box quads. Split
+`EdgeFadeWorld` into `EdgeFadeWorld` + `GrimeWidth`, both starting at 0.08.
+Re-anchor the wall tint gradient to
+`(WallTopY - wp.y).smoothstep(TopFadeDepth, 0.0)`.
 
 **Strip the sketch here, not at A0:** delete paintings, shadows, the composite
 path, sway, `imgShade`/`patternPanel`. Keep the halo-strip ceiling for now — it
@@ -79,8 +152,12 @@ choice. Sanity-check the derived `rotY` against the four hand-written values at
 `WallClearance = 0.5`, `EyeHeight = 1.7`. Expose `devMode` from `trivalibs.dev`
 (currently `private` at `dev/dev.scala:43`) and gate free vertical on it.
 
+`confine` runs **two passes**, because a rectangle's four inner corners are
+concave and one pass leaves the camera 0.01 m from a wall there.
+
 **Check:** hold forward into each wall — camera stops 0.5 m short, view never
-clips through. Walk diagonally into a wall — it _slides_, does not stick. Hold
+clips through. Walk diagonally into a wall — it _slides_, does not stick. Press
+into each of the four corners, which is the case one pass fails. Hold
 Space/Shift: flies under the dev server. `bun run build` and confirm it does not
 fly in the built sketch.
 
@@ -92,8 +169,27 @@ to migrate:
 1. **Per-bake uniforms on `TextureBaker`** (`src/utils/bake/`) — `ctx => Block`
    1-arg form, `apply` left uniform-free, binding at **shape** level so it is
    typechecked, surfaced through `prepare`. Roadmap Part 5.1 settles the
-   direction; how `prepare` surfaces the shape's typed `bind` is open and gets a
-   short planning pass of its own before this is written.
+   direction; the ergonomics were settled here:
+   - **`prepare` returns a named tuple `(panel, shape)`.** No new type; bind on
+     `.shape`, paint the `.panel`. A wrapper re-declaring `bind` was rejected
+     because `Bindable.bind` is `inline` with **eight arity overloads** doing
+     the compile-time name/type checks — any wrapper would have to duplicate all
+     eight to stay typed, which also rules out the "have `prepare` take the
+     pairs" option.
+   - **`apply` is an extension on `TextureBaker[NoUniforms]`**, not a method.
+     That is what makes baking with unset uniforms _structurally_ impossible
+     rather than discouraged: a baker carrying uniforms simply has no `apply`.
+   - **`NoUniforms`, not `EmptyTuple`** — `AnyNamedTuple` is opaque, so a plain
+     tuple does not conform to it; the empty schema is
+     `NamedTuple[EmptyTuple, EmptyTuple]`.
+   - Everything touching `BakeBindings[U] = Concat[BakeUniforms, U]` must be
+     `inline` (the factories) or take `U` **explicitly** (`buildVert[U]`) —
+     match types are not invertible, so inference cannot recover `U` from an
+     argument typed `BakeBindings[U]`. The generated vertex stage names its
+     `model` uniform directly as WGSL rather than through `ctx.bindings.model`,
+     since the typed accessor would need `BakeBindings[U]` to reduce while `U`
+     is still abstract.
+
 2. **`Quad.fromDimensions` with an explicit tangent**
    (`trivalibs/src/graphics/geometry/polygon.scala`) — beam soffits have a `-Y`
    normal, so the inferred in-plane orientation would run their atlas `u` along
@@ -181,8 +277,9 @@ the raster meets a wall, not in the pockets.
 
 `CofferDepth`, `GridSpacing`, `StripWidth`, `StripHeight`, `LightColor`, the
 light plane overhang, `TopFadeDepth`, bloom. Expect to iterate; this is the step
-with taste in it. Confirm every knob you reach for is in the tunable block at the
-head of the file — anything you had to hunt for further down belongs up there.
+with taste in it. Confirm every knob you reach for is in the tunable block at
+the head of the file — anything you had to hunt for further down belongs up
+there.
 
 **Check:** walk the room and look up from several positions. Nowhere can you see
 _past_ the light plane's edge through a gap near a wall; if you can, widen the
@@ -238,8 +335,8 @@ plan.
 
 ### B1 — The ring
 
-`cp -r` template A to `sketches/templates/rooms/l-room`. Replace the 4-point ring
-with a 6-point one, authored in lattice units (integer multiples of
+`cp -r` template A to `sketches/templates/rooms/l-room`. Replace the 4-point
+ring with a 6-point one, authored in lattice units (integer multiples of
 `GridSpacing`, offset by `StripWidth/2`) so every vertex lands on a beam edge.
 Nothing else changes. Add its `sketches/index.html` entry under `templates`,
 directly below `grid-canvases`.
@@ -252,9 +349,9 @@ intervals for the lines that cross the notch.
 ### B2 — Concave corner treatment
 
 **Check, standing in the inner corner:** the grime line wraps it as cleanly as
-it wraps a box corner, and the noise fade meets there without a seam. This is the
-single thing `Canvases.scala:192-197` could not do, so it is the payoff for the
-whole footprint rewrite.
+it wraps a box corner, and the noise fade meets there without a seam. This is
+the single thing `Canvases.scala:192-197` could not do, so it is the payoff for
+the whole footprint rewrite.
 
 Then check the **convex** corner (the L's protruding one) from the room side. If
 its noise fade reads wrong, gate `cornerDist` with a per-wall CPU flag rather
@@ -263,10 +360,11 @@ occlusion at either corner.
 
 ### B3 — Confinement in the wedge
 
-**Check:** press forward into the concave corner from several angles. If the
-single-nearest-point clamp lets the camera creep into the wedge, run `confine`
-twice per frame — it converges for any convex-angle pair. Do not reach for
-general multi-constraint resolution.
+**Check:** press forward into the concave corner from several angles. The
+two-pass `confine` already landed in A2 — a box's own inner corners are concave,
+so this was needed there rather than here — meaning B's notch corner should hold
+0.5 m with no code change. If it does not, that is a footprint bug, not a
+clamping one: check the notch edges' inward normals rather than adding passes.
 
 Then walk the whole boundary with the wall on one side and confirm the slide
 holds all the way round, including through both corners.
@@ -302,8 +400,8 @@ lattice** — the plan is already snapped to `GridSpacing`, so put an emitter
 every _k_ cells and let the light lattice and the raster above it agree. That
 agreement is only expressible in world meters, it reads as a deliberate
 architectural alignment rather than a texture, and it carries **continuously
-through the concave corner**, which is exactly what a bounding-box layout
-cannot do.
+through the concave corner**, which is exactly what a bounding-box layout cannot
+do.
 
 It also happens to need no boundary treatment: discrete pools do not fade at the
 plan edge, and any pool falling outside is occluded by a wall like everything
@@ -367,10 +465,10 @@ snap to the lattice, and rings the room is _outside_ of.
 
 ### C1 — The hexagon
 
-`cp -r` template B to `sketches/templates/rooms/hex-partitions`, replace the ring
-with a regular 6-point hexagon. `snapHalfExtent` does not apply — a hexagon's
-walls are not parallel to any two beam families at once — so the plan is
-authored directly in meters. Add its `sketches/index.html` entry under
+`cp -r` template B to `sketches/templates/rooms/hex-partitions`, replace the
+ring with a regular 6-point hexagon. `snapHalfExtent` does not apply — a
+hexagon's walls are not parallel to any two beam families at once — so the plan
+is authored directly in meters. Add its `sketches/index.html` entry under
 `templates`, completing the family in build order.
 
 **Check:** six walls at 60°, `rotY` derived correctly for every one of them
@@ -412,8 +510,8 @@ per-surface `topY` since A1.
 
 **Check**, one line per hook:
 
-- Grime line and noise fade wrap both partitions on all four faces
-  (`floorEdges` includes them).
+- Grime line and noise fade wrap both partitions on all four faces (`floorEdges`
+  includes them).
 - The raster runs straight **over** them, uninterrupted (`ceilingEdges` filters
   them out by height).
 - Camera keeps 0.5 m clearance walking a full lap around each one, and the

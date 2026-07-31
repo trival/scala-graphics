@@ -6,9 +6,7 @@ import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
-import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
-import trivalibs.graphics.buffers.BufferBinding
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -20,111 +18,573 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
-import trivalibs.utils.random.randInRange
 
 // ---------------------------------------------------------------------------
-// A first-person walkable room with paintings hanging on the walls.
+// TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
+//
+// Open it, read it, copy it, tune it. See PLAN.md for the longer why, and
+// `documents/grid-ceiling-rooms-plan.md` for the full design rationale.
+//
+// The unit is the METER everywhere: every dimension, offset, fade width and
+// margin below is meters. `u`/`v`/`uv` mean normalized [0,1] texture
+// coordinates and nothing else.
 // ---------------------------------------------------------------------------
 
-val RoomWidth = 6.5
+// ===========================================================================
+// TUNABLES — everything an exhibition re-tunes lives in this block.
+// Nothing tunable should hide further down the file.
+// ===========================================================================
+
+val Tau = 2.0 * math.Pi
+
+// ---- The ceiling beam lattice, and the room derived from it ----------------
+//
+// For an axis-aligned plan, do NOT snap the grid to the room — derive the room
+// from the grid. Beam centerlines sit at k·GridSpacing; each wall plane lands
+// flush with the outer face of the beam nearest the wanted extent. The beam
+// adjacent to each wall then IS the perimeter beam: no extra generator, no
+// special-cased geometry, and the light openings are inset by one beam width at
+// every wall rather than dying into the corner. That inset is the intended
+// architectural transition, not a side effect.
+//
+// A plan whose walls are not parallel to a beam family — a hexagon — cannot
+// snap, and needs an explicit perimeter-beam generator instead. This is the
+// free path where it applies.
+val GridSpacing = 0.55
+val StripWidth = 0.10
+val StripHeight = 0.25
+
+/** Vertical offset between successive beam families, to keep their soffits from
+  * being coplanar where they cross. See the family loop for why this is needed
+  * and why this size. */
+val FamilyYStagger = 0.0006
+
+/** Snap a wanted half-extent (meters) out to the outer face of the nearest
+  * beam. */
+def snapHalfExtent(wanted: Double): Double =
+  val k = Math.round((wanted - StripWidth / 2.0) / GridSpacing).toDouble
+  k * GridSpacing + StripWidth / 2.0
+
+// Room extents are DERIVED, not authored — tune the wanted values, read the
+// snapped ones. (6.5 → 6.70, 10.0 → 10.00 at the spacing above.)
+val RoomWidth = snapHalfExtent(6.5 / 2.0) * 2.0
+val RoomDepth = snapHalfExtent(10.0 / 2.0) * 2.0
 val RoomHeight = 5.5
-val RoomDepth = 10.0
 
-// Baked texels per world metre. Texture sizes are derived from the actual
-// geometry dimensions × this factor, so texel density is uniform in space.
-val TexScale = 48.0
+/** How close the visitor may get to any surface, including the outer faces of
+  * anything standing in the room and the faces of hung pieces. */
+val WallClearance = 0.5
 
-val Up = Vec3(0.0, 1.0, 0.0)
+/** The walking plane. `y` is locked to this — see the confinement section. */
+val EyeHeight = 1.7
 
-// How far from a room edge the normal-dependent noise term is fully faded
-// out, in world metres — keeps corners seam-free.
+/** Ceiling line — the top of the raster, and where the room still reads as
+  * having a ceiling from eye height. */
+val CeilY = RoomHeight
+
+/** Where the *visible* wall ends, and what a wall's shading fades against.
+  *
+  * The wall stops one beam-height below the ceiling line because the perimeter
+  * beam's outer face continues the same plane up to `CeilY` — two surfaces, one
+  * continuous plane, no overlap. Capping the geometry here is tidiness rather
+  * than a fix (the beam's outer face points out of the room and is never
+  * drawn), but it keeps the mesh agreeing with the `topY` the shading uses.
+  *
+  * Separate from `CeilY` so a flat-ceilinged room asks for `CeilY` instead, and
+  * so a partition can carry its own top.
+  */
+val WallTopY = CeilY - StripHeight
+
+/** Depth of the wall tint gradient below `WallTopY`. A broad settling of tone
+  * where wall meets ceiling — NOT an edge effect, and not occlusion. */
+val TopFadeDepth = 0.9
+
+// ---- The coffer: a luminous plane recessed behind the raster ---------------
+//
+// The parallax the room is built around is plain perspective, no trick: at 1.7 m
+// eye height a 1.0 m coffer gives eye-to-soffit 3.55 m vs eye-to-light 4.80 m,
+// so the light plane moves ~26 % slower than the raster under camera
+// translation. `CofferDepth` is the knob for how pronounced that reads.
+val CofferDepth = 1.0
+
+/** The luminous plane's height. */
+val LightY = CeilY + CofferDepth
+
+/** How far the light plane overhangs the plan on every side.
+  *
+  * The coffer needs no reveal walls — a raster occluding a luminous plane
+  * already reads as a recess. The one real risk is seeing PAST the plane's edge
+  * on a shallow ray through the gap at a wall, which shows as a strip of
+  * background where light should be. The fix is to make the plane wide enough
+  * that every reachable sightline still lands on it.
+  *
+  * DERIVED rather than eyeballed, because the requirement is geometric and
+  * changes with the room, the coffer depth and the eye height — three things a
+  * copy of this template is likely to change together. The worst case is the
+  * shallowest ray a visitor can construct: standing at the far wall (so
+  * `WallClearance` from it), eye at `EyeHeight`, looking through the near
+  * wall's junction with the raster at `WallTopY`, and continuing to `LightY`.
+  *
+  * This is the exception to "do not derive a constant that could be a
+  * constant": that rule is about LOOK values, which hide an assumption when
+  * computed. This one is a correctness bound, and hard-coding it is how it
+  * silently goes stale.
+  */
+val LightOverhang =
+  (LightY - WallTopY) * (RoomWidth.max(RoomDepth) - WallClearance)
+    / (WallTopY - EyeHeight) * 1.05 // 5 % margin off the exact tangent
+
+/** Baked texels per world meter for the AMBIENCE field only. It is smooth,
+  * low-frequency noise, so this is deliberately cheap — a 6.5 m wall bakes to
+  * ~312 px. A wall or floor carrying its own artwork gets its own, much higher
+  * resolution as a separate panel; do NOT raise this to sharpen artwork. */
+val AmbienceTexScale = 48.0
+
+/** How far from a geometry edge the normal-dependent noise term is fully faded
+  * out. This makes corners read as slightly ROUNDED — one noise blending into
+  * the other. It is a material property, not light absorption. */
 val EdgeFadeWorld = 0.08
 
-// Contact darkening in the floor/wall junction, over the same distance.
-val ContactDarken = 0.93 // brightness multiplier right at the edge
+/** The floor grime line: dirt collecting where wall meets floor. Its own width,
+  * deliberately separate from `EdgeFadeWorld` — they are unrelated quantities
+  * that `canvases` happened to give the same number. */
+val GrimeWidth = 0.08
+val GrimeDarken = 0.93 // brightness multiplier right at the junction
 
-// Painting drop-shadow shaping. The shadow box matches the canvas footprint
-// exactly; the soft edge + downward bias are shaped by `shadowMask`.
-val ShadowBotFadeMul = 2.7
-val ShadowDropMul = 0.25 // downward shadow offset, in penumbra widths
-val ShadowFadeWorld = 0.10 // penumbra width in world metres
-val ShadowStrength = 0.44
-
-// Surface tints. Authored once as CPU vectors and used directly in the shader
-// bakers below — `vec3(…)` lifts them into the GPU domain.
+// Surface tints. Authored as CPU vectors, lifted with `vec3(…)` in the bakers.
 val FloorTint = Vec3(0.80, 0.78, 0.75)
 val CeilTint = Vec3(0.86, 0.86, 0.85)
 val WallTintLow = Vec3(0.97, 0.97, 0.96)
 val WallTintHigh = Vec3(0.88, 0.88, 0.87)
-val HaloColor = Vec3(8.0, 7.6, 6.8) // HDR — drives the ceiling strip bloom
 
-/** Soft, directional painting drop-shadow for one rect, in wall-local UV.
-  * `rect = (centerX, centerY, halfW, halfH)`, `fade = (fadeU, fadeV)` is the
-  * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
-  * `worldFade / wallHeight` so the penumbra is isotropic in world space
-  * regardless of wall aspect. The shadow is uniform in strength inside the box;
-  * only the edge falloff varies (tight above, broad below).
+// ---- The light shader's own tunables --------------------------------------
+//
+// WHAT THE LIGHT PLANE EMITS IS YOURS. The room owns the plane's position,
+// extent and HDR format, and wires bloom to it; what fills it is a shader this
+// sketch supplies, exactly like canvas content. Keep the halo strips, make it
+// bulbs behind diffuse glass, make it read as sky, give it a color cast —
+// all legitimate, none of them the room's business.
+//
+// Four things any replacement must respect, all technical rather than
+// aesthetic: stay above the bloom threshold where it should bloom; keep the
+// MIRRORED copy below threshold after `reflStrength` or the floor re-blooms;
+// cover the overhang, so a shallow ray never finds an unlit edge; and express
+// structure in WORLD METERS, not the plane's UV, if the plan is not a rectangle
+// (see below).
+/** HDR emission, above the bloom threshold of 1.0.
+  *
+  * **This value is capped by the MIRROR, not by taste.** The floor composites
+  * `base·(1−mix) + reflection·mix`, and at the light plane's height
+  * `mix = 0.6 · reflStrength = 0.15`. With the floor's brightest base around
+  * 0.80 that leaves `1.0 − 0.80·0.85 = 0.32` of headroom, so anything above
+  * `0.32 / 0.15 ≈ 2.1` pushes the REFLECTION over the threshold and the floor
+  * blooms as a second light source instead of reading as a soft blur.
+  *
+  * `canvases`' 8.0 does not transfer: there it lit thin halo strips covering a
+  * few percent of the ceiling, here it lights the whole plane. Same number,
+  * vastly more above-threshold area.
+  *
+  * To make the glow stronger or weaker, move `Bloom(intensity)` below — that
+  * knob is free. This one is not.
   */
-def shadowMask(uv: Vec2Expr, rect: Vec4Expr, fade: Vec2Expr): FloatExpr =
-  val hx = rect.z
-  val hy = rect.w
-  val dx = uv.x - rect.x
-  // +Y is down; the vertical box is nudged down so the light comes from
-  // slightly above — the top edge stays lit, the bottom shadow is exposed.
-  val dy = uv.y - rect.y - fade.y * ShadowDropMul
-  // Horizontal containment — symmetric soft edge, centred *on* the canvas
-  // edge: half the penumbra falls on the wall beyond the canvas, half stays
-  // hidden behind it (light leaking in around the slightly offset canvas).
-  val hMask = dx.abs.smoothstep(hx + fade.x * 0.5, hx - fade.x * 0.5)
-  // Vertical containment — same edge-centred falloff, tight above the top
-  // edge, broad below the bottom one (the cast shadow pools under the canvas).
-  val upperFade = fade.x
-  val lowerFade = fade.y * ShadowBotFadeMul
-  val upper = dy.smoothstep(-hy - upperFade * 0.5, -hy + upperFade * 0.5)
-  val lower = dy.smoothstep(hy + lowerFade * 0.5, hy - lowerFade * 0.5)
-  hMask * upper * lower
+val LightColor = Vec3(2.0, 1.9, 1.7)
 
-/** A painting to hang on a wall. `image` is any `Panel` (its content is the
-  * consumer's concern). `sideStretch` is the front:side texel-density ratio — a
-  * thin UV margin `depth / (sideStretch * size)` wraps each side.
+// A slow undulation in strength, so the plane is not a flat field. Deliberately
+// minimal: this is the shader you are meant to replace.
+//
+// Meters rather than UV here because the blob size should not stretch when the
+// room's aspect changes — NOT because UV is discouraged. The two say different
+// things and both are right sometimes: UV means "N features spanning the plane"
+// (six halos stay six in any room), meters means "features every N m" (spacing
+// stays put, count grows). A halo shader in this slot would rightly use UV.
+val LightWaveMetersX = 5.0 // period along X
+val LightWaveMetersZ = 3.7 // along Z — deliberately not a multiple of X, so the
+// two never line up into a visible grid
+val LightWaveAmount = 0.12 // ±12 % on strength; stays well above threshold
+
+// ===========================================================================
+// STRUCTURAL — the floor plan and everything derived from it.
+//
+// Written to library discipline (Arr, while, no Scala collections, no `enum`):
+// this cluster is headed for `src/utils/room/` once a second room shape exists,
+// so it is written as library code that has not moved yet.
+// ===========================================================================
+
+val Up = Vec3(0.0, 1.0, 0.0)
+
+/** Which side of a ring the room is on.
+  *
+  * The codebase's opaque-type enum pattern (`graphics/painter/enums.scala`) —
+  * a Scala `enum` compiles to a class hierarchy plus `$values`/`ordinal`
+  * machinery, which is JS-bundle weight for something that wants to be a
+  * constant. The library's opaque enums alias `String` because their values
+  * cross into WebGPU; this one never leaves Scala and is only ever used to flip
+  * an edge normal, so it aliases `Double` and *is* that sign — no branch.
   */
-case class PaintingSpec(
+opaque type Facing = Double
+object Facing:
+  /** The room is inside this loop — the outer boundary. */
+  val Inward: Facing = 1.0
+
+  /** The room is outside it — anything standing in the room: an O-shape's
+    * inner box, a free-standing partition, a column, a plinth. */
+  val Outward: Facing = -1.0
+  extension (f: Facing) inline def sign: Double = f
+
+/** One closed loop of the floor plan, in XZ. No repeated last point.
+  *
+  * `height` is what makes a free-standing wall a filtering question rather than
+  * a restructuring one: a partition is an `Outward` ring that stops below the
+  * ceiling, an O-shape's inner box is the same thing at full height. Nothing in
+  * this template uses either yet — that is the point of carrying them now.
+  */
+case class Ring(
+    points: Arr[Vec2], // XZ; `.x` is world X, `.y` is world Z
+    facing: Facing,
+    height: Double,
+)
+
+/** The shape the room occupies in XZ — walls come from its edges, floor and
+  * ceiling from its area, the camera is confined by it.
+  *
+  * A footprint is two-dimensional, so it carries no height: room height belongs
+  * to the room being built and is passed where it is needed. `Ring.height`
+  * stays, because a ring genuinely does extrude to one.
+  */
+case class Footprint(rings: Arr[Ring]) // rings(0) is the Inward outer boundary
+
+/** One boundary segment `a → b` in XZ, with the room-side normal already
+  * resolved from its ring's facing. */
+case class Edge(a: Vec2, b: Vec2, inwardNormal: Vec2)
+
+/** Rotate a 2D direction 90°. With rings wound so that this points into the
+  * room for an `Inward` ring, `perp(dir) * facing.sign` is the inward normal
+  * for any ring — which is what gives an O-shape's inner box, and later a
+  * partition, hangable faces on every side. */
+inline def perp(d: Vec2): Vec2 = Vec2(-d.y, d.x)
+
+def ringEdges(r: Ring): Arr[Edge] =
+  val n = r.points.length
+  val out = Arr[Edge]()
+  var i = 0
+  while i < n do
+    val a = r.points(i)
+    val b = r.points(if i + 1 == n then 0 else i + 1)
+    val dx = b.x - a.x
+    val dz = b.y - a.y
+    val len = (dx * dx + dz * dz).sqrt
+    val s = r.facing.sign
+    out.push(Edge(a, b, Vec2(-dz / len * s, dx / len * s)))
+    i += 1
+  out
+
+/** Everything meets the floor — full-height walls and partitions alike. */
+def floorEdges(fp: Footprint): Arr[Edge] =
+  val out = Arr[Edge]()
+  var i = 0
+  while i < fp.rings.length do
+    val es = ringEdges(fp.rings(i))
+    var j = 0
+    while j < es.length do
+      out.push(es(j))
+      j += 1
+    i += 1
+  out
+
+/** Only what reaches the ceiling bounds it. A partition is filtered out here,
+  * which is the whole of why the grid runs over it uninterrupted.
+  *
+  * Height is a stand-in for the real predicate — what BOUNDS the ceiling is not
+  * the same as what reaches it, and a column reaches it without interrupting
+  * the raster. When a room needs that distinction, replace this with an
+  * explicit `boundsCeiling` flag on `Ring`.
+  */
+def ceilingEdges(fp: Footprint, roomHeight: Double): Arr[Edge] =
+  val out = Arr[Edge]()
+  var i = 0
+  while i < fp.rings.length do
+    val r = fp.rings(i)
+    if r.height >= roomHeight then
+      val es = ringEdges(r)
+      var j = 0
+      while j < es.length do
+        out.push(es(j))
+        j += 1
+    i += 1
+  out
+
+/** Axis-aligned bounds of the whole plan: `(minX, minZ, maxX, maxZ)`. */
+def bounds(fp: Footprint): (minX: Double, minZ: Double, maxX: Double, maxZ: Double) =
+  var minX = Double.PositiveInfinity
+  var minZ = Double.PositiveInfinity
+  var maxX = Double.NegativeInfinity
+  var maxZ = Double.NegativeInfinity
+  var i = 0
+  while i < fp.rings.length do
+    val ps = fp.rings(i).points
+    var j = 0
+    while j < ps.length do
+      val p = ps(j)
+      if p.x < minX then minX = p.x
+      if p.x > maxX then maxX = p.x
+      if p.y < minZ then minZ = p.y
+      if p.y > maxZ then maxZ = p.y
+      j += 1
+    i += 1
+  (minX = minX, minZ = minZ, maxX = maxX, maxZ = maxZ)
+
+// ---------------------------------------------------------------------------
+// Camera confinement — CPU queries over the same ring data.
+//
+// These run PER FRAME, which is why they are `while` loops over `Arr` with no
+// allocation in the hot path, unlike the build-time shader emitters above that
+// may stay readable. The shader version unrolls into WGSL at build time and
+// cannot be reused at runtime, so this small CPU implementation lives beside
+// it — same ring data, two shapes of code.
+// ---------------------------------------------------------------------------
+
+/** Closest point on any edge to `pxz`, its distance, and the inward normal of
+  * the edge it landed on. Same segment projection as the shader's `segDist`,
+  * but returning the point. */
+def nearestBoundary(
+    edges: Arr[Edge],
+    pxz: Vec2,
+): (point: Vec2, dist: Double, inward: Vec2) =
+  var bestD = Double.PositiveInfinity
+  var qx = 0.0
+  var qz = 0.0
+  var nx = 0.0
+  var nz = 0.0
+  var i = 0
+  while i < edges.length do
+    val e = edges(i)
+    val ex = e.b.x - e.a.x
+    val ez = e.b.y - e.a.y
+    var t = ((pxz.x - e.a.x) * ex + (pxz.y - e.a.y) * ez) / (ex * ex + ez * ez)
+    if t < 0.0 then t = 0.0
+    else if t > 1.0 then t = 1.0
+    val cx = e.a.x + ex * t
+    val cz = e.a.y + ez * t
+    val dx = pxz.x - cx
+    val dz = pxz.y - cz
+    val d = (dx * dx + dz * dz).sqrt
+    if d < bestD then
+      bestD = d
+      qx = cx
+      qz = cz
+      nx = e.inwardNormal.x
+      nz = e.inwardNormal.y
+    i += 1
+  (point = Vec2(qx, qz), dist = bestD, inward = Vec2(nx, nz))
+
+/** Even-odd ray crossing over every edge. Inner rings need no special casing —
+  * their edges flip the parity, so the interior of an O-shape's inner box, or
+  * of a partition, correctly counts as OUTSIDE the room. */
+def isInside(edges: Arr[Edge], pxz: Vec2): Boolean =
+  var inside = false
+  var i = 0
+  while i < edges.length do
+    val a = edges(i).a
+    val b = edges(i).b
+    if (a.y > pxz.y) != (b.y > pxz.y) then
+      val t = (pxz.y - a.y) / (b.y - a.y)
+      if pxz.x < a.x + t * (b.x - a.x) then inside = !inside
+    i += 1
+  inside
+
+/** One clamp pass: push `pxz` to `margin` from the single NEAREST edge.
+  *
+  * A POSITION clamp, not a movement veto — and that is what makes walking
+  * diagonally into a wall *slide* along it rather than stick: pushing out along
+  * `pxz - q` is a projection onto the margin offset curve, so the component of
+  * motion parallel to the wall survives untouched.
+  */
+def confinePass(edges: Arr[Edge], pxz: Vec2, margin: Double): Vec2 =
+  val nb = nearestBoundary(edges, pxz)
+  // Recovery path, not the normal one: at 1 m/s and 60 fps a frame moves
+  // ~1.7 cm, so with a 0.5 m margin the camera cannot tunnel through in one
+  // step. This only matters if it is spawned outside the plan or teleported.
+  // The same branch covers landing exactly ON an edge, where the push-out
+  // direction below would be a zero vector.
+  if !isInside(edges, pxz) || nb.dist < 1e-9 then
+    Vec2(nb.point.x + nb.inward.x * margin, nb.point.y + nb.inward.y * margin)
+  else if nb.dist < margin then
+    val s = margin / nb.dist
+    Vec2(
+      nb.point.x + (pxz.x - nb.point.x) * s,
+      nb.point.y + (pxz.y - nb.point.y) * s,
+    )
+  else pxz
+
+/** Clamp a camera position to `margin` meters inside the plan, then pin `y`.
+  * Pass `pos.y` as `eyeY` to leave height free.
+  *
+  * **Two passes, not one.** A single nearest-edge clamp satisfies only the wall
+  * it picked, so in a corner where two walls both push, the camera creeps into
+  * the wedge — measured at 0.01 m from a wall in the worst case, well inside
+  * the 0.1 m near plane. Note this is not an odd-shape problem waiting for an
+  * L: a rectangle's four INNER corners are already concave, so the box needs
+  * this too.
+  *
+  * Two passes clear every case and a third changes nothing — it converges for
+  * any convex-angle pair. Do not reach for general multi-constraint resolution.
+  * (A convex corner, such as the outer face of an O-shape's inner box, needs
+  * only one pass: its margin curve is a rounded arc that a single nearest-point
+  * clamp already produces correctly.)
+  */
+def confine(
+    edges: Arr[Edge],
+    pos: Vec3,
+    margin: Double,
+    eyeY: Double,
+): Vec3 =
+  val once = confinePass(edges, Vec2(pos.x, pos.z), margin)
+  val twice = confinePass(edges, once, margin)
+  Vec3(twice.x, eyeY, twice.y)
+
+// ---------------------------------------------------------------------------
+// The ceiling raster.
+//
+// A FLAT LIST OF BEAM SEGMENTS, not a pair of axis-aligned grids. That is the
+// one structural choice here that has to be right up front: a hexagonal room
+// wants a TRIANGULAR raster — three families each parallel to one opposite wall
+// pair — and a non-snappable plan additionally wants an explicit perimeter beam
+// along each wall. Neither is built here, but both must be additive, and both
+// are just another producer pushing into the same `Arr[Beam]`.
+// ---------------------------------------------------------------------------
+
+/** One beam: an oriented segment in the grid plane. `soffitY` is its underside
+  * — carried per beam rather than taken from a room constant so families can be
+  * staggered against each other (see `FamilyYStagger`). */
+case class Beam(
+    a: Vec2,
+    b: Vec2,
     width: Double,
     height: Double,
-    depth: Double,
-    image: Panel,
-    sideStretch: Double = 3.0,
+    soffitY: Double,
 )
 
-/** A painting hung on a wall: its scene shape, its per-painting `model` matrix
-  * binding, and the wall-local UV data its shadow instance needs. Both `model`
-  * and `shadowRect` are mutable bindings so a swaying painting can drive its
-  * own model matrix and move its shadow with it each frame. `basePos` /
-  * `baseRect` are the resting values the sway offsets from.
-  */
-case class Painting(
-    model: BufferBinding[Mat4, ?],
-    shape: AnyShape,
-    shadowRect: BufferBinding[Vec4, ?], // UV (centerX, centerY, halfW, halfH)
-    shadowFade: Vec2, // per-axis penumbra width in UV
-    basePos: Vec3, // resting world position (sway offsets Y from here)
-    baseRect: Vec4, // resting shadow rect (sway moves centerY)
-    rotY: Double, // wall orientation about Y
-    wallHeight: Double, // for mapping a world Y offset → UV shadow move
-)
-
-/** A painting animated in a vertical sine rhythm: distinct `phase` and a
-  * slightly varying `speed` per painting, `amp` metres of travel.
-  */
-case class Sway(
-    painting: Painting,
+/** A family of parallel beams covering the plan. `dir` is the direction the
+  * beams run; the family's lines are spaced along its perpendicular, offset by
+  * `phase`. */
+case class BeamFamily(
+    dir: Vec2,
+    spacing: Double,
     phase: Double,
-    speed: Double,
-    amp: Double,
+    width: Double,
 )
 
-/** One wall side: its quad geometry (local UV [0,1], v down) and the paintings
-  * hung on it.
+/** Intersect the infinite line `origin + t·dir` with every edge, sort the hits
+  * by `t`, and keep the intervals whose midpoint is inside the plan.
+  *
+  * Parameterized by a LINE rather than an axis, so it serves field beams at any
+  * angle and, later, perimeter beams. Takes an explicit edge set because the
+  * raster is bounded only by what reaches the ceiling — passing `ceilingEdges`
+  * is what lets the grid run over a free-standing partition uninterrupted,
+  * which is the correct read: the grid is a ceiling feature and does not know
+  * the partition is there.
+  *
+  * On a convex plan this returns one interval; on an L, lines crossing the
+  * notch return two.
+  */
+def clipLine(
+    edges: Arr[Edge],
+    origin: Vec2,
+    dir: Vec2,
+): Arr[(from: Double, to: Double)] =
+  // Solve `origin + t·dir = a + s·e` per edge, keeping hits with 0 ≤ s ≤ 1.
+  //   [dir.x  -e.x] [t]   [a.x - origin.x]
+  //   [dir.z  -e.z] [s] = [a.z - origin.z]
+  val ts = Arr[Double]()
+  var i = 0
+  while i < edges.length do
+    val e = edges(i)
+    val ex = e.b.x - e.a.x
+    val ez = e.b.y - e.a.y
+    val det = ex * dir.y - ez * dir.x
+    // |det| ~ 0 means the line is parallel to this edge: no crossing, and a
+    // collinear edge would contribute a degenerate interval either way.
+    if det.abs > 1e-12 then
+      val rx = e.a.x - origin.x
+      val rz = e.a.y - origin.y
+      val s = (dir.x * rz - dir.y * rx) / det
+      if s >= 0.0 && s <= 1.0 then ts.push((ex * rz - ez * rx) / det)
+    i += 1
+  val out = Arr[(from: Double, to: Double)]()
+  if ts.length < 2 then return out
+  // Insertion sort: a handful of hits, and it keeps this free of any Scala
+  // collection or comparator plumbing.
+  var m = 1
+  while m < ts.length do
+    val v = ts(m)
+    var q = m - 1
+    while q >= 0 && ts(q) > v do
+      ts(q + 1) = ts(q)
+      q -= 1
+    ts(q + 1) = v
+    m += 1
+  var j = 0
+  while j < ts.length - 1 do
+    val t0 = ts(j)
+    val t1 = ts(j + 1)
+    val mid = (t0 + t1) * 0.5
+    if t1 - t0 > 1e-9
+      && isInside(edges, Vec2(origin.x + dir.x * mid, origin.y + dir.y * mid))
+    then out.push((from = t0, to = t1))
+    j += 1
+  out
+
+/** The field raster for one family, clipped to the plan.
+  *
+  * The offset range is found by projecting every plan vertex onto the family's
+  * normal, which works for any direction and any plan — unlike "extent /
+  * spacing over the bounding box", which only works for an axis-aligned family.
+  */
+def familyBeams(
+    f: BeamFamily,
+    edges: Arr[Edge],
+    height: Double,
+    soffitY: Double,
+): Arr[Beam] =
+  val nx = -f.dir.y
+  val nz = f.dir.x
+  var minO = Double.PositiveInfinity
+  var maxO = Double.NegativeInfinity
+  var i = 0
+  while i < edges.length do
+    val o = edges(i).a.x * nx + edges(i).a.y * nz
+    if o < minO then minO = o
+    if o > maxO then maxO = o
+    i += 1
+  val out = Arr[Beam]()
+  var k = Math.ceil((minO - f.phase) / f.spacing).toDouble
+  val kMax = Math.floor((maxO - f.phase) / f.spacing).toDouble
+  while k <= kMax do
+    val off = f.phase + k * f.spacing
+    val origin = Vec2(nx * off, nz * off)
+    val spans = clipLine(edges, origin, f.dir)
+    var s = 0
+    while s < spans.length do
+      val sp = spans(s)
+      out.push(
+        Beam(
+          a = Vec2(origin.x + f.dir.x * sp.from, origin.y + f.dir.y * sp.from),
+          b = Vec2(origin.x + f.dir.x * sp.to, origin.y + f.dir.y * sp.to),
+          width = f.width,
+          height = height,
+          soffitY = soffitY,
+        ),
+      )
+      s += 1
+    k += 1.0
+  out
+
+/** One wall side: its quad geometry (local UV [0,1], v down) and the frame an
+  * exhibition needs in order to hang something on it.
+  *
+  * Note what is NOT here: no painting list, no `animated` flag, no count. How
+  * many pieces hang and where is curation, and lives in the sketch that copies
+  * this one — the stage owes a frame and a usable span, not a policy.
   */
 case class Wall(
     center: Vec3,
@@ -133,24 +593,19 @@ case class Wall(
     rotY: Double,
     inwardNormal: Vec3,
     form: Form,
-    paintings: Arr[Painting] = Arr(),
 )
 
 type RoomVertex = (position: Vec3, uv: Vec2)
 
-// Wall + ceiling: both are quads textured with a pre-baked panel.
+// Wall + ceiling: both are quads textured with a pre-baked panel. Five lines of
+// pass-through — every look decision is on the other side of it, in the panel.
+// A room wanting its own wall artwork writes its own shade sampling two panels
+// at their own resolutions, rather than this one growing a parameter.
 type TexturedUniforms = (
     vp: VertexUniform[Mat4],
     samp: FragmentUniform[Sampler],
 )
 type TexturedPanels = (tex: FragmentPanel)
-
-type PaintingUniforms = (
-    vp: VertexUniform[Mat4],
-    model: VertexUniform[Mat4],
-    samp: FragmentUniform[Sampler],
-)
-type PaintingPanels = (img: FragmentPanel)
 
 @main def roomsGridCanvases(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -159,10 +614,41 @@ type PaintingPanels = (img: FragmentPanel)
     val sampler = p.samplerLinear
 
     // -----------------------------------------------------------------------
-    // Floor / ceiling geometry — box face quads → Mesh → buffered geometry
+    // The floor plan
     // -----------------------------------------------------------------------
-    val box =
-      Box(Vec3(0.0, RoomHeight / 2.0, 0.0), RoomWidth, RoomHeight, RoomDepth)
+
+    // A rectangle, wound so that `perp(edgeDir)` points into the room:
+    // (-x,-z) → (+x,-z) → (+x,+z) → (-x,+z).
+    //
+    // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED. An L is a 6-point ring
+    // here and nothing else; a hexagon is a 6-point ring at 60°. Everything
+    // below derives from these points.
+    val hw = RoomWidth / 2.0
+    val hd = RoomDepth / 2.0
+    val footprint = Footprint(
+      Arr(
+        Ring(
+          points = Arr(
+            Vec2(-hw, -hd),
+            Vec2(hw, -hd),
+            Vec2(hw, hd),
+            Vec2(-hw, hd),
+          ),
+          facing = Facing.Inward,
+          height = RoomHeight,
+        ),
+      ),
+    )
+
+    val fEdges = floorEdges(footprint)
+    val cEdges = ceilingEdges(footprint, RoomHeight)
+    val bb = bounds(footprint)
+    val bbW = bb.maxX - bb.minX
+    val bbD = bb.maxZ - bb.minZ
+
+    // -----------------------------------------------------------------------
+    // Geometry
+    // -----------------------------------------------------------------------
 
     def vert(c: Vec3, u: Double, v: Double): RoomVertex =
       (position = c, uv = Vec2(u, v))
@@ -175,246 +661,44 @@ type PaintingPanels = (img: FragmentPanel)
         ),
       )
 
-    val floorForm =
-      form(Arr(box.bottomFace((c, uvw) => vert(c, uvw.x, uvw.z))))
-
-    val ceilForm =
-      form(Arr(box.topFace((c, uvw) => vert(c, uvw.x, uvw.z))))
-
-    // -----------------------------------------------------------------------
-    // Pre-render: Simulate ambient lighting 3D-noise fields and generated halo light strips.
-    // -----------------------------------------------------------------------
-
-    // Distance from `wp` to the nearest room edge, ignoring the boundary
-    // planes the surface itself lies in (a wall never "approaches" its own
-    // plane). Adding a large constant on the surface's own axis takes it out
-    // of the `min`.
-    def edgeDist(wp: Vec3Expr, normal: Vec3Expr): FloatExpr =
-      val Far = 1000.0
-      val dx = (RoomWidth / 2.0 - wp.x.abs) + normal.x.abs * Far
-      val dy = wp.y.min(RoomHeight - wp.y) + normal.y.abs * Far
-      val dz = (RoomDepth / 2.0 - wp.z.abs) + normal.z.abs * Far
-      dx.min(dy).min(dz)
-
-    // Contact shadow as a function of the distance to the junction: darkest at
-    // 0, back to full brightness `EdgeFadeWorld` away.
-    def contact(dist: FloatExpr): FloatExpr =
-      lerp(ContactDarken, 1.0, dist.smoothstep(0.0, EdgeFadeWorld))
-
-    def roomNoise(wp: Vec3Expr, normal: Vec3Expr) =
-      val scaledWp = vec3(
-        wp.x + wp.y * 0.2,
-        wp.y * 0.3,
-        wp.z * 0.8 + wp.y * 0.2,
-      )
-      // The normal-dependent term gives each orientation its own look, which
-      // would otherwise meet as a hard seam in the corners. Fade it out over
-      // `EdgeFadeWorld` so the edge itself is uniform across all surfaces.
-      val edge = edgeDist(wp, normal).smoothstep(0.0, EdgeFadeWorld)
-      lerp(
-        0.68,
-        1.0,
-        ((Noise
-          .fbm3(
-            scaledWp * 0.10,
-            freqMul = 3.6,
-            ampMul = 0.12,
-            seed = vec3(120),
-          ) +
-          Noise.fbm3(
-            scaledWp.cross(normal) * 0.15,
-            freqMul = 2.1,
-            ampMul = 0.25,
-            seed = vec3(70),
-          ) * 0.3 * edge)
-          / 1.3).fit1101,
-      )
-
-    def texSize(w: Double, h: Double): (Int, Int) =
-      ((w * TexScale).toInt, (h * TexScale).toInt)
-
-    val (rfw, rfh) = texSize(RoomWidth, RoomDepth)
-
-    // Floor — plain tinted noise.
-    val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
-      // Contact shadow in the wall junction — distance to the nearest wall.
-      vec4(
-        vec3(FloorTint) * roomNoise(wp, normal)
-          * contact(edgeDist(wp, normal)),
-        1.0,
-      )
-
-    // Ceiling — tinted noise + HDR halo light strips along V; 6 strips across U.
-    val ceilTex = TextureBaker.bakeBlock(
-      p,
-      ceilForm,
-      rfw,
-      rfh,
-      format = TextureFormat.Rgba16Float,
-    ): (wp, normal, uv, color) =>
-      val col = VarVec3("col")
-      val s = LetFloat("s")
-      val band = VarFloat("band")
-      val lf = LetFloat("lf")
-      val halo = LetVec3("halo")
-      Block(
-        col := vec3(CeilTint) * roomNoise(wp, normal),
-        s := (uv.x * 6.0 + 0.5).fract,
-        band := s.abs.smoothstep(0.05, 0.02),
-        lf := uv.y.smoothstep(0.05, 0.15)
-          * (1.0 - uv.y).smoothstep(0.05, 0.15),
-        band *= lf,
-        halo := band * vec3(HaloColor),
-        col += halo,
-        color := vec4(col, 1.0),
-      )
-
-    // Single wall noise baker - shadows go on top in a separate layer.
-    val wallBaker = TextureBaker(p): (wp, normal, _) =>
-      // Matching contact shadow along the bottom border — height above floor.
-      vec4(
-        vec3(WallTintLow).lerp(
-          vec3(WallTintHigh),
-          wp.y.smoothstep(4.6, 5.5),
-        ) * roomNoise(wp, normal) * contact(wp.y),
-        1.0,
-      )
-
-    // The wall texture is composited each time it is baked: first a copy layer
-    // lays the pre-baked noise into the target, then one shadow instance per
-    // painting darkens its rect on top via multiplicative blending. One draw per
-    // shadow accumulating via fixed-function blending — no ping-pong, no
-    // per-pass full-texture read/write — so re-baking a moving wall every frame
-    // is cheap.
-
-    // Copy layer — write the pre-baked noise texture into the composite target.
-    type CopyU = (samp: Sampler)
-    type CopyP = (tex: FragmentPanel)
-    val copyShade = p.layerShade[CopyU, CopyP]: program =>
-      program.frag: ctx =>
-        ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
-
-    // Shadow instance — outputs a per-pixel darkening factor `1 - strength·mask`.
-    // Under `BlendState.Multiply` (color = dst·src) each instance multiplies the
-    // target, so overlapping shadows compound exactly as a stacked chain would.
-    type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
-    val shadowShade = p.layerShade[ShadowU]: program =>
-      program.frag: ctx =>
-        val sm = LetFloat("sm")
-        Block(
-          sm := shadowMask(ctx.in.uv, ctx.bindings.rect, ctx.bindings.fade),
-          ctx.out.color :=
-            vec4(vec3(1.0 - ctx.bindings.strength * sm), 1.0),
-        )
-
-    // -----------------------------------------------------------------------
-    // Scene shades — a textured quad (walls, ceiling) and a painting box.
-    // -----------------------------------------------------------------------
-    val texturedShade =
-      p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
-        program =>
-          program.vert: ctx =>
-            Block(
-              ctx.out.uv := ctx.in.uv,
-              ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0),
-            )
-          program.frag: ctx =>
-            ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
-
-    val paintingShade =
-      p.shade[RoomVertex, (uv: Vec2), PaintingUniforms, PaintingPanels]:
-        program =>
-          program.vert: ctx =>
-            Block(
-              ctx.out.uv := ctx.in.uv,
-              ctx.out.position :=
-                ctx.bindings.vp * ctx.bindings.model * vec4(
-                  ctx.in.position,
-                  1.0,
-                ),
-            )
-          program.frag: ctx =>
-            ctx.out.color := ctx.textures.img(ctx.in.uv, ctx.bindings.samp)
-
-    // -----------------------------------------------------------------------
-    // Walls + paintings (the M1 feature)
-    // -----------------------------------------------------------------------
-
-    /** Flat-box geometry for one painting, centred at the local origin, front
-      * on `+Z`. Front fills the inset UV rect; the four thin sides wrap the
-      * outer margin (stretched across the depth); the back is continuous with
-      * the side back edges. (M1: always includes the back face — no frames
-      * yet.)
+    /** Floor and ceiling are the plan's BOUNDING-BOX quad, not the plan
+      * polygon — there is no triangulation anywhere in this design. On an
+      * L-shaped plan the floor is still a plain rectangle covering the cut-out
+      * too, and that is fine: every ring edge carries an opaque full-height
+      * wall, so the region outside the plan is never visible, and the camera
+      * cannot reach it. The grime line and the noise fade come from
+      * `edgeSetDist` against the ring edges, not from the mesh, so they follow
+      * the true plan boundary regardless of how far the quad extends past it.
+      *
+      * UV is the quad's own [0,1]²: `u` along +X, `v` along -Z. This matches
+      * the frame the texture size is derived from, so texel density is uniform.
       */
-    def paintingForm(spec: PaintingSpec): Form =
-      val hw = spec.width / 2.0
-      val hh = spec.height / 2.0
-      val hd = spec.depth / 2.0
-      val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
-      val mv =
-        (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
+    def planeQuad(
+        y: Double,
+        faceUp: Boolean,
+        margin: Double = 0.0,
+    ): Quad[RoomVertex] =
+      val x0 = bb.minX - margin
+      val x1 = bb.maxX + margin
+      val z0 = bb.minZ - margin
+      val z1 = bb.maxZ + margin
+      val w = x1 - x0
+      val d = z1 - z0
+      def c(x: Double, z: Double): RoomVertex =
+        vert(Vec3(x, y, z), (x - x0) / w, (z1 - z) / d)
+      if faceUp then Quad(c(x0, z0), c(x0, z1), c(x1, z1), c(x1, z0))
+      else Quad(c(x0, z1), c(x0, z0), c(x1, z0), c(x1, z1))
 
-      def v(
-          x: Double,
-          y: Double,
-          z: Double,
-          u: Double,
-          w: Double,
-      ): RoomVertex =
-        (position = Vec3(x, y, z), uv = Vec2(u, w))
+    val floorForm = form(Arr(planeQuad(0.0, faceUp = false)))
 
-      val faces = Arr(
-        // Front (+Z): inset rect.
-        Quad(
-          v(-hw, hh, hd, mu, mv),
-          v(-hw, -hh, hd, mu, 1.0 - mv),
-          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-          v(hw, hh, hd, 1.0 - mu, mv),
-        ),
-        // Right side (+X): U 1-mu → 1.
-        Quad(
-          v(hw, hh, hd, 1.0 - mu, mv),
-          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-          v(hw, -hh, -hd, 1.0, 1.0 - mv),
-          v(hw, hh, -hd, 1.0, mv),
-        ),
-        // Left side (-X): U mu → 0.
-        Quad(
-          v(-hw, hh, hd, mu, mv),
-          v(-hw, -hh, hd, mu, 1.0 - mv),
-          v(-hw, -hh, -hd, 0.0, 1.0 - mv),
-          v(-hw, hh, -hd, 0.0, mv),
-        ),
-        // Top side (+Y): V mv → 0.
-        Quad(
-          v(-hw, hh, hd, mu, mv),
-          v(hw, hh, hd, 1.0 - mu, mv),
-          v(hw, hh, -hd, 1.0 - mu, 0.0),
-          v(-hw, hh, -hd, mu, 0.0),
-        ),
-        // Bottom side (-Y): V 1-mv → 1.
-        Quad(
-          v(-hw, -hh, hd, mu, 1.0 - mv),
-          v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-          v(hw, -hh, -hd, 1.0 - mu, 1.0),
-          v(-hw, -hh, -hd, mu, 1.0),
-        ),
-        // Back (-Z): continuous with side back edges, same world-X→U as front.
-        Quad(
-          v(-hw, hh, -hd, 0.0, 0.0),
-          v(-hw, -hh, -hd, 0.0, 1.0),
-          v(hw, -hh, -hd, 1.0, 1.0),
-          v(hw, hh, -hd, 1.0, 0.0),
-        ),
-      )
+    // The luminous plane, overhanging the plan on every side. There is no
+    // ceiling surface at `CeilY` any more — the raster (A5) will occupy that
+    // line, and until it exists the coffer is simply open. Expect this step to
+    // look wrong; that is what makes the occlusion legible when it lands.
+    val lightForm =
+      form(Arr(planeQuad(LightY, faceUp = true, margin = LightOverhang)))
 
-      p.form(geometry =
-        toBufferedGeometry(Mesh(faces), MeshBufferType.FaceVertices),
-      )
-
-    /** A wall quad in world space, UV [0,1] (tl=(0,0), v down). Its `form` goes
-      * to the wall baker; paintings are hung on it afterwards.
-      */
+    /** A wall quad in world space, UV [0,1] (tl=(0,0), v down). */
     def mkWall(
         center: Vec3,
         width: Double,
@@ -440,219 +724,510 @@ type PaintingPanels = (img: FragmentPanel)
       )
       Wall(center, width, height, rotY, inwardNormal, wallForm)
 
-    /** Hang a painting at wall-local `(u, v)` in world units (`u` along the
-      * wall width from its left edge, `v` height from the floor edge).
+    /** One wall per ring edge. `rotY` is derived from the inward normal rather
+      * than hand-authored — verified against the four hand-written values in
+      * `canvases` (front π, back 0, left π/2, right -π/2).
+      *
+      * The wall's top is `topY`, not the room height: with a grid ceiling the
+      * perimeter beam takes over the wall plane above `WallTopY`, and a
+      * partition stops at its own ring height.
       */
-    def hang(wall: Wall, spec: PaintingSpec, u: Double, v: Double): Painting =
-      val right = Up.cross(wall.inwardNormal)
-      val hd = spec.depth / 2.0
-      val pos = wall.center +
-        right * (u - wall.width / 2.0) +
-        Up * (v - wall.height / 2.0) +
-        wall.inwardNormal * (hd + 0.02)
-      val m = Mat4.fromTranslationRotationScale(
-        pos,
-        Quat.fromRotationY(wall.rotY),
-        Vec3(1.0, 1.0, 1.0),
-      )
-      val model = p.binding(m)
-      val shape = p
-        .shape(paintingForm(spec), paintingShade, cullMode = CullMode.None)
-        .bind("model" := model, "samp" := sampler, "img" := spec.image)
-      val baseRect = Vec4(
-        u / wall.width,
-        1.0 - v / wall.height,
-        (spec.width / 2.0) / wall.width,
-        (spec.height / 2.0) / wall.height,
-      )
-      val painting = Painting(
-        model = model,
-        shape = shape,
-        shadowRect = p.binding(baseRect),
-        shadowFade =
-          Vec2(ShadowFadeWorld / wall.width, ShadowFadeWorld / wall.height),
-        basePos = pos,
-        baseRect = baseRect,
-        rotY = wall.rotY,
-        wallHeight = wall.height,
-      )
-      wall.paintings.push(painting)
-      painting
-
-    // Composite one wall texture: a copy layer lays the pre-baked noise, then
-    // one multiplicatively-blended shadow instance per painting darkens its
-    // rect on top. Returns the panel — for animated walls re-`p.paint` it each
-    // frame after moving the paintings' shadow rects. No painting cap.
-    def compositeWallTex(wall: Wall): Panel =
-      val (ww, wh) = texSize(wall.width, wall.height)
-      val noiseTex = wallBaker(wall.form, ww, wh)
-      val copy = p
-        .layer(copyShade)
-        .bind("samp" := sampler, "tex" := noiseTex)
-      val shadow = p
-        .layer(shadowShade, blendState = BlendState.Multiply)
-        .bind("strength" := ShadowStrength)
-      for painting <- wall.paintings do
-        shadow.instances.add(
-          "rect" := painting.shadowRect,
-          "fade" := painting.shadowFade,
+    def wallsFrom(edges: Arr[Edge], topY: Double): Arr[Wall] =
+      val out = Arr[Wall]()
+      var i = 0
+      while i < edges.length do
+        val e = edges(i)
+        val dx = e.b.x - e.a.x
+        val dz = e.b.y - e.a.y
+        val width = (dx * dx + dz * dz).sqrt
+        val n = Vec3(e.inwardNormal.x, 0.0, e.inwardNormal.y)
+        out.push(
+          mkWall(
+            center = Vec3((e.a.x + e.b.x) / 2.0, topY / 2.0, (e.a.y + e.b.y) / 2.0),
+            width = width,
+            height = topY,
+            rotY = Math.atan2(n.x, n.z),
+            inwardNormal = n,
+          ),
         )
-      val panel =
-        p.panel(
-          width = ww,
-          height = wh,
-          mips = true,
-          layers = Arr(copy, shadow),
-        )
-      p.paint(panel)
-      panel
+        i += 1
+      out
 
-    // Image panels projected onto the canvases.
-    val imgShade = p.layerShade[(color: Vec3)]: program =>
-      program.frag: ctx =>
-        val GridN = 6.0
-        val HalfWidth = 0.016
-        def lineMask(t: FloatExpr): FloatExpr =
-          val f = (t * GridN).fract
-          val d = f.min(1.0 - f) // 0 on a grid line
-          d.smoothstep(HalfWidth, 0.0) // 1 on the line, 0 away
-        val uv = ctx.in.uv
-        val m = lineMask(uv.x + uv.y).max(lineMask(uv.x - uv.y))
-        ctx.out.color := vec4(ctx.bindings.color * (1.0 - m), 1.0)
+    val walls = wallsFrom(fEdges, WallTopY)
 
-    def patternPanel(c: Vec3): Panel =
-      p.panel(
-        width = 256,
-        height = 256,
-        layer = p.layer(imgShade).bind("color" := c),
-        mips = true,
+    // ----- The raster ------------------------------------------------------
+    //
+    // Two families at 90°. A hexagon calls this three times at 60° — that is
+    // the whole difference, data rather than new code.
+    //
+    // `phase = 0` with the lattice-derived room puts the outermost centerline
+    // at k·GridSpacing and its outer face exactly on the wall plane, so each
+    // wall's perimeter beam falls out for free.
+    val families = Arr(
+      BeamFamily(Vec2(1.0, 0.0), GridSpacing, 0.0, StripWidth),
+      BeamFamily(Vec2(0.0, 1.0), GridSpacing, 0.0, StripWidth),
+    )
+    val beams = Arr[Beam]()
+    for i <- 0 until families.length do
+      // Each family's soffit is dropped a hair below the previous one. Beams
+      // INTERPENETRATING at a crossing is fine — the depth buffer resolves
+      // overlapping volumes — but their SOFFITS are coplanar there, and a depth
+      // buffer cannot resolve coplanar faces: they z-fight. So separate them.
+      //
+      // 0.6 mm is ~0.2 px at eye distance, far below what is visible, while
+      // being ~80× the depth buffer's resolution at that range (~7.5 µm at
+      // 3.5 m with near = 0.1, far = 100). The lowest family wins at every
+      // crossing, consistently.
+      val bs = familyBeams(
+        families(i),
+        cEdges,
+        StripHeight,
+        WallTopY - i * FamilyYStagger,
       )
+      var j = 0
+      while j < bs.length do
+        beams.push(bs(j))
+        j += 1
 
-    // Four walls, each from the room box's extent, facing inward.
-    val Tau = 2.0 * math.Pi
-    val wallFront = mkWall(
-      Vec3(0.0, RoomHeight / 2.0, RoomDepth / 2.0),
-      RoomWidth,
-      RoomHeight,
-      Tau * 0.5,
-      Vec3(0.0, 0.0, -1.0),
-    )
-    val wallBack = mkWall(
-      Vec3(0.0, RoomHeight / 2.0, -RoomDepth / 2.0),
-      RoomWidth,
-      RoomHeight,
-      0.0,
-      Vec3(0.0, 0.0, 1.0),
-    )
-    val wallLeft = mkWall(
-      Vec3(-RoomWidth / 2.0, RoomHeight / 2.0, 0.0),
-      RoomDepth,
-      RoomHeight,
-      Tau * 0.25,
-      Vec3(1.0, 0.0, 0.0),
-    )
-    val wallRight = mkWall(
-      Vec3(RoomWidth / 2.0, RoomHeight / 2.0, 0.0),
-      RoomDepth,
-      RoomHeight,
-      -Tau * 0.25,
-      Vec3(-1.0, 0.0, 0.0),
-    )
-    val walls = Arr(wallFront, wallBack, wallLeft, wallRight)
+    /** Three visible faces per beam — soffit and both sides. No top: with `y`
+      * locked to eye height nothing above the raster is ever seen from below,
+      * and the floor mirror reflects to below the floor, so it sees undersides
+      * too.
+      *
+      * Built in the beam's OWN frame `(center, dir, perp, Up)` rather than from
+      * an axis-aligned box, which is what makes an odd-angle beam no different
+      * from an axis-aligned one.
+      *
+      * UV is one atlas: each beam takes a horizontal row, split into three
+      * bands sized in PROPORTION to each face's world width, so texel density
+      * is uniform across soffit and sides. `u` runs `[0, length/maxLength]` —
+      * normalized, clamp-safe, proportional, and shorter beams simply use less
+      * of their row. Do NOT scale `u` by world distance to get that density:
+      * this atlas does not tile, so any beam longer than one unit would run `u`
+      * past 1 and the clamp sampler would silently pin it at the edge.
+      */
+    val beamBandWorld = StripWidth + 2.0 * StripHeight
+    var maxBeamLen = 0.0
+    for b <- beams do
+      val l = (b.b - b.a).length
+      if l > maxBeamLen then maxBeamLen = l
 
-    val palette = Arr(
-      Vec3(0.78, 0.30, 0.28),
-      Vec3(0.30, 0.45, 0.70),
-      Vec3(0.40, 0.62, 0.42),
-      Vec3(0.82, 0.70, 0.34),
-    )
-    val imagePanels = palette.map(patternPanel)
-    // Pre-render the painting image panels once.
-    imagePanels.foreach(p.paint(_))
+    val beamFaces = Arr[Quad[RoomVertex]]()
+    for i <- 0 until beams.length do
+      val b = beams(i)
+      val dx = b.b.x - b.a.x
+      val dz = b.b.y - b.a.y
+      val len = (dx * dx + dz * dz).sqrt
+      val dir = Vec3(dx / len, 0.0, dz / len)
+      val perp = Vec3(-dir.z, 0.0, dir.x)
+      val cx = (b.a.x + b.b.x) / 2.0
+      val cz = (b.a.y + b.b.y) / 2.0
+      val u1 = len / maxBeamLen
+      val rowV0 = i.toDouble / beams.length
+      val rowH = 1.0 / beams.length
 
-    // Paintings per wall: the wide walls (left/right, along the room depth)
-    // carry 4, the narrow ones (front/back) carry 3. Same image/color per wall;
-    // only the size varies per painting.
-    val counts = Arr(3, 3, 4, 4) // front, back, left, right
-    // The wide walls (indices 2, 3) animate their paintings.
-    def isAnimated(wallIndex: Int): Boolean = wallIndex >= 2
-
-    // Paintings on the animated walls, each swaying vertically.
-    val sways = Arr[Sway]()
-
-    // Keep paintings this far from each wall's side edges.
-    val WallSideMargin = 0.5
-
-    for i <- 0 until walls.length do
-      val wall = walls(i)
-      val img = imagePanels(i)
-      val count = counts(i)
-      // Evenly spaced along the wall's inset span, each in its own slot centre,
-      // with a slight random horizontal + vertical offset.
-      val span = wall.width - 2.0 * WallSideMargin
-      for j <- 0 until count do
-        val pw = randInRange(0.9, 1.7)
-        val ph = randInRange(0.7, 1.4)
-        val slot = WallSideMargin + span * (j + 0.5) / count
-        val u = slot + randInRange(-0.12, 0.12)
-        val v = 1.75 + randInRange(-0.18, 0.18)
-        val painting = hang(
-          wall,
-          PaintingSpec(width = pw, height = ph, depth = 0.05, image = img),
-          u = u,
-          v = v,
+      def band(fromWorld: Double, thickWorld: Double) =
+        (
+          v0 = rowV0 + rowH * (fromWorld / beamBandWorld),
+          v1 = rowV0 + rowH * ((fromWorld + thickWorld) / beamBandWorld),
         )
-        // Distinct starting phase + a slightly varying speed per painting.
-        if isAnimated(i) then
-          sways.push(
-            Sway(
-              painting,
-              phase = randInRange(0.0, Tau),
-              speed = randInRange(0.6, 1.0),
-              amp = randInRange(0.14, 0.22),
-            ),
+
+      def face(
+          w: Double,
+          h: Double,
+          n: Vec3,
+          center: Vec3,
+          vb: (v0: Double, v1: Double),
+      ): Quad[RoomVertex] =
+        // Explicit tangent, not inferred: the soffit's normal is -Y, so the
+        // inferring overload would run `u` along world -Z whichever way the
+        // beam points, and the atlas band would not run along the beam.
+        Quad.fromDimensionsCenter[RoomVertex](w, h, n, dir, center): (pos, uv) =>
+          (
+            position = pos,
+            uv = Vec2(uv.x * u1, vb.v0 + uv.y * (vb.v1 - vb.v0)),
           )
 
+      val midY = b.soffitY + b.height / 2.0
+
+      /** A perimeter beam's outer side face is coplanar with the wall and
+        * points out of the room, so from inside you only ever see its back at
+        * grazing incidence — a thin sliver that samples a high mip level of its
+        * atlas row and reads as a dark line along the wall junction. Drop it.
+        *
+        * The test is general rather than "is this the outermost beam": step a
+        * centimeter along the face's outward normal and ask whether that point
+        * is still in the plan. Works unchanged for an L's notch walls, a
+        * hexagon, and the outer faces of anything standing in the room.
+        */
+      def facesOutOfPlan(centerXZ: Vec2, n: Vec3): Boolean =
+        !isInside(cEdges, Vec2(centerXZ.x + n.x * 0.01, centerXZ.y + n.z * 0.01))
+
+      beamFaces.push(
+        face(len, b.width, -Up, Vec3(cx, b.soffitY, cz), band(0.0, StripWidth)),
+      )
+      val sideA = Vec2(cx + perp.x * b.width / 2.0, cz + perp.z * b.width / 2.0)
+      if !facesOutOfPlan(sideA, perp) then
+        beamFaces.push(
+          face(
+            len,
+            b.height,
+            perp,
+            Vec3(sideA.x, midY, sideA.y),
+            band(StripWidth, StripHeight),
+          ),
+        )
+      val sideB = Vec2(cx - perp.x * b.width / 2.0, cz - perp.z * b.width / 2.0)
+      if !facesOutOfPlan(sideB, -perp) then
+        beamFaces.push(
+          face(
+            len,
+            b.height,
+            -perp,
+            Vec3(sideB.x, midY, sideB.y),
+            band(StripWidth + StripHeight, StripHeight),
+          ),
+        )
+
+    val beamForm = form(beamFaces)
+
     // -----------------------------------------------------------------------
-    // Scene rendering
+    // Distance fields over the floor plan — build-time shader expressions.
+    //
+    // Both unroll over the CPU-known ring data. This only ever runs inside a
+    // bake, so the unrolled `min` chain is free and every `a`/`b`/`dot(e,e)`
+    // constant-folds. That is why the edge set stays a build-time constant
+    // rather than becoming an array uniform.
+    //
+    // Both take an explicit EDGE SET rather than reaching for the whole
+    // footprint: not every surface is bounded by every ring, and passing the
+    // set in makes that a call-site decision instead of a rewrite.
     // -----------------------------------------------------------------------
 
-    val ceilShape = p
-      .shape(ceilForm, texturedShade, cullMode = CullMode.None)
-      .bind("samp" := sampler, "tex" := ceilTex)
+    /** Unsigned distance from an XZ point to the nearest edge in `edges`. All
+      * baked geometry lies inside the plan by construction, so no sign is
+      * needed — which keeps the winding/crossing machinery of a real polygon
+      * SDF out of this entirely. Handles concave corners and inner rings
+      * uniformly and for free.
+      */
+    def edgeSetDist(pxz: Vec2Expr, edges: Arr[Edge]): FloatExpr =
+      def segDist(e: Edge): FloatExpr =
+        val ex = e.b.x - e.a.x
+        val ez = e.b.y - e.a.y
+        val eLenSq = ex * ex + ez * ez
+        val ev = vec2(Vec2(ex, ez))
+        val w = pxz - vec2(e.a)
+        val t = (w.dot(ev) / eLenSq).clamp01
+        (w - ev * t).length
+      var acc = segDist(edges(0))
+      var i = 1
+      while i < edges.length do
+        acc = acc.min(segDist(edges(i)))
+        i += 1
+      acc
 
-    // All above-ground scene shapes (ceiling + walls + paintings) — these also
-    // feed the floor mirror.
-    val aboveGround = Arr[AnyShape](ceilShape)
-    // Composite wall textures that must be re-baked each frame (the animated
-    // walls, whose shadows move with their swaying paintings).
-    val animatedPanels = Arr[Panel]()
-    for i <- 0 until walls.length do
-      val wall = walls(i)
-      val wallTex = compositeWallTex(wall)
-      if isAnimated(i) then animatedPanels.push(wallTex)
+    /** Unsigned distance from an XZ point to the nearest VERTEX in `edges` —
+      * the corner columns where two walls meet. This is what a wall surface
+      * fades against; the boundary itself is zero everywhere on a wall.
+      */
+    def cornerDist(pxz: Vec2Expr, edges: Arr[Edge]): FloatExpr =
+      def vDist(e: Edge): FloatExpr = (pxz - vec2(e.a)).length
+      var acc = vDist(edges(0))
+      var i = 1
+      while i < edges.length do
+        acc = acc.min(vDist(edges(i)))
+        i += 1
+      acc
+
+    /** Distance from `wp` to the nearest geometry edge, ignoring the boundary
+      * the surface itself lies in (a wall never "approaches" its own plane).
+      * Adding a large constant on the surface's own axis takes it out of the
+      * `min` — the same trick the box version used, now split by whether the
+      * surface is horizontal.
+      *
+      * This feeds the NOISE FADE and nothing else. It is not an occlusion
+      * distance: nothing in this room darkens at an edge (see PLAN.md).
+      *
+      * `topY` is per-surface, so a wall fades against ITS OWN top rim — the
+      * ceiling junction for a full-height wall, the open top edge for a
+      * partition. Same expression, different constant.
+      */
+    def edgeDist(
+        wp: Vec3Expr,
+        normal: Vec3Expr,
+        edges: Arr[Edge],
+        topY: FloatExpr,
+    ): FloatExpr =
+      val Far = 1000.0
+      val isHoriz = normal.y.abs // 1 for floor/ceiling, 0 for walls
+      val plan = edgeSetDist(wp.xz, edges) + (1.0 - isHoriz) * Far
+      val vert = wp.y.min(topY - wp.y) + isHoriz * Far
+      val corner = cornerDist(wp.xz, edges) + isHoriz * Far
+      plan.min(vert).min(corner)
+
+    // -----------------------------------------------------------------------
+    // The ambience field — the core of the illusion.
+    //
+    // Nothing here is a light model. A world-space FBM modulating surface
+    // brightness, plus a second noise varied by surface normal, has no physical
+    // justification whatever and is precisely what makes the room read as a
+    // real space rather than a rendering. It is set by LOOKING, not deriving.
+    // -----------------------------------------------------------------------
+
+    /** Dirt collecting where wall meets floor — darkest at the junction, back
+      * to full brightness `GrimeWidth` away. This is the ONE darkening in the
+      * room, and it is grime, not light: that is why it belongs only at the
+      * floor line and generalizes to no other edge. */
+    def grime(dist: FloatExpr): FloatExpr =
+      lerp(GrimeDarken, 1.0, dist.smoothstep(0.0, GrimeWidth))
+
+    /** The ambience field, given the distance to the nearest geometry edge.
+      *
+      * Split out from the footprint-driven overload below because `edgeDist`'s
+      * vertical term assumes a surface spanning `0 … topY` — true of a wall,
+      * false of a ceiling beam sitting at 5.25–5.50 m. The beams supply their
+      * own edge distance and reuse everything else, which is the point of
+      * keeping this a small function over plain values rather than one baker
+      * that knows about rooms.
+      */
+    def roomNoise(
+        wp: Vec3Expr,
+        normal: Vec3Expr,
+        edgeDistance: FloatExpr,
+    ): FloatExpr =
+      val scaledWp = vec3(
+        wp.x + wp.y * 0.2,
+        wp.y * 0.3,
+        wp.z * 0.8 + wp.y * 0.2,
+      )
+      // The normal-dependent term gives each orientation its own look, which
+      // would otherwise meet as a hard seam in the corners. Fade it out over
+      // `EdgeFadeWorld` so the edge itself is uniform across all surfaces —
+      // this is what makes corners read as slightly rounded.
+      val edge = edgeDistance.smoothstep(0.0, EdgeFadeWorld)
+      lerp(
+        0.68,
+        1.0,
+        ((Noise
+          .fbm3(
+            scaledWp * 0.10,
+            freqMul = 3.6,
+            ampMul = 0.12,
+            seed = vec3(120),
+          ) +
+          Noise.fbm3(
+            scaledWp.cross(normal) * 0.15,
+            freqMul = 2.1,
+            ampMul = 0.25,
+            seed = vec3(70),
+          ) * 0.3 * edge)
+          / 1.3).fit1101,
+      )
+
+    def texSize(w: Double, h: Double): (Int, Int) =
+      ((w * AmbienceTexScale).toInt, (h * AmbienceTexScale).toInt)
+
+    val (rfw, rfh) = texSize(bbW, bbD)
+
+    // Floor — tinted noise, with the grime line around the plan boundary.
+    val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
+      vec4(
+        vec3(FloorTint)
+          * roomNoise(wp, normal, edgeDist(wp, normal, fEdges, CeilY))
+          * grime(edgeSetDist(wp.xz, fEdges)),
+        1.0,
+      )
+
+    // =======================================================================
+    // THE LIGHT SHADER — swap this out. Everything else in the ceiling is the
+    // room's; this is the exhibition's.
+    //
+    // An HDR base with a slow undulation in strength. Multiplicative on the
+    // base and bounded, so it cannot dip below the bloom threshold or fade
+    // toward the overhang however the periods are tuned — the amplitude is the
+    // knob, the base is not. It needs no boundary treatment at all because it
+    // never fades, which is what keeps it this short.
+    //
+    // Structure in world meters, not the plane's UV. On a rectangle the two
+    // differ only by a constant, so this choice proves nothing here; on an L it
+    // does, because the bounding box is not a room. Anything anchored to the
+    // plan boundary — an end-cap, a vignette — must use
+    // `edgeSetDist(pxz, cEdges)` rather than the UV rectangle.
+    // =======================================================================
+    val (lw, lh) = texSize(bbW + 2.0 * LightOverhang, bbD + 2.0 * LightOverhang)
+    val lightTex = TextureBaker.bakeBlock(
+      p,
+      lightForm,
+      lw,
+      lh,
+      format = TextureFormat.Rgba16Float,
+    ): (wp, _, _, color) =>
+      val wave = LetFloat("wave")
+      Block(
+        wave := 1.0 + LightWaveAmount * 0.5 * (
+          (wp.x * Tau / LightWaveMetersX).sin
+            + (wp.z * Tau / LightWaveMetersZ).sin
+        ),
+        color := vec4(vec3(LightColor) * wave, 1.0),
+      )
+
+    // Raster atlas — THE SAME MATERIAL AS THE WALLS, so it gets the same
+    // treatment and not a special one: the same `roomNoise` at world position,
+    // the same fade of the normal-varied term at every geometry edge. That is
+    // the whole integration story. The beams read as sitting in the ceiling
+    // because they are lit like the ceiling and share its noise field.
+    //
+    // NO JUNCTION DARKENING. Not at beam crossings, not where the raster meets
+    // a wall, not in the pockets between beams. Under a large diffuse source
+    // above the grid the light reaches into all of it near-equally, and adding
+    // occlusion there is the game-engine look this room avoids. (A 60° raster
+    // in a hexagon meets in far sharper wedges and might genuinely want it —
+    // decide that there, on its own merits, not by inheriting this.)
+    //
+    // Two things vary per face, and neither is an edge effect:
+    //   * SOFFIT TINT — downward faces are all you see from eye height, so the
+    //     underside of the raster IS the ceiling plane as far as the eye is
+    //     concerned and takes `CeilTint`. The sides are vertical like walls and
+    //     take the wall tint.
+    //   * the normal-varied noise term is KEPT, not suppressed. It is what makes
+    //     surfaces at different orientations read as one material lit from one
+    //     room; fading it at the arrises keeps the thin beam's many hard 90°
+    //     corners seam-free without special-casing them.
+    val (baw, bah) = texSize(maxBeamLen, beams.length * beamBandWorld)
+    // CLEAR TO THE MATERIAL, not to black. An atlas always has texels no face
+    // covers — partially-covered ones along every band edge, whole bands whose
+    // face was skipped (the perimeter beams' outer sides), and the `u` tail of
+    // every beam shorter than the longest. Linear filtering and mip generation
+    // pull those back into the faces that DO cover their texels, so at black
+    // they bleed out as dark seams along beam edges, worst where a band is only
+    // a few texels thick — a soffit here is ~5. Clearing to the material makes
+    // the bleed material-colored, and therefore invisible.
+    val beamTex = TextureBaker.bake(
+      p,
+      beamForm,
+      baw,
+      bah,
+      clearColor = (CeilTint.x, CeilTint.y, CeilTint.z, 1.0),
+    ): (wp, normal, uv) =>
+      // Distance to the nearest edge of the face we are on, in meters.
+      //
+      // The atlas row IS the beam's unrolled cross-section, so `v` within a row
+      // gives the position across it and the band boundaries are exactly the
+      // beam's arrises and open top edges. That is why this needs no per-beam
+      // frame — one expression serves every beam at any angle, which a
+      // world-space formulation could not do without per-beam uniforms, and a
+      // single shared atlas bake has none.
+      //
+      // Only the CROSS-SECTION is faded, not the run: the beam ends abut walls
+      // or other beams, and `u` cannot recover the far end because each beam's
+      // `u` range differs and the bake is shared. Revisit if ends show a seam.
+      //
+      // Note the consequence at these proportions: a soffit is `StripWidth`
+      // = 0.10 m across, so its greatest edge distance is 0.05 — below
+      // `EdgeFadeWorld` = 0.08. The normal-varied term is therefore almost
+      // fully suppressed on soffits and only ~36 % of each side reaches full
+      // strength. That is the mechanism working, not a defect: a thin beam has
+      // no room to develop its own orientation before the next arris. Widen
+      // the beams and the term reappears on its own.
+      val across = (uv.y * beams.length).fract * beamBandWorld
+      val dEdge = across
+        .min((across - StripWidth).abs)
+        .min((across - (StripWidth + StripHeight)).abs)
+        .min(beamBandWorld - across)
+      val tint = vec3(WallTintLow).lerp(vec3(CeilTint), normal.y.abs)
+      vec4(tint * roomNoise(wp, normal, dEdge), 1.0)
+
+    /** Wall ambience. ONE baker — and therefore one pipeline — for every wall
+      * in the room, whatever its height.
+      *
+      * `topY` is a per-bake uniform rather than a constant closed over by the
+      * shade. Every wall happens to share a top right now, so this changes
+      * nothing visually; it matters the moment one does not. A partition
+      * stopping below the ceiling, a plinth, a room of pillars at assorted
+      * heights would each otherwise need a specialized shade and its own WGSL
+      * compile, to express what is properly a uniform buffer write.
+      *
+      * `topY` cannot be applied afterwards by the runtime shader, either: it
+      * changes the distance field itself, which is the entire thing the bake
+      * caches. A per-wall TINT would join this same schema — that one could go
+      * either way, but once a uniform block exists there is no reason to keep
+      * it out and run a second mechanism.
+      */
+    type WallU = (topY: FragmentUniform[Float])
+
+    val wallBaker = TextureBaker[WallU](p): ctx =>
+      val wp = ctx.in.worldPos
+      val normal = ctx.in.normal
+      val topY = ctx.bindings.topY
+      // A broad settling of tone in the top ~0.9 m, anchored to the wall's own
+      // top rather than to absolute room coordinates — so a partition's top rim
+      // gets the same treatment with no extra code. NOT an edge effect: there
+      // is no darkening where the wall meets the ceiling.
+      Block(
+        ctx.out.color := vec4(
+          vec3(WallTintLow).lerp(
+            vec3(WallTintHigh),
+            (topY - wp.y).smoothstep(TopFadeDepth, 0.0),
+          ) * roomNoise(wp, normal, edgeDist(wp, normal, fEdges, topY))
+            * grime(wp.y),
+          1.0,
+        ),
+      )
+
+    // -----------------------------------------------------------------------
+    // Scene shades
+    // -----------------------------------------------------------------------
+    val texturedShade =
+      p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
+        program =>
+          program.vert: ctx =>
+            Block(
+              ctx.out.uv := ctx.in.uv,
+              ctx.out.position := ctx.bindings.vp * vec4(ctx.in.position, 1.0),
+            )
+          program.frag: ctx =>
+            ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
+
+    // -----------------------------------------------------------------------
+    // Scene assembly
+    // -----------------------------------------------------------------------
+
+    val lightShape = p
+      .shape(lightForm, texturedShade, cullMode = CullMode.None)
+      .bind("samp" := sampler, "tex" := lightTex)
+
+    val beamShape = p
+      .shape(beamForm, texturedShade, cullMode = CullMode.None)
+      .bind("samp" := sampler, "tex" := beamTex)
+
+    // All above-ground scene shapes — these also feed the floor mirror. The
+    // raster reflected in the floor is a large part of the payoff, so both it
+    // and the light plane belong in here from the start.
+    val aboveGround = Arr[AnyShape](lightShape, beamShape)
+    for wall <- walls do
+      // Each wall binds A PANEL, whatever produced it. Going from the plain
+      // ambience bake here to a shadow-compositing path (A8) is a one-line
+      // change at the producer and nothing at the shade.
+      val (ww, wh) = texSize(wall.width, wall.height)
+      val bake = wallBaker.prepare(wall.form, ww, wh)
+      bake.shape.bind("topY" := wall.height)
+      p.paint(bake.panel)
+      val wallTex = bake.panel
       aboveGround.push(
         p.shape(wall.form, texturedShade, cullMode = CullMode.None)
           .bind("samp" := sampler, "tex" := wallTex),
       )
-      for painting <- wall.paintings do aboveGround.push(painting.shape)
 
     val wallColor = Vec4(0.90, 0.90, 0.90, 0.0)
 
-    // val mirror = MirrorReflection(
-    //   p,
-    //   shapes = aboveGround,
-    //   vpName = "vp",
-    //   alphaScale = RoomHeight,
-    //   blurStrength = 5.0,
-    //   stretch = 1.5,
-    //   clearColor = wallColor,
-    // )
     val mirror = GaussianMirrorReflection(
       p,
       shapes = aboveGround,
       vpName = "vp",
-      alphaScale = RoomHeight,
+      // The tallest thing the mirror reflects is now the light plane, not the
+      // ceiling line — the alpha ramp has to reach that far or the reflection
+      // saturates before it gets there.
+      alphaScale = LightY,
       blurStrength = 5.0,
       blurRatioVertical = 3.0,
       clearColor = wallColor,
@@ -672,6 +1247,12 @@ type PaintingPanels = (img: FragmentPanel)
     )
     type FloorPanels = (tex: FragmentPanel, reflTex: FragmentPanel)
 
+    // The floor already samples two panels at different resolutions and
+    // combines them here — the ambience bake and the sub-resolution mirror.
+    // A floor material (tiles, marble, wood, an artwork) is a third input to
+    // this shade, at its own resolution. Note it would compete with the
+    // reflection for the same budget: `reflStrength` is taken directly out of
+    // whatever the floor otherwise shows.
     val floorShade =
       p.shade[BakeVertex, (uv: Vec2), FloorUniforms, FloorPanels]: program =>
         program.vert: ctx =>
@@ -721,13 +1302,30 @@ type PaintingPanels = (img: FragmentPanel)
       )
       .bind("vp" := sceneVp)
 
+    // Bloom needs no view-direction gate: the light plane is the only
+    // above-threshold surface, and the raster occludes it geometrically from
+    // low angles, so the glare emerges as you look up. That stays true whatever
+    // the light shader is — it is the geometry doing the gating.
+    //
+    // `intensity` is the free knob for how strong the glare reads. `LightColor`
+    // is NOT: it is capped by the floor re-bloom check (see above). Raised from
+    // `canvases`' 0.002 because the emitter dropped from 8.0 to 2.0, cutting
+    // the above-threshold excess from 7.0 to 1.0 — tune it by eye from here.
     val bloom = Bloom(
       p,
       scenePanel,
-      intensity = 0.002,
+      intensity = 0.004,
       threshold = 1.0,
       blurRadius = 4.0,
       mipLevels = 5,
+      // Soft-clip the HDR before display. Without it the beam silhouettes
+      // against the light plane read as a staircase no matter how many MSAA
+      // samples are taken: a hard clamp at 1.0 sends every edge sample above
+      // ~26 % coverage to pure white, collapsing 4 of MSAA's 5 gradations. The
+      // knee sits just above the room's own brightest surface, so nothing in
+      // the room shifts; only the emitter and its edges are compressed.
+      toneKnee = 0.9,
+      toneWhite = 2.2,
     )
 
     // -----------------------------------------------------------------------
@@ -737,7 +1335,7 @@ type PaintingPanels = (img: FragmentPanel)
       fov = 0.9,
       near = 0.1,
       far = 100.0,
-      pos = Vec3(0.0, 1.7, 0.0),
+      pos = Vec3(0.0, EyeHeight, 0.0),
     )
 
     devPreserve(cam)
@@ -756,43 +1354,31 @@ type PaintingPanels = (img: FragmentPanel)
       canvasRes.set(Vec2(w, h))
       mirror.resize(w, h)
 
-    var time = 0.0
-
     animate: tpf =>
-      time += tpf
-      val t = time / 1000.0
-      // Sway the animated paintings vertically, moving each one's model matrix
-      // and its shadow rect together.
-      sways.foreach: sw =>
-        val pt = sw.painting
-        val s = sw.amp * (t * sw.speed + sw.phase).sin
-        pt.model.set(
-          Mat4.fromTranslationRotationScale(
-            pt.basePos + Up * s,
-            Quat.fromRotationY(pt.rotY),
-            Vec3(1.0, 1.0, 1.0),
-          ),
-        )
-        // Painting up by `s` metres → v grows → shadow rect centre moves up
-        // (v is measured downward, so subtract).
-        pt.shadowRect.set(
-          Vec4(
-            pt.baseRect.x,
-            pt.baseRect.y - s / pt.wallHeight,
-            pt.baseRect.z,
-            pt.baseRect.w,
-          ),
-        )
-      // Re-composite the animated walls (noise copy + moved shadow instances)
-      // before the scene samples their textures.
-      animatedPanels.foreach(p.paint(_))
-
       input.update(tpf)
       controller.update(tpf)
+      // Confinement is a post-move clamp, so the controller needs to know
+      // nothing about geometry and no library change is required.
+      //
+      // `y` is LOCKED to eye height: the shipped experience is a walk on one
+      // plane. Space / Shift free-fly survives only as a dev inspection tool,
+      // gated on `devMode` (true under the Vite dev server, false in a built
+      // sketch) so it cannot ship by accident.
+      //
+      // This is a geometry decision as much as a camera one — with `y` fixed,
+      // nothing above eye height is ever seen from below, and the floor mirror
+      // only shows undersides. So AUTHOR FOR THE LOCKED EYE PLANE: a partition
+      // taller than 1.7 m needs no top cap. Flying in dev will reveal those
+      // gaps, the way noclip reveals a level's backstage. That is expected.
+      cam.pos = confine(
+        fEdges,
+        cam.pos,
+        margin = WallClearance,
+        eyeY = if devMode then cam.pos.y else EyeHeight,
+      )
       val vp = cam.viewProjMat
       sceneVp.set(vp)
       mirror.paint(vp)
       p.paint(scenePanel)
       bloom.paint()
-      // p.show(mirror.resultPanel)
       p.show(bloom.resultPanel)

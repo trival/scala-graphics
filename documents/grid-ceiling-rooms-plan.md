@@ -1157,10 +1157,30 @@ Suggested tunables (room-scale, much finer than `grid-ceiling`'s 1.5 m):
 an integer count across the family's offset range so the raster is symmetric.
 
 Beams **interpenetrate at crossings** — two families already share volume where
-they cross, and a third makes triple points. This is accepted, not a bug;
-`grid-ceiling` does the same and the depth buffer resolves it. If three
-coincident families read badly, stagger each family's `gridY` by a few
-millimeters.
+they cross, and a third makes triple points. The shared *volume* is accepted and
+the depth buffer does resolve it.
+
+**The soffits are a different matter, and staggering is required rather than
+contingent.** Every family's soffit sits at the same height, so at a crossing
+the two soffits are **coplanar** — and a depth buffer cannot resolve coplanar
+faces, it resolves interpenetrating ones. They z-fight, visibly, as a dashed
+shimmer along every crossing. So offset each family's soffit by a fraction of a
+millimeter; the lowest family then wins at every crossing, consistently.
+
+Size it against two numbers rather than by feel: it must exceed the depth
+buffer's resolution at eye distance, and stay under a pixel. At `near = 0.1`,
+`far = 100` and 3.5 m that resolution is ~7.5 µm, while 0.6 mm subtends ~0.28 px
+— so 0.6 mm is 80× the former and a quarter of the latter, with room to spare on
+both sides.
+
+**Emit only the side faces that face into the room.** A perimeter beam's outer
+side is coplanar with the wall and points outward, so from inside you see its
+back at grazing incidence: a thin sliver sampling a high mip of its atlas row,
+which reads as a **dark line along the wall junction**. The test should be
+general rather than "is this the outermost beam" — step a centimeter along the
+face's outward normal and ask whether that point is still inside the plan. That
+form works unchanged for an L's notch, a hexagon, and the outer faces of
+anything standing in the room.
 
 ### Raster shading
 
@@ -1249,9 +1269,25 @@ aesthetic:
    mechanism by which looking up produces glare.
 2. **The mirrored copy must stay _below_ threshold after `reflStrength`**, or
    the floor re-blooms instead of reading as a soft blur
-   (`GridCeiling.scala:218-220` documents that tuning). A brighter or larger
-   emitting region makes this harder, so it is checked per light shader, not
+   (`GridCeiling.scala:218-220` documents that tuning). This is a hard numeric
+   cap, not a matter of taste, and worth writing out because it is far tighter
+   than it looks. The floor composites `base·(1−mix) + reflection·mix`, and at
+   the light plane's own height `mix = 0.6 · reflStrength`. At
+   `reflStrength = 0.25` and a floor base near 0.80 that is `mix = 0.15` with
+   only `1 − 0.68 = 0.32` of headroom — so the emitter may not exceed **≈ 2.1**,
+   however it looks.
+
+   **`canvases`' `HaloColor = 8.0` therefore does not transfer**, and this is
+   the trap: there it lit thin halo strips covering a few percent of the
+   ceiling; here the same number lights the whole plane. Carried over unchanged
+   it puts the floor reflection at 1.88 — nearly double threshold — and the
+   glare swamps the raster it is meant to be seen through. A brighter or larger
+   emitting region makes this worse, so it is checked per light shader, not
    once.
+
+   The corollary matters for tuning: **the emitter's value is capped by the
+   mirror; bloom `intensity` is not.** Move `intensity` to make the glare
+   stronger or weaker — not the light color.
 3. **Cover the overhang.** The plane is wider than the plan so shallow rays
    through gaps near a wall still land on it; a shader that fades to black
    before its own edge reintroduces exactly the failure the overhang exists to
@@ -1459,13 +1495,20 @@ Two things worth noting about this shape:
   `q` landed on, which the ring already carries per edge from the wall
   derivation.
 
-Corners need one caveat: at a **convex** corner (the outside of an O-shape's
-inner box, or an L's protruding corner) the margin curve is a rounded arc, which
-the single-nearest-point clamp produces correctly. At a **concave** corner two
-walls both push, and a single-nearest-point clamp can let the camera creep into
-the wedge. If that shows up, run the clamp twice per frame — cheap, and it
-converges for any convex-angle pair. Do not reach for full multi-constraint
-resolution here.
+Corners need one caveat, and it bites immediately rather than eventually: at a
+**convex** corner (the outside of an O-shape's inner box, or an L's protruding
+corner) the margin curve is a rounded arc, which the single-nearest-point clamp
+produces correctly. At a **concave** corner two walls both push, and a
+single-nearest-point clamp lets the camera creep into the wedge.
+
+**So `confine` runs two passes as standard.** It was tempting to write this as a
+contingency for odd shapes — but **a rectangle's four inner corners are already
+concave**, so a plain box needs it as much as an L does. Measured on the 6.5 ×
+10 m box with a 0.5 m margin, one pass leaves the camera 0.01 m from a wall in
+the worst corner case, and puts a recovery from outside the plan exactly *on* an
+edge; two passes hold 0.5 m everywhere and a third changes nothing. It converges
+for any convex-angle pair. Do not reach for full multi-constraint resolution
+here.
 
 ### Defaults
 
@@ -2212,9 +2255,12 @@ accident. None blocks step 1.
   normal-dependent noise at concave and convex corners alike. If the L's convex
   corner reads wrong, gate it with a per-wall CPU flag rather than shader math
   (Part 1). This is a fade, not a darkening.
-- **Concave camera creep.** If the single-nearest-point clamp lets the camera
-  into a concave wedge, run `confine` twice per frame. Do not reach for general
-  multi-constraint resolution (Part 3).
+- ~~Concave camera creep~~ — **decided, and earlier than expected**: `confine`
+  runs **two passes** as standard. A single nearest-edge clamp satisfies only
+  the edge it picked, measured at 0.01 m from a wall in a corner — inside the
+  0.1 m near plane. This is not an odd-shape problem: **a rectangle's four inner
+  corners are already concave**, so the box template needs it too, not just the
+  L. Two passes clear every case and a third changes nothing (Part 3).
 - ~~Free vertical~~ — **decided**: `y` is locked to `EyeHeight`, Space / Shift
   is a dev-only inspection tool (Part 3). Consequence: author for the locked eye
   plane, so no top caps on partitions taller than 1.7 m.
