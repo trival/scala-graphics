@@ -288,10 +288,32 @@ overhang.
 ### A8 — Hanging affordance
 
 `paintingForm` / `hang` / `shadowMask` / `shadowShade` / `copyShade` /
-`compositeWallTex` back verbatim from `canvases`, with `hang`'s parameters
-renamed to `centerFromLeft` / `centerHeight`. Each wall binds **a `Panel`,
-whatever produced it**, so switching a wall from `wallBaker(...)` to
+`compositeWallTex` back from `canvases`, with `hang`'s parameters renamed to
+`centerFromLeft` / `centerHeight`. Each wall binds **a `Panel`, whatever
+produced it**, so switching a wall from `wallBaker(...)` to
 `compositeWallTex(wall)` is a one-line change at the producer.
+
+**Two things are no longer verbatim, because `Wall` shed both fields during A7's
+refactor.** Neither is a design change to make here — just do not reintroduce
+the fields by reflex when porting:
+
+- **`rotY` is derived, not stored.** `canvases`' `hang`
+  (`Canvases.scala:446-478`) reads `wall.rotY` for
+  `Quat.fromRotationY(wall.rotY)`, then copies it onto `Painting.rotY` for the
+  sway loop. A wall now carries its orientation once, as `inwardNormal`. Add
+
+  ```scala
+  extension (w: Wall) def rotY: Double = Math.atan2(w.inwardNormal.x, w.inwardNormal.z)
+  ```
+
+  and every call site reads unchanged. `Painting` may keep storing `rotY`, since
+  there it is a captured animation constant rather than a duplicate of live
+  geometry.
+
+- **`Wall` carries no `Form`.** A wall is plan data; the form is built at the
+  use site with `form(Arr(wall.quad))`. So `compositeWallTex(wall)` takes the
+  wall's form (or panel) as an argument rather than reaching through the wall
+  for it.
 
 Rename `TexScale` → `AmbienceTexScale` while porting, and keep the wall shade's
 inputs separable: the ambience panel is one input, and a wall's own artwork

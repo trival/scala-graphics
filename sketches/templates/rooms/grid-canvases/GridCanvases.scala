@@ -35,8 +35,6 @@ import trivalibs.utils.numbers.NumExt.given
 // Nothing tunable should hide further down the file.
 // ===========================================================================
 
-val Tau = 2.0 * math.Pi
-
 // ---- The ceiling beam lattice, and the room derived from it ----------------
 //
 // For an axis-aligned plan, do NOT snap the grid to the room — derive the room
@@ -50,17 +48,19 @@ val Tau = 2.0 * math.Pi
 // A plan whose walls are not parallel to a beam family — a hexagon — cannot
 // snap, and needs an explicit perimeter-beam generator instead. This is the
 // free path where it applies.
-val GridSpacing = 0.55
+val GridSpacing = 0.45
 val StripWidth = 0.10
-val StripHeight = 0.25
+val StripHeight = 0.35
 
 /** Vertical offset between successive beam families, to keep their soffits from
   * being coplanar where they cross. See the family loop for why this is needed
-  * and why this size. */
+  * and why this size.
+  */
 val FamilyYStagger = 0.0006
 
 /** Snap a wanted half-extent (meters) out to the outer face of the nearest
-  * beam. */
+  * beam.
+  */
 def snapHalfExtent(wanted: Double): Double =
   val k = Math.round((wanted - StripWidth / 2.0) / GridSpacing).toDouble
   k * GridSpacing + StripWidth / 2.0
@@ -72,14 +72,16 @@ val RoomDepth = snapHalfExtent(10.0 / 2.0) * 2.0
 val RoomHeight = 5.5
 
 /** How close the visitor may get to any surface, including the outer faces of
-  * anything standing in the room and the faces of hung pieces. */
+  * anything standing in the room and the faces of hung pieces.
+  */
 val WallClearance = 0.5
 
 /** The walking plane. `y` is locked to this — see the confinement section. */
 val EyeHeight = 1.7
 
 /** Ceiling line — the top of the raster, and where the room still reads as
-  * having a ceiling from eye height. */
+  * having a ceiling from eye height.
+  */
 val CeilY = RoomHeight
 
 /** Where the *visible* wall ends, and what a wall's shading fades against.
@@ -96,8 +98,9 @@ val CeilY = RoomHeight
 val WallTopY = CeilY - StripHeight
 
 /** Depth of the wall tint gradient below `WallTopY`. A broad settling of tone
-  * where wall meets ceiling — NOT an edge effect, and not occlusion. */
-val TopFadeDepth = 0.9
+  * where wall meets ceiling — NOT an edge effect, and not occlusion.
+  */
+val TopFadeDepth = 0.4
 
 // ---- The coffer: a luminous plane recessed behind the raster ---------------
 //
@@ -137,17 +140,20 @@ val LightOverhang =
 /** Baked texels per world meter for the AMBIENCE field only. It is smooth,
   * low-frequency noise, so this is deliberately cheap — a 6.5 m wall bakes to
   * ~312 px. A wall or floor carrying its own artwork gets its own, much higher
-  * resolution as a separate panel; do NOT raise this to sharpen artwork. */
+  * resolution as a separate panel; do NOT raise this to sharpen artwork.
+  */
 val AmbienceTexScale = 48.0
 
 /** How far from a geometry edge the normal-dependent noise term is fully faded
   * out. This makes corners read as slightly ROUNDED — one noise blending into
-  * the other. It is a material property, not light absorption. */
+  * the other. It is a material property, not light absorption.
+  */
 val EdgeFadeWorld = 0.08
 
 /** The floor grime line: dirt collecting where wall meets floor. Its own width,
   * deliberately separate from `EdgeFadeWorld` — they are unrelated quantities
-  * that `canvases` happened to give the same number. */
+  * that `canvases` happened to give the same number.
+  */
 val GrimeWidth = 0.08
 val GrimeDarken = 0.93 // brightness multiplier right at the junction
 
@@ -210,12 +216,13 @@ val LightWaveAmount = 0.12 // ±12 % on strength; stays well above threshold
 // so it is written as library code that has not moved yet.
 // ===========================================================================
 
-val Up = Vec3(0.0, 1.0, 0.0)
+val Up = Vec3.Y
+val Tau = 2.0 * math.Pi
 
 /** Which side of a ring the room is on.
   *
-  * The codebase's opaque-type enum pattern (`graphics/painter/enums.scala`) —
-  * a Scala `enum` compiles to a class hierarchy plus `$values`/`ordinal`
+  * The codebase's opaque-type enum pattern (`graphics/painter/enums.scala`) — a
+  * Scala `enum` compiles to a class hierarchy plus `$values`/`ordinal`
   * machinery, which is JS-bundle weight for something that wants to be a
   * constant. The library's opaque enums alias `String` because their values
   * cross into WebGPU; this one never leaves Scala and is only ever used to flip
@@ -226,8 +233,9 @@ object Facing:
   /** The room is inside this loop — the outer boundary. */
   val Inward: Facing = 1.0
 
-  /** The room is outside it — anything standing in the room: an O-shape's
-    * inner box, a free-standing partition, a column, a plinth. */
+  /** The room is outside it — anything standing in the room: an O-shape's inner
+    * box, a free-standing partition, a column, a plinth.
+    */
   val Outward: Facing = -1.0
   extension (f: Facing) inline def sign: Double = f
 
@@ -254,84 +262,118 @@ case class Ring(
 case class Footprint(rings: Arr[Ring]) // rings(0) is the Inward outer boundary
 
 /** One boundary segment `a → b` in XZ, with the room-side normal already
-  * resolved from its ring's facing. */
+  * resolved from its ring's facing.
+  */
 case class Edge(a: Vec2, b: Vec2, inwardNormal: Vec2)
 
 /** Rotate a 2D direction 90°. With rings wound so that this points into the
   * room for an `Inward` ring, `perp(dir) * facing.sign` is the inward normal
   * for any ring — which is what gives an O-shape's inner box, and later a
-  * partition, hangable faces on every side. */
+  * partition, hangable faces on every side.
+  */
 inline def perp(d: Vec2): Vec2 = Vec2(-d.y, d.x)
 
-def ringEdges(r: Ring): Arr[Edge] =
-  val n = r.points.length
-  val out = Arr[Edge]()
-  var i = 0
-  while i < n do
-    val a = r.points(i)
-    val b = r.points(if i + 1 == n then 0 else i + 1)
-    val dx = b.x - a.x
-    val dz = b.y - a.y
-    val len = (dx * dx + dz * dz).sqrt
-    val s = r.facing.sign
-    out.push(Edge(a, b, Vec2(-dz / len * s, dx / len * s)))
-    i += 1
-  out
-
-/** Everything meets the floor — full-height walls and partitions alike. */
-def floorEdges(fp: Footprint): Arr[Edge] =
-  val out = Arr[Edge]()
-  var i = 0
-  while i < fp.rings.length do
-    val es = ringEdges(fp.rings(i))
-    var j = 0
-    while j < es.length do
-      out.push(es(j))
-      j += 1
-    i += 1
-  out
-
-/** Only what reaches the ceiling bounds it. A partition is filtered out here,
-  * which is the whole of why the grid runs over it uninterrupted.
+/** A set of edges forming one or more CLOSED loops — never an arbitrary bag of
+  * segments.
   *
-  * Height is a stand-in for the real predicate — what BOUNDS the ceiling is not
-  * the same as what reaches it, and a column reaches it without interrupting
-  * the raster. When a room needs that distinction, replace this with an
-  * explicit `boundsCeiling` flag on `Ring`.
+  * This earns a type rather than an extension on `Arr[Edge]` because two of the
+  * queries below depend on the invariant SILENTLY. `contains` counts ray
+  * crossings, so an unclosed loop gives an arbitrary answer and a duplicated
+  * edge flips the parity twice and inverts it; `cornerDist` reads only each
+  * edge's `a`, and only finds every vertex because the edges are loops. Order,
+  * by contrast, is irrelevant to all of them — so this is a SET of loops, not a
+  * path, and the concatenation of two boundaries is again a boundary. That is
+  * what lets an inner ring join the outer one with no special casing anywhere.
+  *
+  * A wrapper class with a PRIVATE constructor, not an opaque type over
+  * `Arr[Edge]`: an opaque alias is transparent inside its own file, so here —
+  * where the whole room is one file — it would enforce nothing at all. The cost
+  * is one allocation per boundary at build time, and `.edges` is a field read.
+  *
+  * Rings are the ONLY source of edges, so there is no way to reach a loose
+  * `Arr[Edge]` except by taking `.edges` off something already valid.
   */
-def ceilingEdges(fp: Footprint, roomHeight: Double): Arr[Edge] =
-  val out = Arr[Edge]()
-  var i = 0
-  while i < fp.rings.length do
-    val r = fp.rings(i)
-    if r.height >= roomHeight then
-      val es = ringEdges(r)
+class Boundary private (val edges: Arr[Edge])
+
+object Boundary:
+  /** One ring is one closed loop, so it is a boundary on its own. */
+  def apply(r: Ring): Boundary = new Boundary(ringEdges(r))
+
+  /** Many rings — the concatenation of boundaries is again a boundary. */
+  def apply(rings: Arr[Ring]): Boundary =
+    val out = Arr[Edge]()
+    var i = 0
+    while i < rings.length do
+      val es = ringEdges(rings(i))
       var j = 0
       while j < es.length do
         out.push(es(j))
         j += 1
-    i += 1
-  out
+      i += 1
+    new Boundary(out)
 
-/** Axis-aligned bounds of the whole plan: `(minX, minZ, maxX, maxZ)`. */
-def bounds(fp: Footprint): (minX: Double, minZ: Double, maxX: Double, maxZ: Double) =
-  var minX = Double.PositiveInfinity
-  var minZ = Double.PositiveInfinity
-  var maxX = Double.NegativeInfinity
-  var maxZ = Double.NegativeInfinity
-  var i = 0
-  while i < fp.rings.length do
-    val ps = fp.rings(i).points
-    var j = 0
-    while j < ps.length do
-      val p = ps(j)
-      if p.x < minX then minX = p.x
-      if p.x > maxX then maxX = p.x
-      if p.y < minZ then minZ = p.y
-      if p.y > maxZ then maxZ = p.y
-      j += 1
-    i += 1
-  (minX = minX, minZ = minZ, maxX = maxX, maxZ = maxZ)
+  /** The ring's segments, each with its room-side normal already resolved. */
+  private def ringEdges(r: Ring): Arr[Edge] =
+    val n = r.points.length
+    val out = Arr[Edge]()
+    var i = 0
+    while i < n do
+      val a = r.points(i)
+      val b = r.points(if i + 1 == n then 0 else i + 1)
+      val dx = b.x - a.x
+      val dz = b.y - a.y
+      val len = (dx * dx + dz * dz).sqrt
+      val s = r.facing.sign
+      out.push(Edge(a, b, Vec2(-dz / len * s, dx / len * s)))
+      i += 1
+    out
+
+extension (r: Ring)
+  /** The ring as its own boundary — walls, and anything else that treats one
+    * loop in isolation.
+    */
+  def boundary: Boundary = Boundary(r)
+
+extension (fp: Footprint)
+  /** Everything meets the floor — full-height walls and partitions alike. */
+  def floorBoundary: Boundary = Boundary(fp.rings)
+
+  /** Only what reaches the ceiling bounds it. A partition is filtered out here,
+    * which is the whole of why the grid runs over it uninterrupted.
+    *
+    * Height is a stand-in for the real predicate — what BOUNDS the ceiling is
+    * not the same as what reaches it, and a column reaches it without
+    * interrupting the raster. When a room needs that distinction, replace this
+    * with an explicit `boundsCeiling` flag on `Ring`.
+    */
+  def ceilingBoundary(roomHeight: Double): Boundary =
+    val rs = Arr[Ring]()
+    var i = 0
+    while i < fp.rings.length do
+      val r = fp.rings(i)
+      if r.height >= roomHeight then rs.push(r)
+      i += 1
+    Boundary(rs)
+
+  /** Axis-aligned bounds of the whole plan: `(minX, minZ, maxX, maxZ)`. */
+  def bounds: (minX: Double, minZ: Double, maxX: Double, maxZ: Double) =
+    var minX = Double.PositiveInfinity
+    var minZ = Double.PositiveInfinity
+    var maxX = Double.NegativeInfinity
+    var maxZ = Double.NegativeInfinity
+    var i = 0
+    while i < fp.rings.length do
+      val ps = fp.rings(i).points
+      var j = 0
+      while j < ps.length do
+        val p = ps(j)
+        if p.x < minX then minX = p.x
+        if p.x > maxX then maxX = p.x
+        if p.y < minZ then minZ = p.y
+        if p.y > maxZ then maxZ = p.y
+        j += 1
+      i += 1
+    (minX = minX, minZ = minZ, maxX = maxX, maxZ = maxZ)
 
 // ---------------------------------------------------------------------------
 // Camera confinement — CPU queries over the same ring data.
@@ -343,104 +385,103 @@ def bounds(fp: Footprint): (minX: Double, minZ: Double, maxX: Double, maxZ: Doub
 // it — same ring data, two shapes of code.
 // ---------------------------------------------------------------------------
 
-/** Closest point on any edge to `pxz`, its distance, and the inward normal of
-  * the edge it landed on. Same segment projection as the shader's `segDist`,
-  * but returning the point. */
-def nearestBoundary(
-    edges: Arr[Edge],
-    pxz: Vec2,
-): (point: Vec2, dist: Double, inward: Vec2) =
-  var bestD = Double.PositiveInfinity
-  var qx = 0.0
-  var qz = 0.0
-  var nx = 0.0
-  var nz = 0.0
-  var i = 0
-  while i < edges.length do
-    val e = edges(i)
-    val ex = e.b.x - e.a.x
-    val ez = e.b.y - e.a.y
-    var t = ((pxz.x - e.a.x) * ex + (pxz.y - e.a.y) * ez) / (ex * ex + ez * ez)
-    if t < 0.0 then t = 0.0
-    else if t > 1.0 then t = 1.0
-    val cx = e.a.x + ex * t
-    val cz = e.a.y + ez * t
-    val dx = pxz.x - cx
-    val dz = pxz.y - cz
-    val d = (dx * dx + dz * dz).sqrt
-    if d < bestD then
-      bestD = d
-      qx = cx
-      qz = cz
-      nx = e.inwardNormal.x
-      nz = e.inwardNormal.y
-    i += 1
-  (point = Vec2(qx, qz), dist = bestD, inward = Vec2(nx, nz))
+extension (bnd: Boundary)
+  /** Closest point on any edge to `pxz`, its distance, and the inward normal of
+    * the edge it landed on. Same segment projection as the shader's `segDist`,
+    * but returning the point.
+    */
+  def nearest(pxz: Vec2): (point: Vec2, dist: Double, inward: Vec2) =
+    val edges = bnd.edges
+    var bestD = Double.PositiveInfinity
+    var qx = 0.0
+    var qz = 0.0
+    var nx = 0.0
+    var nz = 0.0
+    var i = 0
+    while i < edges.length do
+      val e = edges(i)
+      val ex = e.b.x - e.a.x
+      val ez = e.b.y - e.a.y
+      var t =
+        ((pxz.x - e.a.x) * ex + (pxz.y - e.a.y) * ez) / (ex * ex + ez * ez)
+      if t < 0.0 then t = 0.0
+      else if t > 1.0 then t = 1.0
+      val cx = e.a.x + ex * t
+      val cz = e.a.y + ez * t
+      val dx = pxz.x - cx
+      val dz = pxz.y - cz
+      val d = (dx * dx + dz * dz).sqrt
+      if d < bestD then
+        bestD = d
+        qx = cx
+        qz = cz
+        nx = e.inwardNormal.x
+        nz = e.inwardNormal.y
+      i += 1
+    (point = Vec2(qx, qz), dist = bestD, inward = Vec2(nx, nz))
 
-/** Even-odd ray crossing over every edge. Inner rings need no special casing —
-  * their edges flip the parity, so the interior of an O-shape's inner box, or
-  * of a partition, correctly counts as OUTSIDE the room. */
-def isInside(edges: Arr[Edge], pxz: Vec2): Boolean =
-  var inside = false
-  var i = 0
-  while i < edges.length do
-    val a = edges(i).a
-    val b = edges(i).b
-    if (a.y > pxz.y) != (b.y > pxz.y) then
-      val t = (pxz.y - a.y) / (b.y - a.y)
-      if pxz.x < a.x + t * (b.x - a.x) then inside = !inside
-    i += 1
-  inside
+  /** Even-odd ray crossing over every edge — hence the closed-loop invariant.
+    * Inner rings need no special casing: their edges flip the parity, so the
+    * interior of an O-shape's inner box, or of a partition, correctly counts as
+    * OUTSIDE the room.
+    */
+  def contains(pxz: Vec2): Boolean =
+    val edges = bnd.edges
+    var inside = false
+    var i = 0
+    while i < edges.length do
+      val a = edges(i).a
+      val b = edges(i).b
+      if (a.y > pxz.y) != (b.y > pxz.y) then
+        val t = (pxz.y - a.y) / (b.y - a.y)
+        if pxz.x < a.x + t * (b.x - a.x) then inside = !inside
+      i += 1
+    inside
 
-/** One clamp pass: push `pxz` to `margin` from the single NEAREST edge.
-  *
-  * A POSITION clamp, not a movement veto — and that is what makes walking
-  * diagonally into a wall *slide* along it rather than stick: pushing out along
-  * `pxz - q` is a projection onto the margin offset curve, so the component of
-  * motion parallel to the wall survives untouched.
-  */
-def confinePass(edges: Arr[Edge], pxz: Vec2, margin: Double): Vec2 =
-  val nb = nearestBoundary(edges, pxz)
-  // Recovery path, not the normal one: at 1 m/s and 60 fps a frame moves
-  // ~1.7 cm, so with a 0.5 m margin the camera cannot tunnel through in one
-  // step. This only matters if it is spawned outside the plan or teleported.
-  // The same branch covers landing exactly ON an edge, where the push-out
-  // direction below would be a zero vector.
-  if !isInside(edges, pxz) || nb.dist < 1e-9 then
-    Vec2(nb.point.x + nb.inward.x * margin, nb.point.y + nb.inward.y * margin)
-  else if nb.dist < margin then
-    val s = margin / nb.dist
-    Vec2(
-      nb.point.x + (pxz.x - nb.point.x) * s,
-      nb.point.y + (pxz.y - nb.point.y) * s,
-    )
-  else pxz
+  /** One clamp pass: push `pxz` to `margin` from the single NEAREST edge.
+    *
+    * A POSITION clamp, not a movement veto — and that is what makes walking
+    * diagonally into a wall *slide* along it rather than stick: pushing out
+    * along `pxz - q` is a projection onto the margin offset curve, so the
+    * component of motion parallel to the wall survives untouched.
+    */
+  private def confinePass(pxz: Vec2, margin: Double): Vec2 =
+    val nb = bnd.nearest(pxz)
+    // Recovery path, not the normal one: at 1 m/s and 60 fps a frame moves
+    // ~1.7 cm, so with a 0.5 m margin the camera cannot tunnel through in one
+    // step. This only matters if it is spawned outside the plan or teleported.
+    // The same branch covers landing exactly ON an edge, where the push-out
+    // direction below would be a zero vector.
+    if !bnd.contains(pxz) || nb.dist < 1e-9 then
+      Vec2(nb.point.x + nb.inward.x * margin, nb.point.y + nb.inward.y * margin)
+    else if nb.dist < margin then
+      val s = margin / nb.dist
+      Vec2(
+        nb.point.x + (pxz.x - nb.point.x) * s,
+        nb.point.y + (pxz.y - nb.point.y) * s,
+      )
+    else pxz
 
-/** Clamp a camera position to `margin` meters inside the plan, then pin `y`.
-  * Pass `pos.y` as `eyeY` to leave height free.
-  *
-  * **Two passes, not one.** A single nearest-edge clamp satisfies only the wall
-  * it picked, so in a corner where two walls both push, the camera creeps into
-  * the wedge — measured at 0.01 m from a wall in the worst case, well inside
-  * the 0.1 m near plane. Note this is not an odd-shape problem waiting for an
-  * L: a rectangle's four INNER corners are already concave, so the box needs
-  * this too.
-  *
-  * Two passes clear every case and a third changes nothing — it converges for
-  * any convex-angle pair. Do not reach for general multi-constraint resolution.
-  * (A convex corner, such as the outer face of an O-shape's inner box, needs
-  * only one pass: its margin curve is a rounded arc that a single nearest-point
-  * clamp already produces correctly.)
-  */
-def confine(
-    edges: Arr[Edge],
-    pos: Vec3,
-    margin: Double,
-    eyeY: Double,
-): Vec3 =
-  val once = confinePass(edges, Vec2(pos.x, pos.z), margin)
-  val twice = confinePass(edges, once, margin)
-  Vec3(twice.x, eyeY, twice.y)
+  /** Clamp a camera position to `margin` meters inside the plan, then pin `y`.
+    * Pass `pos.y` as `eyeY` to leave height free.
+    *
+    * **Two passes, not one.** A single nearest-edge clamp satisfies only the
+    * wall it picked, so in a corner where two walls both push, the camera
+    * creeps into the wedge — measured at 0.01 m from a wall in the worst case,
+    * well inside the 0.1 m near plane. Note this is not an odd-shape problem
+    * waiting for an L: a rectangle's four INNER corners are already concave, so
+    * the box needs this too.
+    *
+    * Two passes clear every case and a third changes nothing — it converges for
+    * any convex-angle pair. Do not reach for general multi-constraint
+    * resolution. (A convex corner, such as the outer face of an O-shape's inner
+    * box, needs only one pass: its margin curve is a rounded arc that a single
+    * nearest-point clamp already produces correctly.)
+    */
+  def confine(pos: Vec3, margin: Double, eyeY: Double): Vec3 =
+    val once = bnd.confinePass(Vec2(pos.x, pos.z), margin)
+    val twice = bnd.confinePass(once, margin)
+    Vec3(twice.x, eyeY, twice.y)
 
 // ---------------------------------------------------------------------------
 // The ceiling raster.
@@ -455,7 +496,8 @@ def confine(
 
 /** One beam: an oriented segment in the grid plane. `soffitY` is its underside
   * — carried per beam rather than taken from a room constant so families can be
-  * staggered against each other (see `FamilyYStagger`). */
+  * staggered against each other (see `FamilyYStagger`).
+  */
 case class Beam(
     a: Vec2,
     b: Vec2,
@@ -466,7 +508,8 @@ case class Beam(
 
 /** A family of parallel beams covering the plan. `dir` is the direction the
   * beams run; the family's lines are spaced along its perpendicular, offset by
-  * `phase`. */
+  * `phase`.
+  */
 case class BeamFamily(
     dir: Vec2,
     spacing: Double,
@@ -478,61 +521,59 @@ case class BeamFamily(
   * by `t`, and keep the intervals whose midpoint is inside the plan.
   *
   * Parameterized by a LINE rather than an axis, so it serves field beams at any
-  * angle and, later, perimeter beams. Takes an explicit edge set because the
-  * raster is bounded only by what reaches the ceiling — passing `ceilingEdges`
-  * is what lets the grid run over a free-standing partition uninterrupted,
-  * which is the correct read: the grid is a ceiling feature and does not know
-  * the partition is there.
+  * angle and, later, perimeter beams. Called on an explicit boundary because
+  * the raster is bounded only by what reaches the ceiling — using
+  * `ceilingBoundary` is what lets the grid run over a free-standing partition
+  * uninterrupted, which is the correct read: the grid is a ceiling feature and
+  * does not know the partition is there.
   *
   * On a convex plan this returns one interval; on an L, lines crossing the
   * notch return two.
   */
-def clipLine(
-    edges: Arr[Edge],
-    origin: Vec2,
-    dir: Vec2,
-): Arr[(from: Double, to: Double)] =
-  // Solve `origin + t·dir = a + s·e` per edge, keeping hits with 0 ≤ s ≤ 1.
-  //   [dir.x  -e.x] [t]   [a.x - origin.x]
-  //   [dir.z  -e.z] [s] = [a.z - origin.z]
-  val ts = Arr[Double]()
-  var i = 0
-  while i < edges.length do
-    val e = edges(i)
-    val ex = e.b.x - e.a.x
-    val ez = e.b.y - e.a.y
-    val det = ex * dir.y - ez * dir.x
-    // |det| ~ 0 means the line is parallel to this edge: no crossing, and a
-    // collinear edge would contribute a degenerate interval either way.
-    if det.abs > 1e-12 then
-      val rx = e.a.x - origin.x
-      val rz = e.a.y - origin.y
-      val s = (dir.x * rz - dir.y * rx) / det
-      if s >= 0.0 && s <= 1.0 then ts.push((ex * rz - ez * rx) / det)
-    i += 1
-  val out = Arr[(from: Double, to: Double)]()
-  if ts.length < 2 then return out
-  // Insertion sort: a handful of hits, and it keeps this free of any Scala
-  // collection or comparator plumbing.
-  var m = 1
-  while m < ts.length do
-    val v = ts(m)
-    var q = m - 1
-    while q >= 0 && ts(q) > v do
-      ts(q + 1) = ts(q)
-      q -= 1
-    ts(q + 1) = v
-    m += 1
-  var j = 0
-  while j < ts.length - 1 do
-    val t0 = ts(j)
-    val t1 = ts(j + 1)
-    val mid = (t0 + t1) * 0.5
-    if t1 - t0 > 1e-9
-      && isInside(edges, Vec2(origin.x + dir.x * mid, origin.y + dir.y * mid))
-    then out.push((from = t0, to = t1))
-    j += 1
-  out
+extension (bnd: Boundary)
+  def clipLine(origin: Vec2, dir: Vec2): Arr[(from: Double, to: Double)] =
+    // Solve `origin + t·dir = a + s·e` per edge, keeping hits with 0 ≤ s ≤ 1.
+    //   [dir.x  -e.x] [t]   [a.x - origin.x]
+    //   [dir.z  -e.z] [s] = [a.z - origin.z]
+    val edges = bnd.edges
+    val ts = Arr[Double]()
+    var i = 0
+    while i < edges.length do
+      val e = edges(i)
+      val ex = e.b.x - e.a.x
+      val ez = e.b.y - e.a.y
+      val det = ex * dir.y - ez * dir.x
+      // |det| ~ 0 means the line is parallel to this edge: no crossing, and a
+      // collinear edge would contribute a degenerate interval either way.
+      if det.abs > 1e-12 then
+        val rx = e.a.x - origin.x
+        val rz = e.a.y - origin.y
+        val s = (dir.x * rz - dir.y * rx) / det
+        if s >= 0.0 && s <= 1.0 then ts.push((ex * rz - ez * rx) / det)
+      i += 1
+    val out = Arr[(from: Double, to: Double)]()
+    if ts.length < 2 then return out
+    // Insertion sort: a handful of hits, and it keeps this free of any Scala
+    // collection or comparator plumbing.
+    var m = 1
+    while m < ts.length do
+      val v = ts(m)
+      var q = m - 1
+      while q >= 0 && ts(q) > v do
+        ts(q + 1) = ts(q)
+        q -= 1
+      ts(q + 1) = v
+      m += 1
+    var j = 0
+    while j < ts.length - 1 do
+      val t0 = ts(j)
+      val t1 = ts(j + 1)
+      val mid = (t0 + t1) * 0.5
+      if t1 - t0 > 1e-9
+        && bnd.contains(Vec2(origin.x + dir.x * mid, origin.y + dir.y * mid))
+      then out.push((from = t0, to = t1))
+      j += 1
+    out
 
 /** The field raster for one family, clipped to the plan.
   *
@@ -542,10 +583,11 @@ def clipLine(
   */
 def familyBeams(
     f: BeamFamily,
-    edges: Arr[Edge],
+    bnd: Boundary,
     height: Double,
     soffitY: Double,
 ): Arr[Beam] =
+  val edges = bnd.edges
   val nx = -f.dir.y
   val nz = f.dir.x
   var minO = Double.PositiveInfinity
@@ -562,7 +604,7 @@ def familyBeams(
   while k <= kMax do
     val off = f.phase + k * f.spacing
     val origin = Vec2(nx * off, nz * off)
-    val spans = clipLine(edges, origin, f.dir)
+    val spans = bnd.clipLine(origin, f.dir)
     var s = 0
     while s < spans.length do
       val sp = spans(s)
@@ -579,33 +621,73 @@ def familyBeams(
     k += 1.0
   out
 
-/** One wall side: its quad geometry (local UV [0,1], v down) and the frame an
-  * exhibition needs in order to hang something on it.
+/** One wall side: where it sits in the plan, and the frame an exhibition needs
+  * in order to hang something on it.
   *
   * Note what is NOT here: no painting list, no `animated` flag, no count. How
   * many pieces hang and where is curation, and lives in the sketch that copies
   * this one — the stage owes a frame and a usable span, not a policy.
+  *
+  * Note also what is not here: no `Form`. A wall is PLAN DATA, and a `Form` is
+  * a GPU resource that only a `Painter` can make — carrying one would mean this
+  * whole derivation could not run without a painter, and could not be inspected
+  * or tested apart from one. `Beam` above is pure the same way; the form is
+  * built at the use site from `wall.quad`.
   */
 case class Wall(
     center: Vec3,
     width: Double,
     height: Double,
-    rotY: Double,
     inwardNormal: Vec3,
-    form: Form,
 )
 
 type RoomVertex = (position: Vec3, uv: Vec2)
 
-// Wall + ceiling: both are quads textured with a pre-baked panel. Five lines of
-// pass-through — every look decision is on the other side of it, in the panel.
-// A room wanting its own wall artwork writes its own shade sampling two panels
-// at their own resolutions, rather than this one growing a parameter.
-type TexturedUniforms = (
-    vp: VertexUniform[Mat4],
-    samp: FragmentUniform[Sampler],
-)
-type TexturedPanels = (tex: FragmentPanel)
+extension (w: Wall)
+  /** The wall's quad in world space, UV [0,1] (tl = (0,0), `v` down). */
+  def quad: Quad[RoomVertex] =
+    // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
+    val right = Up.cross(w.inwardNormal)
+    def corner(su: Double, sv: Double, u: Double, v: Double): RoomVertex =
+      val pos =
+        w.center + right * (su * w.width / 2.0) + Up * (sv * w.height / 2.0)
+      (position = pos, uv = Vec2(u, v))
+    Quad(
+      corner(-1.0, 1.0, 0.0, 0.0),
+      corner(-1.0, -1.0, 0.0, 1.0),
+      corner(1.0, -1.0, 1.0, 1.0),
+      corner(1.0, 1.0, 1.0, 0.0),
+    )
+
+/** One wall per boundary edge.
+  *
+  * The wall's top is `topY`, not the room height: with a grid ceiling the
+  * perimeter beam takes over the wall plane above `WallTopY`, and a partition
+  * stops at its own ring height.
+  *
+  * Orientation is carried ONCE, as `inwardNormal`. Anything wanting it as an
+  * angle — a painting's model matrix, say — takes `atan2(n.x, n.z)` where it
+  * needs it, rather than the wall storing a second copy of the same fact that
+  * can drift out of step with the first.
+  */
+def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
+  val edges = bnd.edges
+  val out = Arr[Wall]()
+  var i = 0
+  while i < edges.length do
+    val e = edges(i)
+    val dx = e.b.x - e.a.x
+    val dz = e.b.y - e.a.y
+    out.push(
+      Wall(
+        center = Vec3((e.a.x + e.b.x) / 2.0, topY / 2.0, (e.a.y + e.b.y) / 2.0),
+        width = (dx * dx + dz * dz).sqrt,
+        height = topY,
+        inwardNormal = Vec3(e.inwardNormal.x, 0.0, e.inwardNormal.y),
+      ),
+    )
+    i += 1
+  out
 
 @main def roomsGridCanvases(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -640,9 +722,9 @@ type TexturedPanels = (tex: FragmentPanel)
       ),
     )
 
-    val fEdges = floorEdges(footprint)
-    val cEdges = ceilingEdges(footprint, RoomHeight)
-    val bb = bounds(footprint)
+    val floorBnd = footprint.floorBoundary
+    val ceilBnd = footprint.ceilingBoundary(RoomHeight)
+    val bb = footprint.bounds
     val bbW = bb.maxX - bb.minX
     val bbD = bb.maxZ - bb.minZ
 
@@ -661,14 +743,14 @@ type TexturedPanels = (tex: FragmentPanel)
         ),
       )
 
-    /** Floor and ceiling are the plan's BOUNDING-BOX quad, not the plan
-      * polygon — there is no triangulation anywhere in this design. On an
-      * L-shaped plan the floor is still a plain rectangle covering the cut-out
-      * too, and that is fine: every ring edge carries an opaque full-height
-      * wall, so the region outside the plan is never visible, and the camera
-      * cannot reach it. The grime line and the noise fade come from
-      * `edgeSetDist` against the ring edges, not from the mesh, so they follow
-      * the true plan boundary regardless of how far the quad extends past it.
+    /** Floor and ceiling are the plan's BOUNDING-BOX quad, not the plan polygon
+      * — there is no triangulation anywhere in this design. On an L-shaped plan
+      * the floor is still a plain rectangle covering the cut-out too, and that
+      * is fine: every ring edge carries an opaque full-height wall, so the
+      * region outside the plan is never visible, and the camera cannot reach
+      * it. The grime line and the noise fade come from `edgeSetDist` against
+      * the ring edges, not from the mesh, so they follow the true plan boundary
+      * regardless of how far the quad extends past it.
       *
       * UV is the quad's own [0,1]²: `u` along +X, `v` along -Z. This matches
       * the frame the texture size is derived from, so texel density is uniform.
@@ -698,62 +780,7 @@ type TexturedPanels = (tex: FragmentPanel)
     val lightForm =
       form(Arr(planeQuad(LightY, faceUp = true, margin = LightOverhang)))
 
-    /** A wall quad in world space, UV [0,1] (tl=(0,0), v down). */
-    def mkWall(
-        center: Vec3,
-        width: Double,
-        height: Double,
-        rotY: Double,
-        inwardNormal: Vec3,
-    ): Wall =
-      // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
-      val right = Up.cross(inwardNormal)
-      def corner(su: Double, sv: Double, u: Double, w: Double): RoomVertex =
-        val pos =
-          center + right * (su * width / 2.0) + Up * (sv * height / 2.0)
-        (position = pos, uv = Vec2(u, w))
-      val wallForm = form(
-        Arr(
-          Quad(
-            corner(-1.0, 1.0, 0.0, 0.0),
-            corner(-1.0, -1.0, 0.0, 1.0),
-            corner(1.0, -1.0, 1.0, 1.0),
-            corner(1.0, 1.0, 1.0, 0.0),
-          ),
-        ),
-      )
-      Wall(center, width, height, rotY, inwardNormal, wallForm)
-
-    /** One wall per ring edge. `rotY` is derived from the inward normal rather
-      * than hand-authored — verified against the four hand-written values in
-      * `canvases` (front π, back 0, left π/2, right -π/2).
-      *
-      * The wall's top is `topY`, not the room height: with a grid ceiling the
-      * perimeter beam takes over the wall plane above `WallTopY`, and a
-      * partition stops at its own ring height.
-      */
-    def wallsFrom(edges: Arr[Edge], topY: Double): Arr[Wall] =
-      val out = Arr[Wall]()
-      var i = 0
-      while i < edges.length do
-        val e = edges(i)
-        val dx = e.b.x - e.a.x
-        val dz = e.b.y - e.a.y
-        val width = (dx * dx + dz * dz).sqrt
-        val n = Vec3(e.inwardNormal.x, 0.0, e.inwardNormal.y)
-        out.push(
-          mkWall(
-            center = Vec3((e.a.x + e.b.x) / 2.0, topY / 2.0, (e.a.y + e.b.y) / 2.0),
-            width = width,
-            height = topY,
-            rotY = Math.atan2(n.x, n.z),
-            inwardNormal = n,
-          ),
-        )
-        i += 1
-      out
-
-    val walls = wallsFrom(fEdges, WallTopY)
+    val walls = wallsFrom(floorBnd, WallTopY)
 
     // ----- The raster ------------------------------------------------------
     //
@@ -780,7 +807,7 @@ type TexturedPanels = (tex: FragmentPanel)
       // crossing, consistently.
       val bs = familyBeams(
         families(i),
-        cEdges,
+        ceilBnd,
         StripHeight,
         WallTopY - i * FamilyYStagger,
       )
@@ -842,11 +869,12 @@ type TexturedPanels = (tex: FragmentPanel)
         // Explicit tangent, not inferred: the soffit's normal is -Y, so the
         // inferring overload would run `u` along world -Z whichever way the
         // beam points, and the atlas band would not run along the beam.
-        Quad.fromDimensionsCenter[RoomVertex](w, h, n, dir, center): (pos, uv) =>
-          (
-            position = pos,
-            uv = Vec2(uv.x * u1, vb.v0 + uv.y * (vb.v1 - vb.v0)),
-          )
+        Quad.fromDimensionsCenter[RoomVertex](w, h, n, dir, center):
+          (pos, uv) =>
+            (
+              position = pos,
+              uv = Vec2(uv.x * u1, vb.v0 + uv.y * (vb.v1 - vb.v0)),
+            )
 
       val midY = b.soffitY + b.height / 2.0
 
@@ -861,7 +889,9 @@ type TexturedPanels = (tex: FragmentPanel)
         * hexagon, and the outer faces of anything standing in the room.
         */
       def facesOutOfPlan(centerXZ: Vec2, n: Vec3): Boolean =
-        !isInside(cEdges, Vec2(centerXZ.x + n.x * 0.01, centerXZ.y + n.z * 0.01))
+        !ceilBnd.contains(
+          Vec2(centerXZ.x + n.x * 0.01, centerXZ.y + n.z * 0.01),
+        )
 
       beamFaces.push(
         face(len, b.width, -Up, Vec3(cx, b.soffitY, cz), band(0.0, StripWidth)),
@@ -910,7 +940,8 @@ type TexturedPanels = (tex: FragmentPanel)
       * SDF out of this entirely. Handles concave corners and inner rings
       * uniformly and for free.
       */
-    def edgeSetDist(pxz: Vec2Expr, edges: Arr[Edge]): FloatExpr =
+    def edgeSetDist(pxz: Vec2Expr, bnd: Boundary): FloatExpr =
+      val edges = bnd.edges
       def segDist(e: Edge): FloatExpr =
         val ex = e.b.x - e.a.x
         val ez = e.b.y - e.a.y
@@ -930,7 +961,8 @@ type TexturedPanels = (tex: FragmentPanel)
       * the corner columns where two walls meet. This is what a wall surface
       * fades against; the boundary itself is zero everywhere on a wall.
       */
-    def cornerDist(pxz: Vec2Expr, edges: Arr[Edge]): FloatExpr =
+    def cornerDist(pxz: Vec2Expr, bnd: Boundary): FloatExpr =
+      val edges = bnd.edges
       def vDist(e: Edge): FloatExpr = (pxz - vec2(e.a)).length
       var acc = vDist(edges(0))
       var i = 1
@@ -955,14 +987,14 @@ type TexturedPanels = (tex: FragmentPanel)
     def edgeDist(
         wp: Vec3Expr,
         normal: Vec3Expr,
-        edges: Arr[Edge],
+        bnd: Boundary,
         topY: FloatExpr,
     ): FloatExpr =
       val Far = 1000.0
       val isHoriz = normal.y.abs // 1 for floor/ceiling, 0 for walls
-      val plan = edgeSetDist(wp.xz, edges) + (1.0 - isHoriz) * Far
+      val plan = edgeSetDist(wp.xz, bnd) + (1.0 - isHoriz) * Far
       val vert = wp.y.min(topY - wp.y) + isHoriz * Far
-      val corner = cornerDist(wp.xz, edges) + isHoriz * Far
+      val corner = cornerDist(wp.xz, bnd) + isHoriz * Far
       plan.min(vert).min(corner)
 
     // -----------------------------------------------------------------------
@@ -977,7 +1009,8 @@ type TexturedPanels = (tex: FragmentPanel)
     /** Dirt collecting where wall meets floor — darkest at the junction, back
       * to full brightness `GrimeWidth` away. This is the ONE darkening in the
       * room, and it is grime, not light: that is why it belongs only at the
-      * floor line and generalizes to no other edge. */
+      * floor line and generalizes to no other edge.
+      */
     def grime(dist: FloatExpr): FloatExpr =
       lerp(GrimeDarken, 1.0, dist.smoothstep(0.0, GrimeWidth))
 
@@ -1033,8 +1066,8 @@ type TexturedPanels = (tex: FragmentPanel)
     val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
       vec4(
         vec3(FloorTint)
-          * roomNoise(wp, normal, edgeDist(wp, normal, fEdges, CeilY))
-          * grime(edgeSetDist(wp.xz, fEdges)),
+          * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, CeilY))
+          * grime(edgeSetDist(wp.xz, floorBnd)),
         1.0,
       )
 
@@ -1052,7 +1085,7 @@ type TexturedPanels = (tex: FragmentPanel)
     // differ only by a constant, so this choice proves nothing here; on an L it
     // does, because the bounding box is not a room. Anything anchored to the
     // plan boundary — an end-cap, a vignette — must use
-    // `edgeSetDist(pxz, cEdges)` rather than the UV rectangle.
+    // `edgeSetDist(pxz, ceilBnd)` rather than the UV rectangle.
     // =======================================================================
     val (lw, lh) = texSize(bbW + 2.0 * LightOverhang, bbD + 2.0 * LightOverhang)
     val lightTex = TextureBaker.bakeBlock(
@@ -1168,7 +1201,7 @@ type TexturedPanels = (tex: FragmentPanel)
           vec3(WallTintLow).lerp(
             vec3(WallTintHigh),
             (topY - wp.y).smoothstep(TopFadeDepth, 0.0),
-          ) * roomNoise(wp, normal, edgeDist(wp, normal, fEdges, topY))
+          ) * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, topY))
             * grime(wp.y),
           1.0,
         ),
@@ -1177,6 +1210,17 @@ type TexturedPanels = (tex: FragmentPanel)
     // -----------------------------------------------------------------------
     // Scene shades
     // -----------------------------------------------------------------------
+
+    // Wall + ceiling: both are quads textured with a pre-baked panel. Five lines of
+    // pass-through — every look decision is on the other side of it, in the panel.
+    // A room wanting its own wall artwork writes its own shade sampling two panels
+    // at their own resolutions, rather than this one growing a parameter.
+    type TexturedUniforms = (
+        vp: VertexUniform[Mat4],
+        samp: FragmentUniform[Sampler],
+    )
+    type TexturedPanels = (tex: FragmentPanel)
+
     val texturedShade =
       p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
         program =>
@@ -1208,13 +1252,14 @@ type TexturedPanels = (tex: FragmentPanel)
       // Each wall binds A PANEL, whatever produced it. Going from the plain
       // ambience bake here to a shadow-compositing path (A8) is a one-line
       // change at the producer and nothing at the shade.
+      val wallForm = form(Arr(wall.quad))
       val (ww, wh) = texSize(wall.width, wall.height)
-      val bake = wallBaker.prepare(wall.form, ww, wh)
+      val bake = wallBaker.prepare(wallForm, ww, wh)
       bake.shape.bind("topY" := wall.height)
       p.paint(bake.panel)
       val wallTex = bake.panel
       aboveGround.push(
-        p.shape(wall.form, texturedShade, cullMode = CullMode.None)
+        p.shape(wallForm, texturedShade, cullMode = CullMode.None)
           .bind("samp" := sampler, "tex" := wallTex),
       )
 
@@ -1370,8 +1415,7 @@ type TexturedPanels = (tex: FragmentPanel)
       // only shows undersides. So AUTHOR FOR THE LOCKED EYE PLANE: a partition
       // taller than 1.7 m needs no top cap. Flying in dev will reveal those
       // gaps, the way noclip reveals a level's backstage. That is expected.
-      cam.pos = confine(
-        fEdges,
+      cam.pos = floorBnd.confine(
         cam.pos,
         margin = WallClearance,
         eyeY = if devMode then cam.pos.y else EyeHeight,
