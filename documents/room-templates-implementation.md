@@ -468,6 +468,41 @@ height (grid asks `CeilY - StripHeight`, a flat ceiling asks `CeilY`), and the
 wall bake must be a composition of independent terms the room selects, not one
 fixed formula with the grid's choices baked in.
 
+### X-tests — the extraction is what makes these testable
+
+**Everything on the extract list above is GPU-resource independent, and that is
+exactly what earns it real unit tests.** In the sketch these invariants are
+verified by eye and by argument in comments, because `sketches/` has no test
+setup — trivalibs runs munit, the sketch repo does not. Extraction is the moment
+that stops being an excuse: none of these functions touches a `Painter`, so they
+run headless.
+
+Set up munit for `src/` as part of this step and cover at least:
+
+- **Winding independence of `Ring` → edges.** `facing` is an absolute claim; the
+  shoelace sign in `Boundary.ringEdges` cancels the winding. Assert that
+  reversing a ring's points yields the identical SET of edges-with-normals, on a
+  concave plan (an L) rather than a rectangle, and that every `Inward` normal
+  steps into the plan under `contains`.
+- **The `Boundary` invariant itself** — `contains` parity on nested rings (an
+  O-shape's interior counts as outside), and that concatenating boundaries is
+  again a boundary.
+- **`confine` convergence.** Two passes clear a concave corner and a third
+  changes nothing; a diagonal approach slides rather than sticks; the recovery
+  branch pulls a point spawned outside back in.
+- **`clipLine` on an L** — lines crossing the notch return two intervals, lines
+  parallel to an edge return none, and interval midpoints are inside the plan.
+- **`Footprint.bounds`, `signedArea2`** — trivial, and cheap insurance under
+  later refactors.
+
+The shader emitters (`edgeSetDist` / `cornerDist`) are the one awkward case:
+they return `FloatExpr`, so testing them means asserting on generated WGSL text
+rather than on values. Assert the structure (an N-term `min` chain for N edges),
+not the exact string.
+
+If any of this eventually moves into trivalibs, the tests move with it — that
+repo already has the harness, so it is a file move rather than a rewrite.
+
 **Check:** A and B both rebuild and are pixel-identical to their pre-extraction
 selves. Then the real test — **can a sketch replace any single step inline?**
 Verify by hand-building B's `Arr[Beam]` inline in one throwaway edit and

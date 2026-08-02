@@ -48,15 +48,34 @@ import trivalibs.utils.numbers.NumExt.given
 // A plan whose walls are not parallel to a beam family — a hexagon — cannot
 // snap, and needs an explicit perimeter-beam generator instead. This is the
 // free path where it applies.
-val GridSpacing = 0.45
+val GridSpacing = 0.50
 val StripWidth = 0.10
-val StripHeight = 0.35
+val StripHeight = 0.32
 
 /** Vertical offset between successive beam families, to keep their soffits from
   * being coplanar where they cross. See the family loop for why this is needed
   * and why this size.
+  *
+  * NUMERICAL HYGIENE, not a look decision — the two soffits meeting at a
+  * crossing are shaded identically (see `crossing` in the beam bake), so which
+  * one wins is invisible. This only stops the depth buffer from having to
+  * choose, which it cannot do for coplanar faces.
   */
 val FamilyYStagger = 0.0006
+
+/** How far a beam's soffit/side tint blend reaches either side of an arris.
+  *
+  * The knob for how soft the beams' edges read. Drawn explicitly rather than
+  * left to texture filtering — see `soffitness` in the beam bake for why that
+  * matters. It also sets how far before a crossing the edge treatment fades
+  * out, which is the same quantity by intent: both are "how gradually does an
+  * arris stop being an arris".
+  *
+  * Bounded by the beam, not by taste: the soffit is `StripWidth` = 0.10 m
+  * across, so beyond ~0.05 the blend swallows the soffit entirely and the beams
+  * lose their dark underside.
+  */
+val ArrisSoften = 0.02
 
 /** Snap a wanted half-extent (meters) out to the outer face of the nearest
   * beam.
@@ -100,7 +119,7 @@ val WallTopY = CeilY - StripHeight
 /** Depth of the wall tint gradient below `WallTopY`. A broad settling of tone
   * where wall meets ceiling — NOT an edge effect, and not occlusion.
   */
-val TopFadeDepth = 0.4
+val TopFadeDepth = 0.6
 
 // ---- The coffer: a luminous plane recessed behind the raster ---------------
 //
@@ -142,7 +161,7 @@ val LightOverhang =
   * ~312 px. A wall or floor carrying its own artwork gets its own, much higher
   * resolution as a separate panel; do NOT raise this to sharpen artwork.
   */
-val AmbienceTexScale = 48.0
+val AmbienceTexScale = 64.0
 
 /** How far from a geometry edge the normal-dependent noise term is fully faded
   * out. This makes corners read as slightly ROUNDED — one noise blending into
@@ -157,11 +176,197 @@ val EdgeFadeWorld = 0.08
 val GrimeWidth = 0.08
 val GrimeDarken = 0.93 // brightness multiplier right at the junction
 
+/** How far the grime line wanders in and out along the junction, in meters, and
+  * how much its darkness varies independently of that (0 = none, 1 = it fades
+  * out entirely in the lightest patches).
+  *
+  * The creep is the one that matters: a band of constant width reads as painted
+  * on, an irregular one reads as accumulated. The patchiness stops the result
+  * looking like a single wobbly stroke.
+  *
+  * **Bounded by the bake resolution, not by taste.** Floor and walls bake at
+  * `AmbienceTexScale` texels per meter, so at 64 that is 1.56 cm per texel and
+  * `GrimeWidth` is about 5 texels across. A creep much beyond ~0.02 m has
+  * nothing to land on, and detail finer than the scale below will crawl rather
+  * than resolve. Wanting genuinely fine speckle means a separate,
+  * higher-resolution grime input — not raising the ambience scale, which is
+  * deliberately cheap.
+  */
+val GrimeCreep = 0.02
+val GrimePatchiness = 0.6
+
+/** Feature size of the grime noise, as an inverse scale on world position —
+  * lower is larger. At 0.9 the features run roughly half a meter, which is
+  * about how dirt actually pools and is also all the bake can resolve.
+  */
+val GrimeNoiseScale = 0.9
+
 // Surface tints. Authored as CPU vectors, lifted with `vec3(…)` in the bakers.
 val FloorTint = Vec3(0.80, 0.78, 0.75)
-val CeilTint = Vec3(0.86, 0.86, 0.85)
+val CeilTint = Vec3(0.87, 0.87, 0.86)
 val WallTintLow = Vec3(0.97, 0.97, 0.96)
 val WallTintHigh = Vec3(0.88, 0.88, 0.87)
+
+/** What a beam's side face lifts TOWARD at the ceiling line. Its bottom stays
+  * at `WallTintLow`, so this is only the top of a gradient.
+  *
+  * The beams' sides are the only surfaces in the room open to the coffer
+  * directly above them, so they catch more of the light plane the higher they
+  * go. Reading as light spilling down into the recess is the point; reading as
+  * "the beams are painted a lighter color" is not — which is why this is a
+  * gradient rather than a flat tint one step above the wall.
+  *
+  * **Capped at 1.0 by the bloom threshold, not by taste.** With `BeamTopGlow`
+  * at 1.0 the ambience reaches 1.0 at the top of a side, so this tint IS the
+  * rendered value there. Any channel above 1.0 puts the tops of the beams over
+  * the scene panel's threshold and they start to glare as if they were
+  * emitters. The slight warm tilt follows `LightColor`.
+  */
+val BeamSideTopTint = Vec3(1.0, 0.99, 0.97)
+
+/** How much of the ambience field's darkening is lifted off a beam's side face
+  * by the time it reaches the ceiling line. 1.0 removes it entirely.
+  *
+  * Without this the tint above cannot be reached, and the reason is arithmetic
+  * rather than aesthetic: `roomNoise` is `lerp(0.68, 1.0, …)` over a normalized
+  * FBM that sits near the middle of its range, so it AVERAGES about 0.84 and
+  * seldom clears 0.93. Multiplying by it, an almost-white tint renders as
+  * mid-grey — which against a light plane at 2.0 reads as a much bigger
+  * contrast step than intended.
+  *
+  * It is also the right shape physically: the ambience field stands in for
+  * soft, indirect variation, and a surface this close to a large source is lit
+  * directly enough that such variation would wash out. Lower it to put material
+  * back into the beam tops.
+  */
+val BeamTopGlow = 0.7
+
+/** Texels per meter ACROSS a beam's cross-section — its own number, much finer
+  * than `AmbienceTexScale`.
+  *
+  * The beam atlas is the one bake with real STRUCTURE in it rather than smooth
+  * noise: the band boundaries are the arrises, and the soffit is only
+  * `StripWidth` = 0.10 m wide. At the ambience scale that band is ~5 texels, so
+  * a single texel of bilinear bleed from the bright side bands is a fifth of
+  * the soffit's width — which is what shows as a light line down every beam.
+  * Along the RUN the content really is low-frequency, so that axis keeps
+  * `AmbienceTexScale`; only the section needs resolving.
+  *
+  * **KNOWN CEILING, not guarded.** The atlas is one row per beam, so its height
+  * is `beams.length × round(beamBandWorld × BeamCrossTexScale)` and it runs
+  * into the GPU's `maxTextureDimension2D` — 8192 on essentially everything. At
+  * the values here that is a row of 95 texels and a limit of ~86 beams, which
+  * this room reaches at a `GridSpacing` of about 0.19 m. Raising `StripHeight`
+  * lowers the beam count it breaks at, since `beamBandWorld` grows with it.
+  *
+  * It is left unclamped on purpose: clamping would silently trade the
+  * resolution this constant exists to provide for a coarser atlas, and quietly
+  * getting the artifact back is worse than a loud failure while tuning. WebGPU
+  * does not throw — an over-large `createTexture` is a VALIDATION error, so the
+  * call returns an invalid texture, the console fills with errors, and the
+  * beams simply do not draw. Loud, but only in the console: if the raster
+  * vanishes after a grid tweak, look there first.
+  */
+val BeamCrossTexScale = 128.0
+
+// ---- The ambience field — the core of the illusion -------------------------
+//
+// Nothing here is a light model. A world-space FBM modulating surface
+// brightness, plus a second noise varied by surface normal, has no physical
+// justification whatever and is precisely what makes the room read as a real
+// space rather than a rendering. It is set by LOOKING, not deriving.
+//
+// IT LIVES IN THE TUNABLES BECAUSE ALL OF IT IS ONE. Every number below is a
+// look decision, and none of them means anything on its own — a frequency is
+// only right relative to the amplitude beside it and the range it lands in. So
+// this is written out as a block to be read and edited in place, rather than
+// dissolved into a dozen named constants that would have to be reassembled in
+// your head before you could change anything. Floor, walls and beams all bake
+// against it, so a change here re-tones the whole room at once.
+
+/** Dirt collecting where wall meets floor — darkest at the junction, back to
+  * full brightness `GrimeWidth` away. This is the ONE darkening in the room,
+  * and it is grime, not light: that is why it belongs only at the floor line
+  * and generalizes to no other edge.
+  *
+  * `dist` is measured differently by each caller — the floor's distance to the
+  * plan boundary, a wall's height above it — because the junction is the same
+  * line reached from two directions.
+  *
+  * **`wp` IS WORLD POSITION, AND THAT IS THE WHOLE TRICK.** The junction is
+  * shared by surfaces that are baked separately, at different resolutions, with
+  * no coordinate in common: the floor and every wall, and any two walls meeting
+  * at a room corner. Perturbing the line with a surface-local noise would make
+  * each of them wander independently and the dirt would visibly jump at every
+  * corner. Sampled in world space they all read out of one field and agree for
+  * free — the same reason `roomNoise` is world-space, and it keeps holding when
+  * a partition or an L's notch arrives.
+  *
+  * At `GrimeNoiseScale` the field barely changes across the 8 cm band, so it
+  * effectively varies only ALONG the junction. That is what is wanted, and it
+  * is why this needs no per-edge tangent to work at any wall angle.
+  */
+def grime(dist: FloatExpr, wp: Vec3Expr): FloatExpr =
+  val p = wp * GrimeNoiseScale
+  // How far the dirt creeps up, varying along the line.
+  val creep = Noise.fbm3(p, seed = vec3(41)) * GrimeCreep
+  // How dark it gets where it does creep up — varied on its own, and at a
+  // different frequency, so the two do not move together and read as one
+  // stroke that merely got wider.
+  val darkest = lerp(
+    GrimeDarken,
+    1.0,
+    Noise.fbm3(p * 2.3, seed = vec3(9)).fit1101 * GrimePatchiness,
+  )
+  lerp(darkest, 1.0, (dist + creep).smoothstep(0.0, GrimeWidth))
+
+/** The ambience field, given the distance to the nearest geometry edge.
+  *
+  * Takes that distance rather than deriving it, because what counts as an edge
+  * is the caller's business: `edgeDist`'s vertical term assumes a surface
+  * spanning `0 … topY`, true of a wall and false of a ceiling beam hanging in
+  * the middle of the room. The beams pass their own and reuse everything else.
+  */
+def roomNoise(
+    wp: Vec3Expr,
+    normal: Vec3Expr,
+    edgeDistance: FloatExpr,
+): FloatExpr =
+  // Anisotropic world space: the field is stretched and sheared before it is
+  // sampled, so it does not read as an isotropic blob field pinned to the room
+  // axes. `y` is compressed hardest, which is what makes it drift vertically.
+  val scaledWp = vec3(
+    wp.x + wp.y * 0.2,
+    wp.y * 0.3,
+    wp.z * 0.8 + wp.y * 0.2,
+  )
+  // The normal-dependent term gives each orientation its own look, which would
+  // otherwise meet as a hard seam in the corners. Fade it out over
+  // `EdgeFadeWorld` so the edge itself is uniform across all surfaces — this is
+  // what makes corners read as slightly rounded.
+  val edge = edgeDistance.smoothstep(0.0, EdgeFadeWorld)
+  // Not a free knob, unlike everything else here: it weights the second term
+  // AND normalizes the sum, so the two uses have to move together or the
+  // field's range drifts. Written once for that reason.
+  val normalWeight = 0.3
+  lerp(
+    0.74, // how dark the field is allowed to get; 1.0 is untouched
+    1.0,
+    ((Noise
+      .fbm3(
+        scaledWp * 0.10,
+        freqMul = 3.6,
+        ampMul = 0.12,
+        seed = vec3(120),
+      ) +
+      Noise.fbm3(
+        scaledWp.cross(normal) * 0.15,
+        freqMul = 2.1,
+        ampMul = 0.25,
+        seed = vec3(70),
+      ) * normalWeight * edge)
+      / (1.0 + normalWeight)).fit1101,
+  )
 
 // ---- The light shader's own tunables --------------------------------------
 //
@@ -206,7 +411,7 @@ val LightColor = Vec3(2.0, 1.9, 1.7)
 val LightWaveMetersX = 5.0 // period along X
 val LightWaveMetersZ = 3.7 // along Z — deliberately not a multiple of X, so the
 // two never line up into a visible grid
-val LightWaveAmount = 0.12 // ±12 % on strength; stays well above threshold
+val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
 
 // ===========================================================================
 // STRUCTURAL — the floor plan and everything derived from it.
@@ -219,7 +424,10 @@ val LightWaveAmount = 0.12 // ±12 % on strength; stays well above threshold
 val Up = Vec3.Y
 val Tau = 2.0 * math.Pi
 
-/** Which side of a ring the room is on.
+/** Which side of a ring the room is on. An ABSOLUTE claim about the world, not
+  * a claim relative to how the ring's points happen to be ordered — see `Ring`
+  * for why that distinction is the whole point, and `Boundary.ringEdges` for
+  * the two lines that make it true.
   *
   * The codebase's opaque-type enum pattern (`graphics/painter/enums.scala`) — a
   * Scala `enum` compiles to a class hierarchy plus `$values`/`ordinal`
@@ -240,6 +448,18 @@ object Facing:
   extension (f: Facing) inline def sign: Double = f
 
 /** One closed loop of the floor plan, in XZ. No repeated last point.
+  *
+  * **WINDING DOES NOT MATTER.** Order the points clockwise or counter-clockwise
+  * as you please; `facing` says which side the room is on and that is the whole
+  * of it. `Boundary.ringEdges` normalizes the winding away (one shoelace pass
+  * per ring — see there), so a ring wound "backwards" produces byte-identical
+  * geometry, just visited in the other order.
+  *
+  * That freedom is deliberate and is worth keeping: point order is what fixes
+  * EDGE ORDER, and therefore wall index. An O-shaped room whose outer and inner
+  * rings are wound the same way has wall `i` of one facing wall `i` of the
+  * other, which is what lets curation address opposing walls by index. If
+  * winding also decided normal direction, you could not have both.
   *
   * `height` is what makes a free-standing wall a filtering question rather than
   * a restructuring one: a partition is an `Outward` ring that stops below the
@@ -266,10 +486,9 @@ case class Footprint(rings: Arr[Ring]) // rings(0) is the Inward outer boundary
   */
 case class Edge(a: Vec2, b: Vec2, inwardNormal: Vec2)
 
-/** Rotate a 2D direction 90°. With rings wound so that this points into the
-  * room for an `Inward` ring, `perp(dir) * facing.sign` is the inward normal
-  * for any ring — which is what gives an O-shape's inner box, and later a
-  * partition, hangable faces on every side.
+/** Rotate a 2D direction 90°. `perp(dir)` points into a counter-clockwise loop
+  * and out of a clockwise one, which is exactly the winding dependence that
+  * `Boundary.ringEdges` cancels before handing out a normal.
   */
 inline def perp(d: Vec2): Vec2 = Vec2(-d.y, d.x)
 
@@ -312,9 +531,43 @@ object Boundary:
       i += 1
     new Boundary(out)
 
-  /** The ring's segments, each with its room-side normal already resolved. */
+  /** Twice the SIGNED area of the loop — the shoelace formula, `Σ pᵢ × pᵢ₊₁`.
+    * Positive when the points wind counter-clockwise in (x, z), negative when
+    * clockwise. Only the sign is used, so the `/2` is skipped.
+    *
+    * Each term is twice the signed area of the triangle `(origin, pᵢ, pᵢ₊₁)`;
+    * summed around the loop the wedges outside the polygon cancel and the
+    * polygon's own area is left. Correct for concave plans (an L, a notch) as
+    * well as convex ones. Undefined only for a self-intersecting loop, which
+    * has no inside to speak of either.
+    */
+  private def signedArea2(ps: Arr[Vec2]): Double =
+    val n = ps.length
+    var acc = 0.0
+    var i = 0
+    while i < n do
+      val a = ps(i)
+      val b = ps(if i + 1 == n then 0 else i + 1)
+      acc += a.x * b.y - b.x * a.y
+      i += 1
+    acc
+
+  /** The ring's segments, each with its room-side normal already resolved.
+    *
+    * **This is where winding stops mattering.** `perp(dir)` alone points into a
+    * counter-clockwise loop and out of a clockwise one, so on its own it would
+    * make `Facing` a claim about point order rather than about the room.
+    * Multiplying by the sign of the loop's signed area cancels that: reversing
+    * the points flips `perp(dir)` AND flips the area sign, so their product is
+    * invariant and `facing` alone decides the direction.
+    *
+    * One shoelace pass per ring, at build time — four multiply-subtract-adds
+    * for the rectangle below.
+    */
   private def ringEdges(r: Ring): Arr[Edge] =
     val n = r.points.length
+    val s =
+      r.facing.sign * (if signedArea2(r.points) < 0.0 then -1.0 else 1.0)
     val out = Arr[Edge]()
     var i = 0
     while i < n do
@@ -323,7 +576,6 @@ object Boundary:
       val dx = b.x - a.x
       val dz = b.y - a.y
       val len = (dx * dx + dz * dz).sqrt
-      val s = r.facing.sign
       out.push(Edge(a, b, Vec2(-dz / len * s, dx / len * s)))
       i += 1
     out
@@ -699,8 +951,10 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     // The floor plan
     // -----------------------------------------------------------------------
 
-    // A rectangle, wound so that `perp(edgeDir)` points into the room:
-    // (-x,-z) → (+x,-z) → (+x,+z) → (-x,+z).
+    // A rectangle: (-x,-z) → (+x,-z) → (+x,+z) → (-x,+z). The order is free —
+    // `Facing.Inward` says the room is inside the loop and that settles the
+    // normals whichever way round the points run (see `Ring`). What the order
+    // DOES fix is which wall is wall 0, 1, 2, 3.
     //
     // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED. An L is a 6-point ring
     // here and nothing else; a hexagon is a 6-point ring at 60°. Everything
@@ -805,6 +1059,13 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
       // being ~80× the depth buffer's resolution at that range (~7.5 µm at
       // 3.5 m with near = 0.1, far = 100). The lowest family wins at every
       // crossing, consistently.
+      //
+      // WHICH family wins is invisible: the bake shades a crossing identically
+      // from either side (see `crossing` there). Do not read this as choosing a
+      // look — it only spares the depth buffer a decision it cannot make. The
+      // two are near-identical rather than identical, though, because they
+      // sample different atlas rows, and z-fighting would re-roll that
+      // difference per pixel per frame. That is why it stays.
       val bs = familyBeams(
         families(i),
         ceilBnd,
@@ -893,9 +1154,24 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
           Vec2(centerXZ.x + n.x * 0.01, centerXZ.y + n.z * 0.01),
         )
 
-      beamFaces.push(
-        face(len, b.width, -Up, Vec3(cx, b.soffitY, cz), band(0.0, StripWidth)),
-      )
+      // THE ROW IS THE CROSS-SECTION, UNROLLED IN ORDER:
+      //
+      //   0 ─────── StripHeight ── +StripWidth ────────── beamBandWorld
+      //   sideA top   arris        soffit      arris       sideB top
+      //
+      // Getting this order right is not cosmetic. `Quad.fromDimensions` sets
+      // `v` from `-(n × tangent)`, and the two side faces have opposite normals
+      // — so `perp × dir = +Y` puts sideA's TOP at `uv.y = 0`, while
+      // `-perp × dir = -Y` puts sideB's BOTTOM there. The two sides run
+      // opposite ways in `v`. Laid out naively as `soffit, sideA, sideB`, both
+      // side TOPS end up against the soffit's ends and both arrises land in the
+      // middle of the row, so anything measuring position across the section
+      // reads the beam inside out — which is exactly what happened.
+      //
+      // In this order every atlas adjacency is a real geometric adjacency: the
+      // two internal boundaries are the two arrises, and the row's outer ends
+      // are the two open top edges, which neighbour the next beam's open top
+      // edge and share its tint. Nothing bleeds across a seam that isn't there.
       val sideA = Vec2(cx + perp.x * b.width / 2.0, cz + perp.z * b.width / 2.0)
       if !facesOutOfPlan(sideA, perp) then
         beamFaces.push(
@@ -904,9 +1180,18 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
             b.height,
             perp,
             Vec3(sideA.x, midY, sideA.y),
-            band(StripWidth, StripHeight),
+            band(0.0, StripHeight),
           ),
         )
+      beamFaces.push(
+        face(
+          len,
+          b.width,
+          -Up,
+          Vec3(cx, b.soffitY, cz),
+          band(StripHeight, StripWidth),
+        ),
+      )
       val sideB = Vec2(cx - perp.x * b.width / 2.0, cz - perp.z * b.width / 2.0)
       if !facesOutOfPlan(sideB, -perp) then
         beamFaces.push(
@@ -915,7 +1200,7 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
             b.height,
             -perp,
             Vec3(sideB.x, midY, sideB.y),
-            band(StripWidth + StripHeight, StripHeight),
+            band(StripHeight + StripWidth, StripHeight),
           ),
         )
 
@@ -997,66 +1282,6 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
       val corner = cornerDist(wp.xz, bnd) + isHoriz * Far
       plan.min(vert).min(corner)
 
-    // -----------------------------------------------------------------------
-    // The ambience field — the core of the illusion.
-    //
-    // Nothing here is a light model. A world-space FBM modulating surface
-    // brightness, plus a second noise varied by surface normal, has no physical
-    // justification whatever and is precisely what makes the room read as a
-    // real space rather than a rendering. It is set by LOOKING, not deriving.
-    // -----------------------------------------------------------------------
-
-    /** Dirt collecting where wall meets floor — darkest at the junction, back
-      * to full brightness `GrimeWidth` away. This is the ONE darkening in the
-      * room, and it is grime, not light: that is why it belongs only at the
-      * floor line and generalizes to no other edge.
-      */
-    def grime(dist: FloatExpr): FloatExpr =
-      lerp(GrimeDarken, 1.0, dist.smoothstep(0.0, GrimeWidth))
-
-    /** The ambience field, given the distance to the nearest geometry edge.
-      *
-      * Split out from the footprint-driven overload below because `edgeDist`'s
-      * vertical term assumes a surface spanning `0 … topY` — true of a wall,
-      * false of a ceiling beam sitting at 5.25–5.50 m. The beams supply their
-      * own edge distance and reuse everything else, which is the point of
-      * keeping this a small function over plain values rather than one baker
-      * that knows about rooms.
-      */
-    def roomNoise(
-        wp: Vec3Expr,
-        normal: Vec3Expr,
-        edgeDistance: FloatExpr,
-    ): FloatExpr =
-      val scaledWp = vec3(
-        wp.x + wp.y * 0.2,
-        wp.y * 0.3,
-        wp.z * 0.8 + wp.y * 0.2,
-      )
-      // The normal-dependent term gives each orientation its own look, which
-      // would otherwise meet as a hard seam in the corners. Fade it out over
-      // `EdgeFadeWorld` so the edge itself is uniform across all surfaces —
-      // this is what makes corners read as slightly rounded.
-      val edge = edgeDistance.smoothstep(0.0, EdgeFadeWorld)
-      lerp(
-        0.68,
-        1.0,
-        ((Noise
-          .fbm3(
-            scaledWp * 0.10,
-            freqMul = 3.6,
-            ampMul = 0.12,
-            seed = vec3(120),
-          ) +
-          Noise.fbm3(
-            scaledWp.cross(normal) * 0.15,
-            freqMul = 2.1,
-            ampMul = 0.25,
-            seed = vec3(70),
-          ) * 0.3 * edge)
-          / 1.3).fit1101,
-      )
-
     def texSize(w: Double, h: Double): (Int, Int) =
       ((w * AmbienceTexScale).toInt, (h * AmbienceTexScale).toInt)
 
@@ -1067,7 +1292,7 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
       vec4(
         vec3(FloorTint)
           * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, CeilY))
-          * grime(edgeSetDist(wp.xz, floorBnd)),
+          * grime(edgeSetDist(wp.xz, floorBnd), wp),
         1.0,
       )
 
@@ -1117,16 +1342,36 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     // in a hexagon meets in far sharper wedges and might genuinely want it —
     // decide that there, on its own merits, not by inheriting this.)
     //
-    // Two things vary per face, and neither is an edge effect:
+    // Two things vary across the beam, and neither is an edge effect. Both are
+    // driven by one value, `soffitness` below — read that first.
     //   * SOFFIT TINT — downward faces are all you see from eye height, so the
     //     underside of the raster IS the ceiling plane as far as the eye is
     //     concerned and takes `CeilTint`. The sides are vertical like walls and
-    //     take the wall tint.
-    //   * the normal-varied noise term is KEPT, not suppressed. It is what makes
-    //     surfaces at different orientations read as one material lit from one
-    //     room; fading it at the arrises keeps the thin beam's many hard 90°
-    //     corners seam-free without special-casing them.
-    val (baw, bah) = texSize(maxBeamLen, beams.length * beamBandWorld)
+    //     take the wall tint. The blend between them is drawn, with its own
+    //     width (`ArrisSoften`), rather than left to texture filtering.
+    //   * the normal-varied noise term is kept on the SIDES and dropped
+    //     entirely on the soffits. On the sides it is what makes surfaces at
+    //     different orientations read as one material lit from one room, and
+    //     fading it at the arrises keeps the thin beam's many hard 90° corners
+    //     seam-free. On the soffits it is dropped to continue the wall's own
+    //     fade — see the comment at the bottom of the bake.
+    // EVERY ROW GETS THE SAME WHOLE NUMBER OF TEXELS. Sizing the atlas as
+    // `(rows × bandWorld × scale).toInt` — the obvious way, and what this used
+    // to do — leaves a fractional row height, and then each beam's bands sit at
+    // a different sub-texel phase. Identical geometry then bleeds differently
+    // beam by beam, and because the beams are ordered family by family, the
+    // phase splits along family lines: one wall pair shows a line at the
+    // junction and the other does not. It also reshuffles whenever a grid
+    // constant changes `beams.length`, which is what made it look intermittent.
+    //
+    // NOT CLAMPED, deliberately — see `BeamCrossTexScale` for the ceiling this
+    // can run into and what it looks like when it does.
+    val beamRowTexels =
+      Math
+        .max(1.0, Math.round(beamBandWorld * BeamCrossTexScale).toDouble)
+        .toInt
+    val baw = (maxBeamLen * AmbienceTexScale).toInt
+    val bah = beams.length * beamRowTexels
     // CLEAR TO THE MATERIAL, not to black. An atlas always has texels no face
     // covers — partially-covered ones along every band edge, whole bands whose
     // face was skipped (the perimeter beams' outer sides), and the `u` tail of
@@ -1155,20 +1400,160 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
       // or other beams, and `u` cannot recover the far end because each beam's
       // `u` range differs and the bake is shared. Revisit if ends show a seam.
       //
-      // Note the consequence at these proportions: a soffit is `StripWidth`
-      // = 0.10 m across, so its greatest edge distance is 0.05 — below
-      // `EdgeFadeWorld` = 0.08. The normal-varied term is therefore almost
-      // fully suppressed on soffits and only ~36 % of each side reaches full
-      // strength. That is the mechanism working, not a defect: a thin beam has
-      // no room to develop its own orientation before the next arris. Widen
-      // the beams and the term reappears on its own.
+      // Position across the unrolled cross-section, in meters — see the band
+      // layout diagram where the faces are built. The two arrises sit at
+      // `StripHeight` and `StripHeight + StripWidth`; `0` and `beamBandWorld`
+      // are the two open top edges.
       val across = (uv.y * beams.length).fract * beamBandWorld
       val dEdge = across
-        .min((across - StripWidth).abs)
-        .min((across - (StripWidth + StripHeight)).abs)
+        .min((across - StripHeight).abs)
+        .min((across - (StripHeight + StripWidth)).abs)
         .min(beamBandWorld - across)
-      val tint = vec3(WallTintLow).lerp(vec3(CeilTint), normal.y.abs)
-      vec4(tint * roomNoise(wp, normal, dEdge), 1.0)
+
+      /** How much of a SOFFIT this point is: 1 across the middle of the soffit
+        * band, 0 on the sides, ramping over `ArrisSoften` either side of each
+        * arris. This is the one value the whole beam material turns on — it
+        * picks the tint AND gates the normal-varied noise.
+        *
+        * **This blend used to be an accident.** The tint was a hard step
+        * (`normal.y.abs`) between two adjacent atlas bands, and what softened
+        * it was bilinear filtering bleeding the bright side band into the dark
+        * soffit — a soffit is only ~5 texels wide, magnified to ~30 screen px,
+        * so one texel of bleed read as a bright line down every beam. That
+        * looked good and was worth keeping, but it was uncontrollable: its
+        * width was set by texel size, view distance and mip level, so it
+        * breathed as you walked. Drawn explicitly it is stable, tunable, and —
+        * because the tint is now continuous across the band boundary — there is
+        * no step left for the filter to bleed in the first place.
+        *
+        * The soffit sits in the MIDDLE of the row, so this is a plain distance
+        * from its centerline — the row is a cross-section laid out in order,
+        * not a wrapped loop.
+        */
+      val dFromSoffitCenter =
+        (across - (StripHeight + StripWidth / 2.0)).abs
+      val soffitness = 1.0 - dFromSoffitCenter.smoothstep(
+        StripWidth / 2.0 - ArrisSoften,
+        StripWidth / 2.0 + ArrisSoften,
+      )
+
+      /** The same shape with the ramp moved OUTSIDE the soffit: 1 across the
+        * whole soffit band, falling to 0 by `ArrisSoften` up each side.
+        *
+        * This is what a crossing pulls toward, rather than pulling the entire
+        * cross-section. Using `soffitness` alone there would drive the sides —
+        * INCLUDING their top edges — to the dark soffit tint, and since the
+        * crossing term ramps in over the last `ArrisSoften` of run before a
+        * junction, that darkening would show on side faces that are plainly
+        * visible. Only the soffit and the arrises immediately beside it need to
+        * agree at a crossing; everything further up the side keeps its own
+        * tint.
+        */
+      val nearSoffit = 1.0 - dFromSoffitCenter.smoothstep(
+        StripWidth / 2.0,
+        StripWidth / 2.0 + ArrisSoften,
+      )
+
+      /** 1 where this point lies inside ANOTHER family's beam — i.e. a crossing
+        * — 0 along a plain run, smooth between.
+        *
+        * A point is always inside its own family's strip, so "inside two or
+        * more" is exactly "at a crossing", and the test needs no idea which
+        * family the fragment belongs to. Each family is a regular set of
+        * parallel lines with a known normal, spacing and phase, so the distance
+        * to its nearest centerline is one `fract`. Build-time data, so this
+        * unrolls to one term per family and constant-folds.
+        *
+        * The ramp runs from the strip's EDGE outward, not inward. Inward is the
+        * obvious-looking choice and is wrong: a point on its own strip's edge
+        * would then score 0 for its own family, the sum would never reach 2 at
+        * a crossing's corners, and the junction would keep bright edges exactly
+        * where they are least wanted. Ramping outward also puts the fade where
+        * it belongs — in the last `ArrisSoften` of run before a crossing, so an
+        * arris stops being an arris just before it stops existing.
+        */
+      def insideFamily(f: BeamFamily): FloatExpr =
+        val o = wp.x * -f.dir.y + wp.z * f.dir.x
+        val d = (((o - f.phase) / f.spacing + 0.5).fract - 0.5).abs * f.spacing
+        1.0 - d.smoothstep(f.width / 2.0, f.width / 2.0 + ArrisSoften)
+      var overlap = insideFamily(families(0))
+      var fi = 1
+      while fi < families.length do
+        overlap = overlap + insideFamily(families(fi))
+        fi += 1
+      val crossing = (overlap - 1.0).clamp01
+
+      /** 1 where a beam's outer face is the WALL PLANE rather than open air —
+        * the perimeter beams, along their whole length.
+        *
+        * The same "there is no arris here" case as a crossing, for the same
+        * reason: a perimeter beam's outer side face is coplanar with the wall
+        * and gets culled, so there is no lighter side face to blend toward.
+        * Blending toward one anyway paints a light slot along every wall,
+        * exactly where the grid's openings fall everywhere else — so it reads
+        * as an opening where the room is solid.
+        *
+        * It also double-counts a transition that is already handled from the
+        * other side: the wall's own bake fades `WallTintLow` → `WallTintHigh`
+        * (0.97 → 0.88) over `TopFadeDepth` on its way up, so the wall arrives
+        * at `WallTopY` already within 0.02 of `CeilTint`. The two surfaces meet
+        * near-continuously on their own; the beam lightening back up to meet
+        * the wall undoes that.
+        *
+        * Keyed on distance to the plan boundary rather than on "is this the
+        * outermost beam", for the same reason `facesOutOfPlan` is: it holds
+        * unchanged for an L's notch walls, a hexagon, and anything standing in
+        * the room. The soffit spans 0 → `StripWidth` from the wall, so this
+        * reaches 1 at the outer arris and exactly 0 at the inner one, which
+        * keeps its fade — that side really does meet an open face.
+        */
+      val atWall =
+        1.0 - edgeSetDist(wp.xz, ceilBnd).smoothstep(0.0, StripWidth)
+
+      // AT A CROSSING THERE IS NO ARRIS. The perpendicular beam's material sits
+      // right where the soffit's edge would be, so an edge transition there
+      // depicts an edge that does not exist — and, drawn into the atlas, it is
+      // what put two bright lines across every junction. So at a crossing the
+      // soffit widens its own treatment out to its full width — uniform tint,
+      // no normal-varied noise — and the arrises beside it follow, leaving no
+      // step for the filter to find. The junction reads as one flat block,
+      // which is what it is. Side faces above the arris are untouched: they are
+      // buried inside the crossing anyway, and the term's run-in would
+      // otherwise darken them where they ARE visible.
+      //
+      // A wall does the same thing to a perimeter beam's outer arris, and for
+      // the same reason — hence one `max`, not two mechanisms.
+      val s = soffitness + (nearSoffit - soffitness) * crossing.max(atWall)
+
+      // The DOWNWARD faces take no normal-varied noise at all — `1 - s` is zero
+      // across the soffit. That is a deliberate join with the walls, not a
+      // saving: a wall's own `edgeDist` fades this same term to nothing exactly
+      // at `WallTopY`, which is the soffit plane, so the term arrives at the
+      // ceiling already at zero and stays there across every soffit. One
+      // continuous unvaried band from the top of the wall through the raster —
+      // the softest available landing for the densest part of the room. The
+      // sides keep their character and fade it out at the arris, meeting the
+      // soffit's permanent zero from the other direction.
+      //
+      // Soffits are therefore pure low-frequency world noise. Looking up, bloom
+      // off the light plane supplies the variation instead.
+      // A side face lifts toward `BeamSideTopTint` as it rises. Keyed on world
+      // height rather than on `across`, because that is the quantity that
+      // actually means anything here — proximity to the light plane — and it
+      // costs nothing: a soffit sits at `WallTopY`, so this is exactly 0 there
+      // and the lift touches only the sides. The arris blend is unaffected for
+      // the same reason, since it happens where the lift is still ~0.
+      val sideLift = ((wp.y - WallTopY) / StripHeight).clamp01
+      val sideTint = vec3(WallTintLow).lerp(vec3(BeamSideTopTint), sideLift)
+      val tint = sideTint.lerp(vec3(CeilTint), s)
+
+      // The ambience DARKENS — it averages ~0.84 — so the tint above is not the
+      // rendered color unless the darkening is lifted with it. Lift it by the
+      // same `sideLift`, so a side face arrives at the ceiling line as its tint
+      // and nothing less. Zero on the soffit, which keeps its full ambience.
+      val ambience = roomNoise(wp, normal, dEdge * (1.0 - s))
+      val lit = ambience + (1.0 - ambience) * (sideLift * BeamTopGlow)
+      vec4(tint * lit, 1.0)
 
     /** Wall ambience. ONE baker — and therefore one pipeline — for every wall
       * in the room, whatever its height.
@@ -1202,7 +1587,7 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
             vec3(WallTintHigh),
             (topY - wp.y).smoothstep(TopFadeDepth, 0.0),
           ) * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, topY))
-            * grime(wp.y),
+            * grime(wp.y, wp),
           1.0,
         ),
       )
