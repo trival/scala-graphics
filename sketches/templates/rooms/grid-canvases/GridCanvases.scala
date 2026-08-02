@@ -173,8 +173,8 @@ val EdgeFadeWorld = 0.08
   * deliberately separate from `EdgeFadeWorld` — they are unrelated quantities
   * that `canvases` happened to give the same number.
   */
-val GrimeWidth = 0.08
-val GrimeDarken = 0.93 // brightness multiplier right at the junction
+val GrimeWidth = 0.06
+val GrimeDarken = 0.91 // brightness multiplier right at the junction
 
 /** How far the grime line wanders in and out along the junction, in meters, and
   * how much its darkness varies independently of that (0 = none, 1 = it fades
@@ -192,8 +192,8 @@ val GrimeDarken = 0.93 // brightness multiplier right at the junction
   * higher-resolution grime input — not raising the ambience scale, which is
   * deliberately cheap.
   */
-val GrimeCreep = 0.02
-val GrimePatchiness = 0.6
+val GrimeCreep = 0.03
+val GrimePatchiness = 0.3
 
 /** Feature size of the grime noise, as an inverse scale on world position —
   * lower is larger. At 0.9 the features run roughly half a meter, which is
@@ -1744,9 +1744,9 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     val bloom = Bloom(
       p,
       scenePanel,
-      intensity = 0.004,
+      intensity = 0.0035,
       threshold = 1.0,
-      blurRadius = 4.0,
+      blurRadius = 3.0,
       mipLevels = 5,
       // Soft-clip the HDR before display. Without it the beam silhouettes
       // against the light plane read as a staircase no matter how many MSAA
@@ -1755,7 +1755,7 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
       // knee sits just above the room's own brightest surface, so nothing in
       // the room shifts; only the emitter and its edges are compressed.
       toneKnee = 0.9,
-      toneWhite = 2.2,
+      toneWhite = 1.5,
     )
 
     // -----------------------------------------------------------------------

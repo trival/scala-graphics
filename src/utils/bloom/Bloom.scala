@@ -110,6 +110,17 @@ object Bloom:
     *   Pyramid depth (must be `>= 2`). `N` levels = 1 threshold + `(N-1)`
     *   box downsamples + `(N-1)` additive tent upsamples; deeper ⇒ wider glow.
     *   5 is the canonical value; 4–6 covers most needs.
+    * @param toneKnee
+    *   Where the display shoulder starts. Everything below passes through
+    *   untouched, so set it at or just above the brightest NON-emitting surface
+    *   in the scene and its tones will not shift. The default `1.0` disables
+    *   the shoulder entirely, giving the plain hard clamp.
+    * @param toneWhite
+    *   Length of the shoulder above the knee, in scene units — roughly "the
+    *   HDR value that should read as near-white". It does not clip there: the
+    *   curve approaches 1.0 asymptotically, which is what keeps a strong bloom
+    *   from flattening into a plateau. Larger ⇒ gentler compression, so a wider
+    *   HDR range stays distinguishable and the emitter reads dimmer.
     * @return
     *   a [[Bloom]] exposing `resultPanel` (present this) and `bloomPanel` (raw
     *   glow), plus `paint` / `setIntensity` / `setBlurRadius`.
@@ -216,36 +227,68 @@ object Bloom:
     // ----- composite — scene + bloom * intensity → screen -----------------
     // Both inputs are full-res and screen-aligned, so read them 1:1 by pixel.
     //
-    // SOFT CLIP. An HDR scene shown directly clamps everything above 1.0, and
-    // that clamp destroys MSAA along any edge against a bright emitter: with a
-    // 2.0 light behind a 0.85 surface, every sample above ~26 % coverage
-    // displays as pure white, so 4 of MSAA's 5 gradations collapse and the edge
-    // reads as a staircase however many samples were taken.
+    // SOFT SHOULDER.
     //
-    // `toneKnee` leaves everything below it untouched and maps `[knee, white]`
-    // linearly into `[knee, 1]`, so the room's own values do not shift while
-    // the emitter's edge keeps a real gradient.
+    // ANTIALIASING IS NOT SMOOTHING — it encodes coverage as brightness. The
+    // jagged pixel-grid boundary is always there; what hides it is that edge
+    // pixels hold values between the two sides. So ANY mapping that sends a
+    // range of inputs to one output strips the disguise off and the grid
+    // reappears exactly as it was. Shown directly, an HDR scene clamps
+    // everything above 1.0: with a 2.0 emitter behind a 0.85 surface every
+    // sample past ~13 % coverage displays as pure white, 4 of MSAA's 5
+    // gradations collapse, and the edge is a staircase however many samples
+    // were taken. Nothing drew a step — the clamp revealed one.
     //
-    // The default `toneKnee = 1.0` collapses the scale factor to zero, which is
-    // exactly today's hard clamp — so this changes nothing for a caller that
-    // does not ask for it.
-    val toneScale =
-      if toneWhite > toneKnee then (1.0 - toneKnee) / (toneWhite - toneKnee)
-      else 0.0
-    type CompositeU = (intensity: Float, knee: Float, toneScale: Float)
+    // Hence the shoulder, which keeps those intermediate values distinct:
+    //
+    //   f(c) = c                                          for c <= knee
+    //   f(c) = 1 - (1 - knee)·exp(-(c - knee)/shoulder)    above it
+    //
+    // ASYMPTOTIC, NOT TERMINATING, and that is the whole point of its shape. A
+    // piecewise-linear ramp that maps `toneWhite` to exactly 1.0 still clips
+    // everything brighter, which matters here more than anywhere else in a
+    // frame: bloom ADDS to the scene, so a strong glow lifts a whole
+    // neighbourhood past `toneWhite` at once. That region goes flat white with
+    // no gradient in it, and its outline — the contour where
+    // `scene + bloom·intensity = toneWhite` — is itself a hard aliased edge.
+    // The staircase moves from the emitter's silhouette out into the glow, and
+    // `intensity` stops being a free knob because turning it up brings the
+    // artifact back. Approaching 1.0 without reaching it, no plateau can form
+    // at any intensity.
+    //
+    // It is also C¹ at the knee: the initial slope is `(1-knee)/shoulder`,
+    // identical to the linear version's, so an existing tuning is preserved and
+    // the falloff has no visible corner where it starts.
+    //
+    // The default `toneKnee = 1.0` zeroes `lift`, leaving `min(c, knee)` —
+    // exactly the plain hard clamp, so a caller that does not ask for a
+    // shoulder gets none.
+    val toneOn = toneWhite > toneKnee
+    val toneLift = if toneOn then 1.0 - toneKnee else 0.0
+    // Negated reciprocal so the shader needs one multiply and no division.
+    val toneFalloff = if toneOn then -1.0 / (toneWhite - toneKnee) else -1.0
+    type CompositeU =
+      (intensity: Float, knee: Float, lift: Float, falloff: Float)
     type CompositePanels = (scene: FragmentPanel, bloom: FragmentPanel)
     val compositeShade = p.layerShade[CompositeU, CompositePanels]: program =>
       program.frag: ctx =>
         val coord = ivec2(ctx.fragCoord.xy)
         val c = LetVec3("c")
         val low = LetVec3("low")
+        val over = LetVec3("over")
         Block(
           c := (ctx.textures.scene.load(coord)
             + ctx.textures.bloom.load(coord) * ctx.bindings.intensity).xyz,
-          // Below the knee this is `c` itself, so the term vanishes.
+          // Below the knee `low` is `c` itself and `over` is zero, so the
+          // shoulder term vanishes and the value passes through untouched.
           low := c.min(vec3(ctx.bindings.knee)),
-          ctx.out.color :=
-            vec4(low + (c - low) * ctx.bindings.toneScale, 1.0),
+          over := c - low,
+          ctx.out.color := vec4(
+            low
+              + (vec3(1.0) - (over * ctx.bindings.falloff).exp)
+              * ctx.bindings.lift,
+            1.0,
+          ),
         )
 
     val resultP = p.panel(
@@ -256,7 +299,8 @@ object Bloom:
           "bloom" := bloomP,
           "intensity" := uIntensity,
           "knee" := toneKnee,
-          "toneScale" := toneScale,
+          "lift" := toneLift,
+          "falloff" := toneFalloff,
         ),
     )
 
