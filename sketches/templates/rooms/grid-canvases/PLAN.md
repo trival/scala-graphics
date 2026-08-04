@@ -12,68 +12,71 @@ and walls that accept hung pieces.
 The full design rationale is `documents/grid-ceiling-rooms-plan.md`; the build
 order and its visual checkpoints are
 `documents/room-templates-implementation.md`. This file carries the part a
-reader of *this sketch* needs.
+reader of _this sketch_ needs.
 
-## Status
+## Where to touch
 
-Being built. Done: **A0** (scaffold), **A1** (footprint replaces the box),
-**A2** (camera confinement), **A3** (library prerequisites), **A4** (coffer
-light), **A5** (raster geometry) and **A6** (raster shading).
+The one-screen answer, before any of the reasoning below.
 
-The room is now derived end to end from one `Ring` of four XZ points: walls from
-its edges, floor and ceiling from its bounding box, the grime line and noise
-fade from `edgeSetDist` against those edges. Paintings, shadows, the composite
-path and animation are stripped — the subject at this stage is the space.
+| To change…                     | Go to                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| the room's **shape**           | the single `Ring` in `main`. An L is a 6-point ring, a hexagon 6 at 60°     |
+| the room's **size**            | the wanted extents passed to `snapHalfExtent` — not `RoomWidth` itself      |
+| the **look** of any surface    | the TUNABLES block at the head of the file. Nothing tunable lives lower     |
+| the **ambience field**         | `roomNoise`, in TUNABLES. All of it is one decision; edit it in place       |
+| what the **light plane** emits | the fenced light-shader block. It is yours; four technical limits are noted |
+| **what hangs and where**       | the CURATION block, and `curate` in `main`. Delete both and write your own  |
+| **add a partition**            | a second `Ring` with `Facing.Outward` and a `height` below the room's       |
 
-The same rings confine the walker: `confine` clamps the camera 0.5 m short of
-every surface after the controller moves it, and `y` is locked to eye height
-with free-fly surviving as a `devMode`-gated inspection tool.
+Everything else derives. Nothing in the list needs a change anywhere else in the
+file — that is the property the template exists to provide, and it is worth
+re-testing after any edit.
 
-The wall baker takes `topY` as a **per-bake uniform**, so one pipeline bakes
-every wall in the room whatever its height. Nothing varies yet — every wall
-shares a top — which is exactly why it is worth doing now rather than after
-partitions and pillars have each accumulated a specialized shade.
+## What is settled, and what it costs to undo
 
-The room is now **derived from the ceiling beam lattice** rather than authored:
-`snapHalfExtent` puts each wall plane flush with the outer face of the nearest
-beam, so every wall gets its perimeter beam for free once the raster exists
-(6.5 → 6.70 m, 10.0 → 10.00 m). Walls stop at `WallTopY`, and an HDR light plane
-sits `CofferDepth` above the ceiling line, overhanging the plan.
+Built and tuned through the implementation plan's step A9. The room derives end
+to end from ring data: walls from ring edges, floor and ceiling from the
+bounding box, the grime line and noise fade from `edgeSetDist` against those
+edges, the raster clipped to them, and the walker confined by them.
 
-The raster is **a flat list of beam segments**, not a pair of axis-aligned
-grids — two `BeamFamily` calls at 90°, clipped to the plan by `clipLine`. A
-hexagon calls it three times at 60°; that is data, not new code. 32 beams here,
-and the outermost of each family sits flush with its wall, so every wall has its
-perimeter beam and the light openings are inset all round.
+**Two constants are derived, not tuned**, and should stay that way.
+`RoomWidth`/`RoomDepth` come from `snapHalfExtent`, which puts each wall plane
+flush with the outer face of the nearest beam so every wall gets a perimeter
+beam for free. `LightOverhang` comes from room span, coffer depth and eye height
+so no reachable sightline can see past the light plane's edge. Both are
+correctness bounds, not look decisions — change the _wanted_ extents and the
+coffer depth, and read these.
 
-The beams are **the same material as the walls** — same `roomNoise` at world
-position, same fade of the normal-varied term at every geometry edge, `CeilTint`
-on the soffits because the underside of the raster is the ceiling plane as far
-as the eye is concerned. Nothing darkens at a junction.
+**Winding is free; point order is not.** `Facing` is an absolute claim about
+which side the room is on, and `Boundary` cancels a ring's winding so it stays
+true either way. What point order _does_ fix is edge order, and therefore wall
+index — so an O-shaped room can wind its outer and inner rings alike and have
+wall `i` face wall `i`, which is how curation addresses opposing walls.
 
-The beams supply their own edge distance rather than going through `edgeDist`,
-whose vertical term assumes a surface spanning `0 … topY` — true of a wall,
-false of a beam at 5.25–5.50 m. The atlas row is the beam's unrolled
-cross-section, so `v` within a row locates you across it and the band boundaries
-are exactly the arrises. That is why one expression serves every beam at any
-angle with no per-beam frame.
+**A wall is plan data.** No `Form`, no `rotY` — a GPU resource would force the
+whole derivation to run inside `Painter.init`, and a stored angle is a second
+copy of `inwardNormal` that can drift. Forms are built at the use site from
+`wall.quad`; the angle is an extension.
 
-**Next: A7, the tuning pass** — `CofferDepth`, `GridSpacing`, `StripWidth`,
-`StripHeight`, `LightColor`, `TopFadeDepth` and bloom, all by eye. Then the
-hanging affordance (A8) and the template pass (A9).
+Six things are load-bearing and easy to undo by accident while tuning. Each has
+its reasoning beside the code; `documents/room-templates-implementation.md` has
+the full account of how each was found.
 
-Two constants are **derived rather than tuned**, and should stay that way:
-`RoomWidth`/`RoomDepth` come from `snapHalfExtent` so every wall gets its
-perimeter beam, and `LightOverhang` comes from room span, coffer depth and eye
-height so no sightline can see past the light plane. Both are correctness
-bounds, not look decisions — change the wanted extents and the coffer depth, not
-these.
+| Do not undo                              | What comes back                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| per-family soffit stagger                | coplanar soffits z-fight into a dashed shimmer at every crossing     |
+| beam atlas cleared to the material color | uncovered atlas texels bleed out as dark seams along every beam      |
+| the atlas row's **band order**           | the soffit/side gradient lands on the wrong edges — beams inside out |
+| `bah` an exact multiple of the row       | per-beam sub-texel phase; lines at some walls and not others         |
+| `crossing` / `atWall`                    | bright lines across every junction, a light slot along every wall    |
+| `Bloom`'s asymptotic shoulder            | a flat glare plateau whose outline is a hard aliased edge            |
 
-Three fixes worth not undoing while tuning: the per-family soffit stagger
-(coplanar soffits z-fight), the beam atlas clearing to the material color rather
-than black (uncovered atlas texels otherwise bleed out as dark seams), and the
-`Bloom` soft clip (a hard clamp at 1.0 destroys MSAA on the beam silhouettes).
-See `documents/room-templates-implementation.md` for the full account.
+The **band order** one is the subtle one, and template C will meet it again:
+`Quad.fromDimensions` derives `v` from `-(n × tangent)`, so the two side faces —
+having opposite normals — run opposite ways in `v`. The row is laid out as the
+cross-section in order (`sideA top → arris → soffit → arris → sideB top`) so
+every atlas adjacency is a real geometric adjacency. A triangular raster has
+three side orientations and needs the same argument redone, not copied.
 
 ## What the room is made of
 
@@ -89,27 +92,43 @@ See `documents/room-templates-implementation.md` for the full account.
 | Walls as hangable surfaces              | where pieces can go, and how their shadows composite |
 | Camera confinement                      | where the visitor can stand                          |
 
-## Two things deliberately *not* here
+## Two things deliberately _not_ here
 
 **No ambient occlusion.** Nothing darkens an edge, corner or junction — not
 where walls meet, not where the grid meets a wall, not where beams cross. A real
 exhibition space is lit by a huge diffuse source and bounced around a white
 interior until light reaches everywhere nearly equally; corners do not go dark.
 Adding occlusion produces a recognisable game-engine look that reads as
-*artificial* against this subject. The realism comes from the opposite
+_artificial_ against this subject. The realism comes from the opposite
 direction: near-uniform brightness with slight world-space noise, varied by
 normal.
 
 The one darkening that stays is the **grime line** where wall meets floor, and
-it is *dirt, not light* — which is why it belongs only there and generalizes to
+it is _dirt, not light_ — which is why it belongs only there and generalizes to
 no other edge. If you want occlusion, it is a deliberate module with its own
 falloff radius, never a reuse of `EdgeFadeWorld` (which is tuned to round
 corners off, not to absorb light).
 
 **No curation.** The room provides walls, not a hang. How many pieces, where,
 what size, whether they move and what is on them are the exhibition's decisions,
-made in the sketch that copies this one. Any fixed pieces here exist only to
-prove the affordance works — they are not a layout to imitate.
+made in the sketch that copies this one. The pieces here exist only to prove the
+affordance works — they are fenced in a CURATION block precisely so they can be
+deleted wholesale, and they are not a layout to imitate. Two fixed sizes at two
+fixed spots in flat colors: crude on purpose, because anything better-looking
+would invite copying.
+
+The affordance itself is the part worth keeping. A wall binds **a `Panel`,
+whatever produced it** — the bare ambience bake when nothing hangs, or the
+shadow composite when something does — so curation changes the producer and
+never the shade. Shadows accumulate as one multiplicatively-blended instance per
+piece in a single pass, so there is no cap on how many hang and no per-piece
+cost beyond an instance. And they are _shaped, not simulated_: there is no light
+position anywhere in this room, and hanging something does not introduce one.
+
+**No animation.** `canvases` sways its paintings and carries mutable bindings
+for it; nothing here moves, so `Painting` holds plain values. Animation returns
+when hanging becomes a shared utility with static and animated as two equal
+cases.
 
 ## Conventions
 
@@ -120,8 +139,8 @@ prove the affordance works — they are not a layout to imitate.
   `centerFromLeft`, `centerHeight`, `heightAboveFloor`. The two conventions meet
   inside single function bodies here, which is how it becomes a bug rather than
   a style quibble.
-- **Every surface's *look* is yours.** The room owns the geometry, the ambience
-  field and the compositing mechanism; what a surface *shows* is supplied as its
+- **Every surface's _look_ is yours.** The room owns the geometry, the ambience
+  field and the compositing mechanism; what a surface _shows_ is supplied as its
   own panel, at its own resolution, sampled by a shade this sketch writes. That
   holds for walls, the light plane and the floor alike — more inputs to a shade
   you write, never more parameters on a shade you are handed.

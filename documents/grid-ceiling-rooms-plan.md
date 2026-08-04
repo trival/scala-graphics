@@ -712,6 +712,33 @@ case class Footprint(
 )
 ```
 
+> **Amended by A7, after building it.** Two things about this data turned out to
+> matter enough to make explicit; see _What A7 settled_ in
+> `room-templates-implementation.md`.
+>
+> - **`Facing` is an absolute claim, and the code has to earn that.** Written as
+>   above it is not: the normal is `perp(dir) * facing.sign`, and `perp` depends
+>   only on edge direction, so reversing a ring's points flips every normal and
+>   `Facing.Inward` silently means "the room is on the `perp` side" instead. A
+>   ring's signed area (shoelace, once, at build time) folded into the sign
+>   cancels that — reversing the points flips `perp(dir)` _and_ the area sign, so
+>   the product is invariant.
+>
+>   This is worth the ~10 lines because **point order is not free to spend on
+>   normals**: it fixes EDGE order, and therefore wall index. An O-shaped room
+>   that winds its outer and inner rings the same way gets wall `i` facing wall
+>   `i`, which is what lets curation address opposing walls by index. Winding
+>   cannot decide both.
+>
+> - **A set of edges is a type, not an `Arr[Edge]`.** Two of the queries below
+>   depend on the closed-loop invariant silently — `isInside` is an even-odd
+>   parity count, so an open chain answers arbitrarily and a duplicated edge
+>   inverts it, and `cornerDist` reads only each edge's `a` and finds every
+>   vertex only because the edges are loops. A wrapper class with a private
+>   constructor (`Boundary`) makes rings the only source of edges. An `opaque
+>   type` does not work here: it is transparent inside its own file, and the
+>   room is one file.
+
 **The floor and ceiling are the bounding-box quad, not the plan polygon.** There
 is no triangulation and no hand-authored face decomposition anywhere in this
 design — an L-shaped room's floor is a plain rectangle covering the whole
@@ -1221,6 +1248,34 @@ Two things do vary per face, and neither is an edge effect:
    makes surfaces at different orientations read as the same material lit from
    the same room, and `roomNoise` already fades it toward edges, so the many
    hard 90° corners on a thin beam stay seam-free without special-casing them.
+
+> **Amended by A7, after building it.** Both of the above survive on the SIDE
+> faces and were revised on the soffits; see _What A7 settled_ in
+> `room-templates-implementation.md` for the implementation. Three changes:
+>
+> - **The soffit/side tint transition is drawn, with its own width**
+>   (`ArrisSoften`), not left as a hard step softened by texture filtering. Left
+>   implicit it is real but uncontrollable — its width follows texel size, view
+>   distance and mip level, so it breathes as you walk, and no shader term can
+>   suppress it where it is wrong.
+> - **The normal-varied term is dropped entirely on the soffits**, kept on the
+>   sides. Point 2's argument is about surfaces at different orientations
+>   meeting, and it still holds where they do. But a wall's own `edgeDist`
+>   already fades this term to zero exactly at `WallTopY`, which _is_ the soffit
+>   plane — so holding it at zero across every soffit continues that fade into
+>   one unvaried band from the top of the wall through the raster. That is the
+>   softest available landing for the densest region of the room, and looking up,
+>   bloom off the light plane supplies the variation instead.
+> - **Two junctions are not arrises at all**, and treating them as such is what
+>   put bright lines across every beam crossing and a light slot along every
+>   wall. Where beams cross, the perpendicular beam's material occupies the space
+>   the soffit's edge would open into; at a perimeter beam's outer edge the side
+>   face is culled, so there is nothing to blend toward. Both suppress the edge
+>   treatment, keyed on the plan rather than on beam identity.
+>
+> None of this reintroduces junction darkening — the section above still holds
+> in full. These are tint and material-variation terms, and the crossings end up
+> _more_ uniform, not darker.
 
 ### Raster: what is deliberately deferred
 

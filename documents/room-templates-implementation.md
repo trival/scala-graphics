@@ -27,10 +27,11 @@ it. Each step's check is `bun run sketch <path>` followed by a look at
 
 ---
 
-## STATUS — as of 2026-07-31
+## STATUS — as of 2026-08-02
 
-**Template A is built through A6.** Next action is **A7**, the tuning pass,
-which the author is doing by eye before A8 starts.
+**Template A is built through A7, and A7 grew into a refactor as well as a
+tuning pass.** The author considers the grid, the bloom and the geometry types a
+finished foundation to build B and C on. Next action is **A8**.
 
 | Step                        | State                                                  |
 | --------------------------- | ------------------------------------------------------ |
@@ -41,21 +42,203 @@ which the author is doing by eye before A8 starts.
 | A4 coffer light             | ✅ verified                                            |
 | A5 raster geometry          | ✅ verified                                            |
 | A6 raster shading           | ✅ verified, after four artifact fixes below           |
-| **A7 tuning pass**          | **next — author tuning by eye**                        |
-| A8 hanging affordance       | not started                                            |
-| A9 template pass            | not started                                            |
+| A7 tuning + refactor        | ✅ verified — see _What A7 settled_                    |
+| A8 hanging affordance       | ✅ built — **awaiting the author's visual check**      |
+| A9 template pass            | ✅ built — **awaiting the author's cold-read check**   |
+
+**Template A is code-complete.** Both remaining gates are judgement calls the
+author has to make: A8's is visual (do the shadows land, do the pieces read
+under the coffer light), A9's is a cold read of the file. Until those pass, B
+should not be started — B is a copy of A, and anything wrong here is copied
+three times.
+
+### What A7 settled
+
+A7 was scoped as tuning by eye. It turned into the pass that made the raster and
+the types good enough to copy, so the results are recorded here rather than in
+the step body. **B and C inherit all of it.**
+
+#### Geometry types — the plan side is now pure data
+
+- **`Boundary`**, a `class` with a **private constructor** wrapping `Arr[Edge]`,
+  replaces passing `Arr[Edge]` around. It earns a type because two queries
+  depend on the closed-loop invariant silently: `contains` is an even-odd parity
+  count, so an open chain answers arbitrarily and a duplicated edge inverts the
+  result; `cornerDist` reads only each edge's `a` and finds every vertex only
+  because the edges form loops. Order is irrelevant everywhere, so it is a SET
+  of loops and concatenation is closed.
+  - **Not `opaque type`** — an opaque alias is transparent inside its own file,
+    and the whole room is one file, so it would have enforced nothing. The class
+    costs one allocation per boundary at build time; `.edges` is a field read.
+  - `Boundary(rings)` is the only constructor, and `ringEdges` is private to the
+    companion, so there is no way to reach a loose `Arr[Edge]` except off a
+    boundary that already exists.
+- **`Ring` winding no longer matters.** `Facing` is now an absolute claim about
+  the world. `Boundary.ringEdges` folds in the sign of the ring's signed area
+  (shoelace, once per ring at build time): reversing the points flips
+  `perp(dir)` **and** flips the area sign, so their product is invariant. This
+  was deliberate, not incidental — point order fixes EDGE order and therefore
+  wall index, so an O-shaped room can wind its outer and inner rings the same
+  way and have wall `i` face wall `i`. Verified on a concave (L) plan: both
+  windings produce an identical set of edges-with-normals, and every `Inward`
+  normal steps into the plan under `contains`.
+- **Extensions over free functions**: `ring.boundary`, `fp.floorBoundary`,
+  `fp.ceilingBoundary(h)`, `fp.bounds`, `bnd.nearest/contains/confine/clipLine`.
+- **`Wall` is plan data.** It shed both `Form` (a GPU resource, which forced the
+  whole derivation to run inside `Painter.init` and could not be inspected
+  without one) and `rotY` (a second copy of `inwardNormal` that could drift).
+  `wallsFrom` is now a pure top-level function beside `familyBeams`, and the
+  form is built at the use site from `wall.quad`. `Beam` was already pure;
+  `Wall` was the inconsistent one.
+  - Latent assumption left in place: `wallsFrom` writes `center.y = topY/2` and
+    `height = topY`, so **the floor is hardcoded at y = 0**. The representation
+    supports a raised wall fine — only those two lines don't. Fix by adding a
+    `bottomY` parameter when something needs it.
+
+#### The raster — four fixes, one mechanism
+
+The beam material now turns on a single value, `s`, which picks the tint and
+gates the normal-varied noise:
+
+```scala
+val s = soffitness + (nearSoffit - soffitness) * crossing.max(atWall)
+```
+
+- **The soffit/side blend is now DRAWN, not an accident.** It used to be a hard
+  `normal.y.abs` step between adjacent atlas bands, softened only by bilinear
+  bleed — which looked good but was uncontrollable: its width was set by texel
+  size, view distance and mip level, so it breathed as you walked, and the
+  shader could not suppress it anywhere. Explicit (`ArrisSoften`) it is stable
+  and tunable, and because the tint is now continuous across the band boundary
+  there is no step left to bleed.
+- **`crossing` — at a beam junction there is no arris.** The perpendicular
+  beam's material sits where the soffit's edge would be, so an edge transition
+  there depicts an edge that does not exist; drawn into the atlas it put two
+  bright lines across every junction. A point is always inside its own family's
+  strip, so "inside two or more families" is exactly "at a crossing" and the
+  test needs no idea which family a fragment belongs to.
+  - **The ramp runs from the strip's edge OUTWARD.** Inward is the obvious
+    choice and is wrong: a point on its own strip's edge then scores 0 for its
+    own family, the sum never reaches 2 at a junction's corners, and the
+    junction keeps bright edges exactly where they are least wanted.
+- **`atWall` — the same case at a perimeter beam's outer arris.** Its outer side
+  face is culled, so there is no lighter face to blend toward, and blending
+  anyway painted a light slot along every wall precisely where the grid's
+  openings fall elsewhere. It also double-counted: the wall's own `TopFadeDepth`
+  fade brings it to within 0.02 of `CeilTint` by `WallTopY`, so the two surfaces
+  already met near-continuously. Keyed on distance to the plan boundary, not on
+  "is this the outermost beam", so it holds for B's notch and C's hexagon.
+- **Soffits take no normal-varied noise at all.** A wall's `edgeDist` fades that
+  term to zero exactly at `WallTopY`, which is the soffit plane — so it arrives
+  at the ceiling already at zero, and holding it there gives one continuous
+  unvaried band from the top of the wall through the whole raster. Soffits are
+  pure low-frequency world noise; looking up, bloom supplies the variation.
+- **Beam sides lift toward `BeamSideTopTint` as they rise**, keyed on world
+  height (proximity to the light plane), which is exactly 0 on a soffit so the
+  arris blend is untouched. `BeamTopGlow` lifts the ambience with it — without
+  that the tint is unreachable, because `roomNoise` averages ≈ 0.84 and seldom
+  clears 0.93, so an almost-white tint renders mid-grey.
+
+#### The atlas row is the cross-section, in order
+
+`Quad.fromDimensions` derives `v` from `-(n × tangent)`, and the two side faces
+have opposite normals — `perp × dir = +Y` puts sideA's **top** at `uv.y = 0`,
+while `-perp × dir = -Y` puts sideB's **bottom** there. **The two sides run
+opposite ways in `v`.** Laid out naively as `soffit, sideA, sideB` both side
+tops end up against the soffit's ends and both arrises land mid-row, so anything
+measuring position across the section reads the beam inside out. The row is now:
+
+```
+0 ───────── StripHeight ── +StripWidth ────────── beamBandWorld
+sideA top      arris          soffit      arris      sideB top
+```
+
+Every atlas adjacency is now a real geometric adjacency, and the outer ends are
+the open top edges, which neighbour the next beam's open top edge and share its
+tint. **C should expect to redo this reasoning** — a triangular raster has three
+side orientations, and the same cross-product argument decides their order.
+
+#### Atlas sizing — `bah` must be a whole number of rows
+
+Sizing it as `(rows × bandWorld × scale).toInt` leaves a **fractional row
+height** (35.5 texels at the values that exposed it), so every beam's bands sit
+at a different sub-texel phase and identical geometry bleeds differently beam by
+beam. Because beams are ordered family by family, the phase split along family
+lines: one wall pair showed a line at the junction and the other did not, and it
+reshuffled whenever a grid constant changed `beams.length`. This was initially
+suspected to be the lattice snapping; **it is not** — `snapHalfExtent` is exact
+by construction (`h = k·G + W/2`, and the outermost beam is `floor(h/G) = k`
+whenever `0 ≤ W/(2G) < 1`), confirmed against a sweep of 1769 configurations
+with zero gaps.
+
+`BeamCrossTexScale` is now separate from `AmbienceTexScale` and applies only
+across the section: the beam atlas is the one bake with real structure in it,
+and at the ambience scale the soffit was ~5 texels, so one texel of bleed was a
+fifth of its width. Along the run the content genuinely is low-frequency.
+Deliberately **unclamped** against `maxTextureDimension2D` (~86 beams here) —
+clamping would silently trade away the resolution the constant exists for.
+WebGPU does not throw: an over-large `createTexture` is a validation error, the
+console fills with errors and the beams do not draw.
+
+#### `roomNoise` and `grime` moved into the tunables block
+
+Both are top-level now, in TUNABLES, because every number in them is a look
+decision and none means anything alone — a frequency is only right relative to
+the amplitude beside it and the range it lands in. Naming them individually
+would add indirection without insight. The one exception is the normal term's
+weight, which also normalizes the sum, so it is bound once (`normalWeight`)
+rather than appearing as `0.3` and `1.3` three lines apart.
+
+`grime` now takes **world position** and perturbs both how far the dirt creeps
+and how dark it gets. World space is load-bearing, not incidental: the junction
+is shared by surfaces baked separately at different resolutions with no
+coordinate in common — the floor and every wall, and any two walls meeting at a
+room corner — so a surface-local noise would make each wander independently and
+the dirt would jump at every corner.
+
+#### Bloom — the tonemap is a shoulder, not a ramp
+
+Restated because the A6 entry below has the mechanism only half-right.
+**Antialiasing is not smoothing; it encodes coverage as brightness.** The jagged
+pixel-grid boundary is always there, and what hides it is that edge pixels hold
+intermediate values. Any mapping that sends a range of inputs to one output
+strips that disguise off and the grid reappears unchanged — nothing draws a
+step, the clamp reveals one.
+
+The piecewise-linear soft clip fixed the emitter's silhouette but not the class
+of bug, because it still **terminated**: above `toneWhite` it clipped exactly as
+before. That matters more here than anywhere else in a frame, since bloom _adds_
+— a strong glow lifts a whole neighbourhood past `toneWhite` at once, giving a
+flat white plateau whose outline (the `scene + bloom·intensity = toneWhite`
+contour) is itself a hard aliased edge. The staircase moves from the silhouette
+out into the glow, and `intensity` stops being a free knob.
+
+`src/utils/bloom` now uses an asymptotic shoulder:
+
+```
+f(c) = 1 - (1 - knee)·exp(-(c - knee)/(toneWhite - knee))     for c > knee
+```
+
+Same initial slope as the linear version (so existing tunings are preserved), C¹
+at the knee, and it never reaches 1.0 — so no plateau can form at any intensity.
+`toneKnee = 1.0` still degenerates to the plain hard clamp, and all five
+sketches using `Bloom` were rebuilt.
+
+`toneWhite`'s meaning shifted: it is now the shoulder's **length**, not the
+value that maps to exactly 1.0. Larger ⇒ gentler compression and a dimmer
+emitter.
 
 ### Library changes that landed alongside
 
 All additive; every existing sketch and the trivalibs test suite still pass.
 
-| Where                | What                                                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `trivalibs` math     | `.xz` swizzle on `Vec3`/`Vec4`, CPU and GPU — it was missing while `xy`/`yz` existed                                |
-| `trivalibs` dev      | `devMode` made public (was `private`), for dev-only affordances that must not ship                                  |
-| `trivalibs` geometry | `Quad.fromDimensions` with an explicit tangent, plus `fromDimensionsCenter`; the inferring form now delegates to it |
-| `src/utils/bake`     | `TextureBaker[U]` per-bake uniforms; `clearColor` on `prepare`/`apply`/`bake`/`bakeBlock`                           |
-| `src/utils/bloom`    | opt-in soft-clip tonemapping (`toneKnee`/`toneWhite`), default reproduces the old hard clamp exactly                |
+| Where                | What                                                                                                                                           |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trivalibs` math     | `.xz` swizzle on `Vec3`/`Vec4`, CPU and GPU — it was missing while `xy`/`yz` existed                                                           |
+| `trivalibs` dev      | `devMode` made public (was `private`), for dev-only affordances that must not ship                                                             |
+| `trivalibs` geometry | `Quad.fromDimensions` with an explicit tangent, plus `fromDimensionsCenter`; the inferring form now delegates to it                            |
+| `src/utils/bake`     | `TextureBaker[U]` per-bake uniforms; `clearColor` on `prepare`/`apply`/`bake`/`bakeBlock`                                                      |
+| `src/utils/bloom`    | opt-in tonemapping (`toneKnee`/`toneWhite`); now an **asymptotic shoulder** that never clips — default still reproduces the hard clamp exactly |
 
 Unifying `Quad.fromDimensions` exposed a **real bug**: the inferring form used
 `up.cross(n)` unnormalized as its `u` direction, and `|up × n|` is 1 only when
@@ -85,16 +268,35 @@ genuine but separate defect.
 
 - **Beam ends get no edge fade.** Only the cross-section is faded; a shared
   atlas cannot recover each beam's far end, because every beam's `u` range
-  differs. Watch for a seam where beams meet the walls.
+  differs. Not observed as a seam through A7 — the perimeter beams cover every
+  beam end — but it remains untreated.
 - **The background strip may not be fully understood.** It was reported as
   appearing equally on the X and Z axes, which does _not_ fit the model used to
   derive the overhang — that predicts Z failing across a much wider band, since
   the requirement scales with the room's span. The derived overhang covers the
   worst case on both axes, so if it still shows, the mechanism is a different
   one and deserves a fresh look rather than a wider plane.
-- **`CeilTint` is currently used for both the soffits and the atlas clear
-  color.** Fine while they agree; if the soffit tint is re-tuned in A7, the
-  clear color should follow it.
+- **`CeilTint` is used for both the soffits and the atlas clear color**, and
+  A7's `atWall` now makes the wall-adjacent soffit `CeilTint` too, so the clear
+  and its neighbouring texels agree exactly. Keep them in step if either moves.
+- **`toneKnee` sits below the room's brightest surface again.** Its comment once
+  said it sat just above it; A7's `BeamTopGlow` took the beam tops to 1.0, above
+  the 0.9 knee, so they are compressed by ~9 %. Raising the knee is not the fix
+  — `toneKnee = 1.0` collapses the shoulder to a hard clamp, and every point of
+  headroom given to the room comes out of the range left for the emitter's edge
+  gradient (at 0.9 the MSAA levels land ~5.6 8-bit codes apart; at 0.95, ~1.2,
+  which would band). The lever with room in it is `toneWhite`.
+- **No anisotropic filtering.** `Painter.sampler` exposes no `maxAnisotropy`, so
+  at grazing incidence the mip is chosen from the along-beam derivative and no
+  amount of cross-section resolution helps. Not observed as a problem after the
+  atlas fix; it is the next thing to reach for if a grazing-angle artifact
+  returns, and it would be an additive trivalibs change.
+- **The coffer has no reveal at the plan boundary.** Above `CeilY` there is no
+  surface in the wall plane, so a steep sightline near a wall sees the light
+  plane over the top of the perimeter beam. This is currently read as correct
+  (it is the same light), and `LightOverhang` guarantees the ray lands on the
+  plane rather than the background — but it is the mechanism to check first if a
+  bright band at the wall top is ever reported again.
 
 ---
 
@@ -284,6 +486,16 @@ there.
 **Check:** walk the room and look up from several positions. Nowhere can you see
 _past_ the light plane's edge through a gap near a wall; if you can, widen the
 overhang.
+
+**What actually happened:** tuning by eye surfaced a run of artifacts whose
+causes were structural rather than a matter of constants, so this step also
+became the refactor that made the raster and the plan types fit to copy. The
+results are in _What A7 settled_ above — read that before starting B. The
+sequence is worth knowing, because each fix only became visible once the one
+before it was out of the way: light lines down every beam → the same lines
+crossing every junction → the gradient landing on the wrong edges entirely (the
+atlas band order) → a light slot along every wall → per-beam inconsistency at
+the walls (atlas row phase) → beam tops reading grey → the bloom plateau.
 
 ### A8 — Hanging affordance
 

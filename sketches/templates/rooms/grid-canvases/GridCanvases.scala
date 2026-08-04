@@ -22,12 +22,51 @@ import trivalibs.utils.numbers.NumExt.given
 // ---------------------------------------------------------------------------
 // TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
 //
-// Open it, read it, copy it, tune it. See PLAN.md for the longer why, and
-// `documents/grid-ceiling-rooms-plan.md` for the full design rationale.
+// Open it, read it, copy it, tune it. It is meant to be read cold and then
+// edited, not maintained as a finished scene; a sketch copied from it is an
+// OUTCOME and should be lean and sparsely commented, with the explanatory
+// weight left behind here.
+//
+// It enables one situation: a floor plan, an ambient-baked shell, a grid
+// ceiling over a recessed light, camera confinement, and walls that accept
+// hung pieces.
+//
+// WHERE TO TOUCH
+//   room shape ....... the single `Ring` in `main`. An L is a 6-point ring;
+//                      a hexagon is 6 points at 60°. Nothing else changes.
+//   room size ........ the wanted extents passed to `snapHalfExtent` — never
+//                      `RoomWidth` directly, which is derived from them.
+//   any look value ... the TUNABLES block below. Nothing tunable lives lower
+//                      down; if you had to hunt for a knob, it belongs up there.
+//   the light ........ the fenced light-shader block. That one is yours.
+//   what hangs ....... the CURATION block above `main`, and `curate` inside it.
+//                      Delete both and write your own.
+//   a partition ...... a second `Ring`, `Facing.Outward`, `height` below the
+//                      room's. Everything downstream already handles it.
+//
+// THE FILE IN ORDER
+//   TUNABLES ......... look decisions, including `roomNoise` and `grime`, which
+//                      are functions rather than constants because every number
+//                      in them is a look decision and none means anything alone.
+//   STRUCTURAL ....... the plan types and the geometry derived from them.
+//                      Written to library discipline — headed for `src/`.
+//   CURATION ......... crude stand-in content. Not a layout to imitate.
+//   `main` ........... bakes, shades, scene assembly, camera.
 //
 // The unit is the METER everywhere: every dimension, offset, fade width and
-// margin below is meters. `u`/`v`/`uv` mean normalized [0,1] texture
-// coordinates and nothing else.
+// margin is meters. `u`/`v`/`uv` mean normalized [0,1] texture coordinates and
+// nothing else — anything carrying meters is named for what it measures from
+// (`centerFromLeft`, `centerHeight`). The two conventions meet inside single
+// function bodies here, which is how confusing them becomes a bug rather than a
+// style quibble.
+//
+// NOTHING DARKENS AT AN EDGE. Not where walls meet, not where the raster meets
+// a wall, not where beams cross. That is a design decision, not an omission —
+// see PLAN.md before adding occlusion. The one darkening is the grime line at
+// the floor, and it is dirt, not light.
+//
+// See PLAN.md for the longer why and the list of things that are load-bearing,
+// and `documents/grid-ceiling-rooms-plan.md` for the full design rationale.
 // ---------------------------------------------------------------------------
 
 // ===========================================================================
@@ -85,7 +124,8 @@ def snapHalfExtent(wanted: Double): Double =
   k * GridSpacing + StripWidth / 2.0
 
 // Room extents are DERIVED, not authored — tune the wanted values, read the
-// snapped ones. (6.5 → 6.70, 10.0 → 10.00 at the spacing above.)
+// snapped ones — they will not usually be what you asked for, and that is the
+// mechanism working. (At the spacing above: 6.5 → 6.50, 10.0 → 9.70.)
 val RoomWidth = snapHalfExtent(6.5 / 2.0) * 2.0
 val RoomDepth = snapHalfExtent(10.0 / 2.0) * 2.0
 val RoomHeight = 5.5
@@ -367,6 +407,41 @@ def roomNoise(
       ) * normalWeight * edge)
       / (1.0 + normalWeight)).fit1101,
   )
+
+// ---- Drop shadows for hung pieces ------------------------------------------
+//
+// Shaped, not simulated. The shadow box matches the piece's footprint exactly
+// and every bit of the look is in the falloff: tight above, broad below, nudged
+// down so the light reads as coming from slightly above. There is no light
+// position anywhere in this room, and this does not introduce one.
+val ShadowFadeWorld = 0.10 // penumbra width, meters
+val ShadowStrength = 0.44 // darkening at the center of the shadow
+val ShadowDropMul = 0.25 // downward offset, in penumbra widths
+val ShadowBotFadeMul = 2.7 // how much broader the lower falloff is
+
+/** Soft, directional drop shadow for one rect, in wall-local UV.
+  * `rect = (centerU, centerV, halfU, halfV)`; `fade = (fadeU, fadeV)` is the
+  * soft-edge width per axis **in UV** — pass `worldFade / wallWidth` and
+  * `worldFade / wallHeight` so the penumbra stays isotropic in world space
+  * whatever the wall's aspect. Uniform in strength inside the box; only the
+  * edge falloff varies.
+  */
+def shadowMask(uv: Vec2Expr, rect: Vec4Expr, fade: Vec2Expr): FloatExpr =
+  val hx = rect.z
+  val hy = rect.w
+  val dx = uv.x - rect.x
+  // +V is down; the box is nudged down so the top edge stays lit and the cast
+  // shadow is exposed below.
+  val dy = uv.y - rect.y - fade.y * ShadowDropMul
+  // Edge-CENTERED falloff: half the penumbra falls on the wall beyond the
+  // piece, half stays hidden behind it — light leaking in around a canvas that
+  // stands slightly off the wall.
+  val hMask = dx.abs.smoothstep(hx + fade.x * 0.5, hx - fade.x * 0.5)
+  val upperFade = fade.x
+  val lowerFade = fade.y * ShadowBotFadeMul
+  val upper = dy.smoothstep(-hy - upperFade * 0.5, -hy + upperFade * 0.5)
+  val lower = dy.smoothstep(hy + lowerFade * 0.5, hy - lowerFade * 0.5)
+  hMask * upper * lower
 
 // ---- The light shader's own tunables --------------------------------------
 //
@@ -895,7 +970,43 @@ case class Wall(
 
 type RoomVertex = (position: Vec3, uv: Vec2)
 
+/** Something to hang. `image` is any `Panel` — what is in it is the
+  * exhibition's concern, and the stage never looks. `sideStretch` is the
+  * front:side texel-density ratio; a thin UV margin wraps each side.
+  */
+case class PaintingSpec(
+    width: Double,
+    height: Double,
+    depth: Double,
+    image: Panel,
+    sideStretch: Double = 3.0,
+)
+
+/** A piece hung on a wall: the shape to draw, and the wall-local rect its
+  * shadow needs.
+  *
+  * STATIC, deliberately. `canvases` carries `model` / `basePos` / `baseRect` /
+  * `rotY` as mutable bindings because its paintings sway; nothing here moves,
+  * so nothing here is a binding. Animation comes back when hanging becomes a
+  * shared utility with static and animated as two equal cases — see _What this
+  * sequence deliberately leaves out_ in the implementation plan.
+  */
+case class Painting(
+    shape: AnyShape,
+    shadowRect: Vec4, // UV (centerU, centerV, halfU, halfV)
+    shadowFade: Vec2, // per-axis penumbra width, in UV
+)
+
 extension (w: Wall)
+  /** The wall's orientation about Y, for anything that needs an angle rather
+    * than a normal — a hung piece's model matrix, in practice.
+    *
+    * Derived, not stored: `inwardNormal` is the one representation of a wall's
+    * orientation, and a second copy of the same fact is a thing that can drift
+    * out of step with it. Costs one `atan2` per hung piece, at build time.
+    */
+  def rotY: Double = Math.atan2(w.inwardNormal.x, w.inwardNormal.z)
+
   /** The wall's quad in world space, UV [0,1] (tl = (0,0), `v` down). */
   def quad: Quad[RoomVertex] =
     // Wall-local horizontal axis (UV.x runs along it); UV.y runs down.
@@ -940,6 +1051,42 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     )
     i += 1
   out
+
+// ===========================================================================
+// CURATION — WHAT HANGS AND WHERE IS NOT THE STAGE'S BUSINESS.
+//
+// This block and the `curate` call it feeds belong to the sketch that copies
+// this template, and are meant to be deleted and rewritten. It is deliberately
+// crude: fixed sizes, fixed positions, flat colors. A real exhibition varies
+// all of it — and none of that variation needs anything from the room, which is
+// the property being demonstrated.
+//
+// The seam runs both ways, and both are worth re-testing after a change: moving,
+// resizing or removing a piece touches only curation, and changing the room's
+// shape or grid touches no curation at all.
+// ===========================================================================
+val PieceWidth = 0.85
+val PieceHeight = 1.10
+val PieceDepth = 0.05
+
+/** Center height above the floor. One number rather than a per-piece one — a
+  * real hang would vary it.
+  */
+val PieceCenterHeight = 1.55
+
+/** Where pieces sit, in meters from a wall's left edge. Absolute rather than
+  * "N spread evenly across the wall": an even split is itself a curation
+  * decision, and spelling it as one here would make the walls read as authored
+  * when they are not. A spot that would overhang a short wall is skipped.
+  */
+val PieceSpots = Arr(1.30, 3.10)
+
+/** Flat fills standing in for artwork, cycled so adjacent walls differ. */
+val PieceColors = Arr(
+  Vec3(0.58, 0.22, 0.18),
+  Vec3(0.17, 0.26, 0.40),
+  Vec3(0.28, 0.34, 0.21),
+)
 
 @main def roomsGridCanvases(): Unit =
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
@@ -1606,6 +1753,13 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     )
     type TexturedPanels = (tex: FragmentPanel)
 
+    type PaintingUniforms = (
+        vp: VertexUniform[Mat4],
+        model: VertexUniform[Mat4],
+        samp: FragmentUniform[Sampler],
+    )
+    type PaintingPanels = (img: FragmentPanel)
+
     val texturedShade =
       p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
         program =>
@@ -1616,6 +1770,245 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
             )
           program.frag: ctx =>
             ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
+
+    val paintingShade =
+      p.shade[RoomVertex, (uv: Vec2), PaintingUniforms, PaintingPanels]:
+        program =>
+          program.vert: ctx =>
+            Block(
+              ctx.out.uv := ctx.in.uv,
+              ctx.out.position := ctx.bindings.vp * ctx.bindings.model
+                * vec4(ctx.in.position, 1.0),
+            )
+          program.frag: ctx =>
+            ctx.out.color := ctx.textures.img(ctx.in.uv, ctx.bindings.samp)
+
+    // -----------------------------------------------------------------------
+    // Hanging — the wall composite, and the pieces themselves.
+    //
+    // The wall texture is built in ONE panel: a copy layer lays down the
+    // ambience bake, then one multiplicatively-blended shadow instance per
+    // piece darkens its rect on top. Overlapping shadows compound exactly as a
+    // stacked chain would, via fixed-function blending — no ping-pong, no
+    // per-pass full-texture read/write, and no cap on how many hang.
+    // -----------------------------------------------------------------------
+
+    // Copy layer — write the pre-baked ambience into the composite target.
+    type CopyU = (samp: Sampler)
+    type CopyP = (tex: FragmentPanel)
+    val copyShade = p.layerShade[CopyU, CopyP]: program =>
+      program.frag: ctx =>
+        ctx.out.color := ctx.textures.tex(ctx.in.uv, ctx.bindings.samp)
+
+    // One shadow — a per-pixel darkening factor. Under `BlendState.Multiply`
+    // (color = dst·src) each instance multiplies what is already there.
+    type ShadowU = (rect: Vec4, fade: Vec2, strength: Float)
+    val shadowShade = p.layerShade[ShadowU]: program =>
+      program.frag: ctx =>
+        val sm = LetFloat("sm")
+        Block(
+          sm := shadowMask(ctx.in.uv, ctx.bindings.rect, ctx.bindings.fade),
+          ctx.out.color :=
+            vec4(vec3(1.0 - ctx.bindings.strength * sm), 1.0),
+        )
+
+    /** Flat-box geometry for one piece, centered on the local origin, front on
+      * `+Z`. The front fills an inset UV rect and the four thin sides wrap the
+      * outer margin, so a single image covers the whole box without a second
+      * texture or a second draw.
+      */
+    def paintingForm(spec: PaintingSpec): Form =
+      val hw = spec.width / 2.0
+      val hh = spec.height / 2.0
+      val hd = spec.depth / 2.0
+      val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
+      val mv = (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
+
+      def v(x: Double, y: Double, z: Double, u: Double, w: Double): RoomVertex =
+        (position = Vec3(x, y, z), uv = Vec2(u, w))
+
+      p.form(geometry =
+        toBufferedGeometry(
+          Mesh(
+            Arr(
+              // Front (+Z): the inset rect.
+              Quad(
+                v(-hw, hh, hd, mu, mv),
+                v(-hw, -hh, hd, mu, 1.0 - mv),
+                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+                v(hw, hh, hd, 1.0 - mu, mv),
+              ),
+              // Right (+X): u runs 1-mu → 1.
+              Quad(
+                v(hw, hh, hd, 1.0 - mu, mv),
+                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+                v(hw, -hh, -hd, 1.0, 1.0 - mv),
+                v(hw, hh, -hd, 1.0, mv),
+              ),
+              // Left (-X): u runs mu → 0.
+              Quad(
+                v(-hw, hh, hd, mu, mv),
+                v(-hw, -hh, hd, mu, 1.0 - mv),
+                v(-hw, -hh, -hd, 0.0, 1.0 - mv),
+                v(-hw, hh, -hd, 0.0, mv),
+              ),
+              // Top (+Y): v runs mv → 0.
+              Quad(
+                v(-hw, hh, hd, mu, mv),
+                v(hw, hh, hd, 1.0 - mu, mv),
+                v(hw, hh, -hd, 1.0 - mu, 0.0),
+                v(-hw, hh, -hd, mu, 0.0),
+              ),
+              // Bottom (-Y): v runs 1-mv → 1.
+              Quad(
+                v(-hw, -hh, hd, mu, 1.0 - mv),
+                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+                v(hw, -hh, -hd, 1.0 - mu, 1.0),
+                v(-hw, -hh, -hd, mu, 1.0),
+              ),
+              // Back (-Z): continuous with the side back edges.
+              Quad(
+                v(-hw, hh, -hd, 0.0, 0.0),
+                v(-hw, -hh, -hd, 0.0, 1.0),
+                v(hw, -hh, -hd, 1.0, 1.0),
+                v(hw, hh, -hd, 1.0, 0.0),
+              ),
+            ),
+          ),
+          MeshBufferType.FaceVertices,
+        ),
+      )
+
+    /** Hang a piece on a wall. Both positions are WORLD METERS, not UV:
+      * `centerFromLeft` runs along the wall from its left edge as seen from
+      * inside, `centerHeight` up from the floor.
+      */
+    def hang(
+        wall: Wall,
+        spec: PaintingSpec,
+        centerFromLeft: Double,
+        centerHeight: Double,
+    ): Painting =
+      val right = Up.cross(wall.inwardNormal)
+      val pos = wall.center
+        + right * (centerFromLeft - wall.width / 2.0)
+        + Up * (centerHeight - wall.height / 2.0)
+        // Stand it off the wall by its own half-depth plus a couple of
+        // centimeters, so the box never z-fights the wall it hangs on and the
+        // shadow has something to be cast by.
+        + wall.inwardNormal * (spec.depth / 2.0 + 0.02)
+      val shape = p
+        .shape(paintingForm(spec), paintingShade, cullMode = CullMode.None)
+        .bind(
+          "model" := Mat4.fromTranslationRotationScale(
+            pos,
+            Quat.fromRotationY(wall.rotY),
+            Vec3(1.0, 1.0, 1.0),
+          ),
+          "samp" := sampler,
+          "img" := spec.image,
+        )
+      Painting(
+        shape = shape,
+        shadowRect = Vec4(
+          centerFromLeft / wall.width,
+          1.0 - centerHeight / wall.height, // wall v runs down
+          (spec.width / 2.0) / wall.width,
+          (spec.height / 2.0) / wall.height,
+        ),
+        // Divided by the wall's own extents so the penumbra is isotropic in
+        // WORLD space however wide or tall the wall happens to be.
+        shadowFade = Vec2(
+          ShadowFadeWorld / wall.width,
+          ShadowFadeWorld / wall.height,
+        ),
+      )
+
+    /** The ambience bake for one wall. Split out from the composite because a
+      * wall with nothing on it wants exactly this and no second panel.
+      */
+    def wallAmbience(wallForm: Form, wall: Wall, w: Int, h: Int): Panel =
+      val bake = wallBaker.prepare(wallForm, w, h)
+      bake.shape.bind("topY" := wall.height)
+      p.paint(bake.panel)
+      bake.panel
+
+    /** Ambience with every piece's shadow composited over it.
+      *
+      * A wall binds A PANEL, whatever produced it — which is the whole seam.
+      * Going from the bare bake to this one is a change at the producer and
+      * nothing at all at the shade, and a wall with no pieces skips the second
+      * panel entirely rather than paying for an empty pass.
+      */
+    def compositeWallTex(
+        wallForm: Form,
+        wall: Wall,
+        pieces: Arr[Painting],
+    ): Panel =
+      val (w, h) = texSize(wall.width, wall.height)
+      val ambience = wallAmbience(wallForm, wall, w, h)
+      if pieces.length == 0 then ambience
+      else
+        val copy = p
+          .layer(copyShade)
+          .bind("samp" := sampler, "tex" := ambience)
+        val shadow = p
+          .layer(shadowShade, blendState = BlendState.Multiply)
+          .bind("strength" := ShadowStrength)
+        for piece <- pieces do
+          shadow.instances.add(
+            "rect" := piece.shadowRect,
+            "fade" := piece.shadowFade,
+          )
+        val panel =
+          p.panel(width = w, height = h, mips = true, layers = Arr(copy, shadow))
+        p.paint(panel)
+        panel
+
+    // ----- CURATION --------------------------------------------------------
+    // Delete this and write your own. See the curation block at the head of the
+    // file for what each constant is standing in for.
+
+    val flatShade = p.layerShade[(color: Vec3)]: program =>
+      program.frag: ctx =>
+        ctx.out.color := vec4(ctx.bindings.color, 1.0)
+
+    /** A one-color panel standing in for a real image. Tiny on purpose — it has
+      * no detail to resolve, and a real piece would supply its own resolution.
+      */
+    def flatPanel(c: Vec3): Panel =
+      val panel = p.panel(
+        width = 8,
+        height = 8,
+        layer = p.layer(flatShade).bind("color" := c),
+      )
+      p.paint(panel)
+      panel
+
+    val pieceImages = PieceColors.map(flatPanel)
+
+    def curate(wall: Wall, wallIndex: Int): Arr[Painting] =
+      val out = Arr[Painting]()
+      for i <- 0 until PieceSpots.length do
+        val at = PieceSpots(i)
+        // Skip rather than squeeze: a spot that would overhang is not a spot.
+        if at + PieceWidth / 2.0 <= wall.width then
+          out.push(
+            hang(
+              wall,
+              PaintingSpec(
+                width = PieceWidth,
+                height = PieceHeight,
+                depth = PieceDepth,
+                image = pieceImages((wallIndex + i) % pieceImages.length),
+              ),
+              centerFromLeft = at,
+              centerHeight = PieceCenterHeight,
+            ),
+          )
+      out
+
+    // ----- end of curation -------------------------------------------------
 
     // -----------------------------------------------------------------------
     // Scene assembly
@@ -1633,20 +2026,23 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
     // raster reflected in the floor is a large part of the payoff, so both it
     // and the light plane belong in here from the start.
     val aboveGround = Arr[AnyShape](lightShape, beamShape)
-    for wall <- walls do
-      // Each wall binds A PANEL, whatever produced it. Going from the plain
-      // ambience bake here to a shadow-compositing path (A8) is a one-line
-      // change at the producer and nothing at the shade.
+    for i <- 0 until walls.length do
+      val wall = walls(i)
       val wallForm = form(Arr(wall.quad))
-      val (ww, wh) = texSize(wall.width, wall.height)
-      val bake = wallBaker.prepare(wallForm, ww, wh)
-      bake.shape.bind("topY" := wall.height)
-      p.paint(bake.panel)
-      val wallTex = bake.panel
+      // Curation decides what hangs; the wall only needs to know the rects, and
+      // only so it can darken under them. Swap `curate` for anything at all and
+      // nothing below this line changes.
+      val pieces = curate(wall, i)
       aboveGround.push(
         p.shape(wallForm, texturedShade, cullMode = CullMode.None)
-          .bind("samp" := sampler, "tex" := wallTex),
+          .bind(
+            "samp" := sampler,
+            "tex" := compositeWallTex(wallForm, wall, pieces),
+          ),
       )
+      // The pieces go into `aboveGround` too, so the floor mirror reflects them
+      // along with everything else. Nothing about them is special-cased there.
+      for piece <- pieces do aboveGround.push(piece.shape)
 
     val wallColor = Vec4(0.90, 0.90, 0.90, 0.0)
 
