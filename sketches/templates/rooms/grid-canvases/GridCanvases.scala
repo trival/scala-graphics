@@ -2213,7 +2213,10 @@ val PieceColors = Arr(
 
     devPreserve(cam)
 
-    val input = p.input()
+    // The drag glide is opt-in: without `dragGlideHalfLife` the look stops dead
+    // on release. Half-life = ms for the coast to halve, min speed = px/s below
+    // which a release doesn't coast at all (and a coast ends).
+    val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
     val controller =
       BasicFirstPersonCameraController(
         cam,

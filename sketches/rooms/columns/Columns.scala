@@ -263,7 +263,7 @@ private val ColsXHalf = 4
     )
     devPreserve(cam)
 
-    val input = p.input()
+    val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
     val controller =
       BasicFirstPersonCameraController(
         cam,

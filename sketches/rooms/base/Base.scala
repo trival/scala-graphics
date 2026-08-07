@@ -313,7 +313,7 @@ val TexScale = 164.0
     // Preserve camera pose across live-coding reloads (dev only).
     devPreserve(cam)
 
-    val input = p.input()
+    val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
     val controller =
       BasicFirstPersonCameraController(
         cam,
