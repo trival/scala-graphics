@@ -41,6 +41,15 @@ val TexScale = 164.0
   val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
 
   Painter.init(canvas): p =>
+    val cam = PerspectiveCamera(
+      fov = 0.9,
+      near = 0.1,
+      far = 100.0,
+      pos = Vec3(0.0, 1.7, 0.0),
+    )
+    // Preserve camera pose across live-coding reloads (dev only).
+    devPreserve(cam)
+
     // -----------------------------------------------------------------------
     // Room geometry — box face quads → Mesh → triangulated, indexed buffers
     // -----------------------------------------------------------------------
@@ -223,6 +232,7 @@ val TexScale = 164.0
 
     val mirror = MirrorReflection(
       p,
+      cam,
       shapes = Arr(wallShapeW, ceilShape),
       vpName = "vp",
       alphaScale = RoomHeight,
@@ -301,18 +311,8 @@ val TexScale = 164.0
     )
 
     // -----------------------------------------------------------------------
-    // Camera, input, controller, resize handling, animation loop.
+    // Input, controller, resize handling, animation loop.
     // -----------------------------------------------------------------------
-    val cam = PerspectiveCamera(
-      fov = 0.9,
-      near = 0.1,
-      far = 100.0,
-      pos = Vec3(0.0, 1.7, 0.0),
-    )
-
-    // Preserve camera pose across live-coding reloads (dev only).
-    devPreserve(cam)
-
     val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
     val controller =
       BasicFirstPersonCameraController(

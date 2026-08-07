@@ -1250,6 +1250,14 @@ val PieceColors = Arr(
   Painter.init(canvas): p =>
     val sampler = p.samplerLinear
 
+    val cam = PerspectiveCamera(
+      fov = 0.9,
+      near = 0.1,
+      far = 100.0,
+      pos = Vec3(0.0, EyeHeight, 0.0),
+    )
+    devPreserve(cam)
+
     // -----------------------------------------------------------------------
     // The floor plan
     // -----------------------------------------------------------------------
@@ -2095,6 +2103,7 @@ val PieceColors = Arr(
 
     val mirror = GaussianMirrorReflection(
       p,
+      cam,
       shapes = aboveGround,
       vpName = "vp",
       // The tallest thing the mirror reflects is now the light plane, not the
@@ -2202,17 +2211,8 @@ val PieceColors = Arr(
     )
 
     // -----------------------------------------------------------------------
-    // Camera, input, controller
+    // Input, controller
     // -----------------------------------------------------------------------
-    val cam = PerspectiveCamera(
-      fov = 0.9,
-      near = 0.1,
-      far = 100.0,
-      pos = Vec3(0.0, EyeHeight, 0.0),
-    )
-
-    devPreserve(cam)
-
     // The drag glide is opt-in: without `dragGlideHalfLife` the look stops dead
     // on release. Half-life = ms for the coast to halve, min speed = px/s below
     // which a release doesn't coast at all (and a coast ends).

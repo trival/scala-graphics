@@ -639,8 +639,17 @@ type PaintingPanels = (img: FragmentPanel)
 
     val wallColor = Vec4(0.90, 0.90, 0.90, 0.0)
 
+    val cam = PerspectiveCamera(
+      fov = 0.9,
+      near = 0.1,
+      far = 100.0,
+      pos = Vec3(0.0, 1.7, 0.0),
+    )
+    devPreserve(cam)
+
     // val mirror = MirrorReflection(
     //   p,
+    //   cam,
     //   shapes = aboveGround,
     //   vpName = "vp",
     //   alphaScale = RoomHeight,
@@ -650,6 +659,7 @@ type PaintingPanels = (img: FragmentPanel)
     // )
     val mirror = GaussianMirrorReflection(
       p,
+      cam,
       shapes = aboveGround,
       vpName = "vp",
       alphaScale = RoomHeight,
@@ -731,17 +741,8 @@ type PaintingPanels = (img: FragmentPanel)
     )
 
     // -----------------------------------------------------------------------
-    // Camera, input, controller
+    // Input, controller
     // -----------------------------------------------------------------------
-    val cam = PerspectiveCamera(
-      fov = 0.9,
-      near = 0.1,
-      far = 100.0,
-      pos = Vec3(0.0, 1.7, 0.0),
-    )
-
-    devPreserve(cam)
-
     val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
     val controller =
       BasicFirstPersonCameraController(

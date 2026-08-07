@@ -66,8 +66,9 @@ trait GaussianMirrorReflection:
   def resultPanel: Panel
 
   /** Reflect the camera across the mirror plane and render + blur. Pass an
-    * explicit `vp` to override the construction-time camera (required if none
-    * was given).
+    * explicit `vp` to skip re-deriving it from the construction-time camera
+    * (e.g. when the caller already computed it for the scene panel this
+    * frame — a small perf win, not a requirement).
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
@@ -76,8 +77,22 @@ trait GaussianMirrorReflection:
     * — the panel has no layers until it is — and on every canvas resize; drive
     * it from the sketch's own `p.onResize`, which fires immediately on
     * registration and so covers the initial sizing too.
+    *
+    * Also re-derives `blurStrength`'s compensation for the construction-time
+    * (or last [[setCamera]]) camera's
+    * [[trivalibs.graphics.scene.PerspectiveCamera.effectiveFovY]], which
+    * changes with `aspect` — without it, the blur would read relatively
+    * smaller against the scene on a tall viewport than on a wide one.
     */
   def resize(w: Double, h: Double): Unit
+
+  /** Swap the camera used to source [[paint]]'s default `vp` and to
+    * compensate `blurStrength` (see [[resize]]). Only needed if the sketch's
+    * camera object is itself ever disposed and recreated, or otherwise
+    * switched, at runtime — most sketches construct one camera for the whole
+    * session and never call this.
+    */
+  def setCamera(camera: PerspectiveCamera): Unit
 
   /** Maximum **horizontal** blur — the Gaussian spread (σ) as a **percentage of
     * canvas height**, reached at `alphaScale` and held beyond it, ramping
@@ -118,7 +133,7 @@ object GaussianMirrorReflection:
     * {{{
     * val sceneVp = p.binding[Mat4]
     * scenePanel.bind("vp" := sceneVp)
-    * val mirror = GaussianMirrorReflection(p, Arr(wall, ceil), vpName = "vp",
+    * val mirror = GaussianMirrorReflection(p, cam, Arr(wall, ceil), vpName = "vp",
     *                                       alphaScale = RoomHeight,
     *                                       blurStrength = 2.0)
     * floor.bind("reflTex" := mirror.resultPanel, "reflSamp" := p.samplerLinear)
@@ -130,7 +145,8 @@ object GaussianMirrorReflection:
     * animate: _ =>
     *   val vp = cam.viewProjMat
     *   sceneVp.set(vp)
-    *   mirror.paint(vp)
+    *   mirror.paint(vp)         // pass `vp` since it's already computed above;
+    *                            // `mirror.paint()` also works, from `camera`
     *   p.paint(scenePanel)
     * }}}
     *
@@ -139,6 +155,14 @@ object GaussianMirrorReflection:
     *
     * @param p
     *   The painter that owns the GPU device and frame loop.
+    * @param camera
+    *   The scene's camera — sources [[paint]]'s default `vp` (an explicit `vp`
+    *   there skips this) and, every [[resize]], compensates `blurStrength` for
+    *   [[trivalibs.graphics.scene.PerspectiveCamera.effectiveFovY]] growing on
+    *   portrait aspects. Second positional so `p, camera, shapes, ...` reads
+    *   the same across call sites without named arguments. Swap it at runtime
+    *   via [[GaussianMirrorReflection.setCamera]] if this object is ever
+    *   replaced.
     * @param shapes
     *   The shapes to reflect. Their shade produces color only (distance comes
     *   from depth) and reads its view-projection from the panel-level `vpName`
@@ -150,23 +174,22 @@ object GaussianMirrorReflection:
     *   The plane-distance (world units) mapping to normalized alpha `1.0` — the
     *   distance at which the reflection reaches full blur / falloff. For a room
     *   floor, the room height works well.
-    * @param camera
-    *   Optional viewpoint source: when set, [[paint]] with no argument pulls
-    *   `camera.viewProjMat`. When `null` (default), every [[paint]] needs an
-    *   explicit `vp`.
     * @param mirror
     *   The mirror plane (CPU-only `Plane`; default the ground plane `y = 0`).
     * @param blurStrength
     *   Initial maximum **horizontal** blur, as the Gaussian spread (σ) in
-    *   **percent of canvas height** (useful band roughly `1`–`10`), reached at
-    *   `alphaScale` and ramping linearly from 0 at the plane. Relative to the
-    *   image rather than in pixels, so the perceived blur holds constant
-    *   against object size across resolutions and device pixel ratios; and
-    *   denominated in σ, so the same value means the same spread in
-    *   [[MirrorReflection]]. Together with `blurRatioVertical` and the panel
-    *   height it also determines **the pass count**, re-derived on every
-    *   [[resize]] and on either strength setter. Runtime-tunable via
-    *   [[setBlurStrength]].
+    *   **percent of the canvas height a square-aspect viewport would have**
+    *   (useful band roughly `1`–`10`), reached at `alphaScale` and ramping
+    *   linearly from 0 at the plane. Relative to the image rather than in
+    *   pixels, so the perceived blur holds constant against object size
+    *   across resolutions and device pixel ratios — and, since [[resize]]
+    *   compensates for `camera`'s `effectiveFovY`, across aspect ratios too,
+    *   rather than reading smaller on a tall portrait viewport than on a wide
+    *   desktop one. Denominated in σ, so the same value means the same spread
+    *   in [[MirrorReflection]]. Together with `blurRatioVertical` and the
+    *   (compensated) panel height it also determines **the pass count**,
+    *   re-derived on every [[resize]] and on either strength setter.
+    *   Runtime-tunable via [[setBlurStrength]].
     * @param blurRatioVertical
     *   Initial vertical:horizontal blur ratio (anisotropy), multiplied on top
     *   of `blurStrength` — `2` gives a vertical radius of `2 × blurStrength`.
@@ -203,10 +226,10 @@ object GaussianMirrorReflection:
     */
   def apply[S <: AnyShape](
       p: Painter,
+      camera: PerspectiveCamera,
       shapes: Arr[S],
       vpName: String,
       alphaScale: Double,
-      camera: Opt[PerspectiveCamera] = null,
       mirror: Plane = Plane.ground,
       blurStrength: Double = 2.0,
       blurRatioVertical: Double = 1.0,
@@ -272,9 +295,12 @@ object GaussianMirrorReflection:
     // margins included, since that is the grid the taps step across. Kept
     // current by `applySizing`.
     val uRes = p.binding[Vec2]
-    // Height of the *visible* frame in panel pixels — `uRes.y` minus the guard
-    // band. The blur radius is a share of the visible image, not of the panel,
-    // so the two must not be conflated (see `applySizing`).
+    // FOV-compensated visible-frame height in panel pixels (`refH`, not the
+    // raw `visH` — `uRes.y` minus the guard band). The blur radius is a share
+    // of the visible image, not of the panel, so the two must not be
+    // conflated; the compensation additionally keeps that share
+    // object-space-consistent across aspect ratios (see
+    // `PerspectiveCamera.effectiveFovY` and `applySizing`).
     val uVisHeight = p.binding(0.0)
     // Visible frame → overscanned panel uv: `uv * crop.xy + crop.zw`. Identity
     // `(1, 1, 0, 0)` when there is no guard band.
@@ -459,6 +485,8 @@ object GaussianMirrorReflection:
     new GaussianMirrorReflection:
       val mirrorScenePanel = mirrorPanel
       val resultPanel = cropPanel.getOr(blurPanel)
+      // The construction-time camera, swappable via `setCamera`.
+      private var curCamera = camera
       // Current strength knobs — together with the visible height below, the
       // three inputs to both the pass budget and the guard-band width. Kept
       // here so any of them changing can re-derive them.
@@ -469,6 +497,11 @@ object GaussianMirrorReflection:
       // `applySizing`.
       private var visW = 0.0
       private var visH = 0.0
+      // `visH` rescaled to undo the aspect-adaptive camera's vertical-FOV
+      // growth on portrait aspects (see `PerspectiveCamera.effectiveFovY`),
+      // so `blurStrength`'s percentage keeps meaning the same object-space
+      // size everywhere. Equal to `visH` at `aspect >= 1`. Set by `resize`.
+      private var refH = 0.0
       private var frustumScaleX = 1.0
       private var frustumScaleY = 1.0
 
@@ -478,7 +511,7 @@ object GaussianMirrorReflection:
         */
       private def rebuildLayers(): Unit =
         if visH > 0.0 then
-          val pairs = neededPairs(visH, curStrength, curRatio)
+          val pairs = neededPairs(refH, curStrength, curRatio)
           ensurePairs(pairs)
           val layers = Arr[AnyLayer](bakeLayer)
           var i = 0
@@ -506,10 +539,10 @@ object GaussianMirrorReflection:
         */
       private def applySizing(): Unit =
         if visH > 0.0 then
-          // σ in panel pixels. `curStrength` is a percentage of the visible
-          // height (the `0.01`), matching what the blur shade reconstructs
-          // from `visHeight`.
-          val sigma = curStrength * 0.01 * visH
+          // σ in panel pixels. `curStrength` is a percentage of `refH` (the
+          // FOV-compensated visible height), matching what the blur shade
+          // reconstructs from `visHeight`.
+          val sigma = curStrength * 0.01 * refH
           val mx = (overscan * sigma).ceil.min(visW * 0.5)
           val my = (overscan * sigma * curRatio.max(1.0)).ceil.min(visH * 0.5)
           val pw = (visW + mx * 2.0).toInt
@@ -517,7 +550,7 @@ object GaussianMirrorReflection:
           mirrorPanel.set(width = pw, height = ph)
           blurPanel.set(width = pw, height = ph)
           uRes.set(Vec2(pw.toDouble, ph.toDouble))
-          uVisHeight.set(visH)
+          uVisHeight.set(refH)
           // Widening the frustum is a plain NDC scale on the reflected VP —
           // shrinking clip x/y by exactly the panel's growth factor puts the
           // original view back in the centre at unchanged texel density. It
@@ -530,6 +563,8 @@ object GaussianMirrorReflection:
           )
           rebuildLayers()
 
+      private def deriveRefH(): Unit =
+        refH = visH * curCamera.fov / curCamera.effectiveFovY
       // `panel(...)` has no scale option, so the sub-resolution size is wired by
       // hand. Driven by the consumer rather than a `p.onResize` registration of
       // our own, so resize ownership stays in one visible place in the sketch.
@@ -538,10 +573,16 @@ object GaussianMirrorReflection:
         val sh = (h * resolutionScale).toInt.max(1)
         visW = sw.toDouble
         visH = sh.toDouble
+        deriveRefH()
         // The crop target is the visible frame — the guard band lives only on
         // the panels feeding it.
         if cropPanel.notNull then cropPanel.get.set(width = sw, height = sh)
         applySizing()
+      def setCamera(camera: PerspectiveCamera): Unit =
+        curCamera = camera
+        if visH > 0.0 then
+          deriveRefH()
+          applySizing()
       def setBlurStrength(v: Double): Unit =
         uBlurStrength.set(v * strengthScale)
         curStrength = v
@@ -552,16 +593,7 @@ object GaussianMirrorReflection:
         applySizing()
       def setStrengthOffset(v: Double): Unit = uStrengthOffset.set(v)
       def paint(vp: Maybe[Mat4]): Unit =
-        val cameraVP = vp.orElse(
-          camera
-            .getOr(
-              throw jsError(
-                "GaussianMirrorReflection.paint needs a camera (construct " +
-                  "with `camera = …`) or an explicit `vp` argument",
-              ),
-            )
-            .viewProjMat,
-        )
+        val cameraVP = vp.orElse(curCamera.viewProjMat)
         // Pre-multiply in NDC to widen the frustum onto the overscanned panel
         // (identity when there is no guard band).
         val m = Mat4.fromScale(frustumScaleX, frustumScaleY, 1.0) *

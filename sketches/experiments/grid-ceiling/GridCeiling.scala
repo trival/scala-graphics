@@ -189,6 +189,14 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       val extent = 2.0 * fogEnd + 20.0 // open space reaches past the fog edge
       val ceilingY = 20.0
 
+      val cam = PerspectiveCamera(
+        fov = 0.6,
+        near = 0.1,
+        far = extent,
+        pos = Vec3(0.0, 3.0, 15.0),
+      )
+      devPreserve(cam)
+
       // ------ grid layout ------
       val rowSpacing = 1.5 // target strip spacing along Z (rows)
       val colSpacing = 1.5 // target strip spacing along X (cols)
@@ -509,6 +517,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
       // (reflection flips winding).
       val mirror = MirrorReflection(
         p,
+        cam,
         Arr(rowShape, colShape, ceilShape, boxShape),
         vpName = "mvp",
         alphaScale = ceilingY / 2.0,
@@ -686,15 +695,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         mipLevels = 5,
       )
 
-      // ------ camera + input ------
-
-      val cam = PerspectiveCamera(
-        fov = 0.6,
-        near = 0.1,
-        far = extent,
-        pos = Vec3(0.0, 3.0, 15.0),
-      )
-      devPreserve(cam)
+      // ------ input ------
 
       val input = p.input(dragGlideHalfLife = 90.0, dragGlideMinSpeed = 50.0)
       val controller =
@@ -705,9 +706,9 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
           speed = 3.0,
         )
 
-      p.onResize: (cw, ch) =>
-        cam(aspect = cw.toDouble / ch)
-        mirror.resize(cw, ch)
+      p.onResize: (w, h) =>
+        cam(aspect = w / h)
+        mirror.resize(w, h)
 
       // Bake the (static) noise tiles once, with mip chains.
       p.paint(rowTile, colTile, groundTile, ceilTile, boxTile)
