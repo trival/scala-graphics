@@ -997,6 +997,90 @@ case class Painting(
     shadowFade: Vec2, // per-axis penumbra width, in UV
 )
 
+/** The shade a hung piece draws with — one image panel through a model matrix.
+  * Built once in `main` (see `paintingShade`) and handed to every `hang`: a
+  * shade is a compiled pipeline, so it is created per scene, not per piece.
+  */
+type PaintingUniforms = (
+    vp: VertexUniform[Mat4],
+    model: VertexUniform[Mat4],
+    samp: FragmentUniform[Sampler],
+)
+type PaintingPanels = (img: FragmentPanel)
+type PaintingShade = Shade[PaintingUniforms, PaintingPanels]
+
+extension (spec: PaintingSpec)
+  /** Flat-box geometry for one piece, centered on the local origin, front on
+    * `+Z`. The front fills an inset UV rect and the four thin sides wrap the
+    * outer margin, so a single image covers the whole box without a second
+    * texture or a second draw.
+    *
+    * Takes the painter rather than closing over one: everything the shape
+    * depends on is in the spec, so this stays readable and movable — the only
+    * reason it is not pure is that a `Form` is a GPU buffer.
+    */
+  def form(p: Painter): Form =
+    val hw = spec.width / 2.0
+    val hh = spec.height / 2.0
+    val hd = spec.depth / 2.0
+    val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
+    val mv = (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
+
+    def v(x: Double, y: Double, z: Double, u: Double, w: Double): RoomVertex =
+      (position = Vec3(x, y, z), uv = Vec2(u, w))
+
+    p.form(geometry =
+      toBufferedGeometry(
+        Mesh(
+          Arr(
+            // Front (+Z): the inset rect.
+            Quad(
+              v(-hw, hh, hd, mu, mv),
+              v(-hw, -hh, hd, mu, 1.0 - mv),
+              v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+              v(hw, hh, hd, 1.0 - mu, mv),
+            ),
+            // Right (+X): u runs 1-mu → 1.
+            Quad(
+              v(hw, hh, hd, 1.0 - mu, mv),
+              v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+              v(hw, -hh, -hd, 1.0, 1.0 - mv),
+              v(hw, hh, -hd, 1.0, mv),
+            ),
+            // Left (-X): u runs mu → 0.
+            Quad(
+              v(-hw, hh, hd, mu, mv),
+              v(-hw, -hh, hd, mu, 1.0 - mv),
+              v(-hw, -hh, -hd, 0.0, 1.0 - mv),
+              v(-hw, hh, -hd, 0.0, mv),
+            ),
+            // Top (+Y): v runs mv → 0.
+            Quad(
+              v(-hw, hh, hd, mu, mv),
+              v(hw, hh, hd, 1.0 - mu, mv),
+              v(hw, hh, -hd, 1.0 - mu, 0.0),
+              v(-hw, hh, -hd, mu, 0.0),
+            ),
+            // Bottom (-Y): v runs 1-mv → 1.
+            Quad(
+              v(-hw, -hh, hd, mu, 1.0 - mv),
+              v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
+              v(hw, -hh, -hd, 1.0 - mu, 1.0),
+              v(-hw, -hh, -hd, mu, 1.0),
+            ),
+            // Back (-Z): continuous with the side back edges.
+            Quad(
+              v(-hw, hh, -hd, 0.0, 0.0),
+              v(-hw, -hh, -hd, 0.0, 1.0),
+              v(hw, -hh, -hd, 1.0, 1.0),
+              v(hw, hh, -hd, 1.0, 0.0),
+            ),
+          ),
+        ),
+        MeshBufferType.FaceVertices,
+      ),
+    )
+
 extension (w: Wall)
   /** The wall's orientation about Y, for anything that needs an angle rather
     * than a normal — a hung piece's model matrix, in practice.
@@ -1020,6 +1104,69 @@ extension (w: Wall)
       corner(-1.0, -1.0, 0.0, 1.0),
       corner(1.0, -1.0, 1.0, 1.0),
       corner(1.0, 1.0, 1.0, 0.0),
+    )
+
+/** Hanging is a SEPARATE extension block on `Wall`, deliberately not part of
+  * the wall's own block above. A wall knows nothing about paintings; a painting
+  * needs a wall. When this cluster is extracted, `hang` goes with the painting
+  * module and the wall module stays independent of it — the dependency runs one
+  * way, and splitting the blocks here is what keeps it that way.
+  */
+extension (w: Wall)
+  /** Hang a piece on this wall. Both positions are WORLD METERS, not UV:
+    * `centerFromLeft` runs along the wall from its left edge as seen from
+    * inside, `centerHeight` up from the floor.
+    *
+    * `shade` is passed in rather than built here because it is a compiled
+    * pipeline shared by every piece in the scene; the sampler comes off the
+    * painter, which caches it.
+    *
+    * That parameter is a wart, not a design: the shade is fully generic — it
+    * maps the spec's image panel onto the box and nothing else — so a copying
+    * sketch has to construct something it should never have to think about. It
+    * stays a parameter only because there is nowhere to cache it per painter
+    * yet. See _What this sequence deliberately leaves out_ in the plan.
+    */
+  def hang(
+      p: Painter,
+      shade: PaintingShade,
+      spec: PaintingSpec,
+      centerFromLeft: Double,
+      centerHeight: Double,
+  ): Painting =
+    val right = Up.cross(w.inwardNormal)
+    val pos = w.center
+      + right * (centerFromLeft - w.width / 2.0)
+      + Up * (centerHeight - w.height / 2.0)
+      // Stand it off the wall by its own half-depth plus a couple of
+      // centimeters, so the box never z-fights the wall it hangs on and the
+      // shadow has something to be cast by.
+      + w.inwardNormal * (spec.depth / 2.0 + 0.02)
+    val shape = p
+      .shape(spec.form(p), shade, cullMode = CullMode.None)
+      .bind(
+        "model" := Mat4.fromTranslationRotationScale(
+          pos,
+          Quat.fromRotationY(w.rotY),
+          Vec3(1.0, 1.0, 1.0),
+        ),
+        "samp" := p.samplerLinear,
+        "img" := spec.image,
+      )
+    Painting(
+      shape = shape,
+      shadowRect = Vec4(
+        centerFromLeft / w.width,
+        1.0 - centerHeight / w.height, // wall v runs down
+        (spec.width / 2.0) / w.width,
+        (spec.height / 2.0) / w.height,
+      ),
+      // Divided by the wall's own extents so the penumbra is isotropic in
+      // WORLD space however wide or tall the wall happens to be.
+      shadowFade = Vec2(
+        ShadowFadeWorld / w.width,
+        ShadowFadeWorld / w.height,
+      ),
     )
 
 /** One wall per boundary edge.
@@ -1065,27 +1212,36 @@ def wallsFrom(bnd: Boundary, topY: Double): Arr[Wall] =
 // resizing or removing a piece touches only curation, and changing the room's
 // shape or grid touches no curation at all.
 // ===========================================================================
-val PieceWidth = 0.85
-val PieceHeight = 1.10
-val PieceDepth = 0.05
+val PieceWidth = 1.0
+val PieceHeight = 1.30
+val PieceDepth = 0.08
 
 /** Center height above the floor. One number rather than a per-piece one — a
   * real hang would vary it.
   */
 val PieceCenterHeight = 1.55
 
-/** Where pieces sit, in meters from a wall's left edge. Absolute rather than
-  * "N spread evenly across the wall": an even split is itself a curation
-  * decision, and spelling it as one here would make the walls read as authored
-  * when they are not. A spot that would overhang a short wall is skipped.
+/** Where pieces sit, as a fraction of the wall's width from its left edge. Two
+  * per wall at thirds — the minimal curatorial decision, and one a copying
+  * sketch changes by editing this one line. Being relative, it holds on walls
+  * of any length; the overhang check in `curate` still applies for walls too
+  * short to take a piece at all.
   */
-val PieceSpots = Arr(1.30, 3.10)
+val PieceSpotFractions = Arr(1.0 / 3.0, 2.0 / 3.0)
 
-/** Flat fills standing in for artwork, cycled so adjacent walls differ. */
+/** Flat fills standing in for artwork — one per piece, in hang order, so the
+  * hue wheel circles the room once. Deliberately crude RGB (0, 0.5, 1): these
+  * stand in for images, and nothing here should read as a chosen palette.
+  */
 val PieceColors = Arr(
-  Vec3(0.58, 0.22, 0.18),
-  Vec3(0.17, 0.26, 0.40),
-  Vec3(0.28, 0.34, 0.21),
+  Vec3(0.4, 0.0, 0.0),
+  Vec3(0.95, 0.45, 0.95),
+  Vec3(0.0, 0.0, 0.4),
+  Vec3(0.45, 0.95, 0.95),
+  Vec3(0.0, 0.4, 0.0),
+  Vec3(0.95, 0.95, 0.45),
+  Vec3(0.97, 0.97, 0.97),
+  Vec3(0.03, 0.03, 0.03),
 )
 
 @main def roomsGridCanvases(): Unit =
@@ -1753,13 +1909,6 @@ val PieceColors = Arr(
     )
     type TexturedPanels = (tex: FragmentPanel)
 
-    type PaintingUniforms = (
-        vp: VertexUniform[Mat4],
-        model: VertexUniform[Mat4],
-        samp: FragmentUniform[Sampler],
-    )
-    type PaintingPanels = (img: FragmentPanel)
-
     val texturedShade =
       p.shade[BakeVertex, (uv: Vec2), TexturedUniforms, TexturedPanels]:
         program =>
@@ -1812,118 +1961,6 @@ val PieceColors = Arr(
             vec4(vec3(1.0 - ctx.bindings.strength * sm), 1.0),
         )
 
-    /** Flat-box geometry for one piece, centered on the local origin, front on
-      * `+Z`. The front fills an inset UV rect and the four thin sides wrap the
-      * outer margin, so a single image covers the whole box without a second
-      * texture or a second draw.
-      */
-    def paintingForm(spec: PaintingSpec): Form =
-      val hw = spec.width / 2.0
-      val hh = spec.height / 2.0
-      val hd = spec.depth / 2.0
-      val mu = (spec.depth / (spec.sideStretch * spec.width)).clamp(0.0, 0.45)
-      val mv = (spec.depth / (spec.sideStretch * spec.height)).clamp(0.0, 0.45)
-
-      def v(x: Double, y: Double, z: Double, u: Double, w: Double): RoomVertex =
-        (position = Vec3(x, y, z), uv = Vec2(u, w))
-
-      p.form(geometry =
-        toBufferedGeometry(
-          Mesh(
-            Arr(
-              // Front (+Z): the inset rect.
-              Quad(
-                v(-hw, hh, hd, mu, mv),
-                v(-hw, -hh, hd, mu, 1.0 - mv),
-                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-                v(hw, hh, hd, 1.0 - mu, mv),
-              ),
-              // Right (+X): u runs 1-mu → 1.
-              Quad(
-                v(hw, hh, hd, 1.0 - mu, mv),
-                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-                v(hw, -hh, -hd, 1.0, 1.0 - mv),
-                v(hw, hh, -hd, 1.0, mv),
-              ),
-              // Left (-X): u runs mu → 0.
-              Quad(
-                v(-hw, hh, hd, mu, mv),
-                v(-hw, -hh, hd, mu, 1.0 - mv),
-                v(-hw, -hh, -hd, 0.0, 1.0 - mv),
-                v(-hw, hh, -hd, 0.0, mv),
-              ),
-              // Top (+Y): v runs mv → 0.
-              Quad(
-                v(-hw, hh, hd, mu, mv),
-                v(hw, hh, hd, 1.0 - mu, mv),
-                v(hw, hh, -hd, 1.0 - mu, 0.0),
-                v(-hw, hh, -hd, mu, 0.0),
-              ),
-              // Bottom (-Y): v runs 1-mv → 1.
-              Quad(
-                v(-hw, -hh, hd, mu, 1.0 - mv),
-                v(hw, -hh, hd, 1.0 - mu, 1.0 - mv),
-                v(hw, -hh, -hd, 1.0 - mu, 1.0),
-                v(-hw, -hh, -hd, mu, 1.0),
-              ),
-              // Back (-Z): continuous with the side back edges.
-              Quad(
-                v(-hw, hh, -hd, 0.0, 0.0),
-                v(-hw, -hh, -hd, 0.0, 1.0),
-                v(hw, -hh, -hd, 1.0, 1.0),
-                v(hw, hh, -hd, 1.0, 0.0),
-              ),
-            ),
-          ),
-          MeshBufferType.FaceVertices,
-        ),
-      )
-
-    /** Hang a piece on a wall. Both positions are WORLD METERS, not UV:
-      * `centerFromLeft` runs along the wall from its left edge as seen from
-      * inside, `centerHeight` up from the floor.
-      */
-    def hang(
-        wall: Wall,
-        spec: PaintingSpec,
-        centerFromLeft: Double,
-        centerHeight: Double,
-    ): Painting =
-      val right = Up.cross(wall.inwardNormal)
-      val pos = wall.center
-        + right * (centerFromLeft - wall.width / 2.0)
-        + Up * (centerHeight - wall.height / 2.0)
-        // Stand it off the wall by its own half-depth plus a couple of
-        // centimeters, so the box never z-fights the wall it hangs on and the
-        // shadow has something to be cast by.
-        + wall.inwardNormal * (spec.depth / 2.0 + 0.02)
-      val shape = p
-        .shape(paintingForm(spec), paintingShade, cullMode = CullMode.None)
-        .bind(
-          "model" := Mat4.fromTranslationRotationScale(
-            pos,
-            Quat.fromRotationY(wall.rotY),
-            Vec3(1.0, 1.0, 1.0),
-          ),
-          "samp" := sampler,
-          "img" := spec.image,
-        )
-      Painting(
-        shape = shape,
-        shadowRect = Vec4(
-          centerFromLeft / wall.width,
-          1.0 - centerHeight / wall.height, // wall v runs down
-          (spec.width / 2.0) / wall.width,
-          (spec.height / 2.0) / wall.height,
-        ),
-        // Divided by the wall's own extents so the penumbra is isotropic in
-        // WORLD space however wide or tall the wall happens to be.
-        shadowFade = Vec2(
-          ShadowFadeWorld / wall.width,
-          ShadowFadeWorld / wall.height,
-        ),
-      )
-
     /** The ambience bake for one wall. Split out from the composite because a
       * wall with nothing on it wants exactly this and no second panel.
       */
@@ -1961,7 +1998,12 @@ val PieceColors = Arr(
             "fade" := piece.shadowFade,
           )
         val panel =
-          p.panel(width = w, height = h, mips = true, layers = Arr(copy, shadow))
+          p.panel(
+            width = w,
+            height = h,
+            mips = true,
+            layers = Arr(copy, shadow),
+          )
         p.paint(panel)
         panel
 
@@ -1989,18 +2031,23 @@ val PieceColors = Arr(
 
     def curate(wall: Wall, wallIndex: Int): Arr[Painting] =
       val out = Arr[Painting]()
-      for i <- 0 until PieceSpots.length do
-        val at = PieceSpots(i)
+      for i <- 0 until PieceSpotFractions.length do
+        val at = wall.width * PieceSpotFractions(i)
         // Skip rather than squeeze: a spot that would overhang is not a spot.
         if at + PieceWidth / 2.0 <= wall.width then
           out.push(
-            hang(
-              wall,
+            wall.hang(
+              p,
+              paintingShade,
               PaintingSpec(
                 width = PieceWidth,
                 height = PieceHeight,
                 depth = PieceDepth,
-                image = pieceImages((wallIndex + i) % pieceImages.length),
+                // Walls run around the ring and `centerFromLeft` runs rightward
+                // as seen from inside, so this index circles the room.
+                image = pieceImages(
+                  (wallIndex * PieceSpotFractions.length + i) % pieceImages.length,
+                ),
               ),
               centerFromLeft = at,
               centerHeight = PieceCenterHeight,

@@ -828,3 +828,11 @@ whatever C3 decided about triple points.
   that point.
 - **Array uniforms and storage buffers.** Declined, with revival conditions in
   roadmap Part 5.
+- **Encapsulating the painting shade.** `Wall.hang` takes a `PaintingShade`
+  parameter, so a copying sketch has to build a shade it otherwise never needs
+  to think about — the shade is fully generic (one image panel onto the box
+  geometry, no exhibition-specific decision in it). It is a parameter only
+  because a shade is a compiled pipeline and must be created once per painter,
+  not once per piece. Revisit when the hanging machinery becomes a shared
+  utility: a per-painter cache would let `hang` obtain it itself and drop the
+  parameter. Left as-is for now rather than guessed at.
