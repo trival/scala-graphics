@@ -1240,8 +1240,8 @@ val PieceColors = Arr(
   Vec3(0.45, 0.95, 0.95),
   Vec3(0.0, 0.4, 0.0),
   Vec3(0.95, 0.95, 0.45),
-  Vec3(0.97, 0.97, 0.97),
   Vec3(0.03, 0.03, 0.03),
+  Vec3(0.97, 0.97, 0.97),
 )
 
 @main def roomsGridCanvases(): Unit =
