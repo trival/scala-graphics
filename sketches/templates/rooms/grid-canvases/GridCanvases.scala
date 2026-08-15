@@ -415,7 +415,9 @@ def roomNoise(
 // down so the light reads as coming from slightly above. There is no light
 // position anywhere in this room, and this does not introduce one.
 val ShadowFadeWorld = 0.10 // penumbra width, meters
-val ShadowStrength = 0.44 // darkening at the center of the shadow
+// The MAXIMUM darkening at the center of a shadow. Each piece scales it by its
+// own `shadowDim` (see `hang`), so this is the ceiling, not a fixed value.
+val ShadowStrength = 0.44
 val ShadowDropMul = 0.25 // downward offset, in penumbra widths
 val ShadowBotFadeMul = 2.7 // how much broader the lower falloff is
 
@@ -995,6 +997,7 @@ case class Painting(
     shape: AnyShape,
     shadowRect: Vec4, // UV (centerU, centerV, halfU, halfV)
     shadowFade: Vec2, // per-axis penumbra width, in UV
+    shadowStrength: Double, // center darkening, already dimmed for this piece
 )
 
 /** The shade a hung piece draws with — one image panel through a model matrix.
@@ -1126,6 +1129,12 @@ extension (w: Wall)
     * sketch has to construct something it should never have to think about. It
     * stays a parameter only because there is nowhere to cache it per painter
     * yet. See _What this sequence deliberately leaves out_ in the plan.
+    *
+    * `shadowDim` scales `ShadowStrength` for THIS piece, `0` (no shadow) to `1`
+    * (the full strength). It is a perceptual correction, not a physical one:
+    * the eye reads the shadow beside a light piece as far stronger than the
+    * same shadow beside a dark one, so making them LOOK equal means making them
+    * mathematically unequal. Dim the light pieces, leave the dark ones at `1`.
     */
   def hang(
       p: Painter,
@@ -1133,6 +1142,7 @@ extension (w: Wall)
       spec: PaintingSpec,
       centerFromLeft: Double,
       centerHeight: Double,
+      shadowDim: Double = 1.0,
   ): Painting =
     val right = Up.cross(w.inwardNormal)
     val pos = w.center
@@ -1167,6 +1177,7 @@ extension (w: Wall)
         ShadowFadeWorld / w.width,
         ShadowFadeWorld / w.height,
       ),
+      shadowStrength = ShadowStrength * shadowDim.clamp01,
     )
 
 /** One wall per boundary edge.
@@ -1242,6 +1253,24 @@ val PieceColors = Arr(
   Vec3(0.95, 0.95, 0.45),
   Vec3(0.03, 0.03, 0.03),
   Vec3(0.97, 0.97, 0.97),
+)
+
+/** Per-piece shadow dimming, parallel to `PieceColors`, `1` = full
+  * `ShadowStrength`. Set by eye, per dominant color of the piece: a bright
+  * canvas throws its shadow against a rim of high contrast and needs it pulled
+  * back, while a near-black canvas barely reads a shadow at full strength. The
+  * goal is shadows that LOOK equal across the room, which is why the numbers
+  * are not.
+  */
+val PieceShadowDims = Arr(
+  0.85, // dark red
+  0.5, // light pink
+  0.85, // dark blue
+  0.55, // light cyan
+  0.85, // dark green
+  0.5, // light yellow
+  1.0, // near black
+  0.4, // near white
 )
 
 @main def roomsGridCanvases(): Unit =
@@ -1999,11 +2028,14 @@ val PieceColors = Arr(
           .bind("samp" := sampler, "tex" := ambience)
         val shadow = p
           .layer(shadowShade, blendState = BlendState.Multiply)
+          // Layer-level default; every instance overrides it with its own
+          // perceptually dimmed strength.
           .bind("strength" := ShadowStrength)
         for piece <- pieces do
           shadow.instances.add(
             "rect" := piece.shadowRect,
             "fade" := piece.shadowFade,
+            "strength" := piece.shadowStrength,
           )
         val panel =
           p.panel(
@@ -2043,6 +2075,10 @@ val PieceColors = Arr(
         val at = wall.width * PieceSpotFractions(i)
         // Skip rather than squeeze: a spot that would overhang is not a spot.
         if at + PieceWidth / 2.0 <= wall.width then
+          // Walls run around the ring and `centerFromLeft` runs rightward as
+          // seen from inside, so this index circles the room.
+          val pick =
+            (wallIndex * PieceSpotFractions.length + i) % pieceImages.length
           out.push(
             wall.hang(
               p,
@@ -2051,14 +2087,11 @@ val PieceColors = Arr(
                 width = PieceWidth,
                 height = PieceHeight,
                 depth = PieceDepth,
-                // Walls run around the ring and `centerFromLeft` runs rightward
-                // as seen from inside, so this index circles the room.
-                image = pieceImages(
-                  (wallIndex * PieceSpotFractions.length + i) % pieceImages.length,
-                ),
+                image = pieceImages(pick),
               ),
               centerFromLeft = at,
               centerHeight = PieceCenterHeight,
+              shadowDim = PieceShadowDims(pick),
             ),
           )
       out
