@@ -702,7 +702,7 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
         BasicFirstPersonCameraController(
           cam,
           input,
-          sensitivity = 1.0,
+          sensitivity = 2.5,
           speed = 3.0,
         )
 

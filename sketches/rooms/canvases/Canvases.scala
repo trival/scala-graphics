@@ -748,7 +748,7 @@ type PaintingPanels = (img: FragmentPanel)
       BasicFirstPersonCameraController(
         cam,
         input,
-        sensitivity = 2.0,
+        sensitivity = 2.5,
         speed = 1.0,
       )
 

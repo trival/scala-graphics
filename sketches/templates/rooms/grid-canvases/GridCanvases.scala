@@ -2221,7 +2221,7 @@ val PieceColors = Arr(
       BasicFirstPersonCameraController(
         cam,
         input,
-        sensitivity = 2.0,
+        sensitivity = 2.5,
         speed = 1.0,
       )
 
