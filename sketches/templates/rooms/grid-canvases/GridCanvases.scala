@@ -808,7 +808,7 @@ extension (bnd: Boundary)
     * nearest-point clamp already produces correctly.)
     */
   def confine(pos: Vec3, margin: Double, eyeY: Double): Vec3 =
-    val once = bnd.confinePass(Vec2(pos.x, pos.z), margin)
+    val once = bnd.confinePass(pos.xz, margin)
     val twice = bnd.confinePass(once, margin)
     Vec3(twice.x, eyeY, twice.y)
 
