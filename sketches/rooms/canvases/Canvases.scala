@@ -264,7 +264,7 @@ type PaintingPanels = (img: FragmentPanel)
         lf := uv.y.smoothstep(0.05, 0.15)
           * (1.0 - uv.y).smoothstep(0.05, 0.15),
         band *= lf,
-        halo := band * vec3(HaloColor),
+        halo := band * HaloColor,
         col += halo,
         color := vec4(col, 1.0),
       )
@@ -274,7 +274,7 @@ type PaintingPanels = (img: FragmentPanel)
       // Matching contact shadow along the bottom border — height above floor.
       vec4(
         vec3(WallTintLow).lerp(
-          vec3(WallTintHigh),
+          WallTintHigh,
           wp.y.smoothstep(4.6, 5.5),
         ) * roomNoise(wp, normal) * contact(wp.y),
         1.0,

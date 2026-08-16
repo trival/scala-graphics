@@ -1884,8 +1884,8 @@ val PieceShadowDims = Arr(
       // and the lift touches only the sides. The arris blend is unaffected for
       // the same reason, since it happens where the lift is still ~0.
       val sideLift = ((wp.y - WallTopY) / StripHeight).clamp01
-      val sideTint = vec3(WallTintLow).lerp(vec3(BeamSideTopTint), sideLift)
-      val tint = sideTint.lerp(vec3(CeilTint), s)
+      val sideTint = vec3(WallTintLow).lerp(BeamSideTopTint, sideLift)
+      val tint = sideTint.lerp(CeilTint, s)
 
       // The ambience DARKENS — it averages ~0.84 — so the tint above is not the
       // rendered color unless the darkening is lifted with it. Lift it by the
@@ -1924,7 +1924,7 @@ val PieceShadowDims = Arr(
       Block(
         ctx.out.color := vec4(
           vec3(WallTintLow).lerp(
-            vec3(WallTintHigh),
+            WallTintHigh,
             (topY - wp.y).smoothstep(TopFadeDepth, 0.0),
           ) * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, topY))
             * grime(wp.y, wp),
