@@ -106,8 +106,8 @@ def baseStroke1(canvas: HTMLCanvasElement): Unit =
     def strokeColor() =
       Vec3(
         (colStrokeHsv.x + randNormal11() * 0.12).fract,
-        (colStrokeHsv.y + 0.4 + randNormal11() * 0.15).clamp01,
-        (colStrokeHsv.z - 0.3 + randNormal11() * 0.12).clamp01,
+        (colStrokeHsv.y + randNormal11() * 0.15).clamp01,
+        (colStrokeHsv.z + randNormal11() * 0.12).clamp01,
       ).hsv2rgbSmooth
 
     // ---- shades ----------------------------------------------------------

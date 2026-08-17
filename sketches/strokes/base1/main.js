@@ -1684,9 +1684,9 @@ function $p_Lsketches_strokes_base1_BaseStroke1$package$__strokeColor$1__Ltrival
   var $x_1 = $m_Ltrivalibs_graphics_math_cpu_color$package$();
   var p$proxy4 = (colStrokeHsv$1.af + (0.12 * $m_Ltrivalibs_utils_random_random$package$().a1()));
   var x = (p$proxy4 - (+Math.floor(p$proxy4)));
-  var p$proxy5 = ((colStrokeHsv$1.ag + 0.4) + (0.15 * $m_Ltrivalibs_utils_random_random$package$().a1()));
+  var p$proxy5 = (colStrokeHsv$1.ag + (0.15 * $m_Ltrivalibs_utils_random_random$package$().a1()));
   var y = ((p$proxy5 < 0.0) ? 0.0 : ((p$proxy5 > 1.0) ? 1.0 : p$proxy5));
-  var p$proxy6 = ((colStrokeHsv$1.av - 0.3) + (0.12 * $m_Ltrivalibs_utils_random_random$package$().a1()));
+  var p$proxy6 = (colStrokeHsv$1.av + (0.12 * $m_Ltrivalibs_utils_random_random$package$().a1()));
   return $x_1.d0(new $c_Ltrivalibs_graphics_math_cpu_Vec3(x, y, ((p$proxy6 < 0.0) ? 0.0 : ((p$proxy6 > 1.0) ? 1.0 : p$proxy6))), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$(), $m_Ltrivalibs_graphics_math_cpu_Vec3$().cY());
 }
 function $p_Lsketches_strokes_base1_BaseStroke1$package$__repaint$1__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Layer__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_buffers_BufferBinding__Ltrivalibs_graphics_buffers_BufferBinding__Ltrivalibs_graphics_painter_Form__Ltrivalibs_graphics_math_cpu_Vec3__D__D__V($thiz, canvasPanel$1, canvasLayer$1, bgPanel$1, p$1, strokePanel$1, uColor$1, uRandOffset$1, form$1, colStrokeHsv$2, width, height) {
