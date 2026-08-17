@@ -1,7 +1,7 @@
 package sketches.experiments.gridceiling
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
@@ -179,9 +179,8 @@ def boxFaces(size: Double, height: Double): Arr[Quad[GridVertex]] =
     box.rightFace((c, uvw) => gvert(c, uvw.z, 4.0 * vb + uvw.y * vb)),
   )
 
-@main def roomsGridCeiling(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def roomsGridCeiling(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas):
     p =>
       // ------ space dimensions ------

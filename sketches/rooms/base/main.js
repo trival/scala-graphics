@@ -98,7 +98,7 @@ function $objectClassName(arg0) {
       } else if ((!(!(arg0 && arg0.$classData)))) {
         return arg0.$classData.N;
       } else {
-        return null.pq();
+        return null.pg();
       }
     }
   }
@@ -161,7 +161,7 @@ function $dp_indexOf__I__I(instance, x0) {
   if (((typeof instance) === "string")) {
     return $f_T__indexOf__I__I(instance, x0);
   } else {
-    return instance.pr(x0);
+    return instance.ph(x0);
   }
 }
 function $dp_toString__T(instance) {
@@ -684,30 +684,6 @@ var $d_I = new $TypeData().p(0, "I", "int", $ac_I, Int32Array);
 var $d_J = new $TypeData().p($bL0, "J", "long", $ac_J, Int32Array);
 var $d_F = new $TypeData().p(0.0, "F", "float", $ac_F, Float32Array);
 var $d_D = new $TypeData().p(0.0, "D", "double", $ac_D, Float64Array);
-/** @constructor */
-function $c_jl_System$Streams$() {
-  this.jL = null;
-  this.mo = null;
-  $n_jl_System$Streams$ = this;
-  this.jL = new $c_jl_JSConsoleBasedPrintStream(false);
-  this.mo = new $c_jl_JSConsoleBasedPrintStream(true);
-}
-$p = $c_jl_System$Streams$.prototype = new $h_O();
-$p.constructor = $c_jl_System$Streams$;
-/** @constructor */
-function $h_jl_System$Streams$() {
-}
-$h_jl_System$Streams$.prototype = $p;
-var $d_jl_System$Streams$ = new $TypeData().i($c_jl_System$Streams$, "java.lang.System$Streams$", ({
-  bh: 1
-}));
-var $n_jl_System$Streams$;
-function $m_jl_System$Streams$() {
-  if ((!$n_jl_System$Streams$)) {
-    $n_jl_System$Streams$ = new $c_jl_System$Streams$();
-  }
-  return $n_jl_System$Streams$;
-}
 function $p_jl_System$SystemProperties$__loadSystemProperties__O($thiz) {
   var result = ({});
   result["java.version"] = "1.8";
@@ -726,11 +702,11 @@ function $p_jl_System$SystemProperties$__loadSystemProperties__O($thiz) {
 }
 /** @constructor */
 function $c_jl_System$SystemProperties$() {
-  this.ib = null;
-  this.jM = null;
+  this.ia = null;
+  this.jI = null;
   $n_jl_System$SystemProperties$ = this;
-  this.ib = $p_jl_System$SystemProperties$__loadSystemProperties__O(this);
-  this.jM = null;
+  this.ia = $p_jl_System$SystemProperties$__loadSystemProperties__O(this);
+  this.jI = null;
 }
 $p = $c_jl_System$SystemProperties$.prototype = new $h_O();
 $p.constructor = $c_jl_System$SystemProperties$;
@@ -738,16 +714,16 @@ $p.constructor = $c_jl_System$SystemProperties$;
 function $h_jl_System$SystemProperties$() {
 }
 $h_jl_System$SystemProperties$.prototype = $p;
-$p.lN = (function(key, default$1) {
-  if ((this.ib !== null)) {
-    var dict = this.ib;
-    return ((!(!$m_jl_Utils$Cache$().jO.call(dict, key))) ? dict[key] : default$1);
+$p.lI = (function(key, default$1) {
+  if ((this.ia !== null)) {
+    var dict = this.ia;
+    return ((!(!$m_jl_Utils$Cache$().jK.call(dict, key))) ? dict[key] : default$1);
   } else {
-    return this.jM.lN(key, default$1);
+    return this.jI.lI(key, default$1);
   }
 });
 var $d_jl_System$SystemProperties$ = new $TypeData().i($c_jl_System$SystemProperties$, "java.lang.System$SystemProperties$", ({
-  bi: 1
+  b9: 1
 }));
 var $n_jl_System$SystemProperties$;
 function $m_jl_System$SystemProperties$() {
@@ -758,9 +734,9 @@ function $m_jl_System$SystemProperties$() {
 }
 /** @constructor */
 function $c_jl_Utils$Cache$() {
-  this.jO = null;
+  this.jK = null;
   $n_jl_Utils$Cache$ = this;
-  this.jO = Object.prototype.hasOwnProperty;
+  this.jK = Object.prototype.hasOwnProperty;
 }
 $p = $c_jl_Utils$Cache$.prototype = new $h_O();
 $p.constructor = $c_jl_Utils$Cache$;
@@ -769,7 +745,7 @@ function $h_jl_Utils$Cache$() {
 }
 $h_jl_Utils$Cache$.prototype = $p;
 var $d_jl_Utils$Cache$ = new $TypeData().i($c_jl_Utils$Cache$, "java.lang.Utils$Cache$", ({
-  bk: 1
+  bb: 1
 }));
 var $n_jl_Utils$Cache$;
 function $m_jl_Utils$Cache$() {
@@ -788,7 +764,7 @@ function $f_jl_Void__toString__T($thiz) {
   return "undefined";
 }
 var $d_jl_Void = new $TypeData().i(0, "java.lang.Void", ({
-  bl: 1
+  bc: 1
 }), ((x) => (x === (void 0))));
 function $p_jl_reflect_Array$__mismatch__O__E($thiz, array) {
   throw $ct_jl_IllegalArgumentException__T__(new $c_jl_IllegalArgumentException(), "argument type mismatch");
@@ -802,11 +778,11 @@ $p.constructor = $c_jl_reflect_Array$;
 function $h_jl_reflect_Array$() {
 }
 $h_jl_reflect_Array$.prototype = $p;
-$p.gO = (function(array) {
+$p.gN = (function(array) {
   return ((array instanceof $ac_O) ? array.b.length : ((array instanceof $ac_Z) ? array.b.length : ((array instanceof $ac_C) ? array.b.length : ((array instanceof $ac_B) ? array.b.length : ((array instanceof $ac_S) ? array.b.length : ((array instanceof $ac_I) ? array.b.length : ((array instanceof $ac_J) ? ((array.b.length >>> 1) | 0) : ((array instanceof $ac_F) ? array.b.length : ((array instanceof $ac_D) ? array.b.length : $p_jl_reflect_Array$__mismatch__O__E(this, array))))))))));
 });
 var $d_jl_reflect_Array$ = new $TypeData().i($c_jl_reflect_Array$, "java.lang.reflect.Array$", ({
-  bm: 1
+  bd: 1
 }));
 var $n_jl_reflect_Array$;
 function $m_jl_reflect_Array$() {
@@ -824,7 +800,7 @@ $p.constructor = $c_ju_Arrays$;
 function $h_ju_Arrays$() {
 }
 $h_ju_Arrays$.prototype = $p;
-$p.mS = (function(a, key) {
+$p.mL = (function(a, key) {
   var startIndex = 0;
   var endIndex = a.b.length;
   while (true) {
@@ -845,7 +821,7 @@ $p.mS = (function(a, key) {
   }
 });
 var $d_ju_Arrays$ = new $TypeData().i($c_ju_Arrays$, "java.util.Arrays$", ({
-  bn: 1
+  be: 1
 }));
 var $n_ju_Arrays$;
 function $m_ju_Arrays$() {
@@ -855,16 +831,16 @@ function $m_ju_Arrays$() {
   return $n_ju_Arrays$;
 }
 function $s_RTLong__remainderUnsigned__I__I__I__I__J(alo, ahi, blo, bhi) {
-  return $m_RTLong$().oN(alo, ahi, blo, bhi);
+  return $m_RTLong$().oE(alo, ahi, blo, bhi);
 }
 function $s_RTLong__remainder__I__I__I__I__J(alo, ahi, blo, bhi) {
-  return $m_RTLong$().oM(alo, ahi, blo, bhi);
+  return $m_RTLong$().oD(alo, ahi, blo, bhi);
 }
 function $s_RTLong__divideUnsigned__I__I__I__I__J(alo, ahi, blo, bhi) {
-  return $m_RTLong$().na(alo, ahi, blo, bhi);
+  return $m_RTLong$().n3(alo, ahi, blo, bhi);
 }
 function $s_RTLong__divide__I__I__I__I__J(alo, ahi, blo, bhi) {
-  return $m_RTLong$().n9(alo, ahi, blo, bhi);
+  return $m_RTLong$().n2(alo, ahi, blo, bhi);
 }
 function $s_RTLong__fromDoubleBits__D__O__J(value, fpBitsDataView) {
   fpBitsDataView.setFloat64(0, value, true);
@@ -873,7 +849,7 @@ function $s_RTLong__fromDoubleBits__D__O__J(value, fpBitsDataView) {
   return $bL(lo, hi);
 }
 function $s_RTLong__fromDouble__D__J(value) {
-  return $m_RTLong$().jr(value);
+  return $m_RTLong$().jp(value);
 }
 function $s_RTLong__fromUnsignedInt__I__J(value) {
   return $bL(value, 0);
@@ -895,7 +871,7 @@ function $s_RTLong__toInt__I__I__I(lo, hi) {
   return lo;
 }
 function $s_RTLong__toString__I__I__T(lo, hi) {
-  return $m_RTLong$().mj(lo, hi);
+  return $m_RTLong$().md(lo, hi);
 }
 function $s_RTLong__bitsToDouble__I__I__O__D(lo, hi, fpBitsDataView) {
   fpBitsDataView.setInt32(0, lo, true);
@@ -994,7 +970,7 @@ $p.constructor = $c_RTLong$;
 function $h_RTLong$() {
 }
 $h_RTLong$.prototype = $p;
-$p.mj = (function(lo, hi) {
+$p.md = (function(lo, hi) {
   if ((hi === (lo >> 31))) {
     return ("" + lo);
   } else if ((((-2097152) & (hi ^ (hi >> 10))) === 0)) {
@@ -1022,7 +998,7 @@ $p.mj = (function(lo, hi) {
     return ((hi < 0) ? ("-" + s) : s);
   }
 });
-$p.jr = (function(value) {
+$p.jp = (function(value) {
   if ((value < (-9.223372036854776E18))) {
     return $bL(0, (-2147483648));
   } else if ((value >= 9.223372036854776E18)) {
@@ -1034,7 +1010,7 @@ $p.jr = (function(value) {
     return $bL(rawLo, hi);
   }
 });
-$p.n9 = (function(alo, ahi, blo, bhi) {
+$p.n2 = (function(alo, ahi, blo, bhi) {
   var sign = (ahi >> 31);
   var xlo = (alo ^ sign);
   var rlo = ((xlo - sign) | 0);
@@ -1082,7 +1058,7 @@ $p.n9 = (function(alo, ahi, blo, bhi) {
       var absR_$_hi = hi;
     }
   } else {
-    var $x_1 = this.i4(rlo, rhi, rlo$1, rhi$1, true);
+    var $x_1 = this.i3(rlo, rhi, rlo$1, rhi$1, true);
     var absR_$_lo = $x_1.l;
     var absR_$_hi = $x_1.h;
   }
@@ -1094,7 +1070,7 @@ $p.n9 = (function(alo, ahi, blo, bhi) {
     return $bL(lo$5, hi$5);
   }
 });
-$p.na = (function(alo, ahi, blo, bhi) {
+$p.n3 = (function(alo, ahi, blo, bhi) {
   if (((bhi | ((-2097152) & blo)) === 0)) {
     var quotHi = (((ahi >>> 0) / ($checkIntDivisor(blo) >>> 0)) | 0);
     var k = ((ahi - Math.imul(blo, quotHi)) | 0);
@@ -1130,10 +1106,10 @@ $p.na = (function(alo, ahi, blo, bhi) {
       return $bL(lo, hi);
     }
   } else {
-    return this.i4(alo, ahi, blo, bhi, true);
+    return this.i3(alo, ahi, blo, bhi, true);
   }
 });
-$p.oM = (function(alo, ahi, blo, bhi) {
+$p.oD = (function(alo, ahi, blo, bhi) {
   var sign = (ahi >> 31);
   var xlo = (alo ^ sign);
   var rlo = ((xlo - sign) | 0);
@@ -1181,7 +1157,7 @@ $p.oM = (function(alo, ahi, blo, bhi) {
       var absR_$_hi = hi$2;
     }
   } else {
-    var $x_1 = this.i4(rlo, rhi, rlo$1, rhi$1, false);
+    var $x_1 = this.i3(rlo, rhi, rlo$1, rhi$1, false);
     var absR_$_lo = $x_1.l;
     var absR_$_hi = $x_1.h;
   }
@@ -1193,7 +1169,7 @@ $p.oM = (function(alo, ahi, blo, bhi) {
     return $bL(absR_$_lo, absR_$_hi);
   }
 });
-$p.oN = (function(alo, ahi, blo, bhi) {
+$p.oE = (function(alo, ahi, blo, bhi) {
   if (((bhi | ((-2097152) & blo)) === 0)) {
     var k$2 = (((ahi >>> 0) % ($checkIntDivisor(blo) >>> 0)) | 0);
     var quotLo$2 = ((((4.294967296E9 * k$2) + (alo >>> 0.0)) / blo) | 0.0);
@@ -1229,10 +1205,10 @@ $p.oN = (function(alo, ahi, blo, bhi) {
       return $bL(lo$2, hi$2);
     }
   } else {
-    return this.i4(alo, ahi, blo, bhi, false);
+    return this.i3(alo, ahi, blo, bhi, false);
   }
 });
-$p.i4 = (function(alo, ahi, blo, bhi, askQuotient) {
+$p.i3 = (function(alo, ahi, blo, bhi, askQuotient) {
   var quot1 = 0;
   if ((bhi >= 0)) {
     var lo = (blo << 1);
@@ -1269,7 +1245,7 @@ $p.i4 = (function(alo, ahi, blo, bhi, askQuotient) {
   }
 });
 var $d_RTLong$ = new $TypeData().i($c_RTLong$, "org.scalajs.linker.runtime.RuntimeLong$", ({
-  bp: 1
+  bg: 1
 }));
 var $n_RTLong$;
 function $m_RTLong$() {
@@ -1287,7 +1263,7 @@ $p.constructor = $c_s_Array$;
 function $h_s_Array$() {
 }
 $h_s_Array$.prototype = $p;
-$p.lL = (function(xs, ys) {
+$p.lG = (function(xs, ys) {
   if ((xs === ys)) {
     return true;
   }
@@ -1305,7 +1281,7 @@ $p.lL = (function(xs, ys) {
   return true;
 });
 var $d_s_Array$ = new $TypeData().i($c_s_Array$, "scala.Array$", ({
-  bq: 1
+  bh: 1
 }));
 var $n_s_Array$;
 function $m_s_Array$() {
@@ -1336,24 +1312,24 @@ function $f_sc_IterableOnceOps__copyToArray__O__I__I__I($thiz, dest, start, n) {
     var srclen;
     var x31 = $thiz.ae();
     if ((x31 === (-1))) {
-      var srclen = $m_jl_reflect_Array$().gO(dest);
+      var srclen = $m_jl_reflect_Array$().gN(dest);
       break matchResult18;
     }
     var srclen = x31;
   }
-  var destLen = $m_jl_reflect_Array$().gO(dest);
+  var destLen = $m_jl_reflect_Array$().gN(dest);
   var limit = ((n < srclen) ? n : srclen);
   var capacity = ((start < 0) ? destLen : ((destLen - start) | 0));
   var total = ((capacity < limit) ? capacity : limit);
   var end = ((start + ((total < 0) ? 0 : total)) | 0);
   while (((i < end) && it.J())) {
-    $m_sr_ScalaRunTime$().mO(dest, i, it.D());
+    $m_sr_ScalaRunTime$().mH(dest, i, it.D());
     i = ((1 + i) | 0);
   }
   return ((i - start) | 0);
 }
 function $f_sc_IterableOnceOps__mkString__T__T__T__T($thiz, start, sep, end) {
-  return (($thiz.ae() === 0) ? (("" + start) + end) : $thiz.jj($ct_scm_StringBuilder__(new $c_scm_StringBuilder()), start, sep, end).aR.a8);
+  return (($thiz.ae() === 0) ? (("" + start) + end) : $thiz.jh($ct_scm_StringBuilder__(new $c_scm_StringBuilder()), start, sep, end).aR.a8);
 }
 function $f_sc_IterableOnceOps__addString__scm_StringBuilder__T__T__T__scm_StringBuilder($thiz, b, start, sep, end) {
   var jsb = b.aR;
@@ -1379,10 +1355,10 @@ function $f_sc_IterableOnceOps__addString__scm_StringBuilder__T__T__T__scm_Strin
 }
 /** @constructor */
 function $c_sc_Iterator$ConcatIteratorCell(head, tail) {
-  this.jV = null;
-  this.gf = null;
-  this.jV = head;
-  this.gf = tail;
+  this.jQ = null;
+  this.ge = null;
+  this.jQ = head;
+  this.ge = tail;
 }
 $p = $c_sc_Iterator$ConcatIteratorCell.prototype = new $h_O();
 $p.constructor = $c_sc_Iterator$ConcatIteratorCell;
@@ -1390,17 +1366,17 @@ $p.constructor = $c_sc_Iterator$ConcatIteratorCell;
 function $h_sc_Iterator$ConcatIteratorCell() {
 }
 $h_sc_Iterator$ConcatIteratorCell.prototype = $p;
-$p.nG = (function() {
-  return this.jV.gL().a0();
+$p.nz = (function() {
+  return this.jQ.gK().a0();
 });
 var $d_sc_Iterator$ConcatIteratorCell = new $TypeData().i($c_sc_Iterator$ConcatIteratorCell, "scala.collection.Iterator$ConcatIteratorCell", ({
-  c8: 1
+  bY: 1
 }));
 /** @constructor */
 function $c_sc_StringOps$() {
-  this.jW = null;
+  this.jR = null;
   $n_sc_StringOps$ = this;
-  this.jW = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((_$1$2) => this.jW));
+  this.jR = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((_$1$2) => this.jR));
 }
 $p = $c_sc_StringOps$.prototype = new $h_O();
 $p.constructor = $c_sc_StringOps$;
@@ -1409,7 +1385,7 @@ function $h_sc_StringOps$() {
 }
 $h_sc_StringOps$.prototype = $p;
 var $d_sc_StringOps$ = new $TypeData().i($c_sc_StringOps$, "scala.collection.StringOps$", ({
-  cg: 1
+  c6: 1
 }));
 var $n_sc_StringOps$;
 function $m_sc_StringOps$() {
@@ -1420,11 +1396,11 @@ function $m_sc_StringOps$() {
 }
 /** @constructor */
 function $c_sci_IndexedSeqDefaults$() {
-  this.jZ = 0;
+  this.jU = 0;
   $n_sci_IndexedSeqDefaults$ = this;
   try {
     $m_sc_StringOps$();
-    var $x_1 = $m_jl_Integer$().nN($m_jl_System$SystemProperties$().lN("scala.collection.immutable.IndexedSeq.defaultApplyPreferredMaxLength", "64"), 10, 214748364);
+    var $x_1 = $m_jl_Integer$().nG($m_jl_System$SystemProperties$().lI("scala.collection.immutable.IndexedSeq.defaultApplyPreferredMaxLength", "64"), 10, 214748364);
   } catch (e) {
     if (false) {
       var $x_1 = 64;
@@ -1433,7 +1409,7 @@ function $c_sci_IndexedSeqDefaults$() {
       throw e;
     }
   }
-  this.jZ = $x_1;
+  this.jU = $x_1;
 }
 $p = $c_sci_IndexedSeqDefaults$.prototype = new $h_O();
 $p.constructor = $c_sci_IndexedSeqDefaults$;
@@ -1442,7 +1418,7 @@ function $h_sci_IndexedSeqDefaults$() {
 }
 $h_sci_IndexedSeqDefaults$.prototype = $p;
 var $d_sci_IndexedSeqDefaults$ = new $TypeData().i($c_sci_IndexedSeqDefaults$, "scala.collection.immutable.IndexedSeqDefaults$", ({
-  cl: 1
+  cb: 1
 }));
 var $n_sci_IndexedSeqDefaults$;
 function $m_sci_IndexedSeqDefaults$() {
@@ -1461,11 +1437,11 @@ function $h_sr_BoxesRunTime$() {
 }
 $h_sr_BoxesRunTime$.prototype = $p;
 $p.c = (function(x, y) {
-  return ((x === y) || ($is_jl_Number(x) ? this.nj(x, y) : ((x instanceof $Char) ? this.nh(x, y) : ((x === null) ? (y === null) : $dp_equals__O__Z(x, y)))));
+  return ((x === y) || ($is_jl_Number(x) ? this.nc(x, y) : ((x instanceof $Char) ? this.na(x, y) : ((x === null) ? (y === null) : $dp_equals__O__Z(x, y)))));
 });
-$p.nj = (function(xn, y) {
+$p.nc = (function(xn, y) {
   if ($is_jl_Number(y)) {
-    return this.ni(xn, y);
+    return this.nb(xn, y);
   } else if ((y instanceof $Char)) {
     if (((typeof xn) === "number")) {
       return ((+xn) === y.c);
@@ -1483,7 +1459,7 @@ $p.nj = (function(xn, y) {
     return ((xn === null) ? (y === null) : $dp_equals__O__Z(xn, y));
   }
 });
-$p.ni = (function(xn, yn) {
+$p.nb = (function(xn, yn) {
   if (((typeof xn) === "number")) {
     var x2 = (+xn);
     if (((typeof yn) === "number")) {
@@ -1515,7 +1491,7 @@ $p.ni = (function(xn, yn) {
     return ((xn === null) ? (yn === null) : $dp_equals__O__Z(xn, yn));
   }
 });
-$p.nh = (function(xc, y) {
+$p.na = (function(xc, y) {
   if ((y instanceof $Char)) {
     return (xc.c === y.c);
   } else if ($is_jl_Number(y)) {
@@ -1536,7 +1512,7 @@ $p.nh = (function(xc, y) {
   }
 });
 var $d_sr_BoxesRunTime$ = new $TypeData().i($c_sr_BoxesRunTime$, "scala.runtime.BoxesRunTime$", ({
-  cV: 1
+  cK: 1
 }));
 var $n_sr_BoxesRunTime$;
 function $m_sr_BoxesRunTime$() {
@@ -1554,14 +1530,14 @@ $p.constructor = $c_sr_Scala3RunTime$;
 function $h_sr_Scala3RunTime$() {
 }
 $h_sr_Scala3RunTime$.prototype = $p;
-$p.mP = (function() {
+$p.mI = (function() {
   throw new $c_jl_AssertionError("assertion failed");
 });
-$p.i3 = (function() {
+$p.i2 = (function() {
   throw $ct_jl_NullPointerException__T__(new $c_jl_NullPointerException(), "tried to cast away nullability, but value is null");
 });
 var $d_sr_Scala3RunTime$ = new $TypeData().i($c_sr_Scala3RunTime$, "scala.runtime.Scala3RunTime$", ({
-  cX: 1
+  cM: 1
 }));
 var $n_sr_Scala3RunTime$;
 function $m_sr_Scala3RunTime$() {
@@ -1614,7 +1590,7 @@ $p.g7 = (function(xs, idx) {
   }
   throw new $c_s_MatchError(xs);
 });
-$p.mO = (function(xs, idx, value) {
+$p.mH = (function(xs, idx, value) {
   if ((xs instanceof $ac_O)) {
     xs.b[idx] = value;
     return (void 0);
@@ -1660,7 +1636,7 @@ $p.mO = (function(xs, idx, value) {
   }
   throw new $c_s_MatchError(xs);
 });
-$p.mA = (function(x) {
+$p.mt = (function(x) {
   return $f_sc_IterableOnceOps__mkString__T__T__T__T(x.C(), (x.A() + "("), ",", ")");
 });
 $p.al = (function(xs) {
@@ -1675,7 +1651,7 @@ $p.al = (function(xs) {
   }
 });
 var $d_sr_ScalaRunTime$ = new $TypeData().i($c_sr_ScalaRunTime$, "scala.runtime.ScalaRunTime$", ({
-  cY: 1
+  cN: 1
 }));
 var $n_sr_ScalaRunTime$;
 function $m_sr_ScalaRunTime$() {
@@ -1693,15 +1669,15 @@ $p.constructor = $c_sr_Statics$;
 function $h_sr_Statics$() {
 }
 $h_sr_Statics$.prototype = $p;
-$p.nT = (function(lv_$_lo, lv_$_hi) {
+$p.nL = (function(lv_$_lo, lv_$_hi) {
   return ((lv_$_hi === (lv_$_lo >> 31)) ? lv_$_lo : (lv_$_lo ^ lv_$_hi));
 });
-$p.nc = (function(dv) {
+$p.n5 = (function(dv) {
   var iv = $doubleToInt(dv);
   if ((iv === dv)) {
     return iv;
   } else {
-    var $x_1 = $m_RTLong$().jr(dv);
+    var $x_1 = $m_RTLong$().jp(dv);
     var lv_$_lo = $x_1.l;
     var lv_$_hi = $x_1.h;
     if ((((4.294967296E9 * lv_$_hi) + (lv_$_lo >>> 0.0)) === dv)) {
@@ -1724,19 +1700,19 @@ $p.X = (function(x) {
   if ((x === null)) {
     return 0;
   } else if (((typeof x) === "number")) {
-    return this.nc((+x));
+    return this.n5((+x));
   } else if ((x instanceof $Long)) {
     var $x_1 = $uJ(x);
-    return this.nT($x_1.l, $x_1.h);
+    return this.nL($x_1.l, $x_1.h);
   } else {
     return $dp_hashCode__I(x);
   }
 });
-$p.nL = (function(n) {
+$p.nE = (function(n) {
   throw new $c_jl_IndexOutOfBoundsException(("" + n));
 });
 var $d_sr_Statics$ = new $TypeData().i($c_sr_Statics$, "scala.runtime.Statics$", ({
-  d0: 1
+  cP: 1
 }));
 var $n_sr_Statics$;
 function $m_sr_Statics$() {
@@ -1941,7 +1917,7 @@ $p.constructor = $c_sr_Tuples$;
 function $h_sr_Tuples$() {
 }
 $h_sr_Tuples$.prototype = $p;
-$p.nu = (function(xs) {
+$p.nn = (function(xs) {
   switch (xs.b.length) {
     case 0: {
       return $m_T$package$EmptyTuple$();
@@ -2040,18 +2016,18 @@ $p.nu = (function(xs) {
     }
   }
 });
-$p.nv = (function(xs) {
-  return ((xs.b.length <= 22) ? this.nu(xs) : new $c_sr_TupleXXL(xs));
+$p.no = (function(xs) {
+  return ((xs.b.length <= 22) ? this.nn(xs) : new $c_sr_TupleXXL(xs));
 });
-$p.lH = (function(x, self) {
+$p.lC = (function(x, self) {
   return ((self instanceof $c_sr_TupleXXL) ? $p_sr_Tuples$__xxlCons__O__sr_TupleXXL__sr_TupleXXL(this, x, self) : $p_sr_Tuples$__specialCaseCons__O__s_Product__s_Product(this, x, self));
 });
-$p.n1 = (function(self, that) {
-  var selfSize = $m_sr_Tuples$().mh(self);
+$p.mU = (function(self, that) {
+  var selfSize = $m_sr_Tuples$().mb(self);
   if ((selfSize === 0)) {
     return that;
   }
-  var thatSize = $m_sr_Tuples$().mh(that);
+  var thatSize = $m_sr_Tuples$().mb(that);
   if ((thatSize === 0)) {
     return self;
   }
@@ -2060,17 +2036,17 @@ $p.n1 = (function(self, that) {
     var src = self.W;
     src.av(0, arr, 0, selfSize);
   } else {
-    self.C().lI(arr, 0, selfSize);
+    self.C().lD(arr, 0, selfSize);
   }
   if ((that instanceof $c_sr_TupleXXL)) {
     var src$1 = that.W;
     src$1.av(0, arr, selfSize, thatSize);
   } else {
-    that.C().lI(arr, selfSize, thatSize);
+    that.C().lD(arr, selfSize, thatSize);
   }
-  return this.nv(arr);
+  return this.no(arr);
 });
-$p.mh = (function(self) {
+$p.mb = (function(self) {
   if (($m_T$package$EmptyTuple$() === self)) {
     return 0;
   }
@@ -2079,11 +2055,11 @@ $p.mh = (function(self) {
   }
   throw new $c_s_MatchError(self);
 });
-$p.p3 = (function(self) {
+$p.oT = (function(self) {
   return ((self instanceof $c_sr_TupleXXL) ? $p_sr_Tuples$__xxlTail__sr_TupleXXL__s_Product(this, self) : $p_sr_Tuples$__specialCaseTail__s_Product__s_Product(this, self));
 });
 var $d_sr_Tuples$ = new $TypeData().i($c_sr_Tuples$, "scala.runtime.Tuples$", ({
-  d1: 1
+  cQ: 1
 }));
 var $n_sr_Tuples$;
 function $m_sr_Tuples$() {
@@ -2093,7 +2069,7 @@ function $m_sr_Tuples$() {
   return $n_sr_Tuples$;
 }
 var $d_sjs_js_Any = new $TypeData().i(2, "scala.scalajs.js.Any", ({
-  aK: 1
+  aF: 1
 }), $noIsInstance);
 /** @constructor */
 function $c_sjs_js_Any$ObjectCompanionOps$() {
@@ -2104,11 +2080,11 @@ $p.constructor = $c_sjs_js_Any$ObjectCompanionOps$;
 function $h_sjs_js_Any$ObjectCompanionOps$() {
 }
 $h_sjs_js_Any$ObjectCompanionOps$.prototype = $p;
-$p.nF = (function(this$, o, p) {
+$p.ny = (function(this$, o, p) {
   return (!(!(p in o)));
 });
 var $d_sjs_js_Any$ObjectCompanionOps$ = new $TypeData().i($c_sjs_js_Any$ObjectCompanionOps$, "scala.scalajs.js.Any$ObjectCompanionOps$", ({
-  d3: 1
+  cS: 1
 }));
 var $n_sjs_js_Any$ObjectCompanionOps$;
 function $m_sjs_js_Any$ObjectCompanionOps$() {
@@ -2126,7 +2102,7 @@ $p.constructor = $c_sjs_js_ArrayOps$;
 function $h_sjs_js_ArrayOps$() {
 }
 $h_sjs_js_ArrayOps$.prototype = $p;
-$p.lP = (function(this$, elem, from) {
+$p.lJ = (function(this$, elem, from) {
   var len = (this$.length | 0);
   var i = from;
   while ((i < len)) {
@@ -2137,7 +2113,7 @@ $p.lP = (function(this$, elem, from) {
   }
   return (-1);
 });
-$p.mm = (function(this$, that) {
+$p.mg = (function(this$, that) {
   var b = [];
   var len = (this$.length | 0);
   var i = 0;
@@ -2148,7 +2124,7 @@ $p.mm = (function(this$, that) {
   }
   return b;
 });
-$p.mn = (function(this$) {
+$p.mh = (function(this$) {
   var len = (this$.length | 0);
   var b = new Array(len);
   var i = 0;
@@ -2167,7 +2143,7 @@ $p.G = (function(this$, f) {
   }
 });
 var $d_sjs_js_ArrayOps$ = new $TypeData().i($c_sjs_js_ArrayOps$, "scala.scalajs.js.ArrayOps$", ({
-  d4: 1
+  cT: 1
 }));
 var $n_sjs_js_ArrayOps$;
 function $m_sjs_js_ArrayOps$() {
@@ -2210,7 +2186,7 @@ $p.a = (function(left, right) {
   return result;
 });
 var $d_sjs_js_ArrayOpsCommon$ = new $TypeData().i($c_sjs_js_ArrayOpsCommon$, "scala.scalajs.js.ArrayOpsCommon$", ({
-  d5: 1
+  cU: 1
 }));
 var $n_sjs_js_ArrayOpsCommon$;
 function $m_sjs_js_ArrayOpsCommon$() {
@@ -2221,9 +2197,9 @@ function $m_sjs_js_ArrayOpsCommon$() {
 }
 /** @constructor */
 function $c_sjs_js_WrappedDictionary$Cache$() {
-  this.k9 = null;
+  this.k4 = null;
   $n_sjs_js_WrappedDictionary$Cache$ = this;
-  this.k9 = Object.prototype.hasOwnProperty;
+  this.k4 = Object.prototype.hasOwnProperty;
 }
 $p = $c_sjs_js_WrappedDictionary$Cache$.prototype = new $h_O();
 $p.constructor = $c_sjs_js_WrappedDictionary$Cache$;
@@ -2232,7 +2208,7 @@ function $h_sjs_js_WrappedDictionary$Cache$() {
 }
 $h_sjs_js_WrappedDictionary$Cache$.prototype = $p;
 var $d_sjs_js_WrappedDictionary$Cache$ = new $TypeData().i($c_sjs_js_WrappedDictionary$Cache$, "scala.scalajs.js.WrappedDictionary$Cache$", ({
-  da: 1
+  cZ: 1
 }));
 var $n_sjs_js_WrappedDictionary$Cache$;
 function $m_sjs_js_WrappedDictionary$Cache$() {
@@ -2252,13 +2228,13 @@ function $h_sjs_js_special_package$() {
 $h_sjs_js_special_package$.prototype = $p;
 $p.e = (function(properties) {
   var result = ({});
-  properties.gM(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((pair$2$2) => {
+  properties.gL(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((pair$2$2) => {
     result[pair$2$2.E] = pair$2$2.af;
   })));
   return result;
 });
 var $d_sjs_js_special_package$ = new $TypeData().i($c_sjs_js_special_package$, "scala.scalajs.js.special.package$", ({
-  db: 1
+  d0: 1
 }));
 var $n_sjs_js_special_package$;
 function $m_sjs_js_special_package$() {
@@ -2278,15 +2254,15 @@ function $h_sjsr_Compat$() {
 $h_sjsr_Compat$.prototype = $p;
 $p.ak = (function(seq) {
   if ((seq instanceof $c_sjsr_WrappedVarArgs)) {
-    return seq.hg;
+    return seq.hf;
   } else {
     var result = [];
-    seq.gM(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((x$2$2) => (result.push(x$2$2) | 0))));
+    seq.gL(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((x$2$2) => (result.push(x$2$2) | 0))));
     return result;
   }
 });
 var $d_sjsr_Compat$ = new $TypeData().i($c_sjsr_Compat$, "scala.scalajs.runtime.Compat$", ({
-  dc: 1
+  d1: 1
 }));
 var $n_sjsr_Compat$;
 function $m_sjsr_Compat$() {
@@ -2316,7 +2292,7 @@ $p.d = (function(array) {
   return result;
 });
 var $d_sjsr_package$ = new $TypeData().i($c_sjsr_package$, "scala.scalajs.runtime.package$", ({
-  dd: 1
+  d2: 1
 }));
 var $n_sjsr_package$;
 function $m_sjsr_package$() {
@@ -2325,47 +2301,6 @@ function $m_sjsr_package$() {
   }
   return $n_sjsr_package$;
 }
-/** @constructor */
-function $c_s_util_CommandLineParser$() {
-}
-$p = $c_s_util_CommandLineParser$.prototype = new $h_O();
-$p.constructor = $c_s_util_CommandLineParser$;
-/** @constructor */
-function $h_s_util_CommandLineParser$() {
-}
-$h_s_util_CommandLineParser$.prototype = $p;
-$p.oY = (function(err) {
-  var where = ((err.lO() === 0) ? "" : ((err.lO() === 1) ? " after first argument" : ((" after " + err.lO()) + " arguments")));
-  var x = ((("Illegal command line" + where) + ": ") + err.ps());
-  $m_s_Console$().oB().nO((x + "\n"));
-});
-var $d_s_util_CommandLineParser$ = new $TypeData().i($c_s_util_CommandLineParser$, "scala.util.CommandLineParser$", ({
-  de: 1
-}));
-var $n_s_util_CommandLineParser$;
-function $m_s_util_CommandLineParser$() {
-  if ((!$n_s_util_CommandLineParser$)) {
-    $n_s_util_CommandLineParser$ = new $c_s_util_CommandLineParser$();
-  }
-  return $n_s_util_CommandLineParser$;
-}
-/** @constructor */
-function $c_s_util_DynamicVariable(init) {
-  this.id = null;
-  this.id = init;
-}
-$p = $c_s_util_DynamicVariable.prototype = new $h_O();
-$p.constructor = $c_s_util_DynamicVariable;
-/** @constructor */
-function $h_s_util_DynamicVariable() {
-}
-$h_s_util_DynamicVariable.prototype = $p;
-$p.m = (function() {
-  return (("DynamicVariable(" + this.id) + ")");
-});
-var $d_s_util_DynamicVariable = new $TypeData().i($c_s_util_DynamicVariable, "scala.util.DynamicVariable", ({
-  dg: 1
-}));
 /** @constructor */
 function $c_s_util_hashing_MurmurHash3() {
 }
@@ -2376,12 +2311,12 @@ function $h_s_util_hashing_MurmurHash3() {
 }
 $h_s_util_hashing_MurmurHash3.prototype = $p;
 $p.z = (function(hash, data) {
-  var h = this.m7(hash, data);
+  var h = this.m1(hash, data);
   var i = h;
   h = ((i << 13) | ((i >>> 19) | 0));
   return ((Math.imul(5, h) - 430675100) | 0);
 });
-$p.m7 = (function(hash, data) {
+$p.m1 = (function(hash, data) {
   var k = data;
   k = Math.imul((-862048943), k);
   var i = k;
@@ -2390,9 +2325,9 @@ $p.m7 = (function(hash, data) {
   return (hash ^ k);
 });
 $p.at = (function(hash, length) {
-  return this.ha((hash ^ length));
+  return this.h9((hash ^ length));
 });
-$p.ha = (function(hash) {
+$p.h9 = (function(hash) {
   var h = hash;
   h = (h ^ ((h >>> 16) | 0));
   h = Math.imul((-2048144789), h);
@@ -2418,7 +2353,7 @@ $p.N = (function(x, seed, ignorePrefix) {
     return this.at(h, arr);
   }
 });
-$p.mY = (function(x, seed, caseClassName) {
+$p.mR = (function(x, seed, caseClassName) {
   var arr = x.v();
   var aye = $f_T__hashCode__I(((caseClassName !== null) ? caseClassName : x.A()));
   if ((arr === 0)) {
@@ -2434,7 +2369,7 @@ $p.mY = (function(x, seed, caseClassName) {
     return this.at(h, arr);
   }
 });
-$p.pa = (function(xs, seed) {
+$p.p0 = (function(xs, seed) {
   var a = 0;
   var b = 0;
   var n = 0;
@@ -2451,10 +2386,10 @@ $p.pa = (function(xs, seed) {
   var h$2 = seed;
   h$2 = this.z(h$2, a);
   h$2 = this.z(h$2, b);
-  h$2 = this.m7(h$2, c);
+  h$2 = this.m1(h$2, c);
   return this.at(h$2, n);
 });
-$p.oA = (function(xs, seed) {
+$p.os = (function(xs, seed) {
   var it = xs.a0();
   var h = seed;
   if ((!it.J())) {
@@ -2486,11 +2421,11 @@ $p.oA = (function(xs, seed) {
     prev = hash;
     i = ((1 + i) | 0);
   }
-  return this.ha(this.z(this.z(h0, rangeDiff), prev));
+  return this.h9(this.z(this.z(h0, rangeDiff), prev));
 });
-$p.lD = (function(a, seed) {
+$p.ly = (function(a, seed) {
   var h = seed;
-  var l = $m_jl_reflect_Array$().gO(a);
+  var l = $m_jl_reflect_Array$().gN(a);
   switch (l) {
     case 0: {
       return this.at(h, 0);
@@ -2522,14 +2457,14 @@ $p.lD = (function(a, seed) {
         prev = hash;
         i = ((1 + i) | 0);
       }
-      return this.ha(this.z(this.z(h0, rangeDiff), prev));
+      return this.h9(this.z(this.z(h0, rangeDiff), prev));
     }
   }
 });
-$p.oI = (function(start, step, last, seed) {
-  return this.ha(this.z(this.z(this.z(seed, start), step), last));
+$p.oz = (function(start, step, last, seed) {
+  return this.h9(this.z(this.z(this.z(seed, start), step), last));
 });
-$p.nH = (function(a, seed) {
+$p.nA = (function(a, seed) {
   var h = seed;
   var l = a.K();
   switch (l) {
@@ -2563,11 +2498,11 @@ $p.nH = (function(a, seed) {
         prev = hash;
         i = ((1 + i) | 0);
       }
-      return this.ha(this.z(this.z(h0, rangeDiff), prev));
+      return this.h9(this.z(this.z(h0, rangeDiff), prev));
     }
   }
 });
-$p.nR = (function(xs, seed) {
+$p.nJ = (function(xs, seed) {
   var n = 0;
   var h = seed;
   var rangeState = 0;
@@ -2576,19 +2511,19 @@ $p.nR = (function(xs, seed) {
   var initial = 0;
   var elems = xs;
   while ((!elems.Z())) {
-    elems.i1();
+    elems.i0();
   }
-  return ((rangeState === 2) ? this.oI(initial, rangeDiff, prev, seed) : this.at(h, n));
+  return ((rangeState === 2) ? this.oz(initial, rangeDiff, prev, seed) : this.at(h, n));
 });
 function $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2($thiz, c, u, v) {
   return new $c_T2(c, new $c_Ltrivalibs_graphics_math_cpu_Vec2(u, v));
 }
 function $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form($thiz, p$1, faces) {
-  var mesh$proxy1 = $m_Ltrivalibs_graphics_geometry_Mesh$().mI(faces, null, 0, new $c_Ltrivalibs_graphics_geometry_package$package$$anon$1(0));
+  var mesh$proxy1 = $m_Ltrivalibs_graphics_geometry_Mesh$().mB(faces, null, 0, new $c_Ltrivalibs_graphics_geometry_package$package$$anon$1(0));
   var vl = new $c_Ltrivalibs_graphics_geometry_VertexLayout$named(new $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons($m_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$(), new $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons($m_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$(), $m_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$())));
   var f = ((v$3, n$3, ref$3) => {
     var nVal = new $c_T3(n$3.s, n$3.t, n$3.u);
-    var values$proxy1 = $m_sr_Tuples$().n1(vl.ks.ga(v$3), $m_sr_Tuples$().lH(nVal, $m_T$package$EmptyTuple$()));
+    var values$proxy1 = $m_sr_Tuples$().mU(vl.kn.ga(v$3), $m_sr_Tuples$().lC(nVal, $m_T$package$EmptyTuple$()));
     var baseOffset$proxy1 = (ref$3.off | 0);
     var nestedValues = values$proxy1.o(0);
     var value = nestedValues.o(0);
@@ -2618,7 +2553,7 @@ function $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_pain
     ref$3.dv.setFloat32(tailOffset$9, Math.fround(value$8), true);
   });
   var \u03b4proxy2 = $m_Ltrivalibs_graphics_geometry_buffers$package$();
-  mesh$proxy1.ne();
+  mesh$proxy1.n7();
   var vertexCount = 0;
   var hasQuads = false;
   var fi = 0;
@@ -2638,7 +2573,7 @@ function $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_pain
     fi = 0;
     while ((fi < (mesh$proxy1.an.length | 0))) {
       var arr = mesh$proxy1.an[fi];
-      var opt$proxy1 = mesh$proxy1.fN[fi].gk;
+      var opt$proxy1 = mesh$proxy1.fN[fi].gj;
       var si = 0;
       while ((si < (arr.length | 0))) {
         var x0 = arr[si];
@@ -2659,7 +2594,7 @@ function $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_pain
     while ((fi < (mesh$proxy1.an.length | 0))) {
       var arr$2 = mesh$proxy1.an[fi];
       var n$2 = (arr$2.length | 0);
-      var opt$proxy2 = mesh$proxy1.fN[fi].gk;
+      var opt$proxy2 = mesh$proxy1.fN[fi].gj;
       var si$2 = 0;
       while ((si$2 < n$2)) {
         var x0$1 = arr$2[si$2];
@@ -2679,19 +2614,19 @@ function $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_pain
       base = ((base + n$2) | 0);
       fi = ((1 + fi) | 0);
     }
-    var $x_1 = new $c_Ltrivalibs_graphics_geometry_BufferedGeometry(verts, \u03b4proxy2.oq(idxBuf, vertexCount));
+    var $x_1 = new $c_Ltrivalibs_graphics_geometry_BufferedGeometry(verts, \u03b4proxy2.oi(idxBuf, vertexCount));
   }
-  return p$1.nr($x_1, (void 0), (void 0), (void 0), (void 0), (void 0));
+  return p$1.nk($x_1, (void 0), (void 0), (void 0), (void 0), (void 0));
 }
 function $p_Lsketches_rooms_base_Base$package$__roomNoise$1__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr($thiz, wp, normal) {
-  var scaledWp = $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().bp(wp), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.2)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.3), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().jI(wp), 0.8), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.2)));
-  return $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().ou($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.68), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().np($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().jg($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Lsketchlib_shaders_Noise$().lM($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jh(scaledWp, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), 0.15), 3, 3.6, 0.12, $m_Ltrivalibs_graphics_math_gpu_vec3$().jl(140.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Lsketchlib_shaders_Noise$().lM($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jh($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().n2(scaledWp, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), normal), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), 0.2), 3, 2.1, 0.25, $m_Ltrivalibs_graphics_math_gpu_vec3$().jl(70.0)), 0.3)), 1.3)));
+  var scaledWp = $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().bp(wp), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.2)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.3), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().jG(wp), 0.8), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp), 0.2)));
+  return $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().om($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.68), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().ni($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().je($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Lsketchlib_shaders_Noise$().lH($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jf(scaledWp, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), 0.15), 3, 3.6, 0.12, $m_Ltrivalibs_graphics_math_gpu_vec3$().jj(140.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Lsketchlib_shaders_Noise$().lH($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jf($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().mV(scaledWp, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), normal), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), 0.2), 3, 2.1, 0.25, $m_Ltrivalibs_graphics_math_gpu_vec3$().jj(70.0)), 0.3)), 1.3)));
 }
 function $p_Lsketches_rooms_base_Base$package$__texSize$1__D__D__T2($thiz, w, h) {
-  return new $c_T2($doubleToInt((w * $m_Lsketches_rooms_base_Base$package$().ie)), $doubleToInt((h * $m_Lsketches_rooms_base_Base$package$().ie)));
+  return new $c_T2($doubleToInt((w * $m_Lsketches_rooms_base_Base$package$().ic)), $doubleToInt((h * $m_Lsketches_rooms_base_Base$package$().ic)));
 }
 function $p_Lsketches_rooms_base_Base$package$__wallShape$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_GPUSampler__Ltrivalibs_graphics_painter_Form__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shape($thiz, p$2, wallShade$1, texSampler$1, form, tex) {
-  var Bindable_this = p$2.jx(form, wallShade$1, "none", (void 0));
+  var Bindable_this = p$2.jv(form, wallShade$1, "none", (void 0));
   var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", texSampler$1);
   var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", tex);
   var \u03b4scrutinee331 = e1$proxy1.x;
@@ -2714,13 +2649,13 @@ function $c_Lsketches_rooms_base_Base$package$() {
   this.fL = 0.0;
   this.be = 0.0;
   this.f5 = 0.0;
-  this.ie = 0.0;
+  this.ic = 0.0;
   $n_Lsketches_rooms_base_Base$package$ = this;
   this.aS = 6.5;
   this.fL = 5.5;
   this.be = 10.0;
   this.f5 = ((2.0 * $m_Lsketches_rooms_base_Base$package$().be) + (2.0 * $m_Lsketches_rooms_base_Base$package$().aS));
-  this.ie = 164.0;
+  this.ic = 164.0;
 }
 $p = $c_Lsketches_rooms_base_Base$package$.prototype = new $h_O();
 $p.constructor = $c_Lsketches_rooms_base_Base$package$;
@@ -2728,21 +2663,21 @@ $p.constructor = $c_Lsketches_rooms_base_Base$package$;
 function $h_Lsketches_rooms_base_Base$package$() {
 }
 $h_Lsketches_rooms_base_Base$package$.prototype = $p;
-$p.oS = (function() {
-  $m_Ltrivalibs_graphics_painter_Painter$().nI(document.getElementById("canvas"), new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((p$5) => {
-    var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().mG(0.9, 1.0, 0.1, 100.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.7, 0.0));
-    $m_Ltrivalibs_dev_devPreserve$().mN(cam, "camera");
-    var box = $m_Ltrivalibs_graphics_geometry_Box$().mJ(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, (0.5 * $m_Lsketches_rooms_base_Base$package$().fL), 0.0), $m_Lsketches_rooms_base_Base$package$().aS, $m_Lsketches_rooms_base_Base$package$().fL, $m_Lsketches_rooms_base_Base$package$().be);
-    var floorForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.mV(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2, uvw$2) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2, uvw$2.s, uvw$2.u))))]);
-    var ceilForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.p7(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$1, uvw$2$1) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$1, uvw$2$1.s, uvw$2$1.u))))]);
-    var wallForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.nz(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$2, uvw$2$2) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$2, ((uvw$2$2.s * $m_Lsketches_rooms_base_Base$package$().aS) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$2.t)))), box.oR(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$3, uvw$2$3) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$3, (($m_Lsketches_rooms_base_Base$package$().aS + (uvw$2$3.u * $m_Lsketches_rooms_base_Base$package$().be)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$3.t)))), box.mR(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$4, uvw$2$4) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$4, ((($m_Lsketches_rooms_base_Base$package$().aS + $m_Lsketches_rooms_base_Base$package$().be) + ((1.0 - uvw$2$4.s) * $m_Lsketches_rooms_base_Base$package$().aS)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$4.t)))), box.nQ(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$5, uvw$2$5) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$5, (((($m_Lsketches_rooms_base_Base$package$().aS + $m_Lsketches_rooms_base_Base$package$().be) + $m_Lsketches_rooms_base_Base$package$().aS) + ((1.0 - uvw$2$5.u) * $m_Lsketches_rooms_base_Base$package$().be)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$5.t))))]);
+$p.oJ = (function(canvas) {
+  $m_Ltrivalibs_graphics_painter_Painter$().nB(canvas, new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((p$5) => {
+    var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().mz(0.9, 1.0, 0.1, 100.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.7, 0.0));
+    $m_Ltrivalibs_dev_devPreserve$().mG(cam, "camera");
+    var box = $m_Ltrivalibs_graphics_geometry_Box$().mC(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, (0.5 * $m_Lsketches_rooms_base_Base$package$().fL), 0.0), $m_Lsketches_rooms_base_Base$package$().aS, $m_Lsketches_rooms_base_Base$package$().fL, $m_Lsketches_rooms_base_Base$package$().be);
+    var floorForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.mO(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2, uvw$2) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2, uvw$2.s, uvw$2.u))))]);
+    var ceilForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.oX(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$1, uvw$2$1) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$1, uvw$2$1.s, uvw$2$1.u))))]);
+    var wallForm = $p_Lsketches_rooms_base_Base$package$__form$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$5, [box.ns(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$2, uvw$2$2) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$2, ((uvw$2$2.s * $m_Lsketches_rooms_base_Base$package$().aS) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$2.t)))), box.oI(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$3, uvw$2$3) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$3, (($m_Lsketches_rooms_base_Base$package$().aS + (uvw$2$3.u * $m_Lsketches_rooms_base_Base$package$().be)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$3.t)))), box.mK(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$4, uvw$2$4) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$4, ((($m_Lsketches_rooms_base_Base$package$().aS + $m_Lsketches_rooms_base_Base$package$().be) + ((1.0 - uvw$2$4.s) * $m_Lsketches_rooms_base_Base$package$().aS)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$4.t)))), box.nI(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((c$2$5, uvw$2$5) => $p_Lsketches_rooms_base_Base$package$__vert$1__Ltrivalibs_graphics_math_cpu_Vec3__D__D__T2(this, c$2$5, (((($m_Lsketches_rooms_base_Base$package$().aS + $m_Lsketches_rooms_base_Base$package$().be) + $m_Lsketches_rooms_base_Base$package$().aS) + ((1.0 - uvw$2$5.u) * $m_Lsketches_rooms_base_Base$package$().be)) / $m_Lsketches_rooms_base_Base$package$().f5), uvw$2$5.t))))]);
     var frag$proxy1 = new $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825(((wp$2, normal$2, uv$2) => $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.8), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.78), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.75)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $p_Lsketches_rooms_base_Base$package$__roomNoise$1__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr(this, wp$2, normal$2)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0))));
     var build$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3) => {
       $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_shader_dsl_Program__V($m_Lsketchlib_utils_bake_TextureBaker$(), program$3);
       var body$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2) => {
         var $x_1 = $m_sjsr_package$();
         var AssignTarget_this = ctx$2.ar.a1("color");
-        var value$proxy1 = frag$proxy1.lC(ctx$2.a6.k("worldPos"), ctx$2.a6.k("normal"), ctx$2.a6.k("uv"));
+        var value$proxy1 = frag$proxy1.lx(ctx$2.a6.k("worldPos"), ctx$2.a6.k("normal"), ctx$2.a6.k("uv"));
         return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_1.d(new ($d_T.r().C)([(((("  " + AssignTarget_this.U) + " = ") + value$proxy1.f) + ";")]))), "", "\n", "");
       }));
       var d = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -2815,17 +2750,17 @@ $p.oS = (function() {
       var g = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "g");
       var gridLine = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "gridLine");
       var $x_7 = $m_sjsr_package$();
-      var $x_6 = col.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ov($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.96), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.96), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.95)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.86), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.86), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.85)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp$2$1), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(4.9), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(5.5))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $p_Lsketches_rooms_base_Base$package$__roomNoise$1__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr(this, wp$2$1, normal$2$1)));
-      var $x_5 = g.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().mw($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().ns($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().ma(uv$2$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g((2.0 * $m_Lsketches_rooms_base_Base$package$().f5)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g((2.0 * $m_Lsketches_rooms_base_Base$package$().fL)))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$()), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), 0.5));
-      var $x_4 = gridLine.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().m6($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().ji($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(g)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().ji($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(g))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.45)));
+      var $x_6 = col.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().on($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.96), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.96), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.95)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.86), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.86), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.85)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i6($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().aD(wp$2$1), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(4.9), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(5.5))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $p_Lsketches_rooms_base_Base$package$__roomNoise$1__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr(this, wp$2$1, normal$2$1)));
+      var $x_5 = g.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().mp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().nl($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().m4(uv$2$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g((2.0 * $m_Lsketches_rooms_base_Base$package$().f5)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g((2.0 * $m_Lsketches_rooms_base_Base$package$().fL)))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$()), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), 0.5));
+      var $x_4 = gridLine.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nx($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().m0($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().jg($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(g)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().jg($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(g))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.45)));
       var e$proxy1 = $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(0.23)) + " * ") + gridLine.f) + ")"));
-      var $x_3 = col.lB($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy1.f) + ")")));
+      var $x_3 = col.lw($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy1.f) + ")")));
       var value$proxy2 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(col, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_7.d(new ($d_T.r().C)([$x_6, $x_5, $x_4, $x_3, (((("  " + color$2.U) + " = ") + value$proxy2.f) + ";")]))), "", "\n", "");
     }));
     var build$proxy2 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$1) => {
       $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_shader_dsl_Program__V($m_Lsketchlib_utils_bake_TextureBaker$(), program$3$1);
-      var body$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$1) => frag$proxy2.jm(ctx$2$1.a6.k("worldPos"), ctx$2$1.a6.k("normal"), ctx$2$1.a6.k("uv"), ctx$2$1.ar.a1("color"))));
+      var body$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$1) => frag$proxy2.jk(ctx$2$1.a6.k("worldPos"), ctx$2$1.a6.k("normal"), ctx$2$1.a6.k("uv"), ctx$2$1.ar.a1("color"))));
       var d$1 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
       var ctx$1 = new $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(d$1), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
       var reg$1 = new $c_Ltrivalibs_graphics_shader_dsl_FnRegistry();
@@ -2899,22 +2834,22 @@ $p.oS = (function() {
       var halo = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "halo");
       var $x_19 = $m_sjsr_package$();
       var $x_18 = col$1.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.85), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.85), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.84)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $p_Lsketches_rooms_base_Base$package$__roomNoise$1__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr__Ltrivalibs_graphics_math_gpu_Expr(this, wp$2$2, normal$2$2)));
-      var $x_17 = s$2.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nt($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().my($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(uv$2$2), 6.0), 0.5)));
-      var $x_16 = band.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().ji(s$2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.02)));
+      var $x_17 = s$2.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nm($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().mr($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(uv$2$2), 6.0), 0.5)));
+      var $x_16 = band.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i6($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().jg(s$2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.02)));
       var $x_15 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$();
-      var $x_14 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(uv$2$2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.15));
+      var $x_14 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().i6($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(uv$2$2), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.15));
       var $x_13 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$();
       var e$proxy2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(uv$2$2);
-      var $x_12 = lf.B($x_15.g5($x_14, $x_13.i7($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy2.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.15))));
-      var $x_11 = band.lB(lf);
-      var $x_10 = halo.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().nl(band, $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(8.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(7.6), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(6.8))));
-      var $x_9 = col$1.mz(halo);
+      var $x_12 = lf.B($x_15.g5($x_14, $x_13.i6($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy2.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.05), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.15))));
+      var $x_11 = band.lw(lf);
+      var $x_10 = halo.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ne(band, $m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(8.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(7.6), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(6.8))));
+      var $x_9 = col$1.ms(halo);
       var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(col$1, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_19.d(new ($d_T.r().C)([$x_18, $x_17, $x_16, $x_12, $x_11, $x_10, $x_9, (((("  " + color$2$1.U) + " = ") + value$proxy3.f) + ";")]))), "", "\n", "");
     }));
     var build$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$2) => {
       $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_shader_dsl_Program__V($m_Lsketchlib_utils_bake_TextureBaker$(), program$3$2);
-      var body$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$2) => frag$proxy3.jm(ctx$2$2.a6.k("worldPos"), ctx$2$2.a6.k("normal"), ctx$2$2.a6.k("uv"), ctx$2$2.ar.a1("color"))));
+      var body$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$2) => frag$proxy3.jk(ctx$2$2.a6.k("worldPos"), ctx$2$2.a6.k("normal"), ctx$2$2.a6.k("uv"), ctx$2$2.ar.a1("color"))));
       var d$2 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
       var ctx$3 = new $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(d$2), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
       var reg$2 = new $c_Ltrivalibs_graphics_shader_dsl_FnRegistry();
@@ -2991,8 +2926,8 @@ $p.oS = (function() {
     }
     var w$2 = (\u03b42$$4.E | 0);
     var h$2 = (\u03b42$$4.af | 0);
-    var floorTex = $m_Lsketchlib_utils_bake_Bake$package$().jn(floorBaker, floorForm, w$2, h$2, (void 0), (void 0), true, (void 0));
-    var ceilTex = $m_Lsketchlib_utils_bake_Bake$package$().jn(ceilBaker, ceilForm, w$2, h$2, (void 0), "rgba16float", true, (void 0));
+    var floorTex = $m_Lsketchlib_utils_bake_Bake$package$().jl(floorBaker, floorForm, w$2, h$2, (void 0), (void 0), true, (void 0));
+    var ceilTex = $m_Lsketchlib_utils_bake_Bake$package$().jl(ceilBaker, ceilForm, w$2, h$2, (void 0), "rgba16float", true, (void 0));
     matchResult5$1: {
       var \u03b44$;
       var x13 = $p_Lsketches_rooms_base_Base$package$__texSize$1__D__D__T2(this, $m_Lsketches_rooms_base_Base$package$().f5, $m_Lsketches_rooms_base_Base$package$().fL);
@@ -3004,8 +2939,8 @@ $p.oS = (function() {
     }
     var ww$2 = (\u03b44$.E | 0);
     var wh$2 = (\u03b44$.af | 0);
-    var wallTex = $m_Lsketchlib_utils_bake_Bake$package$().jn(wallBaker, wallForm, ww$2, wh$2, (void 0), (void 0), true, (void 0));
-    var texSampler = p$5.me("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
+    var wallTex = $m_Lsketchlib_utils_bake_Bake$package$().jl(wallBaker, wallForm, ww$2, wh$2, (void 0), (void 0), true, (void 0));
+    var texSampler = p$5.m8("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
     var build$proxy4 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$4) => {
       var body$proxy7 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$3) => {
         var $x_23 = $m_sjsr_package$();
@@ -3013,8 +2948,8 @@ $p.oS = (function() {
         var value$proxy4 = ctx$2$3.bj.k("uv");
         var $x_22 = AssignTarget_this$1.U;
         var $x_21 = value$proxy4.f;
-        var AssignTarget_this$2 = ctx$2$3.b4.hP;
-        var value$proxy5 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hd(ctx$2$3.j3.k("vp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gP(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx$2$3.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$());
+        var AssignTarget_this$2 = ctx$2$3.b4.hO;
+        var value$proxy5 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hc(ctx$2$3.j1.k("vp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gO(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx$2$3.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$());
         return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_23.d(new ($d_T.r().C)([(((("  " + $x_22) + " = ") + $x_21) + ";"), (((("  " + AssignTarget_this$2.U) + " = ") + value$proxy5.f) + ";")]))), "", "\n", "");
       }));
       var d$3 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3032,7 +2967,7 @@ $p.oS = (function() {
         $p_Ltrivalibs_graphics_shader_dsl_Program__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V(Program_this$11, data$3$3);
       }))(program$3$4)));
       var body$proxy9 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$4) => {
-        var $x_25 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().i0();
+        var $x_25 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().hZ();
         var AssignTarget_this$3 = ctx$2$4.ar.a1("color");
         var value$proxy6 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().as($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "tex"), ctx$2$4.a6.k("uv"), ctx$2$4.I.k("samp"));
         return $x_25.g((((("  " + AssignTarget_this$3.U) + " = ") + value$proxy6.f) + ";"));
@@ -3115,14 +3050,14 @@ $p.oS = (function() {
     var wallShapeW = $p_Lsketches_rooms_base_Base$package$__wallShape$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_GPUSampler__Ltrivalibs_graphics_painter_Form__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shape(this, p$5, wallShade, texSampler, wallForm, wallTex);
     var shapes$1 = [wallShapeW, ceilShape];
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
-    var mirror$1 = $m_Ltrivalibs_graphics_geometry_Plane$().kr;
+    var mirror$1 = $m_Ltrivalibs_graphics_geometry_Plane$().km;
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
     var stretch$1 = 0.0;
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
     var overscan$1 = 3.0;
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
     var clearColor$2 = new $c_Ltrivalibs_graphics_math_cpu_Vec4(0.0, 0.0, 0.0, 0.0);
-    var mirror = $m_Lsketchlib_utils_mirror_MirrorReflection$().mM(p$5, cam, shapes$1, "vp", $m_Lsketches_rooms_base_Base$package$().fL, mirror$1, 10.0, stretch$1, 6, overscan$1, clearColor$2);
+    var mirror = $m_Lsketchlib_utils_mirror_MirrorReflection$().mF(p$5, cam, shapes$1, "vp", $m_Lsketches_rooms_base_Base$package$().fL, mirror$1, 10.0, stretch$1, 6, overscan$1, clearColor$2);
     var build$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$5) => {
       var body$proxy11 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$6) => {
         var $x_29 = $m_sjsr_package$();
@@ -3130,8 +3065,8 @@ $p.oS = (function() {
         var value$proxy7 = ctx$2$6.bj.k("uv");
         var $x_28 = AssignTarget_this$4.U;
         var $x_27 = value$proxy7.f;
-        var AssignTarget_this$2$1 = ctx$2$6.b4.hP;
-        var value$proxy8 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hd(ctx$2$6.j3.k("vp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gP(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx$2$6.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$());
+        var AssignTarget_this$2$1 = ctx$2$6.b4.hO;
+        var value$proxy8 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hc(ctx$2$6.j1.k("vp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gO(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx$2$6.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$());
         return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_29.d(new ($d_T.r().C)([(((("  " + $x_28) + " = ") + $x_27) + ";"), (((("  " + AssignTarget_this$2$1.U) + " = ") + value$proxy8.f) + ";")]))), "", "\n", "");
       }));
       var d$4 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3155,13 +3090,13 @@ $p.oS = (function() {
         var falloff = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "falloff");
         var $x_36 = $m_sjsr_package$();
         var $x_35 = base.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_expr$package$().as($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "tex"), ctx$2$7.a6.k("uv"), ctx$2$7.I.k("samp"))));
-        var $x_34 = refl.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().gQ($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "reflTex"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2$7.g0))));
+        var $x_34 = refl.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().gP($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "reflTex"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2$7.g0))));
         var $x_33 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$();
-        var e$proxy3 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jE(refl);
-        var $x_32 = falloff.B($x_33.m6($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy3.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.1)));
+        var e$proxy3 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jC(refl);
+        var $x_32 = falloff.B($x_33.m0($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy3.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.1)));
         var $x_31 = mix.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().g5(ctx$2$7.I.k("reflStrength"), falloff));
         var AssignTarget_this$5 = ctx$2$7.ar.a1("color");
-        var value$proxy9 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn(base, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + mix.f) + ")"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp(refl), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), mix)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
+        var value$proxy9 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ji($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn(base, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + mix.f) + ")"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp(refl), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), mix)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
         return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_36.d(new ($d_T.r().C)([$x_35, $x_34, $x_32, $x_31, (((("  " + AssignTarget_this$5.U) + " = ") + value$proxy9.f) + ";")]))), "", "\n", "");
       }));
       var d$2$2 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3248,11 +3183,11 @@ $p.oS = (function() {
     var $x_38 = b$10.O;
     var s$proxy2 = b$10.n;
     $x_39.writeBuffer($x_38, 0.0, s$proxy2.dv.buffer);
-    var Bindable_this = p$5.jx(floorForm, floorShade, "front", (void 0));
+    var Bindable_this = p$5.jv(floorForm, floorShade, "front", (void 0));
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", texSampler);
     var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("reflStrength", b$10);
     var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", floorTex);
-    var e4$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("reflTex", mirror.km);
+    var e4$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("reflTex", mirror.kh);
     var \u03b4scrutinee449 = e1$proxy2.x;
     var idx = (Bindable_this.a3.P.samp | 0);
     while (((Bindable_this.a9.length | 0) <= idx)) {
@@ -3282,17 +3217,17 @@ $p.oS = (function() {
     var buffer$2 = new ArrayBuffer(64);
     var arr$proxy7 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
     var sceneVp = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy7.dv, 0), p$5.h, uv$proxy2);
-    var clearColor$3 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().nC().g(new $c_T4(0.5, 0.6, 0.7, 1.0));
+    var clearColor$3 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().nv().g(new $c_T4(0.5, 0.6, 0.7, 1.0));
     var shapes$2 = [Bindable_this, wallShapeW, ceilShape];
     var Panel_this = p$5.fm((void 0), (void 0), clearColor$3, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$2, (void 0), (void 0));
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("vp", sceneVp);
     var \u03b4scrutinee500 = e1$proxy3.x;
-    var dict$proxy1 = Panel_this.gA;
+    var dict$proxy1 = Panel_this.gz;
     dict$proxy1.vp = \u03b4scrutinee500;
-    var bloom = $m_Lsketchlib_utils_bloom_Bloom$().mL(p$5, Panel_this, 0.002, 1.0, 4.0, 5, 1.0, 2.0);
-    var input = $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$().nK(p$5.fT, true, 400.0, 5.0, true, (void 0), 90.0, 50.0);
+    var bloom = $m_Lsketchlib_utils_bloom_Bloom$().mE(p$5, Panel_this, 0.002, 1.0, 4.0, 5, 1.0, 2.0);
+    var input = $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$().nD(p$5.fT, true, 400.0, 5.0, true, (void 0), 90.0, 50.0);
     var controller = new $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController(cam, input, 2.5, 1.0);
-    p$5.oz(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((v1$2, v2$2) => {
+    p$5.or(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((v1$2, v2$2) => {
       var w$1 = (+v1$2);
       var h$1 = (+v2$2);
       var aspect$2 = (w$1 / h$1);
@@ -3302,28 +3237,28 @@ $p.oS = (function() {
       var rotH$2 = cam.aq;
       var rotV$2 = cam.b2;
       var pos$4 = cam.aa;
-      cam.jv(fov$1, aspect$2, near$1, far$1, rotH$2, rotV$2, pos$4);
-      mirror.oP(w$1, h$1);
+      cam.jt(fov$1, aspect$2, near$1, far$1, rotH$2, rotV$2, pos$4);
+      mirror.oG(w$1, h$1);
     })));
-    $m_Ltrivalibs_utils_animation_animate$package$().mF(((p$4) => ((arg1$2) => {
+    $m_Ltrivalibs_utils_animation_animate$package$().my(((p$4) => ((arg1$2) => {
       var tpf = (+arg1$2);
       input.fo(tpf);
       controller.fo(tpf);
-      var vp = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), cam.hO, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), cam.ml());
+      var vp = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), cam.hN, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), cam.mf());
       sceneVp.S.Q(sceneVp.n, vp);
       var $x_41 = sceneVp.R.queue;
       var $x_40 = sceneVp.O;
       var s$proxy3 = sceneVp.n;
       $x_41.writeBuffer($x_40, 0.0, s$proxy3.dv.buffer);
-      mirror.oC(vp);
+      mirror.ot(vp);
       $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(p$4, Panel_this);
-      bloom.oD();
-      p$4.oX(bloom.kf);
+      bloom.ou();
+      p$4.oO(bloom.ka);
     }))(p$5));
   })));
 });
 var $d_Lsketches_rooms_base_Base$package$ = new $TypeData().i($c_Lsketches_rooms_base_Base$package$, "sketches.rooms.base.Base$package$", ({
-  dj: 1
+  d5: 1
 }));
 var $n_Lsketches_rooms_base_Base$package$;
 function $m_Lsketches_rooms_base_Base$package$() {
@@ -3331,17 +3266,6 @@ function $m_Lsketches_rooms_base_Base$package$() {
     $n_Lsketches_rooms_base_Base$package$ = new $c_Lsketches_rooms_base_Base$package$();
   }
   return $n_Lsketches_rooms_base_Base$package$;
-}
-function $s_Lsketches_rooms_base_roomsBase__main__AT__V(args) {
-  try {
-    $m_Lsketches_rooms_base_Base$package$().oS();
-  } catch (e) {
-    if (false) {
-      $m_s_util_CommandLineParser$().oY(e);
-    } else {
-      throw e;
-    }
-  }
 }
 /** @constructor */
 function $c_Lsketchlib_shaders_Noise$() {
@@ -3352,7 +3276,7 @@ $p.constructor = $c_Lsketchlib_shaders_Noise$;
 function $h_Lsketchlib_shaders_Noise$() {
 }
 $h_Lsketchlib_shaders_Noise$.prototype = $p;
-$p.lM = (function(pos, octaves, freqMul, ampMul, seed) {
+$p.lH = (function(pos, octaves, freqMul, ampMul, seed) {
   var acc = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0);
   var freq = 1.0;
   var amp = 1.0;
@@ -3363,19 +3287,19 @@ $p.lM = (function(pos, octaves, freqMul, ampMul, seed) {
     var $x_2 = acc;
     var $x_1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$();
     var WgslFn$_this = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
-    var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_random_Simplex$().j5;
-    var a1$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jh(pos, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), freq), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), seed);
-    $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hc(fn$proxy1);
-    acc = $x_3.fj($x_2, $x_1.ad($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((WgslFn$_this.h7(fn$proxy1) + "(") + a1$proxy1) + ")")), amp));
+    var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_random_Simplex$().j3;
+    var a1$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ji($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jf(pos, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), freq), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), seed);
+    $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hb(fn$proxy1);
+    acc = $x_3.fj($x_2, $x_1.ad($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((WgslFn$_this.h6(fn$proxy1) + "(") + a1$proxy1) + ")")), amp));
     total = (total + amp);
     freq = (freq * freqMul);
     amp = (amp * ampMul);
     i = ((1 + i) | 0);
   }
-  return $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().jg(acc, total);
+  return $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().je(acc, total);
 });
 var $d_Lsketchlib_shaders_Noise$ = new $TypeData().i($c_Lsketchlib_shaders_Noise$, "sketchlib.shaders.Noise$", ({
-  dk: 1
+  d6: 1
 }));
 var $n_Lsketchlib_shaders_Noise$;
 function $m_Lsketchlib_shaders_Noise$() {
@@ -3393,8 +3317,8 @@ $p.constructor = $c_Lsketchlib_utils_bake_Bake$package$;
 function $h_Lsketchlib_utils_bake_Bake$package$() {
 }
 $h_Lsketchlib_utils_bake_Bake$package$.prototype = $p;
-$p.jn = (function(baker, form, width, height, transform, format, mips, clearColor) {
-  var Painter_this = baker.gi;
+$p.jl = (function(baker, form, width, height, transform, format, mips, clearColor) {
+  var Painter_this = baker.gh;
   var value$proxy4 = ((transform === (void 0)) ? new $c_Ltrivalibs_graphics_math_cpu_Mat4(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0) : transform);
   var ul$proxy1 = new $c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT($m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$());
   var uv$proxy1 = ul$proxy1.ay;
@@ -3406,7 +3330,7 @@ $p.jn = (function(baker, form, width, height, transform, format, mips, clearColo
   var $x_1 = b.O;
   var s$proxy1 = b.n;
   $x_2.writeBuffer($x_1, 0.0, s$proxy1.dv.buffer);
-  var Bindable_this = baker.gi.jx(form, baker.kb, "none", (void 0));
+  var Bindable_this = baker.gh.jv(form, baker.k6, "none", (void 0));
   var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("model", b);
   var \u03b4scrutinee5 = e1$proxy1.x;
   var idx = (Bindable_this.a3.P.model | 0);
@@ -3415,12 +3339,12 @@ $p.jn = (function(baker, form, width, height, transform, format, mips, clearColo
   }
   Bindable_this.a9[idx] = \u03b4scrutinee5;
   var format$1 = ((format === (void 0)) ? "rgba8unorm" : format);
-  var panel = baker.gi.fm(width, height, clearColor, (void 0), (void 0), (void 0), mips, format$1, (void 0), Bindable_this, (void 0), (void 0), (void 0));
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(baker.gi, panel);
+  var panel = baker.gh.fm(width, height, clearColor, (void 0), (void 0), (void 0), mips, format$1, (void 0), Bindable_this, (void 0), (void 0), (void 0));
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(baker.gh, panel);
   return panel;
 });
 var $d_Lsketchlib_utils_bake_Bake$package$ = new $TypeData().i($c_Lsketchlib_utils_bake_Bake$package$, "sketchlib.utils.bake.Bake$package$", ({
-  dl: 1
+  d7: 1
 }));
 var $n_Lsketchlib_utils_bake_Bake$package$;
 function $m_Lsketchlib_utils_bake_Bake$package$() {
@@ -3431,10 +3355,10 @@ function $m_Lsketchlib_utils_bake_Bake$package$() {
 }
 /** @constructor */
 function $c_Lsketchlib_utils_bake_TextureBaker(painter, shade) {
-  this.gi = null;
-  this.kb = null;
-  this.gi = painter;
-  this.kb = shade;
+  this.gh = null;
+  this.k6 = null;
+  this.gh = painter;
+  this.k6 = shade;
 }
 $p = $c_Lsketchlib_utils_bake_TextureBaker.prototype = new $h_O();
 $p.constructor = $c_Lsketchlib_utils_bake_TextureBaker;
@@ -3443,7 +3367,7 @@ function $h_Lsketchlib_utils_bake_TextureBaker() {
 }
 $h_Lsketchlib_utils_bake_TextureBaker.prototype = $p;
 var $d_Lsketchlib_utils_bake_TextureBaker = new $TypeData().i($c_Lsketchlib_utils_bake_TextureBaker, "sketchlib.utils.bake.TextureBaker", ({
-  dm: 1
+  d8: 1
 }));
 function $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_shader_dsl_Program__V($thiz, program) {
   var d = ({});
@@ -3454,20 +3378,20 @@ function $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_
   try {
     var uv = ctx.bj.k("uv");
     var AssignTarget_this = ctx.b4.a1("worldPos");
-    var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hd($thiz.ig, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gP(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$()));
+    var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hc($thiz.id, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gO(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx.bj.k("position"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$()));
     var x0 = (((("  " + AssignTarget_this.U) + " = ") + value$proxy1.f) + ";");
     var AssignTarget_this$2 = ctx.b4.a1("normal");
-    var value$proxy2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().oy($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hd($thiz.ig, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gP(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx.bj.k("normal"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$())), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$());
+    var value$proxy2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().oq($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hc($thiz.id, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gO(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ctx.bj.k("normal"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$())), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$());
     var x1 = (((("  " + AssignTarget_this$2.U) + " = ") + value$proxy2.f) + ";");
     var AssignTarget_this$3 = ctx.b4.a1("uv");
     var x2 = (((("  " + AssignTarget_this$3.U) + " = ") + uv.f) + ";");
-    var AssignTarget_this$4 = ctx.b4.hP;
+    var AssignTarget_this$4 = ctx.b4.hO;
     var $x_5 = $m_Ltrivalibs_graphics_math_gpu_vec4$();
     var $x_4 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$();
     var $x_3 = $m_Ltrivalibs_graphics_math_gpu_vec2$();
     var $x_2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(uv);
     var e$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(uv);
-    var value$proxy3 = $x_5.as($x_4.no($x_3.a7($x_2, $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy1.f) + ")"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$()), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
+    var value$proxy3 = $x_5.as($x_4.nh($x_3.a7($x_2, $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy1.f) + ")"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$()), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
     var $x_1 = $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs([x0, x1, x2, (((("  " + AssignTarget_this$4.U) + " = ") + value$proxy3.f) + ";")]), "", "\n", "");
   } finally {
     $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().l = prev;
@@ -3483,9 +3407,9 @@ function $p_Lsketchlib_utils_bake_TextureBaker$__buildVert__Ltrivalibs_graphics_
 }
 /** @constructor */
 function $c_Lsketchlib_utils_bake_TextureBaker$() {
-  this.ig = null;
+  this.id = null;
   $n_Lsketchlib_utils_bake_TextureBaker$ = this;
-  this.ig = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "model");
+  this.id = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "model");
 }
 $p = $c_Lsketchlib_utils_bake_TextureBaker$.prototype = new $h_O();
 $p.constructor = $c_Lsketchlib_utils_bake_TextureBaker$;
@@ -3494,7 +3418,7 @@ function $h_Lsketchlib_utils_bake_TextureBaker$() {
 }
 $h_Lsketchlib_utils_bake_TextureBaker$.prototype = $p;
 var $d_Lsketchlib_utils_bake_TextureBaker$ = new $TypeData().i($c_Lsketchlib_utils_bake_TextureBaker$, "sketchlib.utils.bake.TextureBaker$", ({
-  dn: 1
+  d9: 1
 }));
 var $n_Lsketchlib_utils_bake_TextureBaker$;
 function $m_Lsketchlib_utils_bake_TextureBaker$() {
@@ -3512,7 +3436,7 @@ $p.constructor = $c_Lsketchlib_utils_bloom_Bloom$;
 function $h_Lsketchlib_utils_bloom_Bloom$() {
 }
 $h_Lsketchlib_utils_bloom_Bloom$.prototype = $p;
-$p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKnee, toneWhite) {
+$p.mE = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKnee, toneWhite) {
   if ((mipLevels < 2)) {
     var message$proxy1 = (("bloom mipLevels must be >= 2 (got " + mipLevels) + ")");
     throw new $c_sjs_js_JavaScriptException(Error(message$proxy1)).aG;
@@ -3537,16 +3461,16 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   var $x_3 = b$2.O;
   var s$proxy2 = b$2.n;
   $x_4.writeBuffer($x_3, 0.0, s$proxy2.dv.buffer);
-  var sampler = p.mf();
+  var sampler = p.m9();
   var build$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3) => {
     var body$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2) => {
       var color = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "color");
       var brightness = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "brightness");
       var $x_7 = $m_sjsr_package$();
-      var $x_6 = color.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().gQ($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "scene"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0))));
-      var $x_5 = brightness.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().bp(color), 0.2126), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().aD(color), 0.7152)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jI(color), 0.0722)));
+      var $x_6 = color.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().gP($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "scene"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0))));
+      var $x_5 = brightness.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().fj($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().bp(color), 0.2126), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().aD(color), 0.7152)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jG(color), 0.0722)));
       var AssignTarget_this = ctx$2.ar.a1("color");
-      var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().oT($m_Ltrivalibs_graphics_math_gpu_vec4$().mK($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), color, $m_Ltrivalibs_graphics_math_gpu_expr$package$().nq(brightness, ctx$2.I.k("threshold")));
+      var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().oK($m_Ltrivalibs_graphics_math_gpu_vec4$().mD($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), color, $m_Ltrivalibs_graphics_math_gpu_expr$package$().nj(brightness, ctx$2.I.k("threshold")));
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_7.d(new ($d_T.r().C)([$x_6, $x_5, (((("  " + AssignTarget_this.U) + " = ") + value$proxy1.f) + ";")]))), "", "\n", "");
     }));
     var d = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3613,16 +3537,16 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   var thresholdShade = new $c_Ltrivalibs_graphics_painter_Shade(id, module, null, bgls$2[0], panelBgl, pl, false, dict, dict$2);
   var build$proxy2 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$1) => {
     var body$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$1) => {
-      var $x_9 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().i0();
+      var $x_9 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().hZ();
       var AssignTarget_this$1 = ctx$2$1.ar.a1("color");
       var WgslFn$_this = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
-      var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().lh;
+      var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().lc;
       var a1$proxy1 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "tex");
       var a2$proxy1 = ctx$2$1.I.k("samp");
       var a3$proxy1 = ctx$2$1.a6.k("uv");
       var a4$proxy1 = ctx$2$1.I.k("blurRadius");
-      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hc(fn$proxy1);
-      var value$proxy2 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this.h7(fn$proxy1) + "(") + a1$proxy1) + ", ") + a2$proxy1) + ", ") + a3$proxy1) + ", ") + a4$proxy1) + ")"));
+      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hb(fn$proxy1);
+      var value$proxy2 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this.h6(fn$proxy1) + "(") + a1$proxy1) + ", ") + a2$proxy1) + ", ") + a3$proxy1) + ", ") + a4$proxy1) + ")"));
       return $x_9.g((((("  " + AssignTarget_this$1.U) + " = ") + value$proxy2.f) + ";"));
     }));
     var d$1 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3689,16 +3613,16 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   var downsampleShade = new $c_Ltrivalibs_graphics_painter_Shade(id$2, module$2, null, bgls$4[0], panelBgl$2, pl$2, false, dict$3, dict$4);
   var build$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$2) => {
     var body$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$2) => {
-      var $x_11 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().i0();
+      var $x_11 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().hZ();
       var AssignTarget_this$2 = ctx$2$2.ar.a1("color");
       var WgslFn$_this$1 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
-      var fn$proxy2 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().j4;
+      var fn$proxy2 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().j2;
       var a1$proxy2 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "tex");
       var a2$proxy2 = ctx$2$2.I.k("samp");
       var a3$proxy2 = ctx$2$2.a6.k("uv");
       var a4$proxy2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(ctx$2$2.I.k("blurRadius"), 0.5);
-      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hc(fn$proxy2);
-      var value$proxy3 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this$1.h7(fn$proxy2) + "(") + a1$proxy2) + ", ") + a2$proxy2) + ", ") + a3$proxy2) + ", ") + a4$proxy2) + ")"));
+      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hb(fn$proxy2);
+      var value$proxy3 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this$1.h6(fn$proxy2) + "(") + a1$proxy2) + ", ") + a2$proxy2) + ", ") + a3$proxy2) + ", ") + a4$proxy2) + ")"));
       return $x_11.g((((("  " + AssignTarget_this$2.U) + " = ") + value$proxy3.f) + ";"));
     }));
     var d$2 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3785,7 +3709,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     $x_14.writeBuffer($x_13, 0.0, s$proxy5.dv.buffer);
   } else {
     var uv$2 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy1 = Bindable_this.gr.h;
+    var device$proxy1 = Bindable_this.gq.h;
     var buffer$3 = new ArrayBuffer(4);
     var arr$proxy3 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$3), 1);
     var b$3$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy3.dv, 0), device$proxy1, uv$2);
@@ -3827,7 +3751,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   }
   var ui = ((mipLevels - 2) | 0);
   while ((ui >= 0)) {
-    var Bindable_this$8 = p.fk(upsampleShade, $m_Ltrivalibs_graphics_painter_BlendState$().kQ, ((1 + ui) | 0), ui);
+    var Bindable_this$8 = p.fk(upsampleShade, $m_Ltrivalibs_graphics_painter_BlendState$().kL, ((1 + ui) | 0), ui);
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("blurRadius", b);
     var e2$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
     var \u03b4scrutinee234 = e1$proxy3.x;
@@ -3858,11 +3782,11 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
       var low = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "low");
       var over = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "over");
       var $x_20 = $m_sjsr_package$();
-      var $x_19 = c.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hX($m_Ltrivalibs_graphics_math_gpu_expr$package$().gQ($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "scene"), coord), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().m9($m_Ltrivalibs_graphics_math_gpu_expr$package$().gQ($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "bloom"), coord), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), ctx$2$3.I.k("intensity")))));
-      var $x_18 = low.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().os(c, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec3$().bk(ctx$2$3.I.k("knee"))));
-      var $x_17 = over.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().mi(c, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), low));
+      var $x_19 = c.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_expr$package$().gP($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "scene"), coord), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().m3($m_Ltrivalibs_graphics_math_gpu_expr$package$().gP($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "bloom"), coord), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), ctx$2$3.I.k("intensity")))));
+      var $x_18 = low.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ok(c, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec3$().bk(ctx$2$3.I.k("knee"))));
+      var $x_17 = over.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().mc(c, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), low));
       var AssignTarget_this$3 = ctx$2$3.ar.a1("color");
-      var value$proxy4 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().jk(low, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().mi($m_Ltrivalibs_graphics_math_gpu_vec3$().jl(1.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().nk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn(over, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), ctx$2$3.I.k("falloff")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$())), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), ctx$2$3.I.k("lift"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
+      var value$proxy4 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().ji(low, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().mc($m_Ltrivalibs_graphics_math_gpu_vec3$().jj(1.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().nd($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().bn(over, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), ctx$2$3.I.k("falloff")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$())), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), ctx$2$3.I.k("lift"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0));
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_20.d(new ($d_T.r().C)([$x_19, $x_18, $x_17, (((("  " + AssignTarget_this$3.U) + " = ") + value$proxy4.f) + ";")]))), "", "\n", "");
     }));
     var d$3 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -3966,7 +3890,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     $x_23.writeBuffer($x_22, 0.0, s$proxy7.dv.buffer);
   } else {
     var uv$2$1 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy2 = Bindable_this$11.gr.h;
+    var device$proxy2 = Bindable_this$11.gq.h;
     var buffer$4 = new ArrayBuffer(4);
     var arr$proxy4 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$4), 1);
     var b$4$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy4.dv, 0), device$proxy2, uv$2$1);
@@ -3992,7 +3916,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     $x_27.writeBuffer($x_26, 0.0, s$proxy9.dv.buffer);
   } else {
     var uv$3 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy3 = Bindable_this$11.gr.h;
+    var device$proxy3 = Bindable_this$11.gq.h;
     var buffer$5 = new ArrayBuffer(4);
     var arr$proxy5 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$5), 1);
     var b$5$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy5.dv, 0), device$proxy3, uv$3);
@@ -4018,7 +3942,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     $x_31.writeBuffer($x_30, 0.0, s$proxy11.dv.buffer);
   } else {
     var uv$4 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy4 = Bindable_this$11.gr.h;
+    var device$proxy4 = Bindable_this$11.gq.h;
     var buffer$6 = new ArrayBuffer(4);
     var arr$proxy6 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$6), 1);
     var b$6 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), device$proxy4, uv$4);
@@ -4036,7 +3960,7 @@ $p.mL = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   return new $c_Lsketchlib_utils_bloom_Bloom$$anon$1(bloomP, p.fm((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this$11, (void 0)), p, b, b$2);
 });
 var $d_Lsketchlib_utils_bloom_Bloom$ = new $TypeData().i($c_Lsketchlib_utils_bloom_Bloom$, "sketchlib.utils.bloom.Bloom$", ({
-  dq: 1
+  db: 1
 }));
 var $n_Lsketchlib_utils_bloom_Bloom$;
 function $m_Lsketchlib_utils_bloom_Bloom$() {
@@ -4047,10 +3971,10 @@ function $m_Lsketchlib_utils_bloom_Bloom$() {
 }
 /** @constructor */
 function $c_Lsketchlib_utils_mirror_MirrorReflection$() {
-  this.ih = 0.0;
-  this.kg = null;
+  this.ie = 0.0;
+  this.kb = null;
   $n_Lsketchlib_utils_mirror_MirrorReflection$ = this;
-  this.ih = 2.0;
+  this.ie = 2.0;
   var names = $m_sjs_js_ArrayOpsCommon$().a(["tex"], []);
   var types = $m_sjs_js_ArrayOpsCommon$().a(["texture_2d<f32>"], []);
   var parts = [];
@@ -4061,7 +3985,7 @@ function $c_Lsketchlib_utils_mirror_MirrorReflection$() {
   }
   var paramList = parts.join(", ");
   var src = (("fn mirror_tex_height(" + paramList) + ") -> f32 {\n  return f32(textureDimensions(tex).y);\n}");
-  this.kg = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("mirror_tex_height", src);
+  this.kb = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("mirror_tex_height", src);
 }
 $p = $c_Lsketchlib_utils_mirror_MirrorReflection$.prototype = new $h_O();
 $p.constructor = $c_Lsketchlib_utils_mirror_MirrorReflection$;
@@ -4069,7 +3993,7 @@ $p.constructor = $c_Lsketchlib_utils_mirror_MirrorReflection$;
 function $h_Lsketchlib_utils_mirror_MirrorReflection$() {
 }
 $h_Lsketchlib_utils_mirror_MirrorReflection$.prototype = $p;
-$p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, stretch, mipLevels, overscan, clearColor) {
+$p.mF = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, stretch, mipLevels, overscan, clearColor) {
   if ((mipLevels < 2)) {
     var message$proxy1 = (("MirrorReflection mipLevels must be >= 2 (got " + mipLevels) + ")");
     throw new $c_sjs_js_JavaScriptException(Error(message$proxy1)).aG;
@@ -4078,21 +4002,21 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
     var message$proxy2 = (("MirrorReflection overscan must be >= 0 (got " + overscan) + ")");
     throw new $c_sjs_js_JavaScriptException(Error(message$proxy2)).aG;
   }
-  var reflMat = mirror.oK();
+  var reflMat = mirror.oB();
   var p$proxy1 = ((mipLevels - 1) | 0);
   var maxRadius = ((+Math.pow(2.0, p$proxy1)) - 1.0);
-  if ((((0.0062499999999999995 * blurStrength) * p.i2()) > maxRadius)) {
+  if ((((0.0062499999999999995 * blurStrength) * p.i1()) > maxRadius)) {
     var $x_3 = $m_sr_ScalaRunTime$();
-    var $x_2 = p.i2();
-    var p$proxy2 = ((0.0062499999999999995 * blurStrength) * p.i2());
-    var $x_1 = $m_RTLong$().jr((+Math.round(p$proxy2)));
+    var $x_2 = p.i1();
+    var p$proxy2 = ((0.0062499999999999995 * blurStrength) * p.i1());
+    var $x_1 = $m_RTLong$().jp((+Math.round(p$proxy2)));
     var x_$_lo = $x_1.l;
     var x_$_hi = $x_1.h;
     var args$proxy1 = $x_3.al(new ($d_sjs_js_Any.r().C)([(((((((("MirrorReflection: blurStrength " + blurStrength) + "% of height ") + $x_2) + " ") + ("needs a " + ((4.294967296E9 * x_$_hi) + (x_$_lo >>> 0.0)))) + " px mip ") + ((("radius, beyond the reach of " + mipLevels) + " mip levels (") + maxRadius)) + " px) \u2014 the blur will saturate before alphaScale. Raise mipLevels.")]));
     console.log(...$m_sjsr_Compat$().ak(args$proxy1));
   }
-  var pn = mirror.gn;
-  var pd = mirror.gm;
+  var pn = mirror.gm;
+  var pd = mirror.gl;
   var ul$proxy1 = new $c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT($m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$());
   var uv$proxy1 = ul$proxy1.ay;
   var buffer = new ArrayBuffer(64);
@@ -4145,9 +4069,9 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   var $x_10 = b$4.O;
   var s$proxy4 = b$4.n;
   $x_11.writeBuffer($x_10, 0.0, s$proxy4.dv.buffer);
-  var sampler = p.mf();
+  var sampler = p.m9();
   var mirrorPanel = p.fm((void 0), (void 0), clearColor, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes, (void 0), (void 0));
-  var dict$proxy1 = mirrorPanel.gA;
+  var dict$proxy1 = mirrorPanel.gz;
   dict$proxy1[vpName] = uVp;
   var build$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3) => {
     var body$proxy1 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2) => {
@@ -4158,16 +4082,16 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
       var worldPos = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "worldPos");
       var t = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "t");
       var $x_19 = $m_sjsr_package$();
-      var $x_18 = d.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().n5($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "depth"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0))));
+      var $x_18 = d.B($m_Ltrivalibs_graphics_math_gpu_expr$package$().mY($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "depth"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0))));
       var $x_17 = $m_Ltrivalibs_graphics_math_gpu_vec3$();
-      var $x_16 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lA($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(uv$6), 2.0), 1.0);
+      var $x_16 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lv($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().bp(uv$6), 2.0), 1.0);
       var e$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().aD(uv$6), 2.0);
       var $x_15 = ndc.B($x_17.as($x_16, $m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " - ") + e$proxy1.f) + ")")), d));
-      var $x_14 = worldH.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hd(ctx$2.I.k("invVp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gP(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ndc, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$()));
-      var $x_13 = worldPos.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().n8($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp(worldH), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jE(worldH)));
-      var $x_12 = t.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().mZ($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().jg($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lA($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().nb($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.s), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.t), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.u)), worldPos), pd), alphaScale)));
+      var $x_14 = worldH.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$().hc(ctx$2.I.k("invVp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gO(), $m_Ltrivalibs_graphics_math_gpu_vec4$().a7(ndc, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(1.0)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$()));
+      var $x_13 = worldPos.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$().n1($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp(worldH), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jC(worldH)));
+      var $x_12 = t.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().mS($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().je($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lv($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$().n4($m_Ltrivalibs_graphics_math_gpu_vec3$().as($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.s), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.t), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(pn.u)), worldPos), pd), alphaScale)));
       var AssignTarget_this = ctx$2.ar.a1("color");
-      var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_expr$package$().gQ($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0)))), t);
+      var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec4$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().fp($m_Ltrivalibs_graphics_math_gpu_expr$package$().gP($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_ivec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2.g0)))), t);
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_19.d(new ($d_T.r().C)([$x_18, $x_15, $x_14, $x_13, $x_12, (((("  " + AssignTarget_this.U) + " = ") + value$proxy3.f) + ";")]))), "", "\n", "");
     }));
     var d$1 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -4234,16 +4158,16 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   var bakeShade = new $c_Ltrivalibs_graphics_painter_Shade(id, module, null, bgls$2[0], panelBgl, pl, false, dict, dict$2);
   var build$proxy2 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$1) => {
     var body$proxy3 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$1) => {
-      var $x_21 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().i0();
+      var $x_21 = $m_Ltrivalibs_graphics_math_gpu_expr$package$().hZ();
       var AssignTarget_this$1 = ctx$2$1.ar.a1("color");
       var WgslFn$_this = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
-      var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().j4;
+      var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_blur_Blur$().j2;
       var a1$proxy1 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "tex");
       var a2$proxy1 = ctx$2$1.I.k("samp");
       var a3$proxy1 = ctx$2$1.a6.k("uv");
       var a4$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(4.0);
-      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hc(fn$proxy1);
-      var value$proxy4 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this.h7(fn$proxy1) + "(") + a1$proxy1) + ", ") + a2$proxy1) + ", ") + a3$proxy1) + ", ") + a4$proxy1) + ")"));
+      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hb(fn$proxy1);
+      var value$proxy4 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((((WgslFn$_this.h6(fn$proxy1) + "(") + a1$proxy1) + ", ") + a2$proxy1) + ", ") + a3$proxy1) + ", ") + a4$proxy1) + ")"));
       return $x_21.g((((("  " + AssignTarget_this$1.U) + " = ") + value$proxy4.f) + ";"));
     }));
     var d$2 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -4311,7 +4235,7 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   var blurLayers = [];
   var Bindable_this = p.fk(bakeShade, (void 0), (void 0), (void 0));
   var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("col", mirrorPanel);
-  var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("depth", mirrorPanel.mT(0, (-1), true));
+  var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("depth", mirrorPanel.mM(0, (-1), true));
   var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("invVp", uInvVp);
   var \u03b4scrutinee138 = e1$proxy1.x;
   var idx = (Bindable_this.w.aA.col | 0);
@@ -4361,20 +4285,20 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
       var lod = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "lod");
       var s$1 = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "s");
       var $x_30 = $m_sjsr_package$();
-      var $x_29 = uv$7.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().mE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().ma(ctx$2$2.a6.k("uv"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2$2.I.k("crop"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().pp(ctx$2$2.I.k("crop"))));
+      var $x_29 = uv$7.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().mx($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().m4(ctx$2$2.a6.k("uv"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().gb(ctx$2$2.I.k("crop"))), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().pf(ctx$2$2.I.k("crop"))));
       var WgslFn$_this$1 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
-      var fn$proxy2 = this.kg;
+      var fn$proxy2 = this.kb;
       var a1$proxy2 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col");
-      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hc(fn$proxy2);
-      var $x_28 = h.B($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((WgslFn$_this$1.h7(fn$proxy2) + "(") + a1$proxy2) + ")")));
-      var $x_27 = t$1.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jE($m_Ltrivalibs_graphics_math_gpu_expr$package$().h9($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), uv$7, ctx$2$2.I.k("samp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0))));
+      $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().hb(fn$proxy2);
+      var $x_28 = h.B($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((WgslFn$_this$1.h6(fn$proxy2) + "(") + a1$proxy2) + ")")));
+      var $x_27 = t$1.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$().jC($m_Ltrivalibs_graphics_math_gpu_expr$package$().h8($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), uv$7, ctx$2$2.I.k("samp"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0))));
       var $x_26 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$();
       var e$proxy2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().g5($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().g5(t$1, ctx$2$2.I.k("blurStrength")), ctx$2$2.I.k("visHeight"));
-      var $x_25 = radius.B($x_26.ot($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " + ") + e$proxy2.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(maxRadius)));
-      var $x_24 = lod.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nS(radius));
-      var $x_23 = s$1.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lz($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().g5($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(ctx$2$2.I.k("stretch"), this.ih), radius), h));
+      var $x_25 = radius.B($x_26.ol($m_Ltrivalibs_graphics_math_gpu_LeftScalar$().bl().bo((((("(" + $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5(1.0)) + " + ") + e$proxy2.f) + ")")), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(maxRadius)));
+      var $x_24 = lod.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$().nK(radius));
+      var $x_23 = s$1.B($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().lu($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().g5($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(ctx$2$2.I.k("stretch"), this.ie), radius), h));
       var AssignTarget_this$2 = ctx$2$2.ar.a1("color");
-      var value$proxy6 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hX($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hX($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hX($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_expr$package$().h9($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), uv$7, ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.4), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_expr$package$().h9($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jz(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), s$1)), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.3)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_expr$package$().h9($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jz(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(s$1, 2.0))), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.2)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_expr$package$().h9($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jz(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(s$1, 3.0))), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.1));
+      var value$proxy6 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hW($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hV($m_Ltrivalibs_graphics_math_gpu_expr$package$().h8($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), uv$7, ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.4), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hV($m_Ltrivalibs_graphics_math_gpu_expr$package$().h8($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jx(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), s$1)), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.3)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hV($m_Ltrivalibs_graphics_math_gpu_expr$package$().h8($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jx(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(s$1, 2.0))), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.2)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$().hV($m_Ltrivalibs_graphics_math_gpu_expr$package$().h8($ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "col"), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$().jx(uv$7, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$(), $m_Ltrivalibs_graphics_math_gpu_vec2$().a7($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().ad(s$1, 3.0))), ctx$2$2.I.k("samp"), lod), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$(), 0.1));
       return $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs($x_30.d(new ($d_T.r().C)([$x_29, $x_28, $x_27, $x_25, $x_24, $x_23, (((("  " + AssignTarget_this$2.U) + " = ") + value$proxy6.f) + ";")]))), "", "\n", "");
     }));
     var d$3 = $m_sjs_js_special_package$().e(new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_T2.r().C)([]))));
@@ -4492,7 +4416,7 @@ $p.mM = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   return new $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1(mirrorPanel, p.fm((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), "rgba16float", (void 0), (void 0), (void 0), (void 0), layers$2), camera, blurStrength, stretch, overscan, _blurPanel, b$3, b$4, b, 0.0062499999999999995, b$2, reflMat, uVp, uInvVp, p);
 });
 var $d_Lsketchlib_utils_mirror_MirrorReflection$ = new $TypeData().i($c_Lsketchlib_utils_mirror_MirrorReflection$, "sketchlib.utils.mirror.MirrorReflection$", ({
-  dt: 1
+  de: 1
 }));
 var $n_Lsketchlib_utils_mirror_MirrorReflection$;
 function $m_Lsketchlib_utils_mirror_MirrorReflection$() {
@@ -4511,15 +4435,15 @@ function $h_Ltrivalibs_dev_DevHandle() {
 }
 $h_Ltrivalibs_dev_DevHandle.prototype = $p;
 var $d_Ltrivalibs_dev_DevHandle = new $TypeData().i($c_Ltrivalibs_dev_DevHandle, "trivalibs.dev.DevHandle", ({
-  dv: 1
+  dg: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_dev_dev$package$() {
   this.fM = null;
-  this.il = false;
+  this.ij = false;
   $n_Ltrivalibs_dev_dev$package$ = this;
   this.fM = [];
-  this.il = false;
+  this.ij = false;
 }
 $p = $c_Ltrivalibs_dev_dev$package$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_dev_dev$package$;
@@ -4527,10 +4451,10 @@ $p.constructor = $c_Ltrivalibs_dev_dev$package$;
 function $h_Ltrivalibs_dev_dev$package$() {
 }
 $h_Ltrivalibs_dev_dev$package$.prototype = $p;
-$p.n6 = (function() {
+$p.mZ = (function() {
   return (import.meta.hot !== (void 0));
 });
-$p.or = (function() {
+$p.oj = (function() {
   var u = import.meta.url;
   var end = (u.indexOf("?") | 0);
   if ((end < 0)) {
@@ -4543,14 +4467,14 @@ $p.or = (function() {
     return u;
   }
 });
-$p.p0 = (function(label) {
-  return ((("trivalibs:dev:" + $m_Ltrivalibs_dev_dev$package$().or()) + ":") + label);
+$p.oQ = (function(label) {
+  return ((("trivalibs:dev:" + $m_Ltrivalibs_dev_dev$package$().oj()) + ":") + label);
 });
-$p.jy = (function() {
+$p.jw = (function() {
   return window.sessionStorage;
 });
-$p.oJ = (function(key) {
-  var raw = $m_Ltrivalibs_dev_dev$package$().jy().getItem(key);
+$p.oA = (function(key) {
+  var raw = $m_Ltrivalibs_dev_dev$package$().jw().getItem(key);
   if ((raw === null)) {
     return null;
   } else {
@@ -4561,36 +4485,36 @@ $p.oJ = (function(key) {
     }
   }
 });
-$p.pi = (function(key, json) {
-  $m_Ltrivalibs_dev_dev$package$().jy().setItem(key, JSON.stringify(json));
+$p.p8 = (function(key, json) {
+  $m_Ltrivalibs_dev_dev$package$().jw().setItem(key, JSON.stringify(json));
 });
-$p.oO = (function(key) {
-  $m_Ltrivalibs_dev_dev$package$().jy().removeItem(key);
+$p.oF = (function(key) {
+  $m_Ltrivalibs_dev_dev$package$().jw().removeItem(key);
 });
-$p.nf = (function() {
-  if ((!$m_Ltrivalibs_dev_dev$package$().il)) {
-    $m_Ltrivalibs_dev_dev$package$().il = true;
+$p.n8 = (function() {
+  if ((!$m_Ltrivalibs_dev_dev$package$().ij)) {
+    $m_Ltrivalibs_dev_dev$package$().ij = true;
     window.addEventListener("pagehide", ((_$1$2) => {
       var i = 0;
       while ((i < ($m_Ltrivalibs_dev_dev$package$().fM.length | 0))) {
-        $m_Ltrivalibs_dev_dev$package$().fM[i].gL();
+        $m_Ltrivalibs_dev_dev$package$().fM[i].gK();
         i = ((1 + i) | 0);
       }
     }));
   }
 });
-$p.oL = (function(flush) {
-  $m_Ltrivalibs_dev_dev$package$().nf();
+$p.oC = (function(flush) {
+  $m_Ltrivalibs_dev_dev$package$().n8();
   $m_Ltrivalibs_dev_dev$package$().fM.push(flush);
   return new $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c((() => {
-    var idx = $m_sjs_js_ArrayOps$().lP($m_Ltrivalibs_dev_dev$package$().fM, flush, 0);
+    var idx = $m_sjs_js_ArrayOps$().lJ($m_Ltrivalibs_dev_dev$package$().fM, flush, 0);
     if ((idx >= 0)) {
       $m_Ltrivalibs_dev_dev$package$().fM.splice(idx, 1);
     }
   }));
 });
 var $d_Ltrivalibs_dev_dev$package$ = new $TypeData().i($c_Ltrivalibs_dev_dev$package$, "trivalibs.dev.dev$package$", ({
-  dw: 1
+  dh: 1
 }));
 var $n_Ltrivalibs_dev_dev$package$;
 function $m_Ltrivalibs_dev_dev$package$() {
@@ -4612,7 +4536,7 @@ function $p_Ltrivalibs_dev_devPreserve$__applyCam__Ltrivalibs_graphics_scene_Per
       var aspect$1 = cam.fe;
       var near$1 = cam.fZ;
       var far$1 = cam.fY;
-      cam.jv(fov$1, aspect$1, near$1, far$1, rotH$1, rotV$1, pos$1);
+      cam.jt(fov$1, aspect$1, near$1, far$1, rotH$1, rotV$1, pos$1);
     }
   }
 }
@@ -4625,33 +4549,33 @@ $p.constructor = $c_Ltrivalibs_dev_devPreserve$;
 function $h_Ltrivalibs_dev_devPreserve$() {
 }
 $h_Ltrivalibs_dev_devPreserve$.prototype = $p;
-$p.mN = (function(cam, label) {
-  if ((!$m_Ltrivalibs_dev_dev$package$().n6())) {
+$p.mG = (function(cam, label) {
+  if ((!$m_Ltrivalibs_dev_dev$package$().mZ())) {
     return new $c_Ltrivalibs_dev_DevHandle(new $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c((() => (void 0))));
   } else {
-    var sk = $m_Ltrivalibs_dev_dev$package$().p0(label);
+    var sk = $m_Ltrivalibs_dev_dev$package$().oQ(label);
     var initPos = cam.aa;
     var initRotH = cam.aq;
     var initRotV = cam.b2;
-    var stored = $m_Ltrivalibs_dev_dev$package$().oJ(sk);
+    var stored = $m_Ltrivalibs_dev_dev$package$().oA(sk);
     if ((stored !== null)) {
       $p_Ltrivalibs_dev_devPreserve$__applyCam__Ltrivalibs_graphics_scene_PerspectiveCamera__sjs_js_Any__V(this, cam, stored);
     }
     return new $c_Ltrivalibs_dev_DevHandle(new $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c(((unregister) => (() => {
-      unregister.gL();
-      $m_Ltrivalibs_dev_dev$package$().oO(sk);
+      unregister.gK();
+      $m_Ltrivalibs_dev_dev$package$().oF(sk);
       var fov$proxy1 = cam.b1;
       var aspect$proxy1 = cam.fe;
       var near$proxy1 = cam.fZ;
       var far$proxy1 = cam.fY;
-      cam.jv(fov$proxy1, aspect$proxy1, near$proxy1, far$proxy1, initRotH, initRotV, initPos);
-    }))($m_Ltrivalibs_dev_dev$package$().oL(new $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c((() => {
-      $m_Ltrivalibs_dev_dev$package$().pi(sk, $p_Ltrivalibs_dev_devPreserve$__encodeCam__Ltrivalibs_graphics_scene_PerspectiveCamera__sjs_js_Any(this, cam));
+      cam.jt(fov$proxy1, aspect$proxy1, near$proxy1, far$proxy1, initRotH, initRotV, initPos);
+    }))($m_Ltrivalibs_dev_dev$package$().oC(new $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c((() => {
+      $m_Ltrivalibs_dev_dev$package$().p8(sk, $p_Ltrivalibs_dev_devPreserve$__encodeCam__Ltrivalibs_graphics_scene_PerspectiveCamera__sjs_js_Any(this, cam));
     }))))));
   }
 });
 var $d_Ltrivalibs_dev_devPreserve$ = new $TypeData().i($c_Ltrivalibs_dev_devPreserve$, "trivalibs.dev.devPreserve$", ({
-  dx: 1
+  di: 1
 }));
 var $n_Ltrivalibs_dev_devPreserve$;
 function $m_Ltrivalibs_dev_devPreserve$() {
@@ -4684,29 +4608,29 @@ function $h_Ltrivalibs_graphics_buffers_BufferBinding() {
 }
 $h_Ltrivalibs_graphics_buffers_BufferBinding.prototype = $p;
 function $isArrayOf_Ltrivalibs_graphics_buffers_BufferBinding(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aN)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aI)));
 }
 var $d_Ltrivalibs_graphics_buffers_BufferBinding = new $TypeData().i($c_Ltrivalibs_graphics_buffers_BufferBinding, "trivalibs.graphics.buffers.BufferBinding", ({
-  aN: 1
+  aI: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Box(center, size, frontTopLeft, frontTopRight, frontBottomLeft, frontBottomRight, backTopLeft, backTopRight, backBottomLeft, backBottomRight) {
-  this.hr = null;
-  this.hs = null;
-  this.hp = null;
   this.hq = null;
-  this.hn = null;
+  this.hr = null;
   this.ho = null;
-  this.hl = null;
+  this.hp = null;
   this.hm = null;
-  this.hr = frontTopLeft;
-  this.hs = frontTopRight;
-  this.hp = frontBottomLeft;
-  this.hq = frontBottomRight;
-  this.hn = backTopLeft;
-  this.ho = backTopRight;
-  this.hl = backBottomLeft;
-  this.hm = backBottomRight;
+  this.hn = null;
+  this.hk = null;
+  this.hl = null;
+  this.hq = frontTopLeft;
+  this.hr = frontTopRight;
+  this.ho = frontBottomLeft;
+  this.hp = frontBottomRight;
+  this.hm = backTopLeft;
+  this.hn = backTopRight;
+  this.hk = backBottomLeft;
+  this.hl = backBottomRight;
 }
 $p = $c_Ltrivalibs_graphics_geometry_Box.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_Box;
@@ -4714,26 +4638,26 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_Box;
 function $h_Ltrivalibs_graphics_geometry_Box() {
 }
 $h_Ltrivalibs_graphics_geometry_Box.prototype = $p;
-$p.nz = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)), f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)), f.F(this.hs, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)));
+$p.ns = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)), f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)), f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)));
 });
-$p.mR = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)), f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)));
+$p.mK = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.hk, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)));
 });
-$p.nQ = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)));
+$p.nI = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)), f.F(this.hk, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)));
 });
-$p.oR = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hs, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)), f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)), f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)));
+$p.oI = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)), f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)));
 });
-$p.p7 = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)), f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)), f.F(this.hs, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)), f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)));
+$p.oX = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 1.0)), f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0)), f.F(this.hr, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 0.0)), f.F(this.hn, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 0.0, 1.0)));
 });
-$p.mV = (function(f) {
-  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.hm, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.hq, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)));
+$p.mO = (function(f) {
+  return $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().g6(f.F(this.ho, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0)), f.F(this.hk, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 1.0)), f.F(this.hl, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0)), f.F(this.hp, new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 0.0)));
 });
 var $d_Ltrivalibs_graphics_geometry_Box = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Box, "trivalibs.graphics.geometry.Box", ({
-  dD: 1
+  dp: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Box$() {
@@ -4744,7 +4668,7 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_Box$;
 function $h_Ltrivalibs_graphics_geometry_Box$() {
 }
 $h_Ltrivalibs_graphics_geometry_Box$.prototype = $p;
-$p.mJ = (function(center, width, height, depth) {
+$p.mC = (function(center, width, height, depth) {
   var hw = (0.5 * width);
   var hh = (0.5 * height);
   var hd = (0.5 * depth);
@@ -4754,7 +4678,7 @@ $p.mJ = (function(center, width, height, depth) {
   return new $c_Ltrivalibs_graphics_geometry_Box(center, new $c_Ltrivalibs_graphics_math_cpu_Vec3(width, height, depth), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx - hw), (cy + hh), (cz + hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx + hw), (cy + hh), (cz + hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx - hw), (cy - hh), (cz + hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx + hw), (cy - hh), (cz + hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx - hw), (cy + hh), (cz - hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx + hw), (cy + hh), (cz - hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx - hw), (cy - hh), (cz - hd)), new $c_Ltrivalibs_graphics_math_cpu_Vec3((cx + hw), (cy - hh), (cz - hd)));
 });
 var $d_Ltrivalibs_graphics_geometry_Box$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Box$, "trivalibs.graphics.geometry.Box$", ({
-  dE: 1
+  dq: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_Box$;
 function $m_Ltrivalibs_graphics_geometry_Box$() {
@@ -4765,10 +4689,10 @@ function $m_Ltrivalibs_graphics_geometry_Box$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_BufferedGeometry(vertices, indices) {
-  this.im = null;
-  this.ht = null;
-  this.im = vertices;
-  this.ht = indices;
+  this.ik = null;
+  this.hs = null;
+  this.ik = vertices;
+  this.hs = indices;
 }
 $p = $c_Ltrivalibs_graphics_geometry_BufferedGeometry.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_BufferedGeometry;
@@ -4777,14 +4701,14 @@ function $h_Ltrivalibs_graphics_geometry_BufferedGeometry() {
 }
 $h_Ltrivalibs_graphics_geometry_BufferedGeometry.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_BufferedGeometry = new $TypeData().i($c_Ltrivalibs_graphics_geometry_BufferedGeometry, "trivalibs.graphics.geometry.BufferedGeometry", ({
-  dF: 1
+  dr: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_FaceData(normal, section) {
-  this.gk = null;
-  this.mq = 0;
-  this.gk = normal;
-  this.mq = section;
+  this.gj = null;
+  this.mj = 0;
+  this.gj = normal;
+  this.mj = section;
 }
 $p = $c_Ltrivalibs_graphics_geometry_FaceData.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_FaceData;
@@ -4793,20 +4717,20 @@ function $h_Ltrivalibs_graphics_geometry_FaceData() {
 }
 $h_Ltrivalibs_graphics_geometry_FaceData.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_FaceData = new $TypeData().i($c_Ltrivalibs_graphics_geometry_FaceData, "trivalibs.graphics.geometry.FaceData", ({
-  dG: 1
+  ds: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Mesh(evidence$1) {
-  this.gl = null;
+  this.gk = null;
   this.an = null;
   this.fN = null;
-  this.hv = null;
   this.hu = null;
-  this.gl = evidence$1;
+  this.ht = null;
+  this.gk = evidence$1;
   this.an = [];
   this.fN = [];
-  this.hv = [];
-  this.hu = ({});
+  this.hu = [];
+  this.ht = ({});
 }
 $p = $c_Ltrivalibs_graphics_geometry_Mesh.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_Mesh;
@@ -4814,7 +4738,7 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_Mesh;
 function $h_Ltrivalibs_graphics_geometry_Mesh() {
 }
 $h_Ltrivalibs_graphics_geometry_Mesh.prototype = $p;
-$p.mC = (function(face, normal, section) {
+$p.mv = (function(face, normal, section) {
   var faceIdx = (this.an.length | 0);
   this.an.push(face);
   this.fN.push(new $c_Ltrivalibs_graphics_geometry_FaceData(normal, section));
@@ -4822,45 +4746,45 @@ $p.mC = (function(face, normal, section) {
   var slot = 0;
   while ((slot < n)) {
     var v = face[slot];
-    var key = $m_Ltrivalibs_graphics_geometry_package$package$().oH(this.gl.b6(v));
-    if ($m_sjs_js_Any$ObjectCompanionOps$().nF(Object, this.hu, key)) {
-      var $x_2 = this.hv;
-      var dict = this.hu;
-      if ((!(!(!$m_sjs_js_WrappedDictionary$Cache$().k9.call(dict, key))))) {
+    var key = $m_Ltrivalibs_graphics_geometry_package$package$().oy(this.gk.b6(v));
+    if ($m_sjs_js_Any$ObjectCompanionOps$().ny(Object, this.ht, key)) {
+      var $x_2 = this.hu;
+      var dict = this.ht;
+      if ((!(!(!$m_sjs_js_WrappedDictionary$Cache$().k4.call(dict, key))))) {
         throw new $c_ju_NoSuchElementException(("key not found: " + key));
       }
       var $x_1 = $x_2[(dict[key] | 0)];
-      $x_1.kv.push(new $c_Ltrivalibs_graphics_geometry_PositionFaceRef(faceIdx, slot));
+      $x_1.kq.push(new $c_Ltrivalibs_graphics_geometry_PositionFaceRef(faceIdx, slot));
     } else {
-      var idx = (this.hv.length | 0);
-      var dict$1 = this.hu;
+      var idx = (this.hu.length | 0);
+      var dict$1 = this.ht;
       dict$1[key] = idx;
-      this.hv.push(new $c_Ltrivalibs_graphics_geometry_VertexPosition(this.gl.b6(v), [new $c_Ltrivalibs_graphics_geometry_PositionFaceRef(faceIdx, slot)]));
+      this.hu.push(new $c_Ltrivalibs_graphics_geometry_VertexPosition(this.gk.b6(v), [new $c_Ltrivalibs_graphics_geometry_PositionFaceRef(faceIdx, slot)]));
     }
     slot = ((1 + slot) | 0);
   }
 });
-$p.ne = (function() {
+$p.n7 = (function() {
   var hasQuads = false;
   var i = 0;
   while ((i < (this.an.length | 0))) {
     var arr = this.an[i];
-    if ((this.fN[i].gk === null)) {
+    if ((this.fN[i].gj === null)) {
       var $x_2 = this.fN[i];
       if (((arr.length | 0) === 3)) {
-        var $x_1 = $m_Ltrivalibs_graphics_geometry_polygon$package$Triangle$().ju(this.an[i], this.gl);
+        var $x_1 = $m_Ltrivalibs_graphics_geometry_polygon$package$Triangle$().js(this.an[i], this.gk);
       } else {
         hasQuads = true;
-        var $x_1 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().ju(this.an[i], this.gl);
+        var $x_1 = $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$().js(this.an[i], this.gk);
       }
-      $x_2.gk = $x_1;
+      $x_2.gj = $x_1;
     }
     i = ((1 + i) | 0);
   }
   return hasQuads;
 });
 var $d_Ltrivalibs_graphics_geometry_Mesh = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Mesh, "trivalibs.graphics.geometry.Mesh", ({
-  dJ: 1
+  dv: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Mesh$() {
@@ -4871,13 +4795,13 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_Mesh$;
 function $h_Ltrivalibs_graphics_geometry_Mesh$() {
 }
 $h_Ltrivalibs_graphics_geometry_Mesh$.prototype = $p;
-$p.mI = (function(faces, normal, section, evidence$1) {
+$p.mB = (function(faces, normal, section, evidence$1) {
   var m = new $c_Ltrivalibs_graphics_geometry_Mesh(evidence$1);
-  $m_Ltrivalibs_graphics_geometry_mesh$package$().mD(m, faces, normal, section, evidence$1);
+  $m_Ltrivalibs_graphics_geometry_mesh$package$().mw(m, faces, normal, section, evidence$1);
   return m;
 });
 var $d_Ltrivalibs_graphics_geometry_Mesh$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Mesh$, "trivalibs.graphics.geometry.Mesh$", ({
-  dK: 1
+  dw: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_Mesh$;
 function $m_Ltrivalibs_graphics_geometry_Mesh$() {
@@ -4888,10 +4812,10 @@ function $m_Ltrivalibs_graphics_geometry_Mesh$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Plane(normal, d) {
-  this.gn = null;
-  this.gm = 0.0;
-  this.gn = normal;
-  this.gm = d;
+  this.gm = null;
+  this.gl = 0.0;
+  this.gm = normal;
+  this.gl = d;
 }
 $p = $c_Ltrivalibs_graphics_geometry_Plane.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_Plane;
@@ -4899,20 +4823,20 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_Plane;
 function $h_Ltrivalibs_graphics_geometry_Plane() {
 }
 $h_Ltrivalibs_graphics_geometry_Plane.prototype = $p;
-$p.oK = (function() {
-  var a = this.gn.s;
-  var b = this.gn.t;
-  var c = this.gn.u;
-  return new $c_Ltrivalibs_graphics_math_cpu_Mat4((1.0 - ((2.0 * a) * a)), (((-2.0) * a) * b), (((-2.0) * a) * c), 0.0, (((-2.0) * a) * b), (1.0 - ((2.0 * b) * b)), (((-2.0) * b) * c), 0.0, (((-2.0) * a) * c), (((-2.0) * b) * c), (1.0 - ((2.0 * c) * c)), 0.0, ((2.0 * a) * this.gm), ((2.0 * b) * this.gm), ((2.0 * c) * this.gm), 1.0);
+$p.oB = (function() {
+  var a = this.gm.s;
+  var b = this.gm.t;
+  var c = this.gm.u;
+  return new $c_Ltrivalibs_graphics_math_cpu_Mat4((1.0 - ((2.0 * a) * a)), (((-2.0) * a) * b), (((-2.0) * a) * c), 0.0, (((-2.0) * a) * b), (1.0 - ((2.0 * b) * b)), (((-2.0) * b) * c), 0.0, (((-2.0) * a) * c), (((-2.0) * b) * c), (1.0 - ((2.0 * c) * c)), 0.0, ((2.0 * a) * this.gl), ((2.0 * b) * this.gl), ((2.0 * c) * this.gl), 1.0);
 });
 var $d_Ltrivalibs_graphics_geometry_Plane = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Plane, "trivalibs.graphics.geometry.Plane", ({
-  dL: 1
+  dx: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_Plane$() {
-  this.kr = null;
+  this.km = null;
   $n_Ltrivalibs_graphics_geometry_Plane$ = this;
-  this.kr = new $c_Ltrivalibs_graphics_geometry_Plane(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), 0.0);
+  this.km = new $c_Ltrivalibs_graphics_geometry_Plane(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 1.0, 0.0), 0.0);
 }
 $p = $c_Ltrivalibs_graphics_geometry_Plane$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_Plane$;
@@ -4921,7 +4845,7 @@ function $h_Ltrivalibs_graphics_geometry_Plane$() {
 }
 $h_Ltrivalibs_graphics_geometry_Plane$.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_Plane$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_Plane$, "trivalibs.graphics.geometry.Plane$", ({
-  dM: 1
+  dy: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_Plane$;
 function $m_Ltrivalibs_graphics_geometry_Plane$() {
@@ -4932,10 +4856,10 @@ function $m_Ltrivalibs_graphics_geometry_Plane$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_PositionFaceRef(faceIndex, vertexSlot) {
-  this.mr = 0;
-  this.ms = 0;
-  this.mr = faceIndex;
-  this.ms = vertexSlot;
+  this.mk = 0;
+  this.ml = 0;
+  this.mk = faceIndex;
+  this.ml = vertexSlot;
 }
 $p = $c_Ltrivalibs_graphics_geometry_PositionFaceRef.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_PositionFaceRef;
@@ -4944,14 +4868,14 @@ function $h_Ltrivalibs_graphics_geometry_PositionFaceRef() {
 }
 $h_Ltrivalibs_graphics_geometry_PositionFaceRef.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_PositionFaceRef = new $TypeData().i($c_Ltrivalibs_graphics_geometry_PositionFaceRef, "trivalibs.graphics.geometry.PositionFaceRef", ({
-  dO: 1
+  dA: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_VertexPosition(position, faces) {
-  this.mt = null;
-  this.kv = null;
-  this.mt = position;
-  this.kv = faces;
+  this.mm = null;
+  this.kq = null;
+  this.mm = position;
+  this.kq = faces;
 }
 $p = $c_Ltrivalibs_graphics_geometry_VertexPosition.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_VertexPosition;
@@ -4960,7 +4884,7 @@ function $h_Ltrivalibs_graphics_geometry_VertexPosition() {
 }
 $h_Ltrivalibs_graphics_geometry_VertexPosition.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_VertexPosition = new $TypeData().i($c_Ltrivalibs_graphics_geometry_VertexPosition, "trivalibs.graphics.geometry.VertexPosition", ({
-  dT: 1
+  dF: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_buffers$package$() {
@@ -4971,7 +4895,7 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_buffers$package$;
 function $h_Ltrivalibs_graphics_geometry_buffers$package$() {
 }
 $h_Ltrivalibs_graphics_geometry_buffers$package$.prototype = $p;
-$p.oq = (function(idxBuf, vertexCount) {
+$p.oi = (function(idxBuf, vertexCount) {
   if (((idxBuf.length | 0) === 0)) {
     return null;
   } else if ((vertexCount <= 65535)) {
@@ -4993,7 +4917,7 @@ $p.oq = (function(idxBuf, vertexCount) {
   }
 });
 var $d_Ltrivalibs_graphics_geometry_buffers$package$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_buffers$package$, "trivalibs.graphics.geometry.buffers$package$", ({
-  dU: 1
+  dG: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_buffers$package$;
 function $m_Ltrivalibs_graphics_geometry_buffers$package$() {
@@ -5011,15 +4935,15 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_mesh$package$;
 function $h_Ltrivalibs_graphics_geometry_mesh$package$() {
 }
 $h_Ltrivalibs_graphics_geometry_mesh$package$.prototype = $p;
-$p.mD = (function(m, faces, normal, section, evidence$1) {
+$p.mw = (function(m, faces, normal, section, evidence$1) {
   var i = 0;
   while ((i < (faces.length | 0))) {
-    m.mC(faces[i], normal, section);
+    m.mv(faces[i], normal, section);
     i = ((1 + i) | 0);
   }
 });
 var $d_Ltrivalibs_graphics_geometry_mesh$package$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_mesh$package$, "trivalibs.graphics.geometry.mesh$package$", ({
-  dV: 1
+  dH: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_mesh$package$;
 function $m_Ltrivalibs_graphics_geometry_mesh$package$() {
@@ -5037,11 +4961,11 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_package$package$;
 function $h_Ltrivalibs_graphics_geometry_package$package$() {
 }
 $h_Ltrivalibs_graphics_geometry_package$package$.prototype = $p;
-$p.oH = (function(v) {
+$p.oy = (function(v) {
   return (((($doubleToInt((10000.0 * v.s)) + ",") + $doubleToInt((10000.0 * v.t))) + ",") + $doubleToInt((10000.0 * v.u)));
 });
 var $d_Ltrivalibs_graphics_geometry_package$package$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_package$package$, "trivalibs.graphics.geometry.package$package$", ({
-  dW: 1
+  dI: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_package$package$;
 function $m_Ltrivalibs_graphics_geometry_package$package$() {
@@ -5062,29 +4986,29 @@ $h_Ltrivalibs_graphics_geometry_polygon$package$Quad$.prototype = $p;
 $p.g6 = (function(tl, bl, br, tr) {
   return [tl, bl, br, tr];
 });
-$p.p5 = (function(q, evidence$1) {
+$p.oV = (function(q, evidence$1) {
   return q[0];
 });
-$p.mU = (function(q, evidence$1) {
+$p.mN = (function(q, evidence$1) {
   return q[1];
 });
-$p.mW = (function(q, evidence$1) {
+$p.mP = (function(q, evidence$1) {
   return q[2];
 });
-$p.p8 = (function(q, evidence$1) {
+$p.oY = (function(q, evidence$1) {
   return q[3];
 });
-$p.ju = (function(q, evidence$1) {
-  var a = evidence$1.b6(this.p5(q, evidence$1));
-  var b = evidence$1.b6(this.mU(q, evidence$1));
-  var c = evidence$1.b6(this.mW(q, evidence$1));
-  var d = evidence$1.b6(this.p8(q, evidence$1));
+$p.js = (function(q, evidence$1) {
+  var a = evidence$1.b6(this.oV(q, evidence$1));
+  var b = evidence$1.b6(this.mN(q, evidence$1));
+  var c = evidence$1.b6(this.mP(q, evidence$1));
+  var d = evidence$1.b6(this.oY(q, evidence$1));
   var d1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3((c.s - a.s), (c.t - a.t), (c.u - a.u));
   var d2 = new $c_Ltrivalibs_graphics_math_cpu_Vec3((d.s - b.s), (d.t - b.t), (d.u - b.u));
   return $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__normalize__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().bm(), $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__cross__O__Ltrivalibs_graphics_math_Vec3Base__O__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().bm(), d1, $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$(), d2), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$());
 });
 var $d_Ltrivalibs_graphics_geometry_polygon$package$Quad$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_polygon$package$Quad$, "trivalibs.graphics.geometry.polygon$package$Quad$", ({
-  dY: 1
+  dK: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_polygon$package$Quad$;
 function $m_Ltrivalibs_graphics_geometry_polygon$package$Quad$() {
@@ -5102,25 +5026,25 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_polygon$package$Triangle$;
 function $h_Ltrivalibs_graphics_geometry_polygon$package$Triangle$() {
 }
 $h_Ltrivalibs_graphics_geometry_polygon$package$Triangle$.prototype = $p;
-$p.mB = (function(tri, evidence$1) {
+$p.mu = (function(tri, evidence$1) {
   return tri[0];
 });
-$p.mQ = (function(tri, evidence$1) {
+$p.mJ = (function(tri, evidence$1) {
   return tri[1];
 });
-$p.mX = (function(tri, evidence$1) {
+$p.mQ = (function(tri, evidence$1) {
   return tri[2];
 });
-$p.ju = (function(tri, evidence$1) {
-  var pa = evidence$1.b6(this.mB(tri, evidence$1));
-  var pb = evidence$1.b6(this.mQ(tri, evidence$1));
-  var pc = evidence$1.b6(this.mX(tri, evidence$1));
+$p.js = (function(tri, evidence$1) {
+  var pa = evidence$1.b6(this.mu(tri, evidence$1));
+  var pb = evidence$1.b6(this.mJ(tri, evidence$1));
+  var pc = evidence$1.b6(this.mQ(tri, evidence$1));
   var e1 = new $c_Ltrivalibs_graphics_math_cpu_Vec3((pb.s - pa.s), (pb.t - pa.t), (pb.u - pa.u));
   var e2 = new $c_Ltrivalibs_graphics_math_cpu_Vec3((pc.s - pa.s), (pc.t - pa.t), (pc.u - pa.u));
   return $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__normalize__O__Ltrivalibs_graphics_math_Vec3Base__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().bm(), $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__cross__O__Ltrivalibs_graphics_math_Vec3Base__O__O($m_Ltrivalibs_graphics_math_cpu_Vec3$().bm(), e1, $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$(), e2), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$());
 });
 var $d_Ltrivalibs_graphics_geometry_polygon$package$Triangle$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_polygon$package$Triangle$, "trivalibs.graphics.geometry.polygon$package$Triangle$", ({
-  dZ: 1
+  dL: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_polygon$package$Triangle$;
 function $m_Ltrivalibs_graphics_geometry_polygon$package$Triangle$() {
@@ -5136,57 +5060,57 @@ function $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__perspective__D__D__D__D__
   return new $c_Ltrivalibs_graphics_math_cpu_Mat4((f / aspect), 0.0, 0.0, 0.0, 0.0, f, 0.0, 0.0, 0.0, 0.0, (far * rInv), (-1.0), 0.0, 0.0, ((near * far) * rInv), 0.0);
 }
 function $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($thiz, m, x$2, other) {
-  var a00 = (+x$2.gR(m));
-  var a01 = (+x$2.gS(m));
-  var a02 = (+x$2.gT(m));
-  var a03 = (+x$2.gU(m));
-  var a10 = (+x$2.gV(m));
-  var a11 = (+x$2.gW(m));
-  var a12 = (+x$2.gX(m));
-  var a13 = (+x$2.gY(m));
-  var a20 = (+x$2.gZ(m));
-  var a21 = (+x$2.h0(m));
-  var a22 = (+x$2.h1(m));
-  var a23 = (+x$2.h2(m));
-  var a30 = (+x$2.h3(m));
-  var a31 = (+x$2.h4(m));
-  var a32 = (+x$2.h5(m));
-  var a33 = (+x$2.h6(m));
-  var b00 = (+x$2.gR(other));
-  var b01 = (+x$2.gS(other));
-  var b02 = (+x$2.gT(other));
-  var b03 = (+x$2.gU(other));
-  var b10 = (+x$2.gV(other));
-  var b11 = (+x$2.gW(other));
-  var b12 = (+x$2.gX(other));
-  var b13 = (+x$2.gY(other));
-  var b20 = (+x$2.gZ(other));
-  var b21 = (+x$2.h0(other));
-  var b22 = (+x$2.h1(other));
-  var b23 = (+x$2.h2(other));
-  var b30 = (+x$2.h3(other));
-  var b31 = (+x$2.h4(other));
-  var b32 = (+x$2.h5(other));
-  var b33 = (+x$2.h6(other));
+  var a00 = (+x$2.gQ(m));
+  var a01 = (+x$2.gR(m));
+  var a02 = (+x$2.gS(m));
+  var a03 = (+x$2.gT(m));
+  var a10 = (+x$2.gU(m));
+  var a11 = (+x$2.gV(m));
+  var a12 = (+x$2.gW(m));
+  var a13 = (+x$2.gX(m));
+  var a20 = (+x$2.gY(m));
+  var a21 = (+x$2.gZ(m));
+  var a22 = (+x$2.h0(m));
+  var a23 = (+x$2.h1(m));
+  var a30 = (+x$2.h2(m));
+  var a31 = (+x$2.h3(m));
+  var a32 = (+x$2.h4(m));
+  var a33 = (+x$2.h5(m));
+  var b00 = (+x$2.gQ(other));
+  var b01 = (+x$2.gR(other));
+  var b02 = (+x$2.gS(other));
+  var b03 = (+x$2.gT(other));
+  var b10 = (+x$2.gU(other));
+  var b11 = (+x$2.gV(other));
+  var b12 = (+x$2.gW(other));
+  var b13 = (+x$2.gX(other));
+  var b20 = (+x$2.gY(other));
+  var b21 = (+x$2.gZ(other));
+  var b22 = (+x$2.h0(other));
+  var b23 = (+x$2.h1(other));
+  var b30 = (+x$2.h2(other));
+  var b31 = (+x$2.h3(other));
+  var b32 = (+x$2.h4(other));
+  var b33 = (+x$2.h5(other));
   return new $c_Ltrivalibs_graphics_math_cpu_Mat4(((((a00 * b00) + (a10 * b01)) + (a20 * b02)) + (a30 * b03)), ((((a01 * b00) + (a11 * b01)) + (a21 * b02)) + (a31 * b03)), ((((a02 * b00) + (a12 * b01)) + (a22 * b02)) + (a32 * b03)), ((((a03 * b00) + (a13 * b01)) + (a23 * b02)) + (a33 * b03)), ((((a00 * b10) + (a10 * b11)) + (a20 * b12)) + (a30 * b13)), ((((a01 * b10) + (a11 * b11)) + (a21 * b12)) + (a31 * b13)), ((((a02 * b10) + (a12 * b11)) + (a22 * b12)) + (a32 * b13)), ((((a03 * b10) + (a13 * b11)) + (a23 * b12)) + (a33 * b13)), ((((a00 * b20) + (a10 * b21)) + (a20 * b22)) + (a30 * b23)), ((((a01 * b20) + (a11 * b21)) + (a21 * b22)) + (a31 * b23)), ((((a02 * b20) + (a12 * b21)) + (a22 * b22)) + (a32 * b23)), ((((a03 * b20) + (a13 * b21)) + (a23 * b22)) + (a33 * b23)), ((((a00 * b30) + (a10 * b31)) + (a20 * b32)) + (a30 * b33)), ((((a01 * b30) + (a11 * b31)) + (a21 * b32)) + (a31 * b33)), ((((a02 * b30) + (a12 * b31)) + (a22 * b32)) + (a32 * b33)), ((((a03 * b30) + (a13 * b31)) + (a23 * b32)) + (a33 * b33)));
 }
 function $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__inverse__O__Ltrivalibs_graphics_math_Mat4Base__O($thiz, m, x$2) {
-  var a00 = (+x$2.gR(m));
-  var a01 = (+x$2.gS(m));
-  var a02 = (+x$2.gT(m));
-  var a03 = (+x$2.gU(m));
-  var a10 = (+x$2.gV(m));
-  var a11 = (+x$2.gW(m));
-  var a12 = (+x$2.gX(m));
-  var a13 = (+x$2.gY(m));
-  var a20 = (+x$2.gZ(m));
-  var a21 = (+x$2.h0(m));
-  var a22 = (+x$2.h1(m));
-  var a23 = (+x$2.h2(m));
-  var a30 = (+x$2.h3(m));
-  var a31 = (+x$2.h4(m));
-  var a32 = (+x$2.h5(m));
-  var a33 = (+x$2.h6(m));
+  var a00 = (+x$2.gQ(m));
+  var a01 = (+x$2.gR(m));
+  var a02 = (+x$2.gS(m));
+  var a03 = (+x$2.gT(m));
+  var a10 = (+x$2.gU(m));
+  var a11 = (+x$2.gV(m));
+  var a12 = (+x$2.gW(m));
+  var a13 = (+x$2.gX(m));
+  var a20 = (+x$2.gY(m));
+  var a21 = (+x$2.gZ(m));
+  var a22 = (+x$2.h0(m));
+  var a23 = (+x$2.h1(m));
+  var a30 = (+x$2.h2(m));
+  var a31 = (+x$2.h3(m));
+  var a32 = (+x$2.h4(m));
+  var a33 = (+x$2.h5(m));
   var b00 = ((a00 * a11) - (a01 * a10));
   var b01 = ((a00 * a12) - (a02 * a10));
   var b02 = ((a00 * a13) - (a03 * a10));
@@ -5204,22 +5128,22 @@ function $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__inverse__O__Ltrivalibs_gr
   return new $c_Ltrivalibs_graphics_math_cpu_Mat4(((((a11 * b11) - (a12 * b10)) + (a13 * b09)) * invDet), (((((-a01) * b11) + (a02 * b10)) - (a03 * b09)) * invDet), ((((a31 * b05) - (a32 * b04)) + (a33 * b03)) * invDet), (((((-a21) * b05) + (a22 * b04)) - (a23 * b03)) * invDet), (((((-a10) * b11) + (a12 * b08)) - (a13 * b07)) * invDet), ((((a00 * b11) - (a02 * b08)) + (a03 * b07)) * invDet), (((((-a30) * b05) + (a32 * b02)) - (a33 * b01)) * invDet), ((((a20 * b05) - (a22 * b02)) + (a23 * b01)) * invDet), ((((a10 * b10) - (a11 * b08)) + (a13 * b06)) * invDet), (((((-a00) * b10) + (a01 * b08)) - (a03 * b06)) * invDet), ((((a30 * b04) - (a31 * b02)) + (a33 * b00)) * invDet), (((((-a20) * b04) + (a21 * b02)) - (a23 * b00)) * invDet), (((((-a10) * b09) + (a11 * b07)) - (a12 * b06)) * invDet), ((((a00 * b09) - (a01 * b07)) + (a02 * b06)) * invDet), (((((-a30) * b03) + (a31 * b01)) - (a32 * b00)) * invDet), ((((a20 * b03) - (a21 * b01)) + (a22 * b00)) * invDet));
 }
 function $f_Ltrivalibs_graphics_math_Mat4MutableOps__set__O__Ltrivalibs_graphics_math_Mat4Mutable__O__Ltrivalibs_graphics_math_Mat4Base__V($thiz, m, mb, other, x$4) {
-  mb.lQ(m, (+x$4.gR(other)));
-  mb.lR(m, (+x$4.gS(other)));
-  mb.lS(m, (+x$4.gT(other)));
-  mb.lT(m, (+x$4.gU(other)));
-  mb.lU(m, (+x$4.gV(other)));
-  mb.lV(m, (+x$4.gW(other)));
-  mb.lW(m, (+x$4.gX(other)));
-  mb.lX(m, (+x$4.gY(other)));
-  mb.lY(m, (+x$4.gZ(other)));
-  mb.lZ(m, (+x$4.h0(other)));
-  mb.m0(m, (+x$4.h1(other)));
-  mb.m1(m, (+x$4.h2(other)));
-  mb.m2(m, (+x$4.h3(other)));
-  mb.m3(m, (+x$4.h4(other)));
-  mb.m4(m, (+x$4.h5(other)));
-  mb.m5(m, (+x$4.h6(other)));
+  mb.lK(m, (+x$4.gQ(other)));
+  mb.lL(m, (+x$4.gR(other)));
+  mb.lM(m, (+x$4.gS(other)));
+  mb.lN(m, (+x$4.gT(other)));
+  mb.lO(m, (+x$4.gU(other)));
+  mb.lP(m, (+x$4.gV(other)));
+  mb.lQ(m, (+x$4.gW(other)));
+  mb.lR(m, (+x$4.gX(other)));
+  mb.lS(m, (+x$4.gY(other)));
+  mb.lT(m, (+x$4.gZ(other)));
+  mb.lU(m, (+x$4.h0(other)));
+  mb.lV(m, (+x$4.h1(other)));
+  mb.lW(m, (+x$4.h2(other)));
+  mb.lX(m, (+x$4.h3(other)));
+  mb.lY(m, (+x$4.h4(other)));
+  mb.lZ(m, (+x$4.h5(other)));
 }
 function $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__addVec__O__Ltrivalibs_graphics_math_Vec3Base__O__O($thiz, v, x$2, other) {
   return new $c_Ltrivalibs_graphics_math_cpu_Vec3((v.s + other.s), (v.t + other.t), (v.u + other.u));
@@ -5237,13 +5161,15 @@ function $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__normalize__O__Ltrivalibs_
   return $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__divScalar__O__Ltrivalibs_graphics_math_Vec3Base__D__O($thiz, v, x$2, $f_Ltrivalibs_graphics_math_Vec3Base__length__O__D(x$2, v));
 }
 function $f_Ltrivalibs_graphics_math_Vec4MutableOps__set__O__Ltrivalibs_graphics_math_Vec4Mutable__O__Ltrivalibs_graphics_math_Vec4Base__V($thiz, v, x$2, other, x$4) {
-  x$2.jG(v, (+x$4.aO(other)));
-  x$2.jH(v, (+x$4.aP(other)));
-  x$2.jJ(v, (+x$4.aQ(other)));
-  x$2.jF(v, (+x$4.aM(other)));
+  x$2.jE(v, (+x$4.aO(other)));
+  x$2.jF(v, (+x$4.aP(other)));
+  x$2.jH(v, (+x$4.aQ(other)));
+  x$2.jD(v, (+x$4.aM(other)));
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Mat4(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
+  this.il = 0.0;
+  this.im = 0.0;
   this.io = 0.0;
   this.ip = 0.0;
   this.iq = 0.0;
@@ -5258,24 +5184,22 @@ function $c_Ltrivalibs_graphics_math_cpu_Mat4(m00, m01, m02, m03, m10, m11, m12,
   this.iz = 0.0;
   this.iA = 0.0;
   this.iB = 0.0;
-  this.iC = 0.0;
-  this.iD = 0.0;
-  this.io = m00;
-  this.ip = m01;
-  this.iq = m02;
-  this.ir = m03;
-  this.is = m10;
-  this.it = m11;
-  this.iu = m12;
-  this.iv = m13;
-  this.iw = m20;
-  this.ix = m21;
-  this.iy = m22;
-  this.iz = m23;
-  this.iA = m30;
-  this.iB = m31;
-  this.iC = m32;
-  this.iD = m33;
+  this.il = m00;
+  this.im = m01;
+  this.io = m02;
+  this.ip = m03;
+  this.iq = m10;
+  this.ir = m11;
+  this.is = m12;
+  this.it = m13;
+  this.iu = m20;
+  this.iv = m21;
+  this.iw = m22;
+  this.ix = m23;
+  this.iy = m30;
+  this.iz = m31;
+  this.iA = m32;
+  this.iB = m33;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Mat4.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Mat4;
@@ -5284,18 +5208,18 @@ function $h_Ltrivalibs_graphics_math_cpu_Mat4() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Mat4.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Mat4 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Mat4, "trivalibs.graphics.math.cpu.Mat4", ({
-  ec: 1
+  dY: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Quat(x, y, z, w) {
+  this.hw = 0.0;
   this.hx = 0.0;
   this.hy = 0.0;
-  this.hz = 0.0;
-  this.hw = 0.0;
-  this.hx = x;
-  this.hy = y;
-  this.hz = z;
-  this.hw = w;
+  this.hv = 0.0;
+  this.hw = x;
+  this.hx = y;
+  this.hy = z;
+  this.hv = w;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Quat.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Quat;
@@ -5304,7 +5228,7 @@ function $h_Ltrivalibs_graphics_math_cpu_Quat() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Quat.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Quat = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Quat, "trivalibs.graphics.math.cpu.Quat", ({
-  ef: 1
+  e1: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Quat$() {
@@ -5315,16 +5239,16 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Quat$;
 function $h_Ltrivalibs_graphics_math_cpu_Quat$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Quat$.prototype = $p;
-$p.nw = (function(angle) {
+$p.np = (function(angle) {
   var h = (0.5 * angle);
   return new $c_Ltrivalibs_graphics_math_cpu_Quat((+Math.sin(h)), 0.0, 0.0, (+Math.cos(h)));
 });
-$p.nx = (function(angle) {
+$p.nq = (function(angle) {
   var h = (0.5 * angle);
   return new $c_Ltrivalibs_graphics_math_cpu_Quat(0.0, (+Math.sin(h)), 0.0, (+Math.cos(h)));
 });
 var $d_Ltrivalibs_graphics_math_cpu_Quat$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Quat$, "trivalibs.graphics.math.cpu.Quat$", ({
-  eg: 1
+  e2: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Quat$;
 function $m_Ltrivalibs_graphics_math_cpu_Quat$() {
@@ -5338,10 +5262,10 @@ function $f_Ltrivalibs_graphics_math_cpu_QuatImmutableOps__quatMul__O__Ltrivalib
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Vec2(x, y) {
-  this.kz = 0.0;
-  this.kA = 0.0;
-  this.kz = x;
-  this.kA = y;
+  this.ku = 0.0;
+  this.kv = 0.0;
+  this.ku = x;
+  this.kv = y;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Vec2.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Vec2;
@@ -5350,7 +5274,7 @@ function $h_Ltrivalibs_graphics_math_cpu_Vec2() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec2.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Vec2 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec2, "trivalibs.graphics.math.cpu.Vec2", ({
-  ek: 1
+  e6: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Vec3(x, y, z) {
@@ -5368,7 +5292,7 @@ function $h_Ltrivalibs_graphics_math_cpu_Vec3() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec3.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Vec3 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec3, "trivalibs.graphics.math.cpu.Vec3", ({
-  el: 1
+  e7: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Vec4(x, y, z, w) {
@@ -5388,12 +5312,12 @@ function $h_Ltrivalibs_graphics_math_cpu_Vec4() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec4.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Vec4 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec4, "trivalibs.graphics.math.cpu.Vec4", ({
-  eo: 1
+  ea: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$() {
-  this.kF = null;
-  this.kG = false;
+  this.kA = null;
+  this.kB = false;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$;
@@ -5401,15 +5325,15 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$;
 function $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$.prototype = $p;
-$p.nD = (function() {
-  if ((!this.kG)) {
-    this.kF = new $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18();
-    this.kG = true;
+$p.nw = (function() {
+  if ((!this.kB)) {
+    this.kA = new $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18();
+    this.kB = true;
   }
-  return this.kF;
+  return this.kA;
 });
 var $d_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$, "trivalibs.graphics.math.cpu.mat4$package$Mat4Buffer$", ({
-  es: 1
+  ee: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$;
 function $m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$() {
@@ -5420,8 +5344,8 @@ function $m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$() {
-  this.kH = null;
-  this.kI = false;
+  this.kC = null;
+  this.kD = false;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$;
@@ -5429,15 +5353,15 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$;
 function $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$.prototype = $p;
-$p.pc = (function() {
-  if ((!this.kI)) {
-    this.kH = new $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8();
-    this.kI = true;
+$p.p2 = (function() {
+  if ((!this.kD)) {
+    this.kC = new $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8();
+    this.kD = true;
   }
-  return this.kH;
+  return this.kC;
 });
 var $d_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$, "trivalibs.graphics.math.cpu.vec4$package$Vec4Buffer$", ({
-  ev: 1
+  eh: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$;
 function $m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$() {
@@ -5479,7 +5403,7 @@ $p.bl = (function() {
   return new $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((_$1$2) => $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), _$1$2))));
 });
 var $d_Ltrivalibs_graphics_math_gpu_LeftScalar$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_LeftScalar$, "trivalibs.graphics.math.gpu.LeftScalar$", ({
-  ez: 1
+  el: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_LeftScalar$;
 function $m_Ltrivalibs_graphics_math_gpu_LeftScalar$() {
@@ -5490,8 +5414,8 @@ function $m_Ltrivalibs_graphics_math_gpu_LeftScalar$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_gpu_expr$package$() {
-  this.kK = null;
-  this.kL = false;
+  this.kF = null;
+  this.kG = false;
 }
 $p = $c_Ltrivalibs_graphics_math_gpu_expr$package$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_gpu_expr$package$;
@@ -5502,30 +5426,30 @@ $h_Ltrivalibs_graphics_math_gpu_expr$package$.prototype = $p;
 $p.as = (function(tex, uv, sampler) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("textureSample(" + tex.f) + ", ") + sampler.f) + ", ") + uv.f) + ")"));
 });
-$p.h9 = (function(tex, uv, sampler, level) {
+$p.h8 = (function(tex, uv, sampler, level) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((("textureSampleLevel(" + tex.f) + ", ") + sampler.f) + ", ") + uv.f) + ", ") + level.f) + ")"));
 });
-$p.gQ = (function(tex, coord) {
+$p.gP = (function(tex, coord) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("textureLoad(" + tex.f) + ", ") + coord.f) + ", 0)"));
 });
-$p.n5 = (function(tex, coord) {
+$p.mY = (function(tex, coord) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("textureLoad(" + tex.f) + ", ") + coord.f) + ", 0)"));
 });
-$p.i0 = (function() {
-  if ((!this.kL)) {
-    this.kK = new $c_Ltrivalibs_graphics_math_gpu_expr$package$$anon$2();
-    this.kL = true;
+$p.hZ = (function() {
+  if ((!this.kG)) {
+    this.kF = new $c_Ltrivalibs_graphics_math_gpu_expr$package$$anon$2();
+    this.kG = true;
   }
-  return this.kK;
+  return this.kF;
 });
-$p.oT = (function(onFalse, onTrue, cond) {
+$p.oK = (function(onFalse, onTrue, cond) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("select(" + onFalse.f) + ", ") + onTrue.f) + ", ") + cond.f) + ")"));
 });
-$p.nq = (function(a, b) {
+$p.nj = (function(a, b) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " > ") + b.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_expr$package$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_expr$package$, "trivalibs.graphics.math.gpu.expr$package$", ({
-  eC: 1
+  eo: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_expr$package$;
 function $m_Ltrivalibs_graphics_math_gpu_expr$package$() {
@@ -5536,10 +5460,10 @@ function $m_Ltrivalibs_graphics_math_gpu_expr$package$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$() {
-  this.kM = null;
-  this.kN = false;
-  this.kO = null;
-  this.kP = false;
+  this.kH = null;
+  this.kI = false;
+  this.kJ = null;
+  this.kK = false;
 }
 $p = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$;
@@ -5552,30 +5476,30 @@ $p.b5 = (function(v) {
   return (((($f_T__indexOf__I__I(s, 46) >= 0) || ($f_T__indexOf__I__I(s, 69) >= 0)) || ($f_T__indexOf__I__I(s, 101) >= 0)) ? s : (s + ".0"));
 });
 $p.j = (function() {
-  if ((!this.kN)) {
-    this.kM = new $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$1();
-    this.kN = true;
+  if ((!this.kI)) {
+    this.kH = new $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$1();
+    this.kI = true;
   }
-  return this.kM;
+  return this.kH;
 });
-$p.gP = (function() {
-  if ((!this.kP)) {
-    this.kO = new $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6();
-    this.kP = true;
+$p.gO = (function() {
+  if ((!this.kK)) {
+    this.kJ = new $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6();
+    this.kK = true;
   }
-  return this.kO;
+  return this.kJ;
 });
 $p.gb = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".xy"));
 });
-$p.pp = (function(v) {
+$p.pf = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".zw"));
 });
 $p.fp = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".xyz"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$, "trivalibs.graphics.math.gpu.float_expr$package$", ({
-  eE: 1
+  eq: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$() {
@@ -5597,7 +5521,7 @@ $p.bk = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("vec2<i32>(" + v.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_ivec2$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_ivec2$, "trivalibs.graphics.math.gpu.ivec2$", ({
-  eQ: 1
+  eC: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_ivec2$;
 function $m_Ltrivalibs_graphics_math_gpu_ivec2$() {
@@ -5619,7 +5543,7 @@ $p.a7 = (function(x, y) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("vec2<f32>(" + x.f) + ", ") + y.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_vec2$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_vec2$, "trivalibs.graphics.math.gpu.vec2$", ({
-  eR: 1
+  eD: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_vec2$;
 function $m_Ltrivalibs_graphics_math_gpu_vec2$() {
@@ -5643,11 +5567,11 @@ $p.as = (function(x, y, z) {
 $p.bk = (function(scalar) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("vec3<f32>(" + scalar.f) + ")"));
 });
-$p.jl = (function(scalar) {
+$p.jj = (function(scalar) {
   return this.bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
 });
 var $d_Ltrivalibs_graphics_math_gpu_vec3$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_vec3$, "trivalibs.graphics.math.gpu.vec3$", ({
-  eS: 1
+  eE: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_vec3$;
 function $m_Ltrivalibs_graphics_math_gpu_vec3$() {
@@ -5665,7 +5589,7 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_vec4$;
 function $h_Ltrivalibs_graphics_math_gpu_vec4$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_vec4$.prototype = $p;
-$p.mK = (function(x, y, z, w) {
+$p.mD = (function(x, y, z, w) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((((("vec4<f32>(" + x.f) + ", ") + y.f) + ", ") + z.f) + ", ") + w.f) + ")"));
 });
 $p.a7 = (function(xyz, w) {
@@ -5675,7 +5599,7 @@ $p.as = (function(xy, z, w) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("vec4<f32>(" + xy.f) + ", ") + z.f) + ", ") + w.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_vec4$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_vec4$, "trivalibs.graphics.math.gpu.vec4$", ({
-  eT: 1
+  eF: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_vec4$;
 function $m_Ltrivalibs_graphics_math_gpu_vec4$() {
@@ -5696,14 +5620,14 @@ function $h_Ltrivalibs_graphics_painter_BindPair() {
 }
 $h_Ltrivalibs_graphics_painter_BindPair.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_BindPair = new $TypeData().i($c_Ltrivalibs_graphics_painter_BindPair, "trivalibs.graphics.painter.BindPair", ({
-  eU: 1
+  eG: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_BlendState$() {
-  this.kQ = null;
+  this.kL = null;
   $n_Ltrivalibs_graphics_painter_BlendState$ = this;
   new ($a_Ltrivalibs_graphics_painter_BlendState())(new ($a_Ltrivalibs_graphics_painter_BlendFn())("src-alpha", "one-minus-src-alpha"), new ($a_Ltrivalibs_graphics_painter_BlendFn())("one", "one-minus-src-alpha"));
-  this.kQ = new ($a_Ltrivalibs_graphics_painter_BlendState())(new ($a_Ltrivalibs_graphics_painter_BlendFn())("src-alpha", "one"), new ($a_Ltrivalibs_graphics_painter_BlendFn())("one", "one"));
+  this.kL = new ($a_Ltrivalibs_graphics_painter_BlendState())(new ($a_Ltrivalibs_graphics_painter_BlendFn())("src-alpha", "one"), new ($a_Ltrivalibs_graphics_painter_BlendFn())("one", "one"));
   new ($a_Ltrivalibs_graphics_painter_BlendState())(new ($a_Ltrivalibs_graphics_painter_BlendFn())("dst", "zero"), new ($a_Ltrivalibs_graphics_painter_BlendFn())("dst-alpha", "zero"));
 }
 $p = $c_Ltrivalibs_graphics_painter_BlendState$.prototype = new $h_O();
@@ -5713,7 +5637,7 @@ function $h_Ltrivalibs_graphics_painter_BlendState$() {
 }
 $h_Ltrivalibs_graphics_painter_BlendState$.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_BlendState$ = new $TypeData().i($c_Ltrivalibs_graphics_painter_BlendState$, "trivalibs.graphics.painter.BlendState$", ({
-  eV: 1
+  eH: 1
 }));
 var $n_Ltrivalibs_graphics_painter_BlendState$;
 function $m_Ltrivalibs_graphics_painter_BlendState$() {
@@ -5732,7 +5656,7 @@ function $p_Ltrivalibs_graphics_painter_Form__refreshIndexFormat__V($thiz) {
     }
     i = ((1 + i) | 0);
   }
-  $thiz.iG = format;
+  $thiz.iE = format;
 }
 function $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_BufferView__sjs_js_typedarray_TypedArray__Z__V($thiz, index, verts, indices, widenTo32) {
   while ((($thiz.f9.length | 0) <= index)) {
@@ -5744,7 +5668,7 @@ function $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_B
     $p_Ltrivalibs_graphics_painter_Form__uploadIndices__Ltrivalibs_graphics_painter_FormBuffers__sjs_js_typedarray_TypedArray__Z__V($thiz, b, indices, widenTo32);
   } else {
     b.bg = 0;
-    b.gp = 0;
+    b.go = 0;
   }
 }
 function $p_Ltrivalibs_graphics_painter_Form__uploadVertices__Ltrivalibs_graphics_painter_FormBuffers__Ltrivalibs_bufferdata_BufferView__V($thiz, b, verts) {
@@ -5752,19 +5676,19 @@ function $p_Ltrivalibs_graphics_painter_Form__uploadVertices__Ltrivalibs_graphic
   var size = (data.byteLength | 0);
   var p = ((-4) & ((3 + size) | 0));
   var padded = ((p < 4) ? 4 : p);
-  if (((b.bh === null) || (b.iJ < padded))) {
+  if (((b.bh === null) || (b.iH < padded))) {
     if ((b.bh !== null)) {
       var opt$proxy4 = b.bh;
       opt$proxy4.destroy();
     }
-    b.bh = $thiz.go.h.createBuffer(({
+    b.bh = $thiz.gn.h.createBuffer(({
       "size": padded,
       "usage": 40
     }));
-    b.iJ = padded;
+    b.iH = padded;
   }
-  $thiz.go.az.writeBuffer(b.bh, 0.0, $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_ArrayBuffer__sjs_js_typedarray_ArrayBuffer($thiz, data));
-  b.hA = size;
+  $thiz.gn.az.writeBuffer(b.bh, 0.0, $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_ArrayBuffer__sjs_js_typedarray_ArrayBuffer($thiz, data));
+  b.hz = size;
   b.fS = (verts.off | 0);
 }
 function $p_Ltrivalibs_graphics_painter_Form__uploadIndices__Ltrivalibs_graphics_painter_FormBuffers__sjs_js_typedarray_TypedArray__Z__V($thiz, b, raw, widenTo32) {
@@ -5792,19 +5716,19 @@ function $p_Ltrivalibs_graphics_painter_Form__uploadIndices__Ltrivalibs_graphics
   var size = (data.byteLength | 0);
   var p = ((-4) & ((3 + size) | 0));
   var padded = ((p < 4) ? 4 : p);
-  if (((b.bf === null) || (b.iI < padded))) {
+  if (((b.bf === null) || (b.iG < padded))) {
     if ((b.bf !== null)) {
       var opt$proxy8 = b.bf;
       opt$proxy8.destroy();
     }
-    b.bf = $thiz.go.h.createBuffer(({
+    b.bf = $thiz.gn.h.createBuffer(({
       "size": padded,
       "usage": 24
     }));
-    b.iI = padded;
+    b.iG = padded;
   }
-  $thiz.go.az.writeBuffer(b.bf, 0.0, $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_ArrayBuffer__sjs_js_typedarray_ArrayBuffer($thiz, data));
-  b.gp = size;
+  $thiz.gn.az.writeBuffer(b.bf, 0.0, $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_ArrayBuffer__sjs_js_typedarray_ArrayBuffer($thiz, data));
+  b.go = size;
   b.bg = count;
 }
 function $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_ArrayBuffer__sjs_js_typedarray_ArrayBuffer($thiz, data) {
@@ -5821,18 +5745,18 @@ function $p_Ltrivalibs_graphics_painter_Form__alignedData__sjs_js_typedarray_Arr
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Form(painter) {
-  this.go = null;
+  this.gn = null;
   this.f9 = null;
   this.f8 = 0;
-  this.iH = null;
   this.iF = null;
-  this.iG = null;
-  this.go = painter;
+  this.iD = null;
+  this.iE = null;
+  this.gn = painter;
   this.f9 = [];
   this.f8 = 0;
-  this.iH = "triangle-list";
-  this.iF = "ccw";
-  this.iG = null;
+  this.iF = "triangle-list";
+  this.iD = "ccw";
+  this.iE = null;
 }
 $p = $c_Ltrivalibs_graphics_painter_Form.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_Form;
@@ -5840,15 +5764,15 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Form;
 function $h_Ltrivalibs_graphics_painter_Form() {
 }
 $h_Ltrivalibs_graphics_painter_Form.prototype = $p;
-$p.oU = (function(geometry, vertices, geometries, verticesAll, topology, frontFace) {
+$p.oL = (function(geometry, vertices, geometries, verticesAll, topology, frontFace) {
   if ((topology !== (void 0))) {
-    this.iH = topology;
+    this.iF = topology;
   }
   if ((frontFace !== (void 0))) {
-    this.iF = frontFace;
+    this.iD = frontFace;
   }
   if ((geometry !== (void 0))) {
-    $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_BufferView__sjs_js_typedarray_TypedArray__Z__V(this, 0, geometry.im, geometry.ht, false);
+    $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_BufferView__sjs_js_typedarray_TypedArray__Z__V(this, 0, geometry.ik, geometry.hs, false);
     this.f8 = 1;
     $p_Ltrivalibs_graphics_painter_Form__refreshIndexFormat__V(this);
   }
@@ -5861,7 +5785,7 @@ $p.oU = (function(geometry, vertices, geometries, verticesAll, topology, frontFa
     var use32 = false;
     var i = 0;
     while ((i < (geometries.length | 0))) {
-      var idx = geometries[i].ht;
+      var idx = geometries[i].hs;
       if (((idx !== null) && (!(!(idx instanceof Uint32Array))))) {
         use32 = true;
       }
@@ -5870,7 +5794,7 @@ $p.oU = (function(geometry, vertices, geometries, verticesAll, topology, frontFa
     i = 0;
     while ((i < (geometries.length | 0))) {
       var geo = geometries[i];
-      $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_BufferView__sjs_js_typedarray_TypedArray__Z__V(this, i, geo.im, geo.ht, use32);
+      $p_Ltrivalibs_graphics_painter_Form__upload__I__Ltrivalibs_bufferdata_BufferView__sjs_js_typedarray_TypedArray__Z__V(this, i, geo.ik, geo.hs, use32);
       i = ((1 + i) | 0);
     }
     this.f8 = (geometries.length | 0);
@@ -5888,26 +5812,26 @@ $p.oU = (function(geometry, vertices, geometries, verticesAll, topology, frontFa
   return this;
 });
 var $d_Ltrivalibs_graphics_painter_Form = new $TypeData().i($c_Ltrivalibs_graphics_painter_Form, "trivalibs.graphics.painter.Form", ({
-  eW: 1
+  eI: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_FormBuffers() {
   this.bh = null;
-  this.iJ = 0;
-  this.hA = 0;
+  this.iH = 0;
+  this.hz = 0;
   this.fS = 0;
   this.bf = null;
-  this.iI = 0;
-  this.gp = 0;
+  this.iG = 0;
+  this.go = 0;
   this.bg = 0;
   this.fa = null;
   this.bh = null;
-  this.iJ = 0;
-  this.hA = 0;
+  this.iH = 0;
+  this.hz = 0;
   this.fS = 0;
   this.bf = null;
-  this.iI = 0;
-  this.gp = 0;
+  this.iG = 0;
+  this.go = 0;
   this.bg = 0;
   this.fa = "uint16";
 }
@@ -5918,12 +5842,12 @@ function $h_Ltrivalibs_graphics_painter_FormBuffers() {
 }
 $h_Ltrivalibs_graphics_painter_FormBuffers.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_FormBuffers = new $TypeData().i($c_Ltrivalibs_graphics_painter_FormBuffers, "trivalibs.graphics.painter.FormBuffers", ({
-  eX: 1
+  eJ: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter) {
-  this.hB = null;
-  this.hB = [];
+  this.hA = null;
+  this.hA = [];
 }
 $p = $c_Ltrivalibs_graphics_painter_InstanceList.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_InstanceList;
@@ -5932,21 +5856,21 @@ function $h_Ltrivalibs_graphics_painter_InstanceList() {
 }
 $h_Ltrivalibs_graphics_painter_InstanceList.prototype = $p;
 $p.K = (function() {
-  return (this.hB.length | 0);
+  return (this.hA.length | 0);
 });
 var $d_Ltrivalibs_graphics_painter_InstanceList = new $TypeData().i($c_Ltrivalibs_graphics_painter_InstanceList, "trivalibs.graphics.painter.InstanceList", ({
-  eY: 1
+  eK: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_LayerBindCache(panelId, epoch, valueGroup, panelGroup) {
-  this.kS = 0;
-  this.kR = 0;
-  this.iN = null;
-  this.iM = null;
-  this.kS = panelId;
-  this.kR = epoch;
-  this.iN = valueGroup;
-  this.iM = panelGroup;
+  this.kN = 0;
+  this.kM = 0;
+  this.iL = null;
+  this.iK = null;
+  this.kN = panelId;
+  this.kM = epoch;
+  this.iL = valueGroup;
+  this.iK = panelGroup;
 }
 $p = $c_Ltrivalibs_graphics_painter_LayerBindCache.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_LayerBindCache;
@@ -5955,22 +5879,22 @@ function $h_Ltrivalibs_graphics_painter_LayerBindCache() {
 }
 $h_Ltrivalibs_graphics_painter_LayerBindCache.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_LayerBindCache = new $TypeData().i($c_Ltrivalibs_graphics_painter_LayerBindCache, "trivalibs.graphics.painter.LayerBindCache", ({
-  f0: 1
+  eM: 1
 }));
 function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V($thiz, panel) {
-  var w = $thiz.pf();
-  var h = $thiz.i2();
-  panel.ng(w, h);
+  var w = $thiz.p5();
+  var h = $thiz.i1();
+  panel.n9(w, h);
   var msaa = panel.fX;
   var encoder = $thiz.h.createCommandEncoder();
-  var panelFormats = panel.jq();
+  var panelFormats = panel.jo();
   var colorAttachments = [];
   var t = 0;
-  while ((t < panel.p4())) {
-    if ((panel.hH !== null)) {
-      var opt$proxy2 = panel.hH;
+  while ((t < panel.oU())) {
+    if ((panel.hG !== null)) {
+      var opt$proxy2 = panel.hG;
       if (msaa) {
-        var _2 = panel.m8(t);
+        var _2 = panel.m2(t);
         var TextureViewBundle_this = panel.V[t];
         var _2$1 = TextureViewBundle_this.aB[0];
         var value = opt$proxy2.fP;
@@ -6011,7 +5935,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
         });
       }
     } else if (msaa) {
-      var _2$5 = panel.m8(t);
+      var _2$5 = panel.m2(t);
       var TextureViewBundle_this$3 = panel.V[t];
       var _2$6 = TextureViewBundle_this$3.aB[0];
       var attachment = ({
@@ -6035,8 +5959,8 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
   var passDesc = ({
     "colorAttachments": colorAttachments
   });
-  if (panel.gy) {
-    var _2$8 = panel.lJ();
+  if (panel.gx) {
+    var _2$8 = panel.lE();
     passDesc.depthStencilAttachment = ({
       "view": _2$8,
       "depthLoadOp": "clear",
@@ -6046,13 +5970,13 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
   }
   var shapePass = encoder.beginRenderPass(passDesc);
   var i = 0;
-  while ((i < (panel.hI.length | 0))) {
-    $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shape__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_Panel__V($thiz, shapePass, panel.hI[i], panel.gy, msaa, panelFormats, panel);
+  while ((i < (panel.hH.length | 0))) {
+    $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shape__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_Panel__V($thiz, shapePass, panel.hH[i], panel.gx, msaa, panelFormats, panel);
     i = ((1 + i) | 0);
   }
   shapePass.end();
   $thiz.az.submit([encoder.finish()]);
-  if (panel.gv) {
+  if (panel.gu) {
     $p_Ltrivalibs_graphics_painter_Painter__resolvePanelDepth__Ltrivalibs_graphics_painter_Panel__V($thiz, panel);
   }
   var curEncoder = null;
@@ -6060,15 +5984,15 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
   var j = 0;
   while ((j < (panel.bi.length | 0))) {
     var layer = panel.bi[j];
-    var needsPingPong = layer.lE();
-    if ((layer.gq >= 0)) {
+    var needsPingPong = layer.lz();
+    if ((layer.gp >= 0)) {
       if ((curPass !== null)) {
         curPass.end();
         $thiz.az.submit([curEncoder.finish()]);
         curPass = null;
       }
-      var mipDstView = panel.V[0].aB[layer.gq];
-      var mipSrcView = ((layer.hC >= 0) ? panel.V[0].aB[layer.hC] : panel.i8());
+      var mipDstView = panel.V[0].aB[layer.gp];
+      var mipSrcView = ((layer.hB >= 0) ? panel.V[0].aB[layer.hB] : panel.i7());
       var enc = $thiz.h.createCommandEncoder();
       var _2$9 = [({
         "view": mipDstView,
@@ -6088,7 +6012,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
         curPass = null;
       }
       var enc$2 = $thiz.h.createCommandEncoder();
-      var _2$10 = panel.oG();
+      var _2$10 = panel.ox();
       var _2$11 = [({
         "view": _2$10,
         "loadOp": "load",
@@ -6097,15 +6021,15 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
       var ppPass = enc$2.beginRenderPass(({
         "colorAttachments": _2$11
       }));
-      $p_Ltrivalibs_graphics_painter_Painter__renderLayerOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Layer__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__Ltrivalibs_graphics_painter_Panel__V($thiz, ppPass, layer, false, false, panelFormats, panel.i8(), panel);
+      $p_Ltrivalibs_graphics_painter_Painter__renderLayerOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Layer__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__Ltrivalibs_graphics_painter_Panel__V($thiz, ppPass, layer, false, false, panelFormats, panel.i7(), panel);
       ppPass.end();
       $thiz.az.submit([enc$2.finish()]);
-      panel.p2();
+      panel.oS();
     } else {
       if ((curPass === null)) {
         curEncoder = $thiz.h.createCommandEncoder();
         var $x_1 = curEncoder;
-        var _2$12 = panel.i8();
+        var _2$12 = panel.i7();
         var _2$13 = [({
           "view": _2$12,
           "loadOp": "load",
@@ -6126,27 +6050,27 @@ function $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics
   var hasMipTargetLayers = false;
   var mi = 0;
   while ((mi < (panel.bi.length | 0))) {
-    if ((panel.bi[mi].gq >= 0)) {
+    if ((panel.bi[mi].gp >= 0)) {
       hasMipTargetLayers = true;
     }
     mi = ((1 + mi) | 0);
   }
-  if (((panel.jt() > 1) && (!hasMipTargetLayers))) {
+  if (((panel.jr() > 1) && (!hasMipTargetLayers))) {
     $p_Ltrivalibs_graphics_painter_Painter__generateMipmaps__Ltrivalibs_graphics_painter_Panel__V($thiz, panel);
   }
 }
 function $p_Ltrivalibs_graphics_painter_Painter__blitSampler__Ltrivalibs_graphics_painter_GPUSampler($thiz) {
-  if ((!$thiz.kY)) {
-    $thiz.kX = $thiz.h.createSampler(({
+  if ((!$thiz.kT)) {
+    $thiz.kS = $thiz.h.createSampler(({
       "magFilter": "nearest",
       "minFilter": "nearest"
     }));
-    $thiz.kY = true;
+    $thiz.kT = true;
   }
-  return $thiz.kX;
+  return $thiz.kS;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__blitBindGroupLayout__Ltrivalibs_graphics_painter_GPUBindGroupLayout($thiz) {
-  if ((!$thiz.kU)) {
+  if ((!$thiz.kP)) {
     var $x_2 = $thiz.h;
     var _2 = ({});
     var _2$1 = ({});
@@ -6162,13 +6086,13 @@ function $p_Ltrivalibs_graphics_painter_Painter__blitBindGroupLayout__Ltrivalibs
     var $x_1 = $x_2.createBindGroupLayout(({
       "entries": _2$2
     }));
-    $thiz.kT = $x_1;
-    $thiz.kU = true;
+    $thiz.kO = $x_1;
+    $thiz.kP = true;
   }
-  return $thiz.kT;
+  return $thiz.kO;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__blitPipeline__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz) {
-  if ((!$thiz.kW)) {
+  if ((!$thiz.kR)) {
     var module = $thiz.h.createShaderModule(({
       "code": "\nstruct VsOut {\n  @builtin(position) pos: vec4f,\n  @location(0) uv: vec2f,\n}\n\n@vertex\nfn vs_main(@builtin(vertex_index) vi: u32) -> VsOut {\n  let x = f32((vi << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(vi & 2u) * 2.0 - 1.0;\n  var out: VsOut;\n  out.pos = vec4f(x, y, 0.0, 1.0);\n  out.uv = vec2f(x * 0.5 + 0.5, 0.5 - y * 0.5);\n  return out;\n}\n\n@group(0) @binding(0) var blit_texture: texture_2d<f32>;\n@group(0) @binding(1) var blit_sampler: sampler;\n\n@fragment\nfn fs_main(in: VsOut) -> @location(0) vec4f {\n  return textureSample(blit_texture, blit_sampler, in.uv);\n}\n"
     }));
@@ -6200,13 +6124,13 @@ function $p_Ltrivalibs_graphics_painter_Painter__blitPipeline__Ltrivalibs_graphi
       "fragment": _2$3,
       "primitive": _2$4
     }));
-    $thiz.kV = $x_2;
-    $thiz.kW = true;
+    $thiz.kQ = $x_2;
+    $thiz.kR = true;
   }
-  return $thiz.kV;
+  return $thiz.kQ;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__depthResolveBindGroupLayout__Ltrivalibs_graphics_painter_GPUBindGroupLayout($thiz) {
-  if ((!$thiz.l1)) {
+  if ((!$thiz.kW)) {
     var $x_2 = $thiz.h;
     var _2 = ({
       "sampleType": "depth",
@@ -6220,13 +6144,13 @@ function $p_Ltrivalibs_graphics_painter_Painter__depthResolveBindGroupLayout__Lt
     var $x_1 = $x_2.createBindGroupLayout(({
       "entries": _2$1
     }));
-    $thiz.l0 = $x_1;
-    $thiz.l1 = true;
+    $thiz.kV = $x_1;
+    $thiz.kW = true;
   }
-  return $thiz.l0;
+  return $thiz.kV;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__depthResolvePipeline__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz) {
-  if ((!$thiz.l3)) {
+  if ((!$thiz.kY)) {
     var module = $thiz.h.createShaderModule(({
       "code": "\n@group(0) @binding(0) var ms_depth: texture_depth_multisampled_2d;\n\n@vertex\nfn vs_main(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4f {\n  let x = f32((vi << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(vi & 2u) * 2.0 - 1.0;\n  return vec4f(x, y, 0.0, 1.0);\n}\n\n@fragment\nfn fs_main(@builtin(position) pos: vec4f) -> @builtin(frag_depth) f32 {\n  return textureLoad(ms_depth, vec2i(pos.xy), 0);\n}\n"
     }));
@@ -6261,15 +6185,15 @@ function $p_Ltrivalibs_graphics_painter_Painter__depthResolvePipeline__Ltrivalib
       "primitive": _2$4,
       "depthStencil": _2$5
     }));
-    $thiz.l2 = $x_2;
-    $thiz.l3 = true;
+    $thiz.kX = $x_2;
+    $thiz.kY = true;
   }
-  return $thiz.l2;
+  return $thiz.kX;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__resolvePanelDepth__Ltrivalibs_graphics_painter_Panel__V($thiz, panel) {
   var encoder = $thiz.h.createCommandEncoder();
   var _2 = [];
-  var _2$1 = panel.oQ();
+  var _2$1 = panel.oH();
   var _2$2 = ({
     "view": _2$1,
     "depthLoadOp": "clear",
@@ -6282,7 +6206,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__resolvePanelDepth__Ltrivalibs_g
   }));
   var $x_1 = $thiz.h;
   var _2$3 = $p_Ltrivalibs_graphics_painter_Painter__depthResolveBindGroupLayout__Ltrivalibs_graphics_painter_GPUBindGroupLayout($thiz);
-  var _2$4 = panel.lJ();
+  var _2$4 = panel.lE();
   var _2$5 = [({
     "binding": 0,
     "resource": _2$4
@@ -6298,18 +6222,18 @@ function $p_Ltrivalibs_graphics_painter_Painter__resolvePanelDepth__Ltrivalibs_g
   $thiz.az.submit([encoder.finish()]);
 }
 function $p_Ltrivalibs_graphics_painter_Painter__mipBlitSampler__Ltrivalibs_graphics_painter_GPUSampler($thiz) {
-  if ((!$thiz.l5)) {
-    $thiz.l4 = $thiz.h.createSampler(({
+  if ((!$thiz.l0)) {
+    $thiz.kZ = $thiz.h.createSampler(({
       "magFilter": "linear",
       "minFilter": "linear"
     }));
-    $thiz.l5 = true;
+    $thiz.l0 = true;
   }
-  return $thiz.l4;
+  return $thiz.kZ;
 }
 function $p_Ltrivalibs_graphics_painter_Painter__getMipBlitPipeline__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, format) {
-  if ((!(!(!(!$thiz.hD.hasOwnProperty(format)))))) {
-    return $thiz.hD[format];
+  if ((!(!(!(!$thiz.hC.hasOwnProperty(format)))))) {
+    return $thiz.hC[format];
   } else {
     var module = $thiz.h.createShaderModule(({
       "code": "\nstruct VsOut {\n  @builtin(position) pos: vec4f,\n  @location(0) uv: vec2f,\n}\n\n@vertex\nfn vs_main(@builtin(vertex_index) vi: u32) -> VsOut {\n  let x = f32((vi << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(vi & 2u) * 2.0 - 1.0;\n  var out: VsOut;\n  out.pos = vec4f(x, y, 0.0, 1.0);\n  out.uv = vec2f(x * 0.5 + 0.5, 0.5 - y * 0.5);\n  return out;\n}\n\n@group(0) @binding(0) var blit_texture: texture_2d<f32>;\n@group(0) @binding(1) var blit_sampler: sampler;\n\n@fragment\nfn fs_main(in: VsOut) -> @location(0) vec4f {\n  return textureSample(blit_texture, blit_sampler, in.uv);\n}\n"
@@ -6341,12 +6265,12 @@ function $p_Ltrivalibs_graphics_painter_Painter__getMipBlitPipeline__T__Ltrivali
       "fragment": _2$3,
       "primitive": _2$4
     }));
-    $thiz.hD[format] = p;
+    $thiz.hC[format] = p;
     return p;
   }
 }
 function $p_Ltrivalibs_graphics_painter_Painter__generateMipmaps__Ltrivalibs_graphics_painter_Panel__V($thiz, panel) {
-  var mipCount = panel.jt();
+  var mipCount = panel.jr();
   if ((mipCount <= 1)) {
     return (void 0);
   }
@@ -6409,7 +6333,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_j
   }
 }
 function $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__sjs_js_Array__V($thiz, panel, shade, workBindings, workPanelBindings) {
-  var dict = panel.gA;
+  var dict = panel.gz;
   var keys = Object.keys(dict);
   var i = 0;
   while ((i < (keys.length | 0))) {
@@ -6438,31 +6362,31 @@ function $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltri
 }
 function $p_Ltrivalibs_graphics_painter_Painter__applyInstanceBindings__Ltrivalibs_graphics_painter_Instance__sjs_js_Array__sjs_js_Array__V($thiz, inst, workBindings, workPanelBindings) {
   var i = 0;
-  while ((i < (inst.lF().length | 0))) {
-    if ((inst.lF()[i] !== null)) {
+  while ((i < (inst.lA().length | 0))) {
+    if ((inst.lA()[i] !== null)) {
       while (((workBindings.length | 0) <= i)) {
         workBindings.push(null);
       }
-      workBindings[i] = inst.lF()[i];
+      workBindings[i] = inst.lA()[i];
     }
     i = ((1 + i) | 0);
   }
   var j = 0;
-  while ((j < (inst.mb().length | 0))) {
-    if ((inst.mb()[j] !== null)) {
+  while ((j < (inst.m5().length | 0))) {
+    if ((inst.m5()[j] !== null)) {
       while (((workPanelBindings.length | 0) <= j)) {
         workPanelBindings.push(null);
       }
-      workPanelBindings[j] = inst.mb()[j];
+      workPanelBindings[j] = inst.m5()[j];
     }
     j = ((1 + j) | 0);
   }
 }
 function $p_Ltrivalibs_graphics_painter_Painter__hasPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Z($thiz, panel) {
-  return ((panel !== null) && ((Object.keys(panel.gA).length | 0) > 0));
+  return ((panel !== null) && ((Object.keys(panel.gz).length | 0) > 0));
 }
 function $p_Ltrivalibs_graphics_painter_Painter__buildValueBindGroup__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUBindGroup($thiz, shade, bindings) {
-  if ((((bindings.length | 0) > 0) && (shade.iQ !== null))) {
+  if ((((bindings.length | 0) > 0) && (shade.iO !== null))) {
     var entries = [];
     var i = 0;
     while ((i < (bindings.length | 0))) {
@@ -6473,7 +6397,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__buildValueBindGroup__Ltrivalibs
       i = ((1 + i) | 0);
     }
     var $x_1 = $thiz.h;
-    var _2 = shade.iQ;
+    var _2 = shade.iO;
     return $x_1.createBindGroup(({
       "layout": _2,
       "entries": entries
@@ -6489,7 +6413,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__setValueBindGroup__Ltrivalibs_g
   }
 }
 function $p_Ltrivalibs_graphics_painter_Painter__buildPanelBindGroup__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__Ltrivalibs_graphics_painter_GPUBindGroup($thiz, shade, panelBindings, srcView) {
-  if ((shade.hL !== null)) {
+  if ((shade.hK !== null)) {
     var entries = [];
     if ((srcView !== null)) {
       entries.push(({
@@ -6502,7 +6426,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__buildPanelBindGroup__Ltrivalibs
     while ((k < (panelBindings.length | 0))) {
       var pb = panelBindings[k];
       if ((pb !== null)) {
-        var view = ((!(!pb.depth)) ? pb.panel.n4() : (((pb.mipLevel | 0) < 0) ? pb.panel.V[(pb.index | 0)].la : pb.panel.V[(pb.index | 0)].aB[(pb.mipLevel | 0)]));
+        var view = ((!(!pb.depth)) ? pb.panel.mX() : (((pb.mipLevel | 0) < 0) ? pb.panel.V[(pb.index | 0)].l5 : pb.panel.V[(pb.index | 0)].aB[(pb.mipLevel | 0)]));
         var value = k;
         entries.push(({
           "binding": value,
@@ -6513,7 +6437,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__buildPanelBindGroup__Ltrivalibs
     }
     if (((entries.length | 0) > 0)) {
       var $x_1 = $thiz.h;
-      var _2 = shade.hL;
+      var _2 = shade.hK;
       return $x_1.createBindGroup(({
         "layout": _2,
         "entries": entries
@@ -6533,11 +6457,11 @@ function $p_Ltrivalibs_graphics_painter_Painter__setPanelBindGroup__Ltrivalibs_g
 }
 function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shape__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_Panel__V($thiz, pass, shape, depthTest, multisample, formats, panel) {
   var fmts = ((formats !== null) ? formats : [$thiz.fU]);
-  var pipeline = $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_BlendState__sjs_js_Array__Z__Z__T__T__T__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, shape.a3, shape.iS, fmts, depthTest, multisample, shape.gB.iH, shape.iT, shape.gB.iF, shape.gB.iG);
+  var pipeline = $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_BlendState__sjs_js_Array__Z__Z__T__T__T__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, shape.a3, shape.iQ, fmts, depthTest, multisample, shape.gA.iF, shape.iR, shape.gA.iD, shape.gA.iE);
   pass.setPipeline(pipeline);
-  var form = shape.gB;
+  var form = shape.gA;
   var bufferCount = form.f8;
-  var instanceCount = shape.iU.K();
+  var instanceCount = shape.iS.K();
   var hasPanelBinds = $p_Ltrivalibs_graphics_painter_Painter__hasPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Z($thiz, panel);
   if ((instanceCount === 0)) {
     if (hasPanelBinds) {
@@ -6553,9 +6477,9 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
     while ((b < bufferCount)) {
       var buf = form.f9[b];
       if ((buf.fS > 0)) {
-        pass.setVertexBuffer(0, buf.bh, 0.0, buf.hA);
+        pass.setVertexBuffer(0, buf.bh, 0.0, buf.hz);
         if ((buf.bg > 0)) {
-          pass.setIndexBuffer(buf.bf, buf.fa, 0.0, buf.gp);
+          pass.setIndexBuffer(buf.bf, buf.fa, 0.0, buf.go);
           pass.drawIndexed(buf.bg);
         } else {
           pass.draw(buf.fS);
@@ -6566,7 +6490,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
   } else {
     var i = 0;
     while ((i < instanceCount)) {
-      var inst = shape.iU.hB[i];
+      var inst = shape.iS.hA[i];
       $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, shape.a9, shape.ap);
       if (hasPanelBinds) {
         $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__sjs_js_Array__V($thiz, panel, shape.a3, $thiz.ao, $thiz.a2);
@@ -6578,9 +6502,9 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
       while ((b$2 < bufferCount)) {
         var buf$2 = form.f9[b$2];
         if ((buf$2.fS > 0)) {
-          pass.setVertexBuffer(0, buf$2.bh, 0.0, buf$2.hA);
+          pass.setVertexBuffer(0, buf$2.bh, 0.0, buf$2.hz);
           if ((buf$2.bg > 0)) {
-            pass.setIndexBuffer(buf$2.bf, buf$2.fa, 0.0, buf$2.gp);
+            pass.setIndexBuffer(buf$2.bf, buf$2.fa, 0.0, buf$2.go);
             pass.drawIndexed(buf$2.bg);
           } else {
             pass.draw(buf$2.fS);
@@ -6594,9 +6518,9 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
 }
 function $p_Ltrivalibs_graphics_painter_Painter__renderLayerOnPass__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Layer__Z__Z__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__Ltrivalibs_graphics_painter_Panel__V($thiz, pass, layer, depthTest, multisample, formats, srcView, panel) {
   var fmts = ((formats !== null) ? formats : [$thiz.fU]);
-  var pipeline = $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_BlendState__sjs_js_Array__Z__Z__T__T__T__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, layer.w, layer.iK, fmts, depthTest, multisample, "triangle-list", "none", "ccw", null);
+  var pipeline = $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_BlendState__sjs_js_Array__Z__Z__T__T__T__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, layer.w, layer.iI, fmts, depthTest, multisample, "triangle-list", "none", "ccw", null);
   pass.setPipeline(pipeline);
-  var instanceCount = layer.iL.K();
+  var instanceCount = layer.iJ.K();
   var hasPanelBinds = $p_Ltrivalibs_graphics_painter_Painter__hasPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Z($thiz, panel);
   if ((instanceCount === 0)) {
     if (hasPanelBinds) {
@@ -6607,12 +6531,12 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderLayerOnPass__Ltrivalibs_g
       $p_Ltrivalibs_graphics_painter_Painter__setPanelBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__V($thiz, pass, layer.w, $thiz.a2, effectiveSrcView);
     } else {
       var c = layer.H;
-      if (((((c !== null) && (panel !== null)) && (c.kS === panel.iP)) && (c.kR === panel.fb))) {
-        if ((c.iN !== null)) {
-          pass.setBindGroup(0, c.iN);
+      if (((((c !== null) && (panel !== null)) && (c.kN === panel.iN)) && (c.kM === panel.fb))) {
+        if ((c.iL !== null)) {
+          pass.setBindGroup(0, c.iL);
         }
-        if ((c.iM !== null)) {
-          pass.setBindGroup(1, c.iM);
+        if ((c.iK !== null)) {
+          pass.setBindGroup(1, c.iK);
         }
       } else {
         var vg = $p_Ltrivalibs_graphics_painter_Painter__buildValueBindGroup__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUBindGroup($thiz, layer.w, layer.i);
@@ -6623,14 +6547,14 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderLayerOnPass__Ltrivalibs_g
         if ((pg !== null)) {
           pass.setBindGroup(1, pg);
         }
-        layer.H = ((panel !== null) ? new $c_Ltrivalibs_graphics_painter_LayerBindCache(panel.iP, panel.fb, vg, pg) : null);
+        layer.H = ((panel !== null) ? new $c_Ltrivalibs_graphics_painter_LayerBindCache(panel.iN, panel.fb, vg, pg) : null);
       }
     }
     pass.draw(3);
   } else {
     var i = 0;
     while ((i < instanceCount)) {
-      var inst = layer.iL.hB[i];
+      var inst = layer.iJ.hA[i];
       $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, layer.i, layer.L);
       if (hasPanelBinds) {
         $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__sjs_js_Array__V($thiz, panel, layer.w, $thiz.ao, $thiz.a2);
@@ -6656,8 +6580,8 @@ function $p_Ltrivalibs_graphics_painter_Painter__blendKeyStr__Ltrivalibs_graphic
 function $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphics_painter_Shade__Ltrivalibs_graphics_painter_BlendState__sjs_js_Array__Z__Z__T__T__T__T__Ltrivalibs_graphics_painter_GPURenderPipeline($thiz, shade, blendState, formats, depthTest, multisample, topology, cullMode, frontFace, indexFormat) {
   var stripIndexFormat = (((indexFormat !== null) && ((topology === "triangle-strip") || (topology === "line-strip"))) ? indexFormat : null);
   var stripKey = ((stripIndexFormat === null) ? "" : ((stripIndexFormat === "uint32") ? "4" : "2"));
-  var key = (((((((((((((((shade.l8 + "|") + $p_Ltrivalibs_graphics_painter_Painter__blendKeyStr__Ltrivalibs_graphics_painter_BlendState__T($thiz, blendState)) + "|") + formats.join(",")) + "|") + depthTest) + "|") + multisample) + "|") + topology) + "|") + cullMode) + "|") + frontFace) + stripKey);
-  var cached = $thiz.iO[key];
+  var key = (((((((((((((((shade.l3 + "|") + $p_Ltrivalibs_graphics_painter_Painter__blendKeyStr__Ltrivalibs_graphics_painter_BlendState__T($thiz, blendState)) + "|") + formats.join(",")) + "|") + depthTest) + "|") + multisample) + "|") + topology) + "|") + cullMode) + "|") + frontFace) + stripKey);
+  var cached = $thiz.iM[key];
   if ((cached !== (void 0))) {
     return cached;
   } else {
@@ -6679,23 +6603,23 @@ function $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphic
       targets.push(target);
       ti = ((1 + ti) | 0);
     }
-    if ((shade.iR !== null)) {
-      var _2 = shade.hM;
-      var _2$1 = [shade.iR];
+    if ((shade.iP !== null)) {
+      var _2 = shade.hL;
+      var _2$1 = [shade.iP];
       var vertexDescriptor = ({
         "module": _2,
         "entryPoint": "vs_main",
         "buffers": _2$1
       });
     } else {
-      var _2$2 = shade.hM;
+      var _2$2 = shade.hL;
       var vertexDescriptor = ({
         "module": _2$2,
         "entryPoint": "vs_main"
       });
     }
-    var _2$3 = shade.l9;
-    var _2$4 = shade.hM;
+    var _2$3 = shade.l4;
+    var _2$4 = shade.hL;
     var _2$5 = ({
       "module": _2$4,
       "entryPoint": "fs_main",
@@ -6728,7 +6652,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__getPipeline__Ltrivalibs_graphic
       });
     }
     var p = $thiz.h.createRenderPipeline(desc);
-    $thiz.iO[key] = p;
+    $thiz.iM[key] = p;
     return p;
   }
 }
@@ -6754,37 +6678,37 @@ function $c_Ltrivalibs_graphics_painter_Painter(device, queue, canvas, context, 
   this.h = null;
   this.az = null;
   this.fT = null;
-  this.kZ = null;
+  this.kU = null;
   this.fU = null;
-  this.iO = null;
+  this.iM = null;
   this.q = 0;
-  this.hE = null;
-  this.l6 = null;
-  this.l7 = false;
-  this.kX = null;
-  this.kY = false;
-  this.kT = null;
-  this.kU = false;
+  this.hD = null;
+  this.l1 = null;
+  this.l2 = false;
+  this.kS = null;
+  this.kT = false;
+  this.kO = null;
+  this.kP = false;
+  this.kQ = null;
+  this.kR = false;
   this.kV = null;
   this.kW = false;
-  this.l0 = null;
-  this.l1 = false;
-  this.l2 = null;
-  this.l3 = false;
-  this.l4 = null;
-  this.l5 = false;
-  this.hD = null;
+  this.kX = null;
+  this.kY = false;
+  this.kZ = null;
+  this.l0 = false;
+  this.hC = null;
   this.ao = null;
   this.a2 = null;
   this.h = device;
   this.az = queue;
   this.fT = canvas;
-  this.kZ = context;
+  this.kU = context;
   this.fU = preferredFormat;
-  this.iO = ({});
+  this.iM = ({});
   this.q = 0;
-  this.hE = [];
-  this.hD = ({});
+  this.hD = [];
+  this.hC = ({});
   this.ao = [];
   this.a2 = [];
 }
@@ -6794,24 +6718,24 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Painter;
 function $h_Ltrivalibs_graphics_painter_Painter() {
 }
 $h_Ltrivalibs_graphics_painter_Painter.prototype = $p;
-$p.oz = (function(cb) {
-  this.hE.push(cb);
+$p.or = (function(cb) {
+  this.hD.push(cb);
   cb.F((this.fT.width | 0), (this.fT.height | 0));
 });
-$p.nn = (function(w, h) {
+$p.ng = (function(w, h) {
   var k = 0;
-  while ((k < (this.hE.length | 0))) {
-    this.hE[k].F(w, h);
+  while ((k < (this.hD.length | 0))) {
+    this.hD[k].F(w, h);
     k = ((1 + k) | 0);
   }
 });
-$p.pf = (function() {
+$p.p5 = (function() {
   return (this.fT.width | 0);
 });
-$p.i2 = (function() {
+$p.i1 = (function() {
   return (this.fT.height | 0);
 });
-$p.me = (function(magFilter, minFilter, mipmapFilter, addressMode, addressModeU, addressModeV) {
+$p.m8 = (function(magFilter, minFilter, mipmapFilter, addressMode, addressModeU, addressModeV) {
   var $x_1 = this.h;
   var a$proxy1 = ((addressModeU === (void 0)) ? addressMode : addressModeU);
   var a$proxy2 = ((addressModeV === (void 0)) ? addressMode : addressModeV);
@@ -6823,28 +6747,28 @@ $p.me = (function(magFilter, minFilter, mipmapFilter, addressMode, addressModeU,
     "addressModeV": a$proxy2
   }));
 });
-$p.mf = (function() {
-  if ((!this.l7)) {
-    this.l6 = this.me("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
-    this.l7 = true;
+$p.m9 = (function() {
+  if ((!this.l2)) {
+    this.l1 = this.m8("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
+    this.l2 = true;
   }
-  return this.l6;
+  return this.l1;
 });
-$p.nr = (function(geometry, vertices, geometries, verticesAll, topology, frontFace) {
-  return new $c_Ltrivalibs_graphics_painter_Form(this).oU(geometry, vertices, geometries, verticesAll, topology, frontFace);
+$p.nk = (function(geometry, vertices, geometries, verticesAll, topology, frontFace) {
+  return new $c_Ltrivalibs_graphics_painter_Form(this).oL(geometry, vertices, geometries, verticesAll, topology, frontFace);
 });
-$p.jx = (function(form, shade, cullMode, blendState) {
-  return new $c_Ltrivalibs_graphics_painter_Shape(this, form, shade).oW(cullMode, blendState);
+$p.jv = (function(form, shade, cullMode, blendState) {
+  return new $c_Ltrivalibs_graphics_painter_Shape(this, form, shade).oN(cullMode, blendState);
 });
 $p.fk = (function(shade, blendState, mipSource, mipTarget) {
-  return new $c_Ltrivalibs_graphics_painter_Layer(this, shade).oV(blendState, mipSource, mipTarget);
+  return new $c_Ltrivalibs_graphics_painter_Layer(this, shade).oM(blendState, mipSource, mipTarget);
 });
 $p.fm = (function(width, height, clearColor, depthTest, multisample, mipLevels, mips, format, formats, shape, shapes, layer, layers) {
-  return new $c_Ltrivalibs_graphics_painter_Panel(this).jw(width, height, clearColor, depthTest, multisample, mipLevels, mips, format, formats, shape, shapes, layer, layers);
+  return new $c_Ltrivalibs_graphics_painter_Panel(this).ju(width, height, clearColor, depthTest, multisample, mipLevels, mips, format, formats, shape, shapes, layer, layers);
 });
-$p.oX = (function(panel) {
+$p.oO = (function(panel) {
   var encoder = this.h.createCommandEncoder();
-  var swapChainView = this.kZ.getCurrentTexture().createView();
+  var swapChainView = this.kU.getCurrentTexture().createView();
   var _2 = [({
     "view": swapChainView,
     "loadOp": "load",
@@ -6855,7 +6779,7 @@ $p.oX = (function(panel) {
   }));
   var $x_1 = this.h;
   var _2$1 = $p_Ltrivalibs_graphics_painter_Painter__blitBindGroupLayout__Ltrivalibs_graphics_painter_GPUBindGroupLayout(this);
-  var _2$2 = panel.i8();
+  var _2$2 = panel.i7();
   var _2$3 = $p_Ltrivalibs_graphics_painter_Painter__blitSampler__Ltrivalibs_graphics_painter_GPUSampler(this);
   var _2$4 = [({
     "binding": 0,
@@ -6875,7 +6799,7 @@ $p.oX = (function(panel) {
   this.az.submit([encoder.finish()]);
 });
 var $d_Ltrivalibs_graphics_painter_Painter = new $TypeData().i($c_Ltrivalibs_graphics_painter_Painter, "trivalibs.graphics.painter.Painter", ({
-  f1: 1
+  eN: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Painter$() {
@@ -6886,8 +6810,8 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Painter$;
 function $h_Ltrivalibs_graphics_painter_Painter$() {
 }
 $h_Ltrivalibs_graphics_painter_Painter$.prototype = $p;
-$p.nJ = (function(canvas) {
-  var maybeGpu = $m_Ltrivalibs_graphics_painter_WebGPU$().nB();
+$p.nC = (function(canvas) {
+  var maybeGpu = $m_Ltrivalibs_graphics_painter_WebGPU$().nu();
   if ((maybeGpu === (void 0))) {
     return Promise.reject(Error("WebGPU is not supported"));
   } else {
@@ -6903,7 +6827,7 @@ $p.nJ = (function(canvas) {
       var promise$proxy2 = adapter$2.requestDevice();
       var f$proxy10 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((device$2) => {
         var queue = device$2.queue;
-        var context = $m_Ltrivalibs_graphics_painter_WebGPU$().nA(canvas);
+        var context = $m_Ltrivalibs_graphics_painter_WebGPU$().nt(canvas);
         var format = maybeGpu.getPreferredCanvasFormat();
         context.configure(({
           "device": device$2,
@@ -6921,23 +6845,23 @@ $p.nJ = (function(canvas) {
           if (((rw > 0.0) && (rh > 0.0))) {
             canvas.width = $doubleToInt(rw);
             canvas.height = $doubleToInt(rh);
-            painter.nn(rw, rh);
+            painter.ng(rw, rh);
           }
         }));
         observer.observe(canvas);
         return painter;
       }));
-      return promise$proxy2.then($m_sjs_js_Any$().gN(f$proxy10));
+      return promise$proxy2.then($m_sjs_js_Any$().gM(f$proxy10));
     }));
-    return promise$proxy3.then($m_sjs_js_Any$().gN(f$proxy11));
+    return promise$proxy3.then($m_sjs_js_Any$().gM(f$proxy11));
   }
 });
-$p.nI = (function(canvas, setup) {
-  var promise$proxy4 = this.nJ(canvas);
-  return promise$proxy4.then($m_sjs_js_Any$().gN(setup));
+$p.nB = (function(canvas, setup) {
+  var promise$proxy4 = this.nC(canvas);
+  return promise$proxy4.then($m_sjs_js_Any$().gM(setup));
 });
 var $d_Ltrivalibs_graphics_painter_Painter$ = new $TypeData().i($c_Ltrivalibs_graphics_painter_Painter$, "trivalibs.graphics.painter.Painter$", ({
-  f2: 1
+  eO: 1
 }));
 var $n_Ltrivalibs_graphics_painter_Painter$;
 function $m_Ltrivalibs_graphics_painter_Painter$() {
@@ -6947,15 +6871,15 @@ function $m_Ltrivalibs_graphics_painter_Painter$() {
   return $n_Ltrivalibs_graphics_painter_Painter$;
 }
 function $p_Ltrivalibs_graphics_painter_Panel__allocDepth__V($thiz) {
-  if (($thiz.gt !== null)) {
-    var opt$proxy4 = $thiz.gt;
+  if (($thiz.gs !== null)) {
+    var opt$proxy4 = $thiz.gs;
     opt$proxy4.destroy();
   }
-  if (($thiz.gw !== null)) {
-    var opt$proxy6 = $thiz.gw;
+  if (($thiz.gv !== null)) {
+    var opt$proxy6 = $thiz.gv;
     opt$proxy6.destroy();
   }
-  var depthUsage = ($thiz.gs ? 20 : 16);
+  var depthUsage = ($thiz.gr ? 20 : 16);
   var $x_1 = $thiz.fd.h;
   var value = $thiz.fW;
   var value$1 = $thiz.fV;
@@ -6970,9 +6894,9 @@ function $p_Ltrivalibs_graphics_painter_Panel__allocDepth__V($thiz) {
     "usage": depthUsage,
     "sampleCount": _2$1
   }));
-  $thiz.gt = depthTex;
-  $thiz.hF = depthTex.createView();
-  if (($thiz.gs && $thiz.fX)) {
+  $thiz.gs = depthTex;
+  $thiz.hE = depthTex.createView();
+  if (($thiz.gr && $thiz.fX)) {
     var $x_2 = $thiz.fd.h;
     var value$2 = $thiz.fW;
     var value$3 = $thiz.fV;
@@ -6986,19 +6910,19 @@ function $p_Ltrivalibs_graphics_painter_Panel__allocDepth__V($thiz) {
       "usage": 20,
       "sampleCount": 1
     }));
-    $thiz.gw = resTex;
-    $thiz.gx = resTex.createView();
-    $thiz.gv = true;
+    $thiz.gv = resTex;
+    $thiz.gw = resTex.createView();
+    $thiz.gu = true;
   } else {
+    $thiz.gv = null;
     $thiz.gw = null;
-    $thiz.gx = null;
-    $thiz.gv = false;
+    $thiz.gu = false;
   }
 }
 function $p_Ltrivalibs_graphics_painter_Panel__needsPong__Z($thiz) {
   var i = 0;
   while ((i < ($thiz.bi.length | 0))) {
-    if ($thiz.bi[i].lE()) {
+    if ($thiz.bi[i].lz()) {
       return true;
     }
     i = ((1 + i) | 0);
@@ -7031,54 +6955,54 @@ function $p_Ltrivalibs_graphics_painter_Panel__default$proxy3$1__O__O($thiz, lay
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Panel(painter) {
   this.fd = null;
-  this.hK = 0;
   this.hJ = 0;
-  this.hH = null;
-  this.gy = false;
+  this.hI = 0;
+  this.hG = null;
+  this.gx = false;
   this.fX = false;
-  this.gz = 0;
+  this.gy = 0;
   this.fc = null;
-  this.hI = null;
+  this.hH = null;
   this.bi = null;
-  this.gA = null;
-  this.iP = 0;
+  this.gz = null;
+  this.iN = 0;
   this.fb = 0;
   this.aT = null;
   this.V = null;
+  this.gs = null;
+  this.hE = null;
+  this.gr = false;
+  this.gv = null;
+  this.gw = null;
+  this.gu = false;
   this.gt = null;
   this.hF = null;
-  this.gs = false;
-  this.gw = null;
-  this.gx = null;
-  this.gv = false;
-  this.gu = null;
-  this.hG = null;
   this.fW = 0;
   this.fV = 0;
   this.fd = painter;
-  this.hK = 0;
   this.hJ = 0;
-  this.hH = null;
-  this.gy = false;
+  this.hI = 0;
+  this.hG = null;
+  this.gx = false;
   this.fX = false;
-  this.gz = 1;
+  this.gy = 1;
   this.fc = [];
-  this.hI = [];
+  this.hH = [];
   this.bi = [];
-  this.gA = ({});
-  $m_Ltrivalibs_graphics_painter_panel$package$().hN = ((1 + $m_Ltrivalibs_graphics_painter_panel$package$().hN) | 0);
-  this.iP = $m_Ltrivalibs_graphics_painter_panel$package$().hN;
+  this.gz = ({});
+  $m_Ltrivalibs_graphics_painter_panel$package$().hM = ((1 + $m_Ltrivalibs_graphics_painter_panel$package$().hM) | 0);
+  this.iN = $m_Ltrivalibs_graphics_painter_panel$package$().hM;
   this.fb = 0;
   this.aT = [];
   this.V = [];
-  this.gt = null;
-  this.hF = null;
-  this.gs = false;
+  this.gs = null;
+  this.hE = null;
+  this.gr = false;
+  this.gv = null;
   this.gw = null;
-  this.gx = null;
-  this.gv = false;
-  this.gu = [];
-  this.hG = [];
+  this.gu = false;
+  this.gt = [];
+  this.hF = [];
   this.fW = 0;
   this.fV = 0;
 }
@@ -7088,8 +7012,8 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Panel;
 function $h_Ltrivalibs_graphics_painter_Panel() {
 }
 $h_Ltrivalibs_graphics_painter_Panel.prototype = $p;
-$p.jt = (function() {
-  if ((this.gz === 0)) {
+$p.jr = (function() {
+  if ((this.gy === 0)) {
     var a = this.fW;
     var b = this.fV;
     var maxDim = ((a > b) ? a : b);
@@ -7100,33 +7024,33 @@ $p.jt = (function() {
       return ((1 + $doubleToInt(((+Math.log(a$1)) / (+Math.log(2.0))))) | 0);
     }
   } else {
-    return this.gz;
+    return this.gy;
   }
 });
-$p.jq = (function() {
+$p.jo = (function() {
   return (((this.fc.length | 0) === 0) ? [this.fd.fU] : this.fc);
 });
-$p.p4 = (function() {
-  return (this.jq().length | 0);
+$p.oU = (function() {
+  return (this.jo().length | 0);
 });
-$p.i8 = (function() {
+$p.i7 = (function() {
   var TextureViewBundle_this = this.V[0];
   return TextureViewBundle_this.aB[0];
 });
-$p.oG = (function() {
+$p.ox = (function() {
   var TextureViewBundle_this = this.V[1];
   return TextureViewBundle_this.aB[0];
 });
-$p.lJ = (function() {
-  return this.hF;
+$p.lE = (function() {
+  return this.hE;
 });
-$p.oQ = (function() {
-  return this.gx;
+$p.oH = (function() {
+  return this.gw;
 });
-$p.m8 = (function(index) {
-  return this.hG[index];
+$p.m2 = (function(index) {
+  return this.hF[index];
 });
-$p.p2 = (function() {
+$p.oS = (function() {
   var t = this.aT[0];
   this.aT[0] = this.aT[1];
   this.aT[1] = t;
@@ -7135,31 +7059,31 @@ $p.p2 = (function() {
   this.V[1] = sv;
   this.fb = ((1 + this.fb) | 0);
 });
-$p.n4 = (function() {
-  if (((!this.gs) && (this.gt !== null))) {
-    this.gs = true;
+$p.mX = (function() {
+  if (((!this.gr) && (this.gs !== null))) {
+    this.gr = true;
     $p_Ltrivalibs_graphics_painter_Panel__allocDepth__V(this);
   }
-  return (this.gv ? this.gx : this.hF);
+  return (this.gu ? this.gw : this.hE);
 });
-$p.mT = (function(index, mipLevel, depth) {
+$p.mM = (function(index, mipLevel, depth) {
   return new ($a_Ltrivalibs_graphics_painter_PanelBinding())(this, index, mipLevel, depth);
 });
-$p.jw = (function(width, height, clearColor, depthTest, multisample, mipLevels, mips, format, formats, shape, shapes, layer, layers) {
+$p.ju = (function(width, height, clearColor, depthTest, multisample, mipLevels, mips, format, formats, shape, shapes, layer, layers) {
   if ((width !== (void 0))) {
     var v = (width | 0);
-    this.hK = v;
+    this.hJ = v;
   }
   if ((height !== (void 0))) {
     var v$1 = (height | 0);
-    this.hJ = v$1;
+    this.hI = v$1;
   }
   if ((clearColor !== (void 0))) {
-    this.hH = ((clearColor === null) ? null : new $c_Ltrivalibs_graphics_math_cpu_Vec4(clearColor.fP, clearColor.fQ, clearColor.fR, clearColor.fO));
+    this.hG = ((clearColor === null) ? null : new $c_Ltrivalibs_graphics_math_cpu_Vec4(clearColor.fP, clearColor.fQ, clearColor.fR, clearColor.fO));
   }
   if ((depthTest !== (void 0))) {
     var v$2 = (!(!depthTest));
-    this.gy = v$2;
+    this.gx = v$2;
   }
   if ((multisample !== (void 0))) {
     var v$3 = (!(!multisample));
@@ -7167,13 +7091,13 @@ $p.jw = (function(width, height, clearColor, depthTest, multisample, mipLevels, 
   }
   if ((mips !== (void 0))) {
     if ((!(!mips))) {
-      this.gz = 0;
+      this.gy = 0;
     }
   }
   if ((mipLevels !== (void 0))) {
     var v$5 = (mipLevels | 0);
     if ((v$5 > 0)) {
-      this.gz = v$5;
+      this.gy = v$5;
     }
   }
   var x$1 = ((formats === (void 0)) ? $p_Ltrivalibs_graphics_painter_Panel__default$proxy1$1__O__O(this, format) : formats);
@@ -7182,7 +7106,7 @@ $p.jw = (function(width, height, clearColor, depthTest, multisample, mipLevels, 
   }
   var x$2 = ((shapes === (void 0)) ? $p_Ltrivalibs_graphics_painter_Panel__default$proxy2$1__O__O(this, shape) : shapes);
   if ((x$2 !== (void 0))) {
-    this.hI = x$2;
+    this.hH = x$2;
   }
   var x$3 = ((layers === (void 0)) ? $p_Ltrivalibs_graphics_painter_Panel__default$proxy3$1__O__O(this, layer) : layers);
   if ((x$3 !== (void 0))) {
@@ -7193,9 +7117,9 @@ $p.jw = (function(width, height, clearColor, depthTest, multisample, mipLevels, 
   }
   return this;
 });
-$p.ng = (function(canvasW, canvasH) {
-  var targetW = ((this.hK === 0) ? canvasW : this.hK);
-  var targetH = ((this.hJ === 0) ? canvasH : this.hJ);
+$p.n9 = (function(canvasW, canvasH) {
+  var targetW = ((this.hJ === 0) ? canvasW : this.hJ);
+  var targetH = ((this.hI === 0) ? canvasH : this.hI);
   if (((targetW !== this.fW) || (targetH !== this.fV))) {
     var d = 0;
     while ((d < (this.aT.length | 0))) {
@@ -7203,19 +7127,19 @@ $p.ng = (function(canvasW, canvasH) {
       d = ((1 + d) | 0);
     }
     d = 0;
-    while ((d < (this.gu.length | 0))) {
-      this.gu[d].destroy();
+    while ((d < (this.gt.length | 0))) {
+      this.gt[d].destroy();
       d = ((1 + d) | 0);
     }
     this.fW = targetW;
     this.fV = targetH;
-    var mipCount = this.jt();
-    var fmts = this.jq();
+    var mipCount = this.jr();
+    var fmts = this.jo();
     var hasPong = $p_Ltrivalibs_graphics_painter_Panel__needsPong__Z(this);
     this.aT = [];
     this.V = [];
-    this.gu = [];
-    this.hG = [];
+    this.gt = [];
+    this.hF = [];
     var i = 0;
     while ((i < (fmts.length | 0))) {
       var fmt = fmts[i];
@@ -7244,8 +7168,8 @@ $p.ng = (function(canvasW, canvasH) {
           "sampleCount": 4,
           "usage": 16
         }));
-        this.gu.push(msaaTex);
-        this.hG.push(msaaTex.createView());
+        this.gt.push(msaaTex);
+        this.hF.push(msaaTex.createView());
       }
       i = ((1 + i) | 0);
     }
@@ -7265,31 +7189,31 @@ $p.ng = (function(canvasW, canvasH) {
       this.aT.push(pongTex);
       this.V.push($p_Ltrivalibs_graphics_painter_Panel__buildViews__Ltrivalibs_graphics_painter_GPUTexture__I__Ltrivalibs_graphics_painter_TextureViewBundle(this, pongTex, mipCount));
     }
-    if (this.gy) {
+    if (this.gx) {
       $p_Ltrivalibs_graphics_painter_Panel__allocDepth__V(this);
     }
     this.fb = ((1 + this.fb) | 0);
   }
 });
 var $d_Ltrivalibs_graphics_painter_Panel = new $TypeData().i($c_Ltrivalibs_graphics_painter_Panel, "trivalibs.graphics.painter.Panel", ({
-  f3: 1
+  eP: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Shade(id, shaderModule, vertexBufferLayout, valueBindGroupLayout, panelBindGroupLayout, pipelineLayout, isLayer, uniformIndices, panelIndices) {
-  this.l8 = 0;
-  this.hM = null;
-  this.iR = null;
-  this.iQ = null;
+  this.l3 = 0;
   this.hL = null;
-  this.l9 = null;
+  this.iP = null;
+  this.iO = null;
+  this.hK = null;
+  this.l4 = null;
   this.P = null;
   this.aA = null;
-  this.l8 = id;
-  this.hM = shaderModule;
-  this.iR = vertexBufferLayout;
-  this.iQ = valueBindGroupLayout;
-  this.hL = panelBindGroupLayout;
-  this.l9 = pipelineLayout;
+  this.l3 = id;
+  this.hL = shaderModule;
+  this.iP = vertexBufferLayout;
+  this.iO = valueBindGroupLayout;
+  this.hK = panelBindGroupLayout;
+  this.l4 = pipelineLayout;
   this.P = uniformIndices;
   this.aA = panelIndices;
 }
@@ -7300,14 +7224,14 @@ function $h_Ltrivalibs_graphics_painter_Shade() {
 }
 $h_Ltrivalibs_graphics_painter_Shade.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_Shade = new $TypeData().i($c_Ltrivalibs_graphics_painter_Shade, "trivalibs.graphics.painter.Shade", ({
-  f4: 1
+  eQ: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_TextureViewBundle(perMip, sampling) {
   this.aB = null;
-  this.la = null;
+  this.l5 = null;
   this.aB = perMip;
-  this.la = sampling;
+  this.l5 = sampling;
 }
 $p = $c_Ltrivalibs_graphics_painter_TextureViewBundle.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_TextureViewBundle;
@@ -7316,7 +7240,7 @@ function $h_Ltrivalibs_graphics_painter_TextureViewBundle() {
 }
 $h_Ltrivalibs_graphics_painter_TextureViewBundle.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_TextureViewBundle = new $TypeData().i($c_Ltrivalibs_graphics_painter_TextureViewBundle, "trivalibs.graphics.painter.TextureViewBundle", ({
-  f6: 1
+  eS: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_WebGPU$() {
@@ -7327,14 +7251,14 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_WebGPU$;
 function $h_Ltrivalibs_graphics_painter_WebGPU$() {
 }
 $h_Ltrivalibs_graphics_painter_WebGPU$.prototype = $p;
-$p.nB = (function() {
+$p.nu = (function() {
   return window.navigator.gpu;
 });
-$p.nA = (function(canvas) {
+$p.nt = (function(canvas) {
   return canvas.getContext("webgpu");
 });
 var $d_Ltrivalibs_graphics_painter_WebGPU$ = new $TypeData().i($c_Ltrivalibs_graphics_painter_WebGPU$, "trivalibs.graphics.painter.WebGPU$", ({
-  f7: 1
+  eT: 1
 }));
 var $n_Ltrivalibs_graphics_painter_WebGPU$;
 function $m_Ltrivalibs_graphics_painter_WebGPU$() {
@@ -7345,8 +7269,8 @@ function $m_Ltrivalibs_graphics_painter_WebGPU$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_panel$package$() {
-  this.hN = 0;
-  this.hN = 0;
+  this.hM = 0;
+  this.hM = 0;
 }
 $p = $c_Ltrivalibs_graphics_painter_panel$package$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_panel$package$;
@@ -7355,7 +7279,7 @@ function $h_Ltrivalibs_graphics_painter_panel$package$() {
 }
 $h_Ltrivalibs_graphics_painter_panel$package$.prototype = $p;
 var $d_Ltrivalibs_graphics_painter_panel$package$ = new $TypeData().i($c_Ltrivalibs_graphics_painter_panel$package$, "trivalibs.graphics.painter.panel$package$", ({
-  f8: 1
+  eU: 1
 }));
 var $n_Ltrivalibs_graphics_painter_panel$package$;
 function $m_Ltrivalibs_graphics_painter_panel$package$() {
@@ -7366,14 +7290,14 @@ function $m_Ltrivalibs_graphics_painter_panel$package$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController(cam, in$1, sensitivity, speed) {
-  this.lb = null;
+  this.l6 = null;
   this.a4 = null;
-  this.iV = 0.0;
-  this.lc = 0.0;
-  this.lb = cam;
+  this.iT = 0.0;
+  this.l7 = 0.0;
+  this.l6 = cam;
   this.a4 = in$1;
-  this.iV = sensitivity;
-  this.lc = speed;
+  this.iT = sensitivity;
+  this.l7 = speed;
 }
 $p = $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController;
@@ -7382,12 +7306,12 @@ function $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController() {
 }
 $h_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController.prototype = $p;
 $p.fo = (function(tpf) {
-  var dist = ((this.lc * tpf) / 1000.0);
+  var dist = ((this.l7 * tpf) / 1000.0);
   var forward = 0.0;
-  if (((this.a4.ah.aL("KeyW") || this.a4.ah.aL("ArrowUp")) || (this.a4.j9.fi && (this.a4.ah.mc() === 1)))) {
+  if (((this.a4.ah.aL("KeyW") || this.a4.ah.aL("ArrowUp")) || (this.a4.j7.fi && (this.a4.ah.m6() === 1)))) {
     forward = (forward + dist);
   }
-  if ((((this.a4.ah.aL("KeyS") || this.a4.ah.aL("ArrowDown")) || this.a4.ah.nM(2)) || (this.a4.ah.mc() >= 2))) {
+  if ((((this.a4.ah.aL("KeyS") || this.a4.ah.aL("ArrowDown")) || this.a4.ah.nF(2)) || (this.a4.ah.m6() >= 2))) {
     forward = (forward - dist);
   }
   var left = 0.0;
@@ -7404,13 +7328,13 @@ $p.fo = (function(tpf) {
   if ((this.a4.ah.aL("ShiftLeft") || this.a4.ah.aL("ShiftRight"))) {
     up = (up - dist);
   }
-  var drag = this.a4.j8.n3();
-  var deltaH = (((+drag.E) * this.iV) / 1000.0);
-  var deltaV = (((+drag.af) * this.iV) / 1000.0);
-  this.lb.ow(forward, left, up, deltaH, deltaV);
+  var drag = this.a4.j6.mW();
+  var deltaH = (((+drag.E) * this.iT) / 1000.0);
+  var deltaV = (((+drag.af) * this.iT) / 1000.0);
+  this.l6.oo(forward, left, up, deltaH, deltaV);
 });
 var $d_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController = new $TypeData().i($c_Ltrivalibs_graphics_scene_BasicFirstPersonCameraController, "trivalibs.graphics.scene.BasicFirstPersonCameraController", ({
-  f9: 1
+  eV: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_scene_PerspectiveCamera(fov, aspect, near, far, rotH, rotV, pos, proj) {
@@ -7421,7 +7345,7 @@ function $c_Ltrivalibs_graphics_scene_PerspectiveCamera(fov, aspect, near, far, 
   this.aq = 0.0;
   this.b2 = 0.0;
   this.aa = null;
-  this.hO = null;
+  this.hN = null;
   this.b1 = fov;
   this.fe = aspect;
   this.fZ = near;
@@ -7429,7 +7353,7 @@ function $c_Ltrivalibs_graphics_scene_PerspectiveCamera(fov, aspect, near, far, 
   this.aq = rotH;
   this.b2 = rotV;
   this.aa = pos;
-  this.hO = proj;
+  this.hN = proj;
 }
 $p = $c_Ltrivalibs_graphics_scene_PerspectiveCamera.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_scene_PerspectiveCamera;
@@ -7437,29 +7361,29 @@ $p.constructor = $c_Ltrivalibs_graphics_scene_PerspectiveCamera;
 function $h_Ltrivalibs_graphics_scene_PerspectiveCamera() {
 }
 $h_Ltrivalibs_graphics_scene_PerspectiveCamera.prototype = $p;
-$p.jv = (function(fov, aspect, near, far, rotH, rotV, pos) {
+$p.jt = (function(fov, aspect, near, far, rotH, rotV, pos) {
   var needsProj = ((((fov !== this.b1) || (aspect !== this.fe)) || (near !== this.fZ)) || (far !== this.fY));
   this.b1 = fov;
   this.fe = aspect;
   this.fZ = near;
   this.fY = far;
   if ((rotH !== this.aq)) {
-    this.aq = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jD(rotH);
+    this.aq = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jB(rotH);
   }
   if ((rotV !== this.b2)) {
-    this.b2 = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jB(rotV);
+    this.b2 = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jz(rotV);
   }
   this.aa = pos;
   if (needsProj) {
-    this.hO = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__perspective__D__D__D__D__O($m_Ltrivalibs_graphics_math_cpu_Mat4$(), $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jC(this.b1, this.fe), aspect, near, far);
+    this.hN = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__perspective__D__D__D__D__O($m_Ltrivalibs_graphics_math_cpu_Mat4$(), $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jA(this.b1, this.fe), aspect, near, far);
   }
 });
-$p.ow = (function(forward, left, up, deltaH, deltaV) {
+$p.oo = (function(forward, left, up, deltaH, deltaV) {
   if ((deltaH !== 0.0)) {
-    this.aq = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jD((this.aq + deltaH));
+    this.aq = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jB((this.aq + deltaH));
   }
   if ((deltaV !== 0.0)) {
-    this.b2 = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jB((this.b2 + deltaV));
+    this.b2 = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jz((this.b2 + deltaV));
   }
   if ((up !== 0.0)) {
     this.aa = new $c_Ltrivalibs_graphics_math_cpu_Vec3(this.aa.s, (this.aa.t + up), this.aa.u);
@@ -7485,16 +7409,16 @@ $p.ow = (function(forward, left, up, deltaH, deltaV) {
     this.aa = $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__addVec__O__Ltrivalibs_graphics_math_Vec3Base__O__O($x_9, $x_8, $x_7, $f_Ltrivalibs_graphics_math_Vec3ImmutableOps__mulScalar__O__Ltrivalibs_graphics_math_Vec3Base__D__O($x_6, new $c_Ltrivalibs_graphics_math_cpu_Vec3((-(+$x_5)), 0.0, (+Math.sin(p$proxy4))), $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$(), left));
   }
 });
-$p.p9 = (function() {
-  return new $c_Ltrivalibs_graphics_scene_Transform(this.aa, $f_Ltrivalibs_graphics_math_cpu_QuatImmutableOps__quatMul__O__Ltrivalibs_graphics_math_Vec4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$(), $m_Ltrivalibs_graphics_math_cpu_Quat$().nx(this.aq), $m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$(), $m_Ltrivalibs_graphics_math_cpu_Quat$().nw(this.b2)), new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0));
+$p.oZ = (function() {
+  return new $c_Ltrivalibs_graphics_scene_Transform(this.aa, $f_Ltrivalibs_graphics_math_cpu_QuatImmutableOps__quatMul__O__Ltrivalibs_graphics_math_Vec4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$(), $m_Ltrivalibs_graphics_math_cpu_Quat$().nq(this.aq), $m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$(), $m_Ltrivalibs_graphics_math_cpu_Quat$().np(this.b2)), new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.0, 1.0, 1.0));
 });
-$p.ml = (function() {
+$p.mf = (function() {
   var $x_1 = $m_Ltrivalibs_graphics_math_cpu_Mat4$().g9();
-  var t = this.p9();
-  return $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__inverse__O__Ltrivalibs_graphics_math_Mat4Base__O($x_1, $m_Ltrivalibs_graphics_math_cpu_Mat4$().ny(t.lf, t.ld, t.le), $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$());
+  var t = this.oZ();
+  return $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__inverse__O__Ltrivalibs_graphics_math_Mat4Base__O($x_1, $m_Ltrivalibs_graphics_math_cpu_Mat4$().nr(t.la, t.l8, t.l9), $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$());
 });
 var $d_Ltrivalibs_graphics_scene_PerspectiveCamera = new $TypeData().i($c_Ltrivalibs_graphics_scene_PerspectiveCamera, "trivalibs.graphics.scene.PerspectiveCamera", ({
-  fa: 1
+  eW: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_scene_PerspectiveCamera$() {
@@ -7505,24 +7429,24 @@ $p.constructor = $c_Ltrivalibs_graphics_scene_PerspectiveCamera$;
 function $h_Ltrivalibs_graphics_scene_PerspectiveCamera$() {
 }
 $h_Ltrivalibs_graphics_scene_PerspectiveCamera$.prototype = $p;
-$p.jD = (function(a) {
+$p.jB = (function(a) {
   var r = (a % 6.283185307179586);
   return ((r < 0.0) ? (r + 6.283185307179586) : r);
 });
-$p.jB = (function(a) {
+$p.jz = (function(a) {
   return ((a < (-1.5707963267948966)) ? (-1.5707963267948966) : ((a > 1.5707963267948966) ? 1.5707963267948966 : a));
 });
-$p.jC = (function(fov, aspect) {
+$p.jA = (function(fov, aspect) {
   var p$proxy5 = (0.5 * fov);
   var p$proxy6 = ((+Math.tan(p$proxy5)) / (+Math.min(aspect, 1.0)));
   return (2.0 * (+Math.atan(p$proxy6)));
 });
-$p.mG = (function(fov, aspect, near, far, rotH, rotV, pos) {
-  var proj = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__perspective__D__D__D__D__O($m_Ltrivalibs_graphics_math_cpu_Mat4$(), this.jC(fov, aspect), aspect, near, far);
-  return new $c_Ltrivalibs_graphics_scene_PerspectiveCamera(fov, aspect, near, far, this.jD(rotH), this.jB(rotV), pos, proj);
+$p.mz = (function(fov, aspect, near, far, rotH, rotV, pos) {
+  var proj = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__perspective__D__D__D__D__O($m_Ltrivalibs_graphics_math_cpu_Mat4$(), this.jA(fov, aspect), aspect, near, far);
+  return new $c_Ltrivalibs_graphics_scene_PerspectiveCamera(fov, aspect, near, far, this.jB(rotH), this.jz(rotV), pos, proj);
 });
 var $d_Ltrivalibs_graphics_scene_PerspectiveCamera$ = new $TypeData().i($c_Ltrivalibs_graphics_scene_PerspectiveCamera$, "trivalibs.graphics.scene.PerspectiveCamera$", ({
-  fb: 1
+  eX: 1
 }));
 var $n_Ltrivalibs_graphics_scene_PerspectiveCamera$;
 function $m_Ltrivalibs_graphics_scene_PerspectiveCamera$() {
@@ -7533,12 +7457,12 @@ function $m_Ltrivalibs_graphics_scene_PerspectiveCamera$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_scene_Transform(translation, rotation, scale) {
-  this.lf = null;
-  this.ld = null;
-  this.le = null;
-  this.lf = translation;
-  this.ld = rotation;
-  this.le = scale;
+  this.la = null;
+  this.l8 = null;
+  this.l9 = null;
+  this.la = translation;
+  this.l8 = rotation;
+  this.l9 = scale;
 }
 $p = $c_Ltrivalibs_graphics_scene_Transform.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_scene_Transform;
@@ -7547,7 +7471,7 @@ function $h_Ltrivalibs_graphics_scene_Transform() {
 }
 $h_Ltrivalibs_graphics_scene_Transform.prototype = $p;
 var $d_Ltrivalibs_graphics_scene_Transform = new $TypeData().i($c_Ltrivalibs_graphics_scene_Transform, "trivalibs.graphics.scene.Transform", ({
-  fc: 1
+  eY: 1
 }));
 function $p_Ltrivalibs_graphics_shader_derive$__buildFragBuiltinParams__sjs_js_Array__T($thiz, builtins) {
   var s = "";
@@ -7560,7 +7484,7 @@ function $p_Ltrivalibs_graphics_shader_derive$__buildFragBuiltinParams__sjs_js_A
   return s;
 }
 function $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists__T__sjs_js_Array__sjs_js_Array__sjs_js_Array__T($thiz, structName, locNames, locTypes, builtins) {
-  var array$1 = $m_sjs_js_ArrayOps$().mn($m_sjs_js_ArrayOps$().mm(locNames, new $c_sjs_js_WrappedArray(locTypes)));
+  var array$1 = $m_sjs_js_ArrayOps$().mh($m_sjs_js_ArrayOps$().mg(locNames, new $c_sjs_js_WrappedArray(locTypes)));
   var len = (array$1.length | 0);
   var res = new Array(len);
   var i = 0;
@@ -7607,7 +7531,7 @@ function $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists_
   return (((allFields.length | 0) === 0) ? "" : (((("struct " + structName) + " {\n") + allFields.join("\n")) + "\n}"));
 }
 function $p_Ltrivalibs_graphics_shader_derive$__generateUniformGroupFromLists__I__sjs_js_Array__sjs_js_Array__T($thiz, groupIdx, names, types) {
-  var array$1 = $m_sjs_js_ArrayOps$().mn($m_sjs_js_ArrayOps$().mm(names, new $c_sjs_js_WrappedArray(types)));
+  var array$1 = $m_sjs_js_ArrayOps$().mh($m_sjs_js_ArrayOps$().mg(names, new $c_sjs_js_WrappedArray(types)));
   var len = (array$1.length | 0);
   var res = new Array(len);
   var i = 0;
@@ -7644,7 +7568,7 @@ function $h_Ltrivalibs_graphics_shader_derive$() {
 }
 $h_Ltrivalibs_graphics_shader_derive$.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_derive$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_derive$, "trivalibs.graphics.shader.derive$", ({
-  ff: 1
+  f1: 1
 }));
 var $n_Ltrivalibs_graphics_shader_derive$;
 function $m_Ltrivalibs_graphics_shader_derive$() {
@@ -7665,13 +7589,13 @@ function $h_Ltrivalibs_graphics_shader_dsl_AssignTarget() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_AssignTarget.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_AssignTarget = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_AssignTarget, "trivalibs.graphics.shader.dsl.AssignTarget", ({
-  fg: 1
+  f2: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_FnRegistry() {
-  this.iW = null;
+  this.iU = null;
   this.a5 = null;
-  this.iW = ({});
+  this.iU = ({});
   this.a5 = [];
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_FnRegistry.prototype = new $h_O();
@@ -7680,21 +7604,21 @@ $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_FnRegistry;
 function $h_Ltrivalibs_graphics_shader_dsl_FnRegistry() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_FnRegistry.prototype = $p;
-$p.mk = (function(d) {
-  if ((!(!(!(!(!this.iW.hasOwnProperty(d.name))))))) {
-    this.iW[d.name] = true;
+$p.me = (function(d) {
+  if ((!(!(!(!(!this.iU.hasOwnProperty(d.name))))))) {
+    this.iU[d.name] = true;
     var array = d.deps;
     var len = (array.length | 0);
     var i = 0;
     while ((i < len)) {
-      this.mk(array[i]);
+      this.me(array[i]);
       i = ((1 + i) | 0);
     }
     this.a5.push(d);
   }
 });
 var $d_Ltrivalibs_graphics_shader_dsl_FnRegistry = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_FnRegistry, "trivalibs.graphics.shader.dsl.FnRegistry", ({
-  fh: 1
+  f3: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_FnRegistry$() {
@@ -7707,14 +7631,14 @@ $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_FnRegistry$;
 function $h_Ltrivalibs_graphics_shader_dsl_FnRegistry$() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_FnRegistry$.prototype = $p;
-$p.hc = (function(d) {
+$p.hb = (function(d) {
   var r = this.l;
   if ((r !== null)) {
-    r.mk(d);
+    r.me(d);
   }
 });
 var $d_Ltrivalibs_graphics_shader_dsl_FnRegistry$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_FnRegistry$, "trivalibs.graphics.shader.dsl.FnRegistry$", ({
-  fi: 1
+  f4: 1
 }));
 var $n_Ltrivalibs_graphics_shader_dsl_FnRegistry$;
 function $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$() {
@@ -7728,12 +7652,12 @@ function $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(in$1, out, bindings, loca
   this.a6 = null;
   this.ar = null;
   this.I = null;
-  this.mu = null;
+  this.mn = null;
   this.g0 = null;
   this.a6 = in$1;
   this.ar = out;
   this.I = bindings;
-  this.mu = textures;
+  this.mn = textures;
   this.g0 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), "in.position");
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx.prototype = new $h_O();
@@ -7743,11 +7667,11 @@ function $h_Ltrivalibs_graphics_shader_dsl_FragmentCtx() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_FragmentCtx.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_FragmentCtx = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_FragmentCtx, "trivalibs.graphics.shader.dsl.FragmentCtx", ({
-  fj: 1
+  f5: 1
 }));
 function $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V($thiz, data) {
-  if ((!(!(!(!(!$thiz.iX.hasOwnProperty(data.name))))))) {
-    var dict = $thiz.iX;
+  if ((!(!(!(!(!$thiz.iV.hasOwnProperty(data.name))))))) {
+    var dict = $thiz.iV;
     var key = data.name;
     dict[key] = true;
     var array = data.deps;
@@ -7757,17 +7681,17 @@ function $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graph
       $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V($thiz, array[i]);
       i = ((1 + i) | 0);
     }
-    $thiz.iY.push(data.src);
+    $thiz.iW.push(data.src);
   }
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_LayerProgram() {
   this.ag = null;
-  this.iY = null;
-  this.iX = null;
+  this.iW = null;
+  this.iV = null;
   this.ag = "";
-  this.iY = [];
-  this.iX = ({});
+  this.iW = [];
+  this.iV = ({});
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_LayerProgram.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_LayerProgram;
@@ -7776,14 +7700,14 @@ function $h_Ltrivalibs_graphics_shader_dsl_LayerProgram() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_LayerProgram.prototype = $p;
 $p.au = (function() {
-  return this.iY.join("\n\n");
+  return this.iW.join("\n\n");
 });
 var $d_Ltrivalibs_graphics_shader_dsl_LayerProgram = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_LayerProgram, "trivalibs.graphics.shader.dsl.LayerProgram", ({
-  fk: 1
+  f6: 1
 }));
 function $p_Ltrivalibs_graphics_shader_dsl_Program__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V($thiz, data) {
-  if ((!(!(!(!(!$thiz.iZ.hasOwnProperty(data.name))))))) {
-    var dict = $thiz.iZ;
+  if ((!(!(!(!(!$thiz.iX.hasOwnProperty(data.name))))))) {
+    var dict = $thiz.iX;
     var key = data.name;
     dict[key] = true;
     var array = data.deps;
@@ -7793,19 +7717,19 @@ function $p_Ltrivalibs_graphics_shader_dsl_Program__fnRec__Ltrivalibs_graphics_s
       $p_Ltrivalibs_graphics_shader_dsl_Program__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V($thiz, array[i]);
       i = ((1 + i) | 0);
     }
-    $thiz.j0.push(data.src);
+    $thiz.iY.push(data.src);
   }
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_Program() {
   this.b3 = null;
   this.aH = null;
-  this.j0 = null;
-  this.iZ = null;
+  this.iY = null;
+  this.iX = null;
   this.b3 = "";
   this.aH = "";
-  this.j0 = [];
-  this.iZ = ({});
+  this.iY = [];
+  this.iX = ({});
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_Program.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_Program;
@@ -7814,19 +7738,19 @@ function $h_Ltrivalibs_graphics_shader_dsl_Program() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_Program.prototype = $p;
 $p.au = (function() {
-  return this.j0.join("\n\n");
+  return this.iY.join("\n\n");
 });
 var $d_Ltrivalibs_graphics_shader_dsl_Program = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_Program, "trivalibs.graphics.shader.dsl.Program", ({
-  fl: 1
+  f7: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(in$1, out, bindings, locals, textures) {
   this.bj = null;
   this.b4 = null;
-  this.j3 = null;
+  this.j1 = null;
   this.bj = in$1;
   this.b4 = out;
-  this.j3 = bindings;
+  this.j1 = bindings;
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_VertexCtx.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_VertexCtx;
@@ -7835,7 +7759,7 @@ function $h_Ltrivalibs_graphics_shader_dsl_VertexCtx() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_VertexCtx.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_VertexCtx = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_VertexCtx, "trivalibs.graphics.shader.dsl.VertexCtx", ({
-  fq: 1
+  fc: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_WgslFnData$() {
@@ -7846,11 +7770,11 @@ $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_WgslFnData$;
 function $h_Ltrivalibs_graphics_shader_dsl_WgslFnData$() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_WgslFnData$.prototype = $p;
-$p.mv = (function() {
+$p.mo = (function() {
   return [];
 });
 var $d_Ltrivalibs_graphics_shader_dsl_WgslFnData$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_WgslFnData$, "trivalibs.graphics.shader.dsl.WgslFnData$", ({
-  ft: 1
+  ff: 1
 }));
 var $n_Ltrivalibs_graphics_shader_dsl_WgslFnData$;
 function $m_Ltrivalibs_graphics_shader_dsl_WgslFnData$() {
@@ -7868,7 +7792,7 @@ $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$;
 function $h_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$.prototype = $p;
-$p.h7 = (function(fn) {
+$p.h6 = (function(fn) {
   return fn.name;
 });
 $p.aN = (function(fn, ds) {
@@ -7883,7 +7807,7 @@ $p.aN = (function(fn, ds) {
     }
     i = ((1 + i) | 0);
   }
-  ds.gM(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((d$3) => {
+  ds.gL(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((d$3) => {
     if ((!(!(!(!(!seen.hasOwnProperty(d$3.name))))))) {
       seen[d$3.name] = true;
       merged.push(d$3);
@@ -7892,7 +7816,7 @@ $p.aN = (function(fn, ds) {
   return new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())(fn.name, fn.src, merged);
 });
 var $d_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$, "trivalibs.graphics.shader.dsl.fn$package$WgslFn$", ({
-  fu: 1
+  fg: 1
 }));
 var $n_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$;
 function $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$() {
@@ -7944,7 +7868,7 @@ $p.M = (function(device, bindGroupLayouts) {
   }));
 });
 var $d_Ltrivalibs_graphics_shader_layouts$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_layouts$, "trivalibs.graphics.shader.layouts$", ({
-  fv: 1
+  fh: 1
 }));
 var $n_Ltrivalibs_graphics_shader_layouts$;
 function $m_Ltrivalibs_graphics_shader_layouts$() {
@@ -7955,8 +7879,8 @@ function $m_Ltrivalibs_graphics_shader_layouts$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
-  this.lh = null;
-  this.j4 = null;
+  this.lc = null;
+  this.j2 = null;
   $n_Ltrivalibs_graphics_shader_lib_blur_Blur$ = this;
   var names = $m_sjs_js_ArrayOpsCommon$().a(["tex"], $m_sjs_js_ArrayOpsCommon$().a(["s"], $m_sjs_js_ArrayOpsCommon$().a(["diameter"], $m_sjs_js_ArrayOpsCommon$().a(["uv"], $m_sjs_js_ArrayOpsCommon$().a(["res"], $m_sjs_js_ArrayOpsCommon$().a(["dir"], []))))));
   var types = $m_sjs_js_ArrayOpsCommon$().a(["texture_2d<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["sampler"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], []))))));
@@ -8045,7 +7969,7 @@ function $c_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
   }
   var paramList$8 = parts$8.join(", ");
   var src$8 = (("fn box_blur_2d_auto(" + paramList$8) + ") -> vec4<f32> {\n  let o = vec2<f32>(radius) / vec2<f32>(textureDimensions(tex));\n  var color = textureSample(tex, s, uv - o);\n  color += textureSample(tex, s, uv + vec2<f32>(o.x, -o.y));\n  color += textureSample(tex, s, uv + vec2<f32>(-o.x, o.y));\n  color += textureSample(tex, s, uv + o);\n  return color * 0.25;\n}");
-  this.lh = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("box_blur_2d_auto", src$8);
+  this.lc = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("box_blur_2d_auto", src$8);
   var names$9 = $m_sjs_js_ArrayOpsCommon$().a(["tex"], $m_sjs_js_ArrayOpsCommon$().a(["s"], $m_sjs_js_ArrayOpsCommon$().a(["uv"], $m_sjs_js_ArrayOpsCommon$().a(["radius"], []))));
   var types$9 = $m_sjs_js_ArrayOpsCommon$().a(["texture_2d<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["sampler"], $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []))));
   var parts$9 = [];
@@ -8056,7 +7980,7 @@ function $c_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
   }
   var paramList$9 = parts$9.join(", ");
   var src$9 = (("fn tent_blur_2d_auto(" + paramList$9) + ") -> vec4<f32> {\n  let o = vec2<f32>(radius) / vec2<f32>(textureDimensions(tex));\n  var color = textureSample(tex, s, uv) * 0.25;\n  color += (textureSample(tex, s, uv + vec2<f32>(0.0, o.y)) + textureSample(tex, s, uv + vec2<f32>(0.0, -o.y)) + textureSample(tex, s, uv + vec2<f32>(o.x, 0.0)) + textureSample(tex, s, uv + vec2<f32>(-o.x, 0.0))) * 0.125;\n  color += (textureSample(tex, s, uv + o) + textureSample(tex, s, uv + vec2<f32>(-o.x, o.y)) + textureSample(tex, s, uv + vec2<f32>(o.x, -o.y)) + textureSample(tex, s, uv - o)) * 0.0625;\n  return color;\n}");
-  this.j4 = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("tent_blur_2d_auto", src$9);
+  this.j2 = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("tent_blur_2d_auto", src$9);
 }
 $p = $c_Ltrivalibs_graphics_shader_lib_blur_Blur$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_lib_blur_Blur$;
@@ -8065,7 +7989,7 @@ function $h_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
 }
 $h_Ltrivalibs_graphics_shader_lib_blur_Blur$.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_lib_blur_Blur$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_lib_blur_Blur$, "trivalibs.graphics.shader.lib.blur.Blur$", ({
-  fw: 1
+  fi: 1
 }));
 var $n_Ltrivalibs_graphics_shader_lib_blur_Blur$;
 function $m_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
@@ -8076,14 +8000,14 @@ function $m_Ltrivalibs_graphics_shader_lib_blur_Blur$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
+  this.hP = null;
   this.hQ = null;
   this.hR = null;
-  this.hS = null;
-  this.li = null;
-  this.lj = null;
-  this.j5 = null;
-  this.lk = null;
-  this.ll = null;
+  this.ld = null;
+  this.le = null;
+  this.j3 = null;
+  this.lf = null;
+  this.lg = null;
   $n_Ltrivalibs_graphics_shader_lib_random_Simplex$ = this;
   var names = $m_sjs_js_ArrayOpsCommon$().a(["x"], []);
   var types = $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], []);
@@ -8095,7 +8019,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList = parts.join(", ");
   var src = (("fn permute_3_(" + paramList) + ") -> vec3<f32> {\n  return (((x * 34.) + 1.) * x) % vec3(289.);\n}");
-  this.hQ = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("permute_3_", src);
+  this.hP = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("permute_3_", src);
   var names$2 = $m_sjs_js_ArrayOpsCommon$().a(["x"], []);
   var types$2 = $m_sjs_js_ArrayOpsCommon$().a(["vec4<f32>"], []);
   var parts$2 = [];
@@ -8106,7 +8030,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$2 = parts$2.join(", ");
   var src$2 = (("fn permute_4_(" + paramList$2) + ") -> vec4<f32> {\n  return ((x * 34. + 1.) * x) % vec4<f32>(289.);\n}");
-  this.hR = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("permute_4_", src$2);
+  this.hQ = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("permute_4_", src$2);
   var names$3 = $m_sjs_js_ArrayOpsCommon$().a(["r"], []);
   var types$3 = $m_sjs_js_ArrayOpsCommon$().a(["vec4<f32>"], []);
   var parts$3 = [];
@@ -8117,7 +8041,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$3 = parts$3.join(", ");
   var src$3 = (("fn taylor_inv_sqrt_4_(" + paramList$3) + ") -> vec4<f32> {\n  return 1.79284291400159 - 0.85373472095314 * r;\n}");
-  this.hS = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("taylor_inv_sqrt_4_", src$3);
+  this.hR = new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("taylor_inv_sqrt_4_", src$3);
   var $x_1 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$4 = $m_sjs_js_ArrayOpsCommon$().a(["v"], []);
   var types$4 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], []);
@@ -8129,7 +8053,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$4 = parts$4.join(", ");
   var src$4 = (("fn simplex_noise_2d(" + paramList$4) + ") -> f32 {\n\n    let C = vec4(\n        0.211324865405187,\n        0.366025403784439,\n        -0.577350269189626,\n        0.024390243902439\n    );\n    // first corner\n    var i = floor(v + dot(v, C.yy));\n    let x0 = v - i + dot(i, C.xx);\n    // other corners\n    var i1 = select(vec2(0., 1.), vec2(1., 0.), x0.x > x0.y);\n    var x12 = x0.xyxy + C.xxzz - vec4(i1, 0., 0.);\n    // permutations\n    i = i % vec2(289.);\n    let p = permute_3_(permute_3_(i.y + vec3(0., i1.y, 1.)) + i.x + vec3(0., i1.x, 1.));\n    var m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), vec3(0.));\n    m *= m;\n    m *= m;\n    // gradients: 41 points uniformly over a line, mapped onto a diamond\n    let x = 2. * fract(p * C.www) - 1.;\n    let h = abs(x) - 0.5;\n    let ox = floor(x + 0.5);\n    let a0 = x - ox;\n    m = m * (1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h));\n    let g = vec3(a0.x * x0.x + h.x * x0.y, a0.yz * x12.xz + h.yz * x12.yw);\n    return 130. * dot(m, g);\n}");
-  this.li = $x_1.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_2d", src$4), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hQ]))));
+  this.ld = $x_1.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_2d", src$4), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hP]))));
   var $x_2 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$5 = $m_sjs_js_ArrayOpsCommon$().a(["v"], $m_sjs_js_ArrayOpsCommon$().a(["seed"], []));
   var types$5 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []));
@@ -8141,7 +8065,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$5 = parts$5.join(", ");
   var src$5 = (("fn simplex_noise_2d_seeded(" + paramList$5) + ") -> f32 {\n\n    let C = vec4(\n        0.211324865405187,\n        0.366025403784439,\n        -0.577350269189626,\n        0.024390243902439\n    );\n    // first corner\n    var i = floor(v + dot(v, C.yy));\n    let x0 = v - i + dot(i, C.xx);\n    // other corners\n    var i1 = select(vec2(0., 1.), vec2(1., 0.), x0.x > x0.y);\n    var x12 = x0.xyxy + C.xxzz - vec4(i1, 0., 0.);\n    // permutations\n    i = i % vec2(289.);\n    var p = permute_3_(permute_3_(i.y + vec3(0., i1.y, 1.)) + i.x + vec3(0., i1.x, 1.));\n    p = permute_3_(p + vec3(seed));\n    var m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), vec3(0.));\n    m *= m;\n    m *= m;\n    let x = 2. * fract(p * C.www) - 1.;\n    let h = abs(x) - 0.5;\n    let ox = floor(x + 0.5);\n    let a0 = x - ox;\n    m = m * (1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h));\n    let g = vec3(a0.x * x0.x + h.x * x0.y, a0.yz * x12.xz + h.yz * x12.yw);\n    return 130. * dot(m, g);\n}");
-  this.lj = $x_2.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_2d_seeded", src$5), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hQ]))));
+  this.le = $x_2.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_2d_seeded", src$5), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hP]))));
   var $x_3 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$6 = $m_sjs_js_ArrayOpsCommon$().a(["v"], []);
   var types$6 = $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], []);
@@ -8153,7 +8077,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$6 = parts$6.join(", ");
   var src$6 = (("fn simplex_noise_3d(" + paramList$6) + ") -> f32 {\n\n    let C = vec2(1. / 6., 1. / 3.);\n    let D = vec4(0., 0.5, 1., 2.);\n    // first corner\n    var i = floor(v + dot(v, C.yyy));\n    let x0 = v - i + dot(i, C.xxx);\n    // other corners\n    let g = step(x0.yzx, x0.xyz);\n    let l = 1. - g;\n    let i1 = min(g.xyz, l.zxy);\n    let i2 = max(g.xyz, l.zxy);\n    let x1 = x0 - i1 + 1. * C.xxx;\n    let x2 = x0 - i2 + 2. * C.xxx;\n    let x3 = x0 - 1. + 3. * C.xxx;\n    // permutations\n    i = i % vec3(289.);\n    let p = permute_4_(permute_4_(permute_4_(\n        i.z + vec4(0., i1.z, i2.z, 1.)) +\n        i.y + vec4(0., i1.y, i2.y, 1.)) +\n        i.x + vec4(0., i1.x, i2.x, 1.)\n    );\n    // gradients (NxN points uniformly over a square, mapped onto an octahedron)\n    let n_ = 1. / 7.;\n    let ns = n_ * D.wyz - D.xzx;\n    let j = p - 49. * floor(p * ns.z * ns.z);\n    let x_ = floor(j * ns.z);\n    let y_ = floor(j - 7. * x_);\n    let x = x_ * ns.x + ns.yyyy;\n    let y = y_ * ns.x + ns.yyyy;\n    let h = 1. - abs(x) - abs(y);\n    let b0 = vec4(x.xy, y.xy);\n    let b1 = vec4(x.zw, y.zw);\n    let s0 = floor(b0) * 2. + 1.;\n    let s1 = floor(b1) * 2. + 1.;\n    let sh = -step(h, vec4(0.));\n    let a0 = b0.xzyw + s0.xzyw * sh.xxyy;\n    let a1 = b1.xzyw + s1.xzyw * sh.zzww;\n    var p0 = vec3(a0.xy, h.x);\n    var p1 = vec3(a0.zw, h.y);\n    var p2 = vec3(a1.xy, h.z);\n    var p3 = vec3(a1.zw, h.w);\n    // normalize gradients\n    let norm = taylor_inv_sqrt_4_(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));\n    p0 = p0 * norm.x;\n    p1 = p1 * norm.y;\n    p2 = p2 * norm.z;\n    p3 = p3 * norm.w;\n    // mix final noise value\n    var m = 0.5 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3));\n    m = max(m, vec4(0.));\n    m *= m;\n    return 105. * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));\n}");
-  this.j5 = $x_3.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_3d", src$6), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hR, this.hS]))));
+  this.j3 = $x_3.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_3d", src$6), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hQ, this.hR]))));
   var $x_4 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$7 = $m_sjs_js_ArrayOpsCommon$().a(["v"], $m_sjs_js_ArrayOpsCommon$().a(["seed"], []));
   var types$7 = $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], []));
@@ -8165,7 +8089,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$7 = parts$7.join(", ");
   var src$7 = (("fn simplex_noise_3d_seeded(" + paramList$7) + ") -> f32 {\n\n    let C = vec2(1. / 6., 1. / 3.);\n    let D = vec4(0., 0.5, 1., 2.);\n    // first corner\n    var i = floor(v + dot(v, C.yyy));\n    let x0 = v - i + dot(i, C.xxx);\n    // other corners\n    let g = step(x0.yzx, x0.xyz);\n    let l = 1. - g;\n    let i1 = min(g.xyz, l.zxy);\n    let i2 = max(g.xyz, l.zxy);\n    let x1 = x0 - i1 + 1. * C.xxx;\n    let x2 = x0 - i2 + 2. * C.xxx;\n    let x3 = x0 - 1. + 3. * C.xxx;\n    // permutations\n    i = i % vec3(289.);\n    let s = floor(seed + vec3(0.5));\n    let p = permute_4_(permute_4_(permute_4_(\n        i.z + vec4(0., i1.z, i2.z, 1.) + s.z) +\n        i.y + vec4(0., i1.y, i2.y, 1.) + s.y) +\n        i.x + vec4(0., i1.x, i2.x, 1.) + s.x\n    );\n    // gradients (NxN points uniformly over a square, mapped onto an octahedron)\n    let n_ = 1. / 7.;\n    let ns = n_ * D.wyz - D.xzx;\n    let j = p - 49. * floor(p * ns.z * ns.z);\n    let x_ = floor(j * ns.z);\n    let y_ = floor(j - 7. * x_);\n    let x = x_ * ns.x + ns.yyyy;\n    let y = y_ * ns.x + ns.yyyy;\n    let h = 1. - abs(x) - abs(y);\n    let b0 = vec4(x.xy, y.xy);\n    let b1 = vec4(x.zw, y.zw);\n    let s0 = floor(b0) * 2. + 1.;\n    let s1 = floor(b1) * 2. + 1.;\n    let sh = -step(h, vec4(0.));\n    let a0 = b0.xzyw + s0.xzyw * sh.xxyy;\n    let a1 = b1.xzyw + s1.xzyw * sh.zzww;\n    var p0 = vec3(a0.xy, h.x);\n    var p1 = vec3(a0.zw, h.y);\n    var p2 = vec3(a1.xy, h.z);\n    var p3 = vec3(a1.zw, h.w);\n    // normalize gradients\n    let norm = taylor_inv_sqrt_4_(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));\n    p0 = p0 * norm.x;\n    p1 = p1 * norm.y;\n    p2 = p2 * norm.z;\n    p3 = p3 * norm.w;\n    // mix final noise value\n    var m = 0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3));\n    m = max(m, vec4(0.));\n    m *= m;\n    return 42. * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));\n}");
-  this.lk = $x_4.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_3d_seeded", src$7), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hR, this.hS]))));
+  this.lf = $x_4.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_3d_seeded", src$7), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hQ, this.hR]))));
   var $x_5 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$8 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["octaves"], $m_sjs_js_ArrayOpsCommon$().a(["lacunarity"], $m_sjs_js_ArrayOpsCommon$().a(["gain"], []))));
   var types$8 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["i32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []))));
@@ -8177,7 +8101,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$8 = parts$8.join(", ");
   var src$8 = (("fn fbm_simplex_2d(" + paramList$8) + ") -> f32 {\n\n    var sum = 0.;\n    var amplitude = 1.;\n    var frequency = 1.;\n    for (var i = 0; i < octaves; i += 1) {\n        sum += simplex_noise_2d(pos * frequency) * amplitude;\n        amplitude *= gain;\n        frequency *= lacunarity;\n    }\n    return sum;\n}");
-  $x_5.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_2d", src$8), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.li]))));
+  $x_5.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_2d", src$8), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.ld]))));
   var $x_6 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$9 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["octaves"], $m_sjs_js_ArrayOpsCommon$().a(["lacunarity"], $m_sjs_js_ArrayOpsCommon$().a(["gain"], $m_sjs_js_ArrayOpsCommon$().a(["seed"], [])))));
   var types$9 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["i32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], [])))));
@@ -8189,7 +8113,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$9 = parts$9.join(", ");
   var src$9 = (("fn fbm_simplex_2d_seeded(" + paramList$9) + ") -> f32 {\n\n    var sum = 0.;\n    var amplitude = 1.;\n    var frequency = 1.;\n    for (var i = 0; i < octaves; i += 1) {\n        sum += simplex_noise_2d_seeded(pos * frequency, seed) * amplitude;\n        amplitude *= gain;\n        frequency *= lacunarity;\n    }\n    return sum;\n}");
-  $x_6.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_2d_seeded", src$9), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.lj]))));
+  $x_6.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_2d_seeded", src$9), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.le]))));
   var $x_7 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$10 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["octaves"], $m_sjs_js_ArrayOpsCommon$().a(["lacunarity"], $m_sjs_js_ArrayOpsCommon$().a(["gain"], []))));
   var types$10 = $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["i32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []))));
@@ -8201,7 +8125,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$10 = parts$10.join(", ");
   var src$10 = (("fn fbm_simplex_3d(" + paramList$10) + ") -> f32 {\n\n    var sum = 0.;\n    var amplitude = 1.;\n    var frequency = 1.;\n    for (var i = 0; i < octaves; i += 1) {\n        sum += simplex_noise_3d(pos * frequency) * amplitude;\n        amplitude *= gain;\n        frequency *= lacunarity;\n    }\n    return sum;\n}");
-  $x_7.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_3d", src$10), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.j5]))));
+  $x_7.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_3d", src$10), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.j3]))));
   var $x_8 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$11 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["octaves"], $m_sjs_js_ArrayOpsCommon$().a(["lacunarity"], $m_sjs_js_ArrayOpsCommon$().a(["gain"], $m_sjs_js_ArrayOpsCommon$().a(["seed"], [])))));
   var types$11 = $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["i32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], $m_sjs_js_ArrayOpsCommon$().a(["vec3<f32>"], [])))));
@@ -8213,7 +8137,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$11 = parts$11.join(", ");
   var src$11 = (("fn fbm_simplex_3d_seeded(" + paramList$11) + ") -> f32 {\n\n    var sum = 0.;\n    var amplitude = 1.;\n    var frequency = 1.;\n    for (var i = 0; i < octaves; i += 1) {\n        sum += simplex_noise_3d_seeded(pos * frequency, seed) * amplitude;\n        amplitude *= gain;\n        frequency *= lacunarity;\n    }\n    return sum;\n}");
-  $x_8.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_3d_seeded", src$11), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.lk]))));
+  $x_8.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("fbm_simplex_3d_seeded", src$11), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.lf]))));
   var $x_9 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$12 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["jitter"], []));
   var types$12 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []));
@@ -8225,7 +8149,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$12 = parts$12.join(", ");
   var src$12 = (("fn worley_2d(" + paramList$12) + ") -> vec2<f32> {\n\n    let k = 0.142857142857;\n    let ko = 0.428571428571;\n    let pi = floor(pos);\n    let pf = fract(pos);\n    let oi = vec3(-1.0, 0.0, 1.0);\n    let of_ = vec3(-0.5, 0.5, 1.5);\n    let px = permute_3_(pi.x + oi);\n    var p = permute_3_(px.x + pi.y + oi);\n    var ox = fract(p * k) - ko;\n    var oy = (floor(p * k) % 7.0) * k - ko;\n    var dx = pf.x + 0.5 + jitter * ox;\n    var dy = pf.y - of_ + jitter * oy;\n    var d1 = dx * dx + dy * dy;\n    p = permute_3_(px.y + pi.y + oi);\n    ox = fract(p * k) - ko;\n    oy = (floor(p * k) % 7.0) * k - ko;\n    dx = pf.x - 0.5 + jitter * ox;\n    dy = pf.y - of_ + jitter * oy;\n    var d2 = dx * dx + dy * dy;\n    p = permute_3_(px.z + pi.y + oi);\n    ox = fract(p * k) - ko;\n    oy = (floor(p * k) % 7.0) * k - ko;\n    dx = pf.x - 1.5 + jitter * ox;\n    dy = pf.y - of_ + jitter * oy;\n    let d3 = dx * dx + dy * dy;\n    let d1a = min(d1, d2);\n    d2 = max(d1, d2);\n    d2 = min(d2, d3);\n    d1 = min(d1a, d2);\n    d2 = max(d1a, d2);\n    if d1.x > d1.y {\n        let tmp = d1.x;\n        d1.x = d1.y;\n        d1.y = tmp;\n    }\n    if d1.x > d1.z {\n        let tmp = d1.x;\n        d1.x = d1.z;\n        d1.z = tmp;\n    }\n    d1.y = min(d1.y, d2.y);\n    d1.z = min(d1.z, d2.z);\n    d1.y = min(d1.y, d1.z);\n    d1.y = min(d1.y, d2.x);\n    return sqrt(d1.xy);\n}");
-  $x_9.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("worley_2d", src$12), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hQ]))));
+  $x_9.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("worley_2d", src$12), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.hP]))));
   var names$13 = $m_sjs_js_ArrayOpsCommon$().a(["x"], []);
   var types$13 = $m_sjs_js_ArrayOpsCommon$().a(["f32"], []);
   var parts$13 = [];
@@ -8270,7 +8194,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$16 = parts$16.join(", ");
   var src$16 = (("fn simplex_noise_4d(" + paramList$16) + ") -> f32 {\n\n    let c = vec4<f32>(\n        0.138196601125011,\n        0.276393202250021,\n        0.414589803375032,\n        -0.447213595499958\n    );\n    let F4 = 0.309016994374947451;\n    var i = floor(pos + dot(pos, vec4<f32>(F4, F4, F4, F4)));\n    let x0 = pos - i + dot(i, c.xxxx);\n    let is_x = step(x0.yzw, x0.xxx);\n    let is_yz = step(x0.zww, x0.yyz);\n    var i0 = vec4<f32>(is_x.x + is_x.y + is_x.z, 1.0 - is_x.x, 1.0 - is_x.y, 1.0 - is_x.z);\n    i0.y = i0.y + is_yz.x + is_yz.y;\n    i0.z = i0.z + (1.0 - is_yz.x) + is_yz.z;\n    i0.w = i0.w + (1.0 - is_yz.y) + (1.0 - is_yz.z);\n    let i3 = clamp(i0, vec4<f32>(0.0, 0.0, 0.0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0));\n    let i2 = clamp(i0 - 1.0, vec4<f32>(0.0, 0.0, 0.0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0));\n    let i1 = clamp(i0 - 2.0, vec4<f32>(0.0, 0.0, 0.0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0));\n    let x1 = x0 - i1 + c.xxxx;\n    let x2 = x0 - i2 + c.yyyy;\n    let x3 = x0 - i3 + c.zzzz;\n    let x4 = x0 + c.wwww;\n    i = i % vec4<f32>(289.0, 289.0, 289.0, 289.0);\n    let j0 = permute_1_(permute_1_(permute_1_(permute_1_(i.w) + i.z) + i.y) + i.x);\n    let j1 = permute_4_(\n        permute_4_(\n            permute_4_(\n                permute_4_(i.w + vec4<f32>(i1.w, i2.w, i3.w, 1.0)) + i.z + vec4<f32>(i1.z, i2.z, i3.z, 1.0)\n            ) + i.y + vec4<f32>(i1.y, i2.y, i3.y, 1.0)\n        ) + i.x + vec4<f32>(i1.x, i2.x, i3.x, 1.0)\n    );\n    let ip = vec4<f32>(1.0 / 294.0, 1.0 / 49.0, 1.0 / 7.0, 0.0);\n    var p0 = grad_4_(j0, ip);\n    var p1 = grad_4_(j1.x, ip);\n    var p2 = grad_4_(j1.y, ip);\n    var p3 = grad_4_(j1.z, ip);\n    var p4 = grad_4_(j1.w, ip);\n    let norm = taylor_inv_sqrt_4_(vec4<f32>(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));\n    p0 = p0 * norm.x;\n    p1 = p1 * norm.y;\n    p2 = p2 * norm.z;\n    p3 = p3 * norm.w;\n    p4 = p4 * taylor_inv_sqrt_1_(dot(p4, p4));\n    var m0 = max(0.6 - vec3<f32>(dot(x0, x0), dot(x1, x1), dot(x2, x2)), vec3<f32>(0.0, 0.0, 0.0));\n    var m1 = max(0.6 - vec2<f32>(dot(x3, x3), dot(x4, x4)), vec2<f32>(0.0, 0.0));\n    m0 = m0 * m0;\n    m1 = m1 * m1;\n    return 49.0 * (dot(m0 * m0, vec3<f32>(dot(p0, x0), dot(p1, x1), dot(p2, x2))) + dot(m1 * m1, vec2<f32>(dot(p3, x3), dot(p4, x4))));\n}");
-  this.ll = $x_10.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_4d", src$16), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([permute1, this.hR, taylorInvSqrt1, this.hS, grad4]))));
+  this.lg = $x_10.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("simplex_noise_4d", src$16), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([permute1, this.hQ, taylorInvSqrt1, this.hR, grad4]))));
   var $x_11 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
   var names$17 = $m_sjs_js_ArrayOpsCommon$().a(["pos"], $m_sjs_js_ArrayOpsCommon$().a(["scale"], []));
   var types$17 = $m_sjs_js_ArrayOpsCommon$().a(["vec2<f32>"], $m_sjs_js_ArrayOpsCommon$().a(["f32"], []));
@@ -8282,7 +8206,7 @@ function $c_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
   }
   var paramList$17 = parts$17.join(", ");
   var src$17 = (("fn tiling_simplex_noise_2d(" + paramList$17) + ") -> f32 {\n\n    let angle_x = pos.x * 6.28318530718;\n    let angle_y = pos.y * 6.28318530718;\n    let nx = cos(angle_x) * scale;\n    let ny = sin(angle_x) * scale;\n    let nz = cos(angle_y) * scale;\n    let nw = sin(angle_y) * scale;\n    return simplex_noise_4d(vec4<f32>(nx, ny, nz, nw));\n}");
-  $x_11.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("tiling_simplex_noise_2d", src$17), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.ll]))));
+  $x_11.aN(new ($a_Ltrivalibs_graphics_shader_dsl_WgslFnData())("tiling_simplex_noise_2d", src$17), new $c_sjsr_WrappedVarArgs($m_sjsr_package$().d(new ($d_Ltrivalibs_graphics_shader_dsl_WgslFnData.r().C)([this.lg]))));
 }
 $p = $c_Ltrivalibs_graphics_shader_lib_random_Simplex$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_lib_random_Simplex$;
@@ -8291,7 +8215,7 @@ function $h_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
 }
 $h_Ltrivalibs_graphics_shader_lib_random_Simplex$.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_lib_random_Simplex$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_lib_random_Simplex$, "trivalibs.graphics.shader.lib.random.Simplex$", ({
-  fx: 1
+  fj: 1
 }));
 var $n_Ltrivalibs_graphics_shader_lib_random_Simplex$;
 function $m_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
@@ -8302,20 +8226,20 @@ function $m_Ltrivalibs_graphics_shader_lib_random_Simplex$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_utils_animation_Animator(frame, onFpsCallback) {
-  this.lm = null;
-  this.j6 = null;
-  this.gD = 0;
-  this.gE = 0.0;
+  this.lh = null;
+  this.j4 = null;
+  this.gC = 0;
+  this.gD = 0.0;
+  this.hS = 0.0;
   this.hT = 0.0;
-  this.hU = 0.0;
-  this.j7 = false;
-  this.lm = frame;
-  this.j6 = onFpsCallback;
-  this.gD = 0;
-  this.gE = 0.0;
-  this.hT = 0.0;
-  this.hU = (-1.0);
-  this.j7 = false;
+  this.j5 = false;
+  this.lh = frame;
+  this.j4 = onFpsCallback;
+  this.gC = 0;
+  this.gD = 0.0;
+  this.hS = 0.0;
+  this.hT = (-1.0);
+  this.j5 = false;
 }
 $p = $c_Ltrivalibs_utils_animation_Animator.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_utils_animation_Animator;
@@ -8323,43 +8247,43 @@ $p.constructor = $c_Ltrivalibs_utils_animation_Animator;
 function $h_Ltrivalibs_utils_animation_Animator() {
 }
 $h_Ltrivalibs_utils_animation_Animator.prototype = $p;
-$p.md = (function(time) {
-  this.gD = ((1 + this.gD) | 0);
-  if ((this.gE === 0.0)) {
-    this.gE = time;
-    this.hT = time;
+$p.m7 = (function(time) {
+  this.gC = ((1 + this.gC) | 0);
+  if ((this.gD === 0.0)) {
+    this.gD = time;
+    this.hS = time;
   }
-  var fpsElapsed = (time - this.gE);
+  var fpsElapsed = (time - this.gD);
   if ((fpsElapsed >= 1000.0)) {
-    var fps = ((1000.0 * this.gD) / fpsElapsed);
-    if (((time - this.hT) >= 1000.0)) {
+    var fps = ((1000.0 * this.gC) / fpsElapsed);
+    if (((time - this.hS) >= 1000.0)) {
       var args$proxy1 = $m_sr_ScalaRunTime$().al(new ($d_sjs_js_Any.r().C)([(fps.toFixed(1) + " FPS")]));
       console.log(...$m_sjsr_Compat$().ak(args$proxy1));
-      this.hT = time;
-      if ((this.j6 !== null)) {
-        (0, this.j6)(fps);
+      this.hS = time;
+      if ((this.j4 !== null)) {
+        (0, this.j4)(fps);
       }
     }
-    this.gD = 0;
-    this.gE = time;
+    this.gC = 0;
+    this.gD = time;
   }
-  var delta = ((this.hU < 0.0) ? 0.0 : (time - this.hU));
-  this.hU = time;
-  (0, this.lm)(delta);
-  if (this.j7) {
-    requestAnimationFrame($m_sjs_js_Any$().gN(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((v1$2) => {
-      this.md((+v1$2));
+  var delta = ((this.hT < 0.0) ? 0.0 : (time - this.hT));
+  this.hT = time;
+  (0, this.lh)(delta);
+  if (this.j5) {
+    requestAnimationFrame($m_sjs_js_Any$().gM(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((v1$2) => {
+      this.m7((+v1$2));
     }))));
   }
 });
-$p.oZ = (function() {
-  this.j7 = true;
-  return requestAnimationFrame($m_sjs_js_Any$().gN(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((v1$2) => {
-    this.md((+v1$2));
+$p.oP = (function() {
+  this.j5 = true;
+  return requestAnimationFrame($m_sjs_js_Any$().gM(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((v1$2) => {
+    this.m7((+v1$2));
   }))));
 });
 var $d_Ltrivalibs_utils_animation_Animator = new $TypeData().i($c_Ltrivalibs_utils_animation_Animator, "trivalibs.utils.animation.Animator", ({
-  fC: 1
+  fo: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_animation_animate$package$() {
@@ -8370,13 +8294,13 @@ $p.constructor = $c_Ltrivalibs_utils_animation_animate$package$;
 function $h_Ltrivalibs_utils_animation_animate$package$() {
 }
 $h_Ltrivalibs_utils_animation_animate$package$.prototype = $p;
-$p.mF = (function(frame) {
+$p.my = (function(frame) {
   var animator = new $c_Ltrivalibs_utils_animation_Animator(frame, null);
-  animator.oZ();
+  animator.oP();
   return animator;
 });
 var $d_Ltrivalibs_utils_animation_animate$package$ = new $TypeData().i($c_Ltrivalibs_utils_animation_animate$package$, "trivalibs.utils.animation.animate$package$", ({
-  fD: 1
+  fp: 1
 }));
 var $n_Ltrivalibs_utils_animation_animate$package$;
 function $m_Ltrivalibs_utils_animation_animate$package$() {
@@ -8388,11 +8312,11 @@ function $m_Ltrivalibs_utils_animation_animate$package$() {
 /** @constructor */
 function $c_Ltrivalibs_utils_events_CanvasInput(input, drag, hold) {
   this.ah = null;
-  this.j8 = null;
-  this.j9 = null;
+  this.j6 = null;
+  this.j7 = null;
   this.ah = input;
-  this.j8 = drag;
-  this.j9 = hold;
+  this.j6 = drag;
+  this.j7 = hold;
 }
 $p = $c_Ltrivalibs_utils_events_CanvasInput.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_utils_events_CanvasInput;
@@ -8401,25 +8325,25 @@ function $h_Ltrivalibs_utils_events_CanvasInput() {
 }
 $h_Ltrivalibs_utils_events_CanvasInput.prototype = $p;
 $p.fo = (function(tpf) {
-  this.j8.fo(tpf);
-  this.j9.fo(tpf);
+  this.j6.fo(tpf);
+  this.j7.fo(tpf);
 });
 var $d_Ltrivalibs_utils_events_CanvasInput = new $TypeData().i($c_Ltrivalibs_utils_events_CanvasInput, "trivalibs.utils.events.CanvasInput", ({
-  fE: 1
+  fq: 1
 }));
 function $ct_Ltrivalibs_utils_events_DragGesture__F0__D__D__($thiz, pointersOf, glideMinSpeed, glideHalfLife) {
-  $thiz.lp = pointersOf;
-  $thiz.lo = glideHalfLife;
+  $thiz.lk = pointersOf;
+  $thiz.lj = glideHalfLife;
   $thiz.g1 = null;
-  $thiz.jb = 0.0;
-  $thiz.jc = 0.0;
+  $thiz.j9 = 0.0;
+  $thiz.ja = 0.0;
   $thiz.fg = 0.0;
   $thiz.fh = 0.0;
   $thiz.aI = 0.0;
   $thiz.aJ = 0.0;
-  $thiz.ja = (glideHalfLife > 0.0);
+  $thiz.j8 = (glideHalfLife > 0.0);
   var s = (glideMinSpeed / 1000.0);
-  $thiz.ln = ((s < 0.001) ? 0.001 : s);
+  $thiz.li = ((s < 0.001) ? 0.001 : s);
   return $thiz;
 }
 function $ct_Ltrivalibs_utils_events_DragGesture__Ltrivalibs_utils_events_InputState__D__D__($thiz, input, glideMinSpeed, glideHalfLife) {
@@ -8431,17 +8355,17 @@ function $ps_Ltrivalibs_utils_events_DragGesture__DragGesture$superArg$1__Ltriva
 }
 /** @constructor */
 function $c_Ltrivalibs_utils_events_DragGesture() {
-  this.lp = null;
-  this.lo = 0.0;
+  this.lk = null;
+  this.lj = 0.0;
   this.g1 = null;
-  this.jb = 0.0;
-  this.jc = 0.0;
+  this.j9 = 0.0;
+  this.ja = 0.0;
   this.fg = 0.0;
   this.fh = 0.0;
   this.aI = 0.0;
   this.aJ = 0.0;
-  this.ja = false;
-  this.ln = 0.0;
+  this.j8 = false;
+  this.li = 0.0;
 }
 $p = $c_Ltrivalibs_utils_events_DragGesture.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_utils_events_DragGesture;
@@ -8449,21 +8373,21 @@ $p.constructor = $c_Ltrivalibs_utils_events_DragGesture;
 function $h_Ltrivalibs_utils_events_DragGesture() {
 }
 $h_Ltrivalibs_utils_events_DragGesture.prototype = $p;
-$p.n3 = (function() {
+$p.mW = (function() {
   return new $c_T2(this.fg, this.fh);
 });
 $p.fo = (function(tpf) {
-  var d = $m_Ltrivalibs_utils_events_gestures$package$().lK(this.lp.gL());
+  var d = $m_Ltrivalibs_utils_events_gestures$package$().lF(this.lk.gK());
   if ((d === null)) {
     this.g1 = null;
-    if (this.ja) {
+    if (this.j8) {
       var p$proxy1 = ((this.aI * this.aI) + (this.aJ * this.aJ));
-      var $x_1 = ((+Math.sqrt(p$proxy1)) >= this.ln);
+      var $x_1 = ((+Math.sqrt(p$proxy1)) >= this.li);
     } else {
       var $x_1 = false;
     }
     if ($x_1) {
-      var e$proxy1 = (tpf / this.lo);
+      var e$proxy1 = (tpf / this.lj);
       var f = (+Math.pow(0.5, e$proxy1));
       this.aI = (this.aI * f);
       this.aJ = (this.aJ * f);
@@ -8477,9 +8401,9 @@ $p.fo = (function(tpf) {
     }
   } else {
     if ((((this.g1 !== null) && (d.aU !== null)) && ((+this.g1) === (+d.aU)))) {
-      this.fg = (d.g3 - this.jb);
-      this.fh = (d.g4 - this.jc);
-      if ((this.ja && (tpf > 0.0))) {
+      this.fg = (d.g3 - this.j9);
+      this.fh = (d.g4 - this.ja);
+      if ((this.j8 && (tpf > 0.0))) {
         var e$proxy2 = (tpf / 40.0);
         var k = (1.0 - (+Math.pow(0.5, e$proxy2)));
         this.aI = (this.aI + (((this.fg / tpf) - this.aI) * k));
@@ -8494,21 +8418,21 @@ $p.fo = (function(tpf) {
       this.fh = 0.0;
     }
     this.g1 = d.aU;
-    this.jb = d.g3;
-    this.jc = d.g4;
+    this.j9 = d.g3;
+    this.ja = d.g4;
   }
 });
 var $d_Ltrivalibs_utils_events_DragGesture = new $TypeData().i($c_Ltrivalibs_utils_events_DragGesture, "trivalibs.utils.events.DragGesture", ({
-  fF: 1
+  fr: 1
 }));
 function $ct_Ltrivalibs_utils_events_HoldGesture__F0__D__D__($thiz, pointersOf, holdDelay, holdRadius) {
-  $thiz.ls = pointersOf;
-  $thiz.lq = holdDelay;
-  $thiz.lr = holdRadius;
-  $thiz.gG = null;
+  $thiz.ln = pointersOf;
+  $thiz.ll = holdDelay;
+  $thiz.lm = holdRadius;
+  $thiz.gF = null;
   $thiz.g2 = 0.0;
-  $thiz.gH = false;
-  $thiz.gF = false;
+  $thiz.gG = false;
+  $thiz.gE = false;
   $thiz.fi = false;
   return $thiz;
 }
@@ -8521,13 +8445,13 @@ function $ps_Ltrivalibs_utils_events_HoldGesture__HoldGesture$superArg$1__Ltriva
 }
 /** @constructor */
 function $c_Ltrivalibs_utils_events_HoldGesture() {
-  this.ls = null;
-  this.lq = 0.0;
-  this.lr = 0.0;
-  this.gG = null;
+  this.ln = null;
+  this.ll = 0.0;
+  this.lm = 0.0;
+  this.gF = null;
   this.g2 = 0.0;
-  this.gH = false;
-  this.gF = false;
+  this.gG = false;
+  this.gE = false;
   this.fi = false;
 }
 $p = $c_Ltrivalibs_utils_events_HoldGesture.prototype = new $h_O();
@@ -8537,48 +8461,48 @@ function $h_Ltrivalibs_utils_events_HoldGesture() {
 }
 $h_Ltrivalibs_utils_events_HoldGesture.prototype = $p;
 $p.fo = (function(tpf) {
-  var d = $m_Ltrivalibs_utils_events_gestures$package$().lK(this.ls.gL());
+  var d = $m_Ltrivalibs_utils_events_gestures$package$().lF(this.ln.gK());
   if ((d === null)) {
-    this.gG = null;
+    this.gF = null;
     this.g2 = 0.0;
-    this.gH = false;
-    this.gF = false;
+    this.gG = false;
+    this.gE = false;
     this.fi = false;
   } else {
     var pid = d.aU;
-    if ((!(((this.gG !== null) && (pid !== null)) && ((+this.gG) === (+pid))))) {
-      this.gG = pid;
+    if ((!(((this.gF !== null) && (pid !== null)) && ((+this.gF) === (+pid))))) {
+      this.gF = pid;
       this.g2 = 0.0;
-      this.gH = false;
-      this.gF = false;
+      this.gG = false;
+      this.gE = false;
     }
     this.g2 = (this.g2 + tpf);
-    if (this.gF) {
+    if (this.gE) {
       this.fi = true;
-    } else if ((this.g2 < this.lq)) {
-      var dx = (d.g3 - d.je);
-      var dy = (d.g4 - d.jf);
+    } else if ((this.g2 < this.ll)) {
+      var dx = (d.g3 - d.jc);
+      var dy = (d.g4 - d.jd);
       var p$proxy2 = ((dx * dx) + (dy * dy));
-      if (((+Math.sqrt(p$proxy2)) > this.lr)) {
-        this.gH = true;
+      if (((+Math.sqrt(p$proxy2)) > this.lm)) {
+        this.gG = true;
       }
       this.fi = false;
-    } else if (this.gH) {
+    } else if (this.gG) {
       this.fi = false;
     } else {
-      this.gF = true;
+      this.gE = true;
       this.fi = true;
     }
   }
 });
 var $d_Ltrivalibs_utils_events_HoldGesture = new $TypeData().i($c_Ltrivalibs_utils_events_HoldGesture, "trivalibs.utils.events.HoldGesture", ({
-  fG: 1
+  fs: 1
 }));
 function $p_Ltrivalibs_utils_events_InputState__freeSlot__Ltrivalibs_utils_events_Pointer($thiz) {
   var i = 0;
-  while ((i < ($thiz.gK.length | 0))) {
-    if (($thiz.gK[i].aU === null)) {
-      return $thiz.gK[i];
+  while ((i < ($thiz.gJ.length | 0))) {
+    if (($thiz.gJ[i].aU === null)) {
+      return $thiz.gJ[i];
     }
     i = ((1 + i) | 0);
   }
@@ -8599,7 +8523,7 @@ function $p_Ltrivalibs_utils_events_InputState__removePointer__D__V($thiz, id) {
   var p = $p_Ltrivalibs_utils_events_InputState__slotById__D__Ltrivalibs_utils_events_Pointer($thiz, id);
   if ((p !== null)) {
     p.aU = null;
-    var idx = $m_sjs_js_ArrayOps$().lP($thiz.aC, p, 0);
+    var idx = $m_sjs_js_ArrayOps$().lJ($thiz.aC, p, 0);
     if ((idx >= 0)) {
       $thiz.aC.splice(idx, 1);
     }
@@ -8607,44 +8531,44 @@ function $p_Ltrivalibs_utils_events_InputState__removePointer__D__V($thiz, id) {
 }
 function $p_Ltrivalibs_utils_events_InputState__install__V($thiz) {
   var i = 0;
-  while ((i < $thiz.lx)) {
-    $thiz.gK.push(new $c_Ltrivalibs_utils_events_Pointer());
+  while ((i < $thiz.ls)) {
+    $thiz.gJ.push(new $c_Ltrivalibs_utils_events_Pointer());
     i = ((1 + i) | 0);
   }
-  $m_Ltrivalibs_utils_events_keyboard$package$().nP($thiz.gI, new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((k$3) => {
-    if ((!(!(!(!(!$thiz.gJ.hasOwnProperty(k$3))))))) {
+  $m_Ltrivalibs_utils_events_keyboard$package$().nH($thiz.gH, new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((k$3) => {
+    if ((!(!(!(!(!$thiz.gI.hasOwnProperty(k$3))))))) {
       var value$proxy1 = (+Date.now());
-      $thiz.gJ[k$3] = value$proxy1;
+      $thiz.gI[k$3] = value$proxy1;
       if ((!($thiz.ai === (void 0)))) {
         var m$proxy3 = $thiz.ai;
         m$proxy3();
       }
     }
   })), new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((k$3$1) => {
-    delete $thiz.gJ[k$3$1];
+    delete $thiz.gI[k$3$1];
     if ((!($thiz.ai === (void 0)))) {
       var m$proxy4 = $thiz.ai;
       m$proxy4();
     }
   })), false);
-  $m_Ltrivalibs_utils_events_pointer$package$().oE($thiz.lu, $m_Ltrivalibs_utils_events_pointer$package$().oF(), new $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078(((v1$2, v2$2, v3$2, v4$2, v5$2) => {
+  $m_Ltrivalibs_utils_events_pointer$package$().ov($thiz.lp, $m_Ltrivalibs_utils_events_pointer$package$().ow(), new $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078(((v1$2, v2$2, v3$2, v4$2, v5$2) => {
     var button = (v1$2 | 0);
     var id = (+v2$2);
     var x$1 = (+v3$2);
     var y = (+v4$2);
-    if ($thiz.lw) {
-      $thiz.gI.focus();
+    if ($thiz.lr) {
+      $thiz.gH.focus();
     }
     var key$proxy3 = ("" + button);
     var value$proxy2 = (+Date.now());
-    $thiz.hV[key$proxy3] = value$proxy2;
+    $thiz.hU[key$proxy3] = value$proxy2;
     var slot = $p_Ltrivalibs_utils_events_InputState__freeSlot__Ltrivalibs_utils_events_Pointer($thiz);
     if ((slot !== null)) {
       slot.aU = id;
-      slot.jd = button;
+      slot.jb = button;
       (+Date.now());
-      slot.je = x$1;
-      slot.jf = y;
+      slot.jc = x$1;
+      slot.jd = y;
       slot.g3 = x$1;
       slot.g4 = y;
       $thiz.aC.push(slot);
@@ -8669,7 +8593,7 @@ function $p_Ltrivalibs_utils_events_InputState__install__V($thiz) {
   })), new $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a(((v1$2$2, v2$2$2, v3$2$2, v4$2$1) => {
     var button$1 = (v1$2$2 | 0);
     var id$2 = (+v2$2$2);
-    delete $thiz.hV[("" + button$1)];
+    delete $thiz.hU[("" + button$1)];
     $p_Ltrivalibs_utils_events_InputState__removePointer__D__V($thiz, id$2);
     if ((!($thiz.ai === (void 0)))) {
       var m$proxy6 = $thiz.ai;
@@ -8681,46 +8605,46 @@ function $p_Ltrivalibs_utils_events_InputState__install__V($thiz) {
       var m$proxy7 = $thiz.ai;
       m$proxy7();
     }
-  })), $thiz.ly);
-  $thiz.gI.addEventListener("focus", $thiz.lv);
-  $thiz.gI.addEventListener("blur", $thiz.lt);
+  })), $thiz.lt);
+  $thiz.gH.addEventListener("focus", $thiz.lq);
+  $thiz.gH.addEventListener("blur", $thiz.lo);
 }
 /** @constructor */
 function $c_Ltrivalibs_utils_events_InputState(el, keyTarget, suppressContextMenu, onActivity, focusOnPointerDown, maxPointers) {
-  this.lu = null;
-  this.gI = null;
-  this.ly = false;
+  this.lp = null;
+  this.gH = null;
+  this.lt = false;
   this.ai = null;
-  this.lw = false;
-  this.lx = 0;
+  this.lr = false;
+  this.ls = 0;
+  this.gI = null;
+  this.hU = null;
   this.gJ = null;
-  this.hV = null;
-  this.gK = null;
   this.aC = null;
-  this.lv = null;
-  this.lt = null;
-  this.lu = el;
-  this.gI = keyTarget;
-  this.ly = suppressContextMenu;
+  this.lq = null;
+  this.lo = null;
+  this.lp = el;
+  this.gH = keyTarget;
+  this.lt = suppressContextMenu;
   this.ai = onActivity;
-  this.lw = focusOnPointerDown;
-  this.lx = maxPointers;
-  this.gJ = ({});
-  this.hV = ({});
-  this.gK = [];
+  this.lr = focusOnPointerDown;
+  this.ls = maxPointers;
+  this.gI = ({});
+  this.hU = ({});
+  this.gJ = [];
   this.aC = [];
   if ($m_sr_BoxesRunTime$().c(keyTarget, window)) {
     (!(!document.hasFocus()));
   } else {
     $m_sr_BoxesRunTime$().c(keyTarget, document.activeElement);
   }
-  this.lv = ((_$1$3) => {
+  this.lq = ((_$1$3) => {
     if ((!(this.ai === (void 0)))) {
       var m$proxy1 = this.ai;
       m$proxy1();
     }
   });
-  this.lt = ((_$2$3) => {
+  this.lo = ((_$2$3) => {
     if ((!(this.ai === (void 0)))) {
       var m$proxy2 = this.ai;
       m$proxy2();
@@ -8735,30 +8659,30 @@ function $h_Ltrivalibs_utils_events_InputState() {
 }
 $h_Ltrivalibs_utils_events_InputState.prototype = $p;
 $p.aL = (function(key) {
-  return (!(!(!(!this.gJ.hasOwnProperty(key)))));
+  return (!(!(!(!this.gI.hasOwnProperty(key)))));
 });
-$p.nM = (function(button) {
+$p.nF = (function(button) {
   var key$proxy7 = ("" + button);
-  return (!(!(!(!this.hV.hasOwnProperty(key$proxy7)))));
+  return (!(!(!(!this.hU.hasOwnProperty(key$proxy7)))));
 });
-$p.mc = (function() {
+$p.m6 = (function() {
   return (this.aC.length | 0);
 });
 var $d_Ltrivalibs_utils_events_InputState = new $TypeData().i($c_Ltrivalibs_utils_events_InputState, "trivalibs.utils.events.InputState", ({
-  fH: 1
+  ft: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_events_Pointer() {
   this.aU = null;
-  this.jd = 0;
-  this.je = 0.0;
-  this.jf = 0.0;
+  this.jb = 0;
+  this.jc = 0.0;
+  this.jd = 0.0;
   this.g3 = 0.0;
   this.g4 = 0.0;
   this.aU = null;
-  this.jd = 0;
-  this.je = 0.0;
-  this.jf = 0.0;
+  this.jb = 0;
+  this.jc = 0.0;
+  this.jd = 0.0;
   this.g3 = 0.0;
   this.g4 = 0.0;
 }
@@ -8769,7 +8693,7 @@ function $h_Ltrivalibs_utils_events_Pointer() {
 }
 $h_Ltrivalibs_utils_events_Pointer.prototype = $p;
 var $d_Ltrivalibs_utils_events_Pointer = new $TypeData().i($c_Ltrivalibs_utils_events_Pointer, "trivalibs.utils.events.Pointer", ({
-  fI: 1
+  fu: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_events_gestures$package$() {
@@ -8780,11 +8704,11 @@ $p.constructor = $c_Ltrivalibs_utils_events_gestures$package$;
 function $h_Ltrivalibs_utils_events_gestures$package$() {
 }
 $h_Ltrivalibs_utils_events_gestures$package$.prototype = $p;
-$p.lK = (function(pointers) {
+$p.lF = (function(pointers) {
   var i = 0;
   while ((i < (pointers.length | 0))) {
     var p = pointers[i];
-    if ((p.jd === 0)) {
+    if ((p.jb === 0)) {
       return p;
     }
     i = ((1 + i) | 0);
@@ -8792,7 +8716,7 @@ $p.lK = (function(pointers) {
   return null;
 });
 var $d_Ltrivalibs_utils_events_gestures$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_gestures$package$, "trivalibs.utils.events.gestures$package$", ({
-  fJ: 1
+  fv: 1
 }));
 var $n_Ltrivalibs_utils_events_gestures$package$;
 function $m_Ltrivalibs_utils_events_gestures$package$() {
@@ -8810,7 +8734,7 @@ $p.constructor = $c_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$;
 function $h_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$() {
 }
 $h_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$.prototype = $p;
-$p.nK = (function(canvas, initialFocus, holdDelay, holdRadius, suppressContextMenu, onActivity, dragGlideHalfLife, dragGlideMinSpeed) {
+$p.nD = (function(canvas, initialFocus, holdDelay, holdRadius, suppressContextMenu, onActivity, dragGlideHalfLife, dragGlideMinSpeed) {
   canvas.setAttribute("tabindex", "0");
   var \u03b41$ = canvas.style;
   \u03b41$.setProperty("outline", "none");
@@ -8831,7 +8755,7 @@ $p.nK = (function(canvas, initialFocus, holdDelay, holdRadius, suppressContextMe
   return new $c_Ltrivalibs_utils_events_CanvasInput(input, $ct_Ltrivalibs_utils_events_DragGesture__Ltrivalibs_utils_events_InputState__D__D__(new $c_Ltrivalibs_utils_events_DragGesture(), input, dragGlideMinSpeed, dragGlideHalfLife), $ct_Ltrivalibs_utils_events_HoldGesture__Ltrivalibs_utils_events_InputState__D__D__(new $c_Ltrivalibs_utils_events_HoldGesture(), input, holdDelay, holdRadius));
 });
 var $d_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$, "trivalibs.utils.events.interactive_canvas$package$", ({
-  fK: 1
+  fw: 1
 }));
 var $n_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$;
 function $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$() {
@@ -8849,7 +8773,7 @@ $p.constructor = $c_Ltrivalibs_utils_events_keyboard$package$;
 function $h_Ltrivalibs_utils_events_keyboard$package$() {
 }
 $h_Ltrivalibs_utils_events_keyboard$package$.prototype = $p;
-$p.nP = (function(el, onDown, onUp, keepDefault) {
+$p.nH = (function(el, onDown, onUp, keepDefault) {
   var down = ((e$3) => {
     var isTab = (e$3.code === "Tab");
     if (((!keepDefault) && (!isTab))) {
@@ -8870,7 +8794,7 @@ $p.nP = (function(el, onDown, onUp, keepDefault) {
   }));
 });
 var $d_Ltrivalibs_utils_events_keyboard$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_keyboard$package$, "trivalibs.utils.events.keyboard$package$", ({
-  fL: 1
+  fx: 1
 }));
 var $n_Ltrivalibs_utils_events_keyboard$package$;
 function $m_Ltrivalibs_utils_events_keyboard$package$() {
@@ -8888,15 +8812,15 @@ $p.constructor = $c_Ltrivalibs_utils_events_pointer$package$;
 function $h_Ltrivalibs_utils_events_pointer$package$() {
 }
 $h_Ltrivalibs_utils_events_pointer$package$.prototype = $p;
-$p.oE = (function(el, moveTarget, onDown, onMove, onUp, onCancel, suppressContextMenu) {
+$p.ov = (function(el, moveTarget, onDown, onMove, onUp, onCancel, suppressContextMenu) {
   var downFn = ((e$3) => {
-    onDown.mH((e$3.button | 0), (+e$3.pointerId), (+e$3.clientX), (+e$3.clientY), (!(!e$3.isPrimary)));
+    onDown.mA((e$3.button | 0), (+e$3.pointerId), (+e$3.clientX), (+e$3.clientY), (!(!e$3.isPrimary)));
   });
   var moveFn = ((e$3$1) => {
-    onMove.lC((+e$3$1.pointerId), (+e$3$1.clientX), (+e$3$1.clientY));
+    onMove.lx((+e$3$1.pointerId), (+e$3$1.clientX), (+e$3$1.clientY));
   });
   var upFn = ((e$3$2) => {
-    onUp.jm((e$3$2.button | 0), (+e$3$2.pointerId), (+e$3$2.clientX), (+e$3$2.clientY));
+    onUp.jk((e$3$2.button | 0), (+e$3$2.pointerId), (+e$3$2.clientX), (+e$3$2.clientY));
   });
   var cancelFn = ((e$3$3) => {
     onCancel.g((+e$3$3.pointerId));
@@ -8921,11 +8845,11 @@ $p.oE = (function(el, moveTarget, onDown, onMove, onUp, onCancel, suppressContex
     }
   }));
 });
-$p.oF = (function() {
+$p.ow = (function() {
   return window;
 });
 var $d_Ltrivalibs_utils_events_pointer$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_pointer$package$, "trivalibs.utils.events.pointer$package$", ({
-  fM: 1
+  fy: 1
 }));
 var $n_Ltrivalibs_utils_events_pointer$package$;
 function $m_Ltrivalibs_utils_events_pointer$package$() {
@@ -8936,9 +8860,9 @@ function $m_Ltrivalibs_utils_events_pointer$package$() {
 }
 /** @constructor */
 function $c_jl_Character$() {
-  this.ia = null;
+  this.i9 = null;
   $n_jl_Character$ = this;
-  this.ia = new $ac_I(new Int32Array([1632, 1776, 1984, 2406, 2534, 2662, 2790, 2918, 3046, 3174, 3302, 3430, 3558, 3664, 3792, 3872, 4160, 4240, 6112, 6160, 6470, 6608, 6784, 6800, 6992, 7088, 7232, 7248, 42528, 43216, 43264, 43472, 43504, 43600, 44016, 65296, 66720, 68912, 69734, 69872, 69942, 70096, 70384, 70736, 70864, 71248, 71360, 71472, 71904, 72016, 72784, 73040, 73120, 73552, 92768, 92864, 93008, 120782, 120792, 120802, 120812, 120822, 123200, 123632, 124144, 125264, 130032]));
+  this.i9 = new $ac_I(new Int32Array([1632, 1776, 1984, 2406, 2534, 2662, 2790, 2918, 3046, 3174, 3302, 3430, 3558, 3664, 3792, 3872, 4160, 4240, 6112, 6160, 6470, 6608, 6784, 6800, 6992, 7088, 7232, 7248, 42528, 43216, 43264, 43472, 43504, 43600, 44016, 65296, 66720, 68912, 69734, 69872, 69942, 70096, 70384, 70736, 70864, 71248, 71360, 71472, 71904, 72016, 72784, 73040, 73120, 73552, 92768, 92864, 93008, 120782, 120792, 120802, 120812, 120822, 123200, 123632, 124144, 125264, 130032]));
 }
 $p = $c_jl_Character$.prototype = new $h_O();
 $p.constructor = $c_jl_Character$;
@@ -8946,13 +8870,13 @@ $p.constructor = $c_jl_Character$;
 function $h_jl_Character$() {
 }
 $h_jl_Character$.prototype = $p;
-$p.p6 = (function(codePoint) {
+$p.oW = (function(codePoint) {
   if (((codePoint >>> 0) > 1114111)) {
     throw $ct_jl_IllegalArgumentException__(new $c_jl_IllegalArgumentException());
   }
   return String.fromCodePoint(codePoint);
 });
-$p.n7 = (function(codePoint, radix) {
+$p.n0 = (function(codePoint, radix) {
   if ((codePoint < 256)) {
     var value = (((((codePoint - 48) | 0) >>> 0) <= 9) ? ((codePoint - 48) | 0) : (((((codePoint - 65) | 0) >>> 0) <= 25) ? ((codePoint - 55) | 0) : (((((codePoint - 97) | 0) >>> 0) <= 25) ? ((codePoint - 87) | 0) : (-1))));
   } else if (((((codePoint - 65313) | 0) >>> 0) <= 25)) {
@@ -8960,19 +8884,19 @@ $p.n7 = (function(codePoint, radix) {
   } else if (((((codePoint - 65345) | 0) >>> 0) <= 25)) {
     var value = ((codePoint - 65335) | 0);
   } else {
-    var p = $m_ju_Arrays$().mS(this.ia, codePoint);
+    var p = $m_ju_Arrays$().mL(this.i9, codePoint);
     var zeroCodePointIndex = ((p < 0) ? (((-2) - p) | 0) : p);
     if ((zeroCodePointIndex < 0)) {
       var value = (-1);
     } else {
-      var v = ((codePoint - this.ia.b[zeroCodePointIndex]) | 0);
+      var v = ((codePoint - this.i9.b[zeroCodePointIndex]) | 0);
       var value = ((v > 9) ? (-1) : v);
     }
   }
   return ((value < radix) ? value : (-1));
 });
 var $d_jl_Character$ = new $TypeData().i($c_jl_Character$, "java.lang.Character$", ({
-  b2: 1,
+  aW: 1,
   a: 1
 }));
 var $n_jl_Character$;
@@ -8991,16 +8915,16 @@ $p.constructor = $c_jl_Integer$;
 function $h_jl_Integer$() {
 }
 $h_jl_Integer$.prototype = $p;
-$p.h8 = (function(s) {
+$p.h7 = (function(s) {
   throw new $c_jl_NumberFormatException((("For input string: \"" + s) + "\""));
 });
-$p.nN = (function(s, radix, overflowBarrier) {
+$p.nG = (function(s, radix, overflowBarrier) {
   if ((s === null)) {
-    $m_jl_Integer$().h8(s);
+    $m_jl_Integer$().h7(s);
   }
   var len = s.length;
   if ((len === 0)) {
-    $m_jl_Integer$().h8(s);
+    $m_jl_Integer$().h7(s);
   }
   var character = $m_jl_Character$();
   var firstChar = s.charCodeAt(0);
@@ -9008,14 +8932,14 @@ $p.nN = (function(s, radix, overflowBarrier) {
   var sign = (negative ? (-1) : 0);
   var i = ((negative || (firstChar === 43)) ? 1 : 0);
   if ((i >= len)) {
-    $m_jl_Integer$().h8(s);
+    $m_jl_Integer$().h7(s);
   }
   var java$lang$IntFloatBits$Int32Box$$value = 0;
   java$lang$IntFloatBits$Int32Box$$value = 0;
   while ((i !== len)) {
-    var x = character.n7(s.charCodeAt(i), radix);
+    var x = character.n0(s.charCodeAt(i), radix);
     if (((x < 0) || ((java$lang$IntFloatBits$Int32Box$$value >>> 0) > (overflowBarrier >>> 0)))) {
-      $m_jl_Integer$().h8(s);
+      $m_jl_Integer$().h7(s);
     }
     var x$2 = java$lang$IntFloatBits$Int32Box$$value;
     var x$3 = Math.imul(x$2, radix);
@@ -9024,12 +8948,12 @@ $p.nN = (function(s, radix, overflowBarrier) {
     i = ((1 + i) | 0);
   }
   if (((java$lang$IntFloatBits$Int32Box$$value >>> 0) > (((2147483647 - sign) | 0) >>> 0))) {
-    $m_jl_Integer$().h8(s);
+    $m_jl_Integer$().h7(s);
   }
   return (((java$lang$IntFloatBits$Int32Box$$value ^ sign) - sign) | 0);
 });
 var $d_jl_Integer$ = new $TypeData().i($c_jl_Integer$, "java.lang.Integer$", ({
-  b8: 1,
+  b2: 1,
   a: 1
 }));
 var $n_jl_Integer$;
@@ -9055,21 +8979,21 @@ function $isArrayOf_jl_Number(obj, depth) {
   return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.m)));
 }
 function $ct_jl_Throwable__T__jl_Throwable__Z__Z__($thiz, s, e, enableSuppression, writableStackTrace) {
-  $thiz.jN = s;
+  $thiz.jJ = s;
   if (writableStackTrace) {
-    $thiz.nm();
+    $thiz.nf();
   }
   return $thiz;
 }
 class $c_jl_Throwable extends Error {
   constructor() {
     super();
-    this.jN = null;
+    this.jJ = null;
   }
-  hZ() {
-    return this.jN;
+  hY() {
+    return this.jJ;
   }
-  nm() {
+  nf() {
     var reference = ((this instanceof $c_sjs_js_JavaScriptException) ? this.aG : this);
     if ((Object.prototype.toString.call(reference) !== "[object Error]")) {
       if (((Error.captureStackTrace === (void 0)) || (!(!Object.isSealed(this))))) {
@@ -9082,7 +9006,7 @@ class $c_jl_Throwable extends Error {
   }
   m() {
     var className = $objectClassName(this);
-    var message = this.hZ();
+    var message = this.hY();
     return ((message === null) ? className : ((className + ": ") + message));
   }
   r() {
@@ -9092,7 +9016,7 @@ class $c_jl_Throwable extends Error {
     return $c_O.prototype.p.call(this, that);
   }
   get "message"() {
-    var m = this.hZ();
+    var m = this.hY();
     return ((m === null) ? "" : m);
   }
   get "name"() {
@@ -9104,32 +9028,6 @@ class $c_jl_Throwable extends Error {
 }
 function $isArrayOf_jl_Throwable(obj, depth) {
   return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.f)));
-}
-/** @constructor */
-function $c_s_Console$() {
-  this.jP = null;
-  $n_s_Console$ = this;
-  this.jP = new $c_s_util_DynamicVariable($m_jl_System$Streams$().jL);
-}
-$p = $c_s_Console$.prototype = new $h_O();
-$p.constructor = $c_s_Console$;
-/** @constructor */
-function $h_s_Console$() {
-}
-$h_s_Console$.prototype = $p;
-$p.oB = (function() {
-  return this.jP.id;
-});
-var $d_s_Console$ = new $TypeData().i($c_s_Console$, "scala.Console$", ({
-  br: 1,
-  cA: 1
-}));
-var $n_s_Console$;
-function $m_s_Console$() {
-  if ((!$n_s_Console$)) {
-    $n_s_Console$ = new $c_s_Console$();
-  }
-  return $n_s_Console$;
 }
 /** @constructor */
 function $c_s_Conversion() {
@@ -9152,13 +9050,13 @@ $p.constructor = $c_s_LowPriorityImplicits;
 function $h_s_LowPriorityImplicits() {
 }
 $h_s_LowPriorityImplicits.prototype = $p;
-$p.pg = (function(xs) {
+$p.p6 = (function(xs) {
   if ((xs === null)) {
     return null;
   } else if ((xs.b.length === 0)) {
     var this$2 = $m_scm_ArraySeq$();
     $m_s_reflect_ManifestFactory$ObjectManifest$();
-    return this$2.k0;
+    return this$2.jV;
   } else {
     return new $c_scm_ArraySeq$ofRef(xs);
   }
@@ -9238,13 +9136,13 @@ $p.m = (function() {
 /** @constructor */
 function $c_s_util_hashing_MurmurHash3$() {
   this.fK = 0;
-  this.ka = 0;
-  this.mp = 0;
+  this.k5 = 0;
+  this.mi = 0;
   $n_s_util_hashing_MurmurHash3$ = this;
   this.fK = $f_T__hashCode__I("Seq");
-  this.ka = $f_T__hashCode__I("Map");
+  this.k5 = $f_T__hashCode__I("Map");
   $f_T__hashCode__I("Set");
-  this.mp = this.pa($m_sci_Nil$(), this.ka);
+  this.mi = this.p0($m_sci_Nil$(), this.k5);
 }
 $p = $c_s_util_hashing_MurmurHash3$.prototype = new $h_s_util_hashing_MurmurHash3();
 $p.constructor = $c_s_util_hashing_MurmurHash3$;
@@ -9252,12 +9150,12 @@ $p.constructor = $c_s_util_hashing_MurmurHash3$;
 function $h_s_util_hashing_MurmurHash3$() {
 }
 $h_s_util_hashing_MurmurHash3$.prototype = $p;
-$p.mg = (function(xs) {
-  return ($is_sc_IndexedSeq(xs) ? this.nH(xs, this.fK) : ((xs instanceof $c_sci_List) ? this.nR(xs, this.fK) : this.oA(xs, this.fK)));
+$p.ma = (function(xs) {
+  return ($is_sc_IndexedSeq(xs) ? this.nA(xs, this.fK) : ((xs instanceof $c_sci_List) ? this.nJ(xs, this.fK) : this.os(xs, this.fK)));
 });
 var $d_s_util_hashing_MurmurHash3$ = new $TypeData().i($c_s_util_hashing_MurmurHash3$, "scala.util.hashing.MurmurHash3$", ({
-  di: 1,
-  dh: 1
+  d4: 1,
+  d3: 1
 }));
 var $n_s_util_hashing_MurmurHash3$;
 function $m_s_util_hashing_MurmurHash3$() {
@@ -9268,14 +9166,14 @@ function $m_s_util_hashing_MurmurHash3$() {
 }
 /** @constructor */
 function $c_Lsketchlib_utils_bloom_Bloom$$anon$1(bloomP$1, resultP$1, p$1, uBlurRadius$1, uIntensity$1) {
-  this.kd = null;
-  this.kc = null;
-  this.ke = null;
-  this.kf = null;
-  this.kd = p$1;
-  this.kc = bloomP$1;
-  this.ke = resultP$1;
-  this.kf = resultP$1;
+  this.k8 = null;
+  this.k7 = null;
+  this.k9 = null;
+  this.ka = null;
+  this.k8 = p$1;
+  this.k7 = bloomP$1;
+  this.k9 = resultP$1;
+  this.ka = resultP$1;
 }
 $p = $c_Lsketchlib_utils_bloom_Bloom$$anon$1.prototype = new $h_O();
 $p.constructor = $c_Lsketchlib_utils_bloom_Bloom$$anon$1;
@@ -9283,42 +9181,42 @@ $p.constructor = $c_Lsketchlib_utils_bloom_Bloom$$anon$1;
 function $h_Lsketchlib_utils_bloom_Bloom$$anon$1() {
 }
 $h_Lsketchlib_utils_bloom_Bloom$$anon$1.prototype = $p;
-$p.oD = (function() {
-  var Painter_this = this.kd;
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.kc);
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.ke);
+$p.ou = (function() {
+  var Painter_this = this.k8;
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.k7);
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.k9);
 });
 var $d_Lsketchlib_utils_bloom_Bloom$$anon$1 = new $TypeData().i($c_Lsketchlib_utils_bloom_Bloom$$anon$1, "sketchlib.utils.bloom.Bloom$$anon$1", ({
-  dr: 1,
-  dp: 1
+  dc: 1,
+  da: 1
 }));
 function $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__applySizing__V($thiz) {
   if (($thiz.f6 > 0.0)) {
-    var sigma = ((0.01 * $thiz.kh) * $thiz.hk);
-    var vRatio = (1.0 + ($thiz.ki * $m_Lsketchlib_utils_mirror_MirrorReflection$().ih));
-    var p$proxy3 = ($thiz.ik * sigma);
+    var sigma = ((0.01 * $thiz.kc) * $thiz.hj);
+    var vRatio = (1.0 + ($thiz.kd * $m_Lsketchlib_utils_mirror_MirrorReflection$().ie));
+    var p$proxy3 = ($thiz.ii * sigma);
     var p$proxy4 = (+Math.ceil(p$proxy3));
-    var other$proxy4 = (0.5 * $thiz.gj);
+    var other$proxy4 = (0.5 * $thiz.gi);
     var mx = (+Math.min(p$proxy4, other$proxy4));
-    var p$proxy5 = (($thiz.ik * sigma) * vRatio);
+    var p$proxy5 = (($thiz.ii * sigma) * vRatio);
     var p$proxy6 = (+Math.ceil(p$proxy5));
     var other$proxy5 = (0.5 * $thiz.f6);
     var my = (+Math.min(p$proxy6, other$proxy5));
-    var pw = $doubleToInt(($thiz.gj + (2.0 * mx)));
+    var pw = $doubleToInt(($thiz.gi + (2.0 * mx)));
     var ph = $doubleToInt(($thiz.f6 + (2.0 * my)));
-    $thiz.ij.jw(pw, ph, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
-    $thiz.ii.jw(pw, ph, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
-    var BufferBinding_this = $thiz.kp;
-    var value$proxy7 = $thiz.hk;
+    $thiz.ih.ju(pw, ph, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
+    $thiz.ig.ju(pw, ph, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
+    var BufferBinding_this = $thiz.kk;
+    var value$proxy7 = $thiz.hj;
     BufferBinding_this.S.Q(BufferBinding_this.n, value$proxy7);
     var $x_2 = BufferBinding_this.R.queue;
     var $x_1 = BufferBinding_this.O;
     var s$proxy7 = BufferBinding_this.n;
     $x_2.writeBuffer($x_1, 0.0, s$proxy7.dv.buffer);
-    $thiz.hi = ($thiz.gj / pw);
-    $thiz.hj = ($thiz.f6 / ph);
-    var BufferBinding_this$3 = $thiz.kn;
-    var value$proxy8 = new $c_Ltrivalibs_graphics_math_cpu_Vec4($thiz.hi, $thiz.hj, (mx / pw), (my / ph));
+    $thiz.hh = ($thiz.gi / pw);
+    $thiz.hi = ($thiz.f6 / ph);
+    var BufferBinding_this$3 = $thiz.ki;
+    var value$proxy8 = new $c_Ltrivalibs_graphics_math_cpu_Vec4($thiz.hh, $thiz.hi, (mx / pw), (my / ph));
     BufferBinding_this$3.S.Q(BufferBinding_this$3.n, value$proxy8);
     var $x_4 = BufferBinding_this$3.R.queue;
     var $x_3 = BufferBinding_this$3.O;
@@ -9328,54 +9226,54 @@ function $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__applySizing__V($th
 }
 function $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__deriveRefH__V($thiz) {
   var $x_2 = $thiz.f6;
-  var $x_1 = $thiz.hh.b1;
-  var this$1 = $thiz.hh;
-  $thiz.hk = (($x_2 * $x_1) / $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jC(this$1.b1, this$1.fe));
+  var $x_1 = $thiz.hg.b1;
+  var this$1 = $thiz.hg;
+  $thiz.hj = (($x_2 * $x_1) / $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().jA(this$1.b1, this$1.fe));
 }
 function $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__default$proxy1$1__Ltrivalibs_graphics_math_cpu_Mat4($thiz) {
-  var this$1 = $thiz.hh;
-  return $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), this$1.hO, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), this$1.ml());
+  var this$1 = $thiz.hg;
+  return $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), this$1.hN, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), this$1.mf());
 }
 /** @constructor */
 function $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1(mirrorPanel$1, resolvePanel$1, camera$1, blurStrength$1, stretch$1, overscan$1, _blurPanel$1, uVisHeight$1, uCrop$1, uBlurStrength$1, strengthScale$1, uStretch$1, reflMat$1, uVp$1, uInvVp$1, p$1) {
-  this.ik = 0.0;
-  this.ij = null;
-  this.ii = null;
-  this.kp = null;
-  this.kn = null;
+  this.ii = 0.0;
+  this.ih = null;
+  this.ig = null;
   this.kk = null;
-  this.kq = null;
-  this.ko = null;
-  this.kj = null;
+  this.ki = null;
+  this.kf = null;
   this.kl = null;
-  this.km = null;
-  this.hh = null;
-  this.gj = 0.0;
+  this.kj = null;
+  this.ke = null;
+  this.kg = null;
+  this.kh = null;
+  this.hg = null;
+  this.gi = 0.0;
   this.f6 = 0.0;
-  this.hk = 0.0;
-  this.kh = 0.0;
-  this.ki = 0.0;
-  this.hi = 0.0;
   this.hj = 0.0;
-  this.ik = overscan$1;
-  this.ij = mirrorPanel$1;
-  this.ii = _blurPanel$1;
-  this.kp = uVisHeight$1;
-  this.kn = uCrop$1;
-  this.kk = reflMat$1;
-  this.kq = uVp$1;
-  this.ko = uInvVp$1;
-  this.kj = p$1;
-  this.kl = resolvePanel$1;
-  this.km = resolvePanel$1;
-  this.hh = camera$1;
-  this.gj = 0.0;
+  this.kc = 0.0;
+  this.kd = 0.0;
+  this.hh = 0.0;
+  this.hi = 0.0;
+  this.ii = overscan$1;
+  this.ih = mirrorPanel$1;
+  this.ig = _blurPanel$1;
+  this.kk = uVisHeight$1;
+  this.ki = uCrop$1;
+  this.kf = reflMat$1;
+  this.kl = uVp$1;
+  this.kj = uInvVp$1;
+  this.ke = p$1;
+  this.kg = resolvePanel$1;
+  this.kh = resolvePanel$1;
+  this.hg = camera$1;
+  this.gi = 0.0;
   this.f6 = 0.0;
-  this.hk = 0.0;
-  this.kh = blurStrength$1;
-  this.ki = stretch$1;
+  this.hj = 0.0;
+  this.kc = blurStrength$1;
+  this.kd = stretch$1;
+  this.hh = 1.0;
   this.hi = 1.0;
-  this.hj = 1.0;
 }
 $p = $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1.prototype = new $h_O();
 $p.constructor = $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1;
@@ -9383,38 +9281,38 @@ $p.constructor = $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1;
 function $h_Lsketchlib_utils_mirror_MirrorReflection$$anon$1() {
 }
 $h_Lsketchlib_utils_mirror_MirrorReflection$$anon$1.prototype = $p;
-$p.oP = (function(w, h) {
+$p.oG = (function(w, h) {
   var x = $doubleToInt(w);
-  this.gj = ((x > 1) ? x : 1);
+  this.gi = ((x > 1) ? x : 1);
   var x$1 = $doubleToInt(h);
   this.f6 = ((x$1 > 1) ? x$1 : 1);
   $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__deriveRefH__V(this);
   $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__applySizing__V(this);
 });
-$p.oC = (function(vp) {
+$p.ot = (function(vp) {
   var cameraVP = ((vp === (void 0)) ? $p_Lsketchlib_utils_mirror_MirrorReflection$$anon$1__default$proxy1$1__Ltrivalibs_graphics_math_cpu_Mat4(this) : vp);
-  var m$1 = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), new $c_Ltrivalibs_graphics_math_cpu_Mat4(this.hi, 0.0, 0.0, 0.0, 0.0, this.hj, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0), $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), cameraVP, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), this.kk));
-  var BufferBinding_this = this.kq;
+  var m$1 = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), new $c_Ltrivalibs_graphics_math_cpu_Mat4(this.hh, 0.0, 0.0, 0.0, 0.0, this.hi, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0), $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__matMul__O__Ltrivalibs_graphics_math_Mat4Base__O__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), cameraVP, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$(), this.kf));
+  var BufferBinding_this = this.kl;
   BufferBinding_this.S.Q(BufferBinding_this.n, m$1);
   var $x_2 = BufferBinding_this.R.queue;
   var $x_1 = BufferBinding_this.O;
   var s$proxy11 = BufferBinding_this.n;
   $x_2.writeBuffer($x_1, 0.0, s$proxy11.dv.buffer);
-  var BufferBinding_this$3 = this.ko;
+  var BufferBinding_this$3 = this.kj;
   var value$proxy10 = $f_Ltrivalibs_graphics_math_Mat4ImmutableOps__inverse__O__Ltrivalibs_graphics_math_Mat4Base__O($m_Ltrivalibs_graphics_math_cpu_Mat4$().g9(), m$1, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$());
   BufferBinding_this$3.S.Q(BufferBinding_this$3.n, value$proxy10);
   var $x_4 = BufferBinding_this$3.R.queue;
   var $x_3 = BufferBinding_this$3.O;
   var s$proxy12 = BufferBinding_this$3.n;
   $x_4.writeBuffer($x_3, 0.0, s$proxy12.dv.buffer);
-  var Painter_this = this.kj;
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.ij);
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.ii);
-  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.kl);
+  var Painter_this = this.ke;
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.ih);
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.ig);
+  $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(Painter_this, this.kg);
 });
 var $d_Lsketchlib_utils_mirror_MirrorReflection$$anon$1 = new $TypeData().i($c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1, "sketchlib.utils.mirror.MirrorReflection$$anon$1", ({
-  du: 1,
-  ds: 1
+  df: 1,
+  dd: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT(uv) {
@@ -9428,8 +9326,8 @@ function $h_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\u
 }
 $h_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT.prototype = $p;
 var $d_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT = new $TypeData().i($c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT, "trivalibs.graphics.buffers.UniformLayout$given_UniformLayout_T", ({
-  dz: 1,
-  dy: 1
+  dk: 1,
+  dj: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$() {
@@ -9440,16 +9338,16 @@ $p.constructor = $c_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformV
 function $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$() {
 }
 $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$.prototype = $p;
-$p.ph = (function(ref, value) {
+$p.p7 = (function(ref, value) {
   var value$proxy1 = Math.fround(value);
   var offset$proxy3 = (ref.off | 0);
   ref.dv.setFloat32(offset$proxy3, value$proxy1, true);
 });
 $p.Q = (function(ref, value) {
-  this.ph(ref, (+value));
+  this.p7(ref, (+value));
 });
 var $d_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$ = new $TypeData().i($c_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$, "trivalibs.graphics.buffers.UniformValue$given_UniformValue_Double_$times$colon$", ({
-  dA: 1,
+  dl: 1,
   U: 1
 }));
 var $n_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$;
@@ -9469,10 +9367,10 @@ function $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff
 }
 $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$.prototype = $p;
 $p.Q = (function(ref, value) {
-  $f_Ltrivalibs_graphics_math_Mat4MutableOps__set__O__Ltrivalibs_graphics_math_Mat4Mutable__O__Ltrivalibs_graphics_math_Mat4Base__V($m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$().nD(), ref, $m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$(), value, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$());
+  $f_Ltrivalibs_graphics_math_Mat4MutableOps__set__O__Ltrivalibs_graphics_math_Mat4Mutable__O__Ltrivalibs_graphics_math_Mat4Base__V($m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$().nw(), ref, $m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$(), value, $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$());
 });
 var $d_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$ = new $TypeData().i($c_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$, "trivalibs.graphics.buffers.UniformValue$given_UniformValue_Mat4_Mat4Buffer$", ({
-  dB: 1,
+  dm: 1,
   U: 1
 }));
 var $n_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$;
@@ -9492,10 +9390,10 @@ function $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff
 }
 $h_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec4\uff3fVec4Buffer$.prototype = $p;
 $p.Q = (function(ref, value) {
-  $f_Ltrivalibs_graphics_math_Vec4MutableOps__set__O__Ltrivalibs_graphics_math_Vec4Mutable__O__Ltrivalibs_graphics_math_Vec4Base__V($m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$().pc(), ref, $m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$(), value, $m_Ltrivalibs_graphics_math_cpu_Vec4$given\uff3fVec4Mutable\uff3fVec4$());
+  $f_Ltrivalibs_graphics_math_Vec4MutableOps__set__O__Ltrivalibs_graphics_math_Vec4Mutable__O__Ltrivalibs_graphics_math_Vec4Base__V($m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$().p2(), ref, $m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$(), value, $m_Ltrivalibs_graphics_math_cpu_Vec4$given\uff3fVec4Mutable\uff3fVec4$());
 });
 var $d_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec4\uff3fVec4Buffer$ = new $TypeData().i($c_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec4\uff3fVec4Buffer$, "trivalibs.graphics.buffers.UniformValue$given_UniformValue_Vec4_Vec4Buffer$", ({
-  dC: 1,
+  dn: 1,
   U: 1
 }));
 var $n_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec4\uff3fVec4Buffer$;
@@ -9515,11 +9413,11 @@ function $h_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$() {
 }
 $h_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$.prototype = $p;
 $p.ga = (function(t) {
-  return new $c_T2(t.kz, t.kA);
+  return new $c_T2(t.ku, t.kv);
 });
 var $d_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$, "trivalibs.graphics.geometry.FieldWriter$vec2Writer$", ({
-  dH: 1,
-  aO: 1
+  dt: 1,
+  aJ: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$;
 function $m_Ltrivalibs_graphics_geometry_FieldWriter$vec2Writer$() {
@@ -9541,8 +9439,8 @@ $p.ga = (function(t) {
   return new $c_T3(t.s, t.t, t.u);
 });
 var $d_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$, "trivalibs.graphics.geometry.FieldWriter$vec3Writer$", ({
-  dI: 1,
-  aO: 1
+  du: 1,
+  aJ: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$;
 function $m_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$() {
@@ -9553,8 +9451,8 @@ function $m_Ltrivalibs_graphics_geometry_FieldWriter$vec3Writer$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_VertexLayout$named(x$1) {
-  this.ks = null;
-  this.ks = x$1;
+  this.kn = null;
+  this.kn = x$1;
 }
 $p = $c_Ltrivalibs_graphics_geometry_VertexLayout$named.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_VertexLayout$named;
@@ -9563,15 +9461,15 @@ function $h_Ltrivalibs_graphics_geometry_VertexLayout$named() {
 }
 $h_Ltrivalibs_graphics_geometry_VertexLayout$named.prototype = $p;
 var $d_Ltrivalibs_graphics_geometry_VertexLayout$named = new $TypeData().i($c_Ltrivalibs_graphics_geometry_VertexLayout$named, "trivalibs.graphics.geometry.VertexLayout$named", ({
-  dQ: 1,
-  dP: 1
+  dC: 1,
+  dB: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons(x$1, x$2) {
-  this.kt = null;
-  this.ku = null;
-  this.kt = x$1;
-  this.ku = x$2;
+  this.ko = null;
+  this.kp = null;
+  this.ko = x$1;
+  this.kp = x$2;
 }
 $p = $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons;
@@ -9579,15 +9477,15 @@ $p.constructor = $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons;
 function $h_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons() {
 }
 $h_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons.prototype = $p;
-$p.pb = (function(t) {
-  return $m_sr_Tuples$().lH(this.kt.ga(t.o(0)), this.ku.ga($m_sr_Tuples$().p3(t)));
+$p.p1 = (function(t) {
+  return $m_sr_Tuples$().lC(this.ko.ga(t.o(0)), this.kp.ga($m_sr_Tuples$().oT(t)));
 });
 $p.ga = (function(t) {
-  return this.pb(t);
+  return this.p1(t);
 });
 var $d_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons = new $TypeData().i($c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$cons, "trivalibs.graphics.geometry.VertexLayoutHelper$cons", ({
-  dR: 1,
-  aP: 1
+  dD: 1,
+  aK: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$() {
@@ -9602,8 +9500,8 @@ $p.ga = (function(t) {
   return $m_T$package$EmptyTuple$();
 });
 var $d_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$ = new $TypeData().i($c_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$, "trivalibs.graphics.geometry.VertexLayoutHelper$nil$", ({
-  dS: 1,
-  aP: 1
+  dE: 1,
+  aK: 1
 }));
 var $n_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$;
 function $m_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$() {
@@ -9614,8 +9512,8 @@ function $m_Ltrivalibs_graphics_geometry_VertexLayoutHelper$nil$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_geometry_package$package$$anon$1(idx$2) {
-  this.kw = 0;
-  this.kw = idx$2;
+  this.kr = 0;
+  this.kr = idx$2;
 }
 $p = $c_Ltrivalibs_graphics_geometry_package$package$$anon$1.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_geometry_package$package$$anon$1;
@@ -9624,11 +9522,11 @@ function $h_Ltrivalibs_graphics_geometry_package$package$$anon$1() {
 }
 $h_Ltrivalibs_graphics_geometry_package$package$$anon$1.prototype = $p;
 $p.b6 = (function(t) {
-  return t.o(this.kw);
+  return t.o(this.kr);
 });
 var $d_Ltrivalibs_graphics_geometry_package$package$$anon$1 = new $TypeData().i($c_Ltrivalibs_graphics_geometry_package$package$$anon$1, "trivalibs.graphics.geometry.package$package$$anon$1", ({
-  dX: 1,
-  dN: 1
+  dJ: 1,
+  dz: 1
 }));
 function $f_Ltrivalibs_graphics_math_Vec3Base__dot__O__O__D($thiz, v, other) {
   return (((v.s * other.s) + (v.t * other.t)) + (v.u * other.u));
@@ -9639,8 +9537,8 @@ function $f_Ltrivalibs_graphics_math_Vec3Base__length__O__D($thiz, v) {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Mat4$() {
-  this.kx = null;
-  this.ky = false;
+  this.ks = null;
+  this.kt = false;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Mat4$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Mat4$;
@@ -9649,17 +9547,17 @@ function $h_Ltrivalibs_graphics_math_cpu_Mat4$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Mat4$.prototype = $p;
 $p.g9 = (function() {
-  if ((!this.ky)) {
-    this.kx = $m_Ltrivalibs_graphics_math_cpu_Mat4$();
-    this.ky = true;
+  if ((!this.kt)) {
+    this.ks = $m_Ltrivalibs_graphics_math_cpu_Mat4$();
+    this.kt = true;
   }
-  return this.kx;
+  return this.ks;
 });
-$p.ny = (function(t, r, s) {
-  var x = r.hx;
-  var y = r.hy;
-  var z = r.hz;
-  var w = r.hw;
+$p.nr = (function(t, r, s) {
+  var x = r.hw;
+  var y = r.hx;
+  var z = r.hy;
+  var w = r.hv;
   var x2 = (x + x);
   var y2 = (y + y);
   var z2 = (z + z);
@@ -9675,8 +9573,8 @@ $p.ny = (function(t, r, s) {
   return new $c_Ltrivalibs_graphics_math_cpu_Mat4(((1.0 - (yy + zz)) * s.s), ((xy + wz) * s.s), ((xz - wy) * s.s), 0.0, ((xy - wz) * s.t), ((1.0 - (xx + zz)) * s.t), ((yz + wx) * s.t), 0.0, ((xz + wy) * s.u), ((yz - wx) * s.u), ((1.0 - (xx + yy)) * s.u), 0.0, t.s, t.t, t.u, 1.0);
 });
 var $d_Ltrivalibs_graphics_math_cpu_Mat4$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Mat4$, "trivalibs.graphics.math.cpu.Mat4$", ({
-  ed: 1,
-  e0: 1
+  dZ: 1,
+  dM: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Mat4$;
 function $m_Ltrivalibs_graphics_math_cpu_Mat4$() {
@@ -9695,8 +9593,8 @@ function $h_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQ
 }
 $h_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$, "trivalibs.graphics.math.cpu.Quat$given_QuatImmutableOps_Quat$", ({
-  eh: 1,
-  ej: 1
+  e3: 1,
+  e5: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$;
 function $m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQuat$() {
@@ -9707,8 +9605,8 @@ function $m_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fQuatImmutableOps\uff3fQ
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Vec3$() {
-  this.kB = null;
-  this.kC = false;
+  this.kw = null;
+  this.kx = false;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Vec3$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Vec3$;
@@ -9717,15 +9615,15 @@ function $h_Ltrivalibs_graphics_math_cpu_Vec3$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec3$.prototype = $p;
 $p.bm = (function() {
-  if ((!this.kC)) {
-    this.kB = $m_Ltrivalibs_graphics_math_cpu_Vec3$();
-    this.kC = true;
+  if ((!this.kx)) {
+    this.kw = $m_Ltrivalibs_graphics_math_cpu_Vec3$();
+    this.kx = true;
   }
-  return this.kB;
+  return this.kw;
 });
 var $d_Ltrivalibs_graphics_math_cpu_Vec3$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec3$, "trivalibs.graphics.math.cpu.Vec3$", ({
-  em: 1,
-  e6: 1
+  e8: 1,
+  dS: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Vec3$;
 function $m_Ltrivalibs_graphics_math_cpu_Vec3$() {
@@ -9736,8 +9634,8 @@ function $m_Ltrivalibs_graphics_math_cpu_Vec3$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Vec4$() {
-  this.kD = null;
-  this.kE = false;
+  this.ky = null;
+  this.kz = false;
 }
 $p = $c_Ltrivalibs_graphics_math_cpu_Vec4$.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Vec4$;
@@ -9745,16 +9643,16 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Vec4$;
 function $h_Ltrivalibs_graphics_math_cpu_Vec4$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec4$.prototype = $p;
-$p.nC = (function() {
-  if ((!this.kE)) {
-    this.kD = new $c_Ltrivalibs_graphics_math_cpu_Vec4$$anon$3();
-    this.kE = true;
+$p.nv = (function() {
+  if ((!this.kz)) {
+    this.ky = new $c_Ltrivalibs_graphics_math_cpu_Vec4$$anon$3();
+    this.kz = true;
   }
-  return this.kD;
+  return this.ky;
 });
 var $d_Ltrivalibs_graphics_math_cpu_Vec4$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec4$, "trivalibs.graphics.math.cpu.Vec4$", ({
-  ep: 1,
-  e9: 1
+  eb: 1,
+  dV: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Vec4$;
 function $m_Ltrivalibs_graphics_math_cpu_Vec4$() {
@@ -9773,8 +9671,8 @@ function $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18() {
 }
 $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$$anon$18, "trivalibs.graphics.math.cpu.mat4$package$Mat4Buffer$$anon$18", ({
-  et: 1,
-  e2: 1
+  ef: 1,
+  dO: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8() {
@@ -9786,13 +9684,13 @@ function $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8() {
 }
 $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$$anon$8, "trivalibs.graphics.math.cpu.vec4$package$Vec4Buffer$$anon$8", ({
-  ew: 1,
-  eb: 1
+  ei: 1,
+  dX: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1(f$2) {
-  this.kJ = null;
-  this.kJ = f$2;
+  this.kE = null;
+  this.kE = f$2;
 }
 $p = $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1;
@@ -9801,11 +9699,11 @@ function $h_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1() {
 }
 $h_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1.prototype = $p;
 $p.bo = (function(s) {
-  return this.kJ.g(s);
+  return this.kE.g(s);
 });
 var $d_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1 = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1, "trivalibs.graphics.math.gpu.LeftScalar$$anon$1", ({
-  eA: 1,
-  ey: 1
+  em: 1,
+  ek: 1
 }));
 function $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__($thiz, name) {
   $thiz.f7 = name;
@@ -9827,7 +9725,7 @@ $p.B = (function(value) {
   return (((("  let " + this.f7) + " = ") + value.f) + ";");
 });
 var $d_Ltrivalibs_graphics_math_gpu_LetExpr = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_LetExpr, "trivalibs.graphics.math.gpu.LetExpr", ({
-  aT: 1,
+  aO: 1,
   Y: 1
 }));
 /** @constructor */
@@ -9840,7 +9738,7 @@ function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6.prototype = $p;
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6 = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$6, "trivalibs.graphics.math.gpu.float_expr$package$$anon$6", ({
-  eG: 1,
+  es: 1,
   V: 1
 }));
 /** @constructor */
@@ -9852,12 +9750,12 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\u
 function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$.prototype = $p;
-$p.hd = (function(m, x$2, v, x$4, x$5) {
+$p.hc = (function(m, x$2, v, x$4, x$5) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + m.f) + " * ") + v.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Mat4ImmutableOpsG_FloatExpr_Mat4Expr$", ({
-  eH: 1,
-  e1: 1
+  et: 1,
+  dN: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fMat4ImmutableOpsG\uff3fFloatExpr\uff3fMat4Expr$() {
@@ -9875,39 +9773,39 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\u
 function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$.prototype = $p;
-$p.ji = (function(a) {
+$p.jg = (function(a) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("abs(" + a.f) + ")"));
 });
-$p.nt = (function(a) {
+$p.nm = (function(a) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("fract(" + a.f) + ")"));
 });
-$p.nS = (function(a) {
+$p.nK = (function(a) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("log2(" + a.f) + ")"));
 });
-$p.ot = (function(a, other) {
+$p.ol = (function(a, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("min(" + a.f) + ", ") + other.f) + ")"));
 });
-$p.m6 = (function(a, other) {
+$p.m0 = (function(a, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("max(" + a.f) + ", ") + other.f) + ")"));
 });
-$p.mZ = (function(a) {
+$p.mS = (function(a) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("saturate(" + a.f) + ")"));
 });
-$p.np = (function(a) {
+$p.ni = (function(a) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("(" + a.f) + " * 0.5 + 0.5)"));
 });
-$p.ou = (function(a, b, t) {
+$p.om = (function(a, b, t) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("mix(" + a.f) + ", ") + b.f) + ", ") + t.f) + ")"));
 });
-$p.nE = (function(a, edge) {
+$p.nx = (function(a, edge) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(1.0 - step(" + a.f) + ", ") + edge.f) + "))"));
 });
-$p.i7 = (function(a, edge0, edge1) {
+$p.i6 = (function(a, edge0, edge1) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("smoothstep(" + edge0.f) + ", ") + edge1.f) + ", ") + a.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$, "trivalibs.graphics.math.gpu.float_expr$package$given_NumExt_FloatExpr$", ({
-  eI: 1,
-  fN: 1
+  eu: 1,
+  fz: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$() {
@@ -9928,33 +9826,33 @@ $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fF
 $p.fj = (function(a, b) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " + ") + b.f) + ")"));
 });
-$p.mx = (function(a, b) {
+$p.mq = (function(a, b) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " - ") + b.f) + ")"));
 });
 $p.g5 = (function(a, b) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " * ") + b.f) + ")"));
 });
-$p.lz = (function(a, b) {
+$p.lu = (function(a, b) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " / ") + b.f) + ")"));
 });
-$p.my = (function(a, b) {
+$p.mr = (function(a, b) {
   return this.fj(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
 });
-$p.lA = (function(a, b) {
-  return this.mx(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
+$p.lv = (function(a, b) {
+  return this.mq(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
 });
 $p.ad = (function(a, b) {
   return this.g5(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
 });
-$p.jg = (function(a, b) {
-  return this.lz(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
+$p.je = (function(a, b) {
+  return this.lu(a, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(b));
 });
-$p.nl = (function(a, v) {
+$p.ne = (function(a, v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + a.f) + " * ") + v.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$, "trivalibs.graphics.math.gpu.float_expr$package$given_NumOps_FloatExpr$", ({
-  eJ: 1,
-  fO: 1
+  ev: 1,
+  fA: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$() {
@@ -9979,8 +9877,8 @@ $p.aD = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".y"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec2BaseG_FloatExpr_Vec2Expr$", ({
-  eK: 1,
-  e3: 1
+  ew: 1,
+  dP: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$() {
@@ -9998,30 +9896,30 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\u
 function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$.prototype = $p;
-$p.mE = (function(v, x$2, other) {
+$p.mx = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " + ") + other.f) + ")"));
 });
-$p.jz = (function(v, x$2, other) {
+$p.jx = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " - ") + other.f) + ")"));
 });
-$p.p1 = (function(v, x$2, scalar) {
+$p.oR = (function(v, x$2, scalar) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " - ") + scalar.f) + ")"));
 });
-$p.mw = (function(v, x$2, scalar) {
-  return this.p1(v, x$2, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
+$p.mp = (function(v, x$2, scalar) {
+  return this.oR(v, x$2, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
 });
-$p.ma = (function(v, x$2, other) {
+$p.m4 = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " * ") + other.f) + ")"));
 });
-$p.ns = (function(v, x$2) {
+$p.nl = (function(v, x$2) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("fract(" + v.f) + ")"));
 });
-$p.no = (function(v, x$2) {
+$p.nh = (function(v, x$2) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("(" + v.f) + " * 2.0 - 1.0)"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec2ImmutableOpsG_FloatExpr_Vec2Expr$", ({
-  eL: 1,
-  e4: 1
+  ex: 1,
+  dQ: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2ImmutableOpsG\uff3fFloatExpr\uff3fVec2Expr$() {
@@ -10045,15 +9943,15 @@ $p.bp = (function(v) {
 $p.aD = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".y"));
 });
-$p.jI = (function(v) {
+$p.jG = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".z"));
 });
-$p.nb = (function(v, other) {
+$p.n4 = (function(v, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("dot(" + v.f) + ", ") + other.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec3BaseG_FloatExpr_Vec3Expr$", ({
-  eM: 1,
-  aS: 1
+  ey: 1,
+  aN: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3BaseG\uff3fFloatExpr\uff3fVec3Expr$() {
@@ -10071,39 +9969,39 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\u
 function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$.prototype = $p;
-$p.jk = (function(v, x$2, other) {
+$p.ji = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " + ") + other.f) + ")"));
 });
-$p.mi = (function(v, x$2, other) {
+$p.mc = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " - ") + other.f) + ")"));
 });
 $p.bn = (function(v, x$2, scalar) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " * ") + scalar.f) + ")"));
 });
-$p.jh = (function(v, x$2, scalar) {
+$p.jf = (function(v, x$2, scalar) {
   return this.bn(v, x$2, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
 });
-$p.n8 = (function(v, x$2, scalar) {
+$p.n1 = (function(v, x$2, scalar) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " / ") + scalar.f) + ")"));
 });
-$p.n2 = (function(v, x$2, other) {
+$p.mV = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("cross(" + v.f) + ", ") + other.f) + ")"));
 });
-$p.oy = (function(v, x$2) {
+$p.oq = (function(v, x$2) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("normalize(" + v.f) + ")"));
 });
-$p.nk = (function(v, x$2) {
+$p.nd = (function(v, x$2) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (("exp(" + v.f) + ")"));
 });
-$p.os = (function(v, x$2, other) {
+$p.ok = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("min(" + v.f) + ", ") + other.f) + ")"));
 });
-$p.ov = (function(v, x$2, b, t) {
+$p.on = (function(v, x$2, b, t) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((((("mix(" + v.f) + ", ") + b.f) + ", ") + t.f) + ")"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec3ImmutableOpsG_FloatExpr_Vec3Expr$", ({
-  eN: 1,
-  e7: 1
+  ez: 1,
+  dT: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec3ImmutableOpsG\uff3fFloatExpr\uff3fVec3Expr$() {
@@ -10127,14 +10025,14 @@ $p.bp = (function(v) {
 $p.aD = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".y"));
 });
-$p.jI = (function(v) {
+$p.jG = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".z"));
 });
-$p.jE = (function(v) {
+$p.jC = (function(v) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (v.f + ".w"));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec4BaseG_FloatExpr_Vec4Expr$", ({
-  eO: 1,
+  eA: 1,
   F: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4BaseG\uff3fFloatExpr\uff3fVec4Expr$;
@@ -10153,18 +10051,18 @@ $p.constructor = $c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\u
 function $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$.prototype = $p;
-$p.hX = (function(v, x$2, other) {
+$p.hW = (function(v, x$2, other) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " + ") + other.f) + ")"));
 });
-$p.m9 = (function(v, x$2, scalar) {
+$p.m3 = (function(v, x$2, scalar) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), (((("(" + v.f) + " * ") + scalar.f) + ")"));
 });
-$p.hW = (function(v, x$2, scalar) {
-  return this.m9(v, x$2, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
+$p.hV = (function(v, x$2, scalar) {
+  return this.m3(v, x$2, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().j().g(scalar));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$, "trivalibs.graphics.math.gpu.float_expr$package$given_Vec4ImmutableOpsG_FloatExpr_Vec4Expr$", ({
-  eP: 1,
-  ea: 1
+  eB: 1,
+  dW: 1
 }));
 var $n_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$;
 function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4ImmutableOpsG\uff3fFloatExpr\uff3fVec4Expr$() {
@@ -10175,24 +10073,24 @@ function $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec4
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Layer(painter, shade) {
-  this.gr = null;
+  this.gq = null;
   this.w = null;
-  this.iK = null;
-  this.hC = 0;
-  this.gq = 0;
+  this.iI = null;
+  this.hB = 0;
+  this.gp = 0;
   this.i = null;
   this.L = null;
   this.H = null;
-  this.iL = null;
-  this.gr = painter;
+  this.iJ = null;
+  this.gq = painter;
   this.w = shade;
-  this.iK = null;
-  this.hC = (-1);
-  this.gq = (-1);
+  this.iI = null;
+  this.hB = (-1);
+  this.gp = (-1);
   this.i = [];
   this.L = [];
   this.H = null;
-  this.iL = new $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter);
+  this.iJ = new $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter);
 }
 $p = $c_Ltrivalibs_graphics_painter_Layer.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_Layer;
@@ -10200,43 +10098,43 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Layer;
 function $h_Ltrivalibs_graphics_painter_Layer() {
 }
 $h_Ltrivalibs_graphics_painter_Layer.prototype = $p;
-$p.lE = (function() {
-  return ((this.w.hL !== null) && (((this.L.length | 0) === 0) || (this.L[0] === null)));
+$p.lz = (function() {
+  return ((this.w.hK !== null) && (((this.L.length | 0) === 0) || (this.L[0] === null)));
 });
-$p.oV = (function(blendState, mipSource, mipTarget) {
+$p.oM = (function(blendState, mipSource, mipTarget) {
   if ((blendState !== (void 0))) {
-    this.iK = blendState;
+    this.iI = blendState;
   }
   if ((mipSource !== (void 0))) {
     var v = (mipSource | 0);
-    this.hC = v;
+    this.hB = v;
   }
   if ((mipTarget !== (void 0))) {
     var v$1 = (mipTarget | 0);
-    this.gq = v$1;
+    this.gp = v$1;
   }
   return this;
 });
 var $d_Ltrivalibs_graphics_painter_Layer = new $TypeData().i($c_Ltrivalibs_graphics_painter_Layer, "trivalibs.graphics.painter.Layer", ({
-  eZ: 1,
-  aU: 1
+  eL: 1,
+  aP: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_Shape(painter, form, shade) {
-  this.gB = null;
+  this.gA = null;
   this.a3 = null;
-  this.iT = null;
-  this.iS = null;
+  this.iR = null;
+  this.iQ = null;
   this.a9 = null;
   this.ap = null;
-  this.iU = null;
-  this.gB = form;
-  this.a3 = shade;
-  this.iT = "none";
   this.iS = null;
+  this.gA = form;
+  this.a3 = shade;
+  this.iR = "none";
+  this.iQ = null;
   this.a9 = [];
   this.ap = [];
-  this.iU = new $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter);
+  this.iS = new $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter);
 }
 $p = $c_Ltrivalibs_graphics_painter_Shape.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_Shape;
@@ -10244,18 +10142,18 @@ $p.constructor = $c_Ltrivalibs_graphics_painter_Shape;
 function $h_Ltrivalibs_graphics_painter_Shape() {
 }
 $h_Ltrivalibs_graphics_painter_Shape.prototype = $p;
-$p.oW = (function(cullMode, blendState) {
+$p.oN = (function(cullMode, blendState) {
   if ((cullMode !== (void 0))) {
-    this.iT = cullMode;
+    this.iR = cullMode;
   }
   if ((blendState !== (void 0))) {
-    this.iS = blendState;
+    this.iQ = blendState;
   }
   return this;
 });
 var $d_Ltrivalibs_graphics_painter_Shape = new $TypeData().i($c_Ltrivalibs_graphics_painter_Shape, "trivalibs.graphics.painter.Shape", ({
-  f5: 1,
-  aU: 1
+  eR: 1,
+  aP: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_FragmentUniform$given\uff3fWGSLType\uff3fFragmentUniform(inner) {
@@ -10272,7 +10170,7 @@ $p.y = (function() {
   return this.T.y();
 });
 var $d_Ltrivalibs_graphics_shader_FragmentUniform$given\uff3fWGSLType\uff3fFragmentUniform = new $TypeData().i($c_Ltrivalibs_graphics_shader_FragmentUniform$given\uff3fWGSLType\uff3fFragmentUniform, "trivalibs.graphics.shader.FragmentUniform$given_WGSLType_FragmentUniform", ({
-  fd: 1,
+  eZ: 1,
   x: 1
 }));
 /** @constructor */
@@ -10290,13 +10188,13 @@ $p.y = (function() {
   return this.ff.y();
 });
 var $d_Ltrivalibs_graphics_shader_VertexUniform$given\uff3fWGSLType\uff3fVertexUniform = new $TypeData().i($c_Ltrivalibs_graphics_shader_VertexUniform$given\uff3fWGSLType\uff3fVertexUniform, "trivalibs.graphics.shader.VertexUniform$given_WGSLType_VertexUniform", ({
-  fe: 1,
+  f0: 1,
   x: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor(prefix) {
-  this.j1 = null;
-  this.j1 = prefix;
+  this.iZ = null;
+  this.iZ = prefix;
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor;
@@ -10305,16 +10203,16 @@ function $h_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor.prototype = $p;
 $p.a1 = (function(name) {
-  return new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget(((this.j1 === "") ? name : ((this.j1 + ".") + name)));
+  return new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget(((this.iZ === "") ? name : ((this.iZ + ".") + name)));
 });
 var $d_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor, "trivalibs.graphics.shader.dsl.TypedAssignAccessor", ({
-  fm: 1,
+  f8: 1,
   A: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(prefix) {
-  this.j2 = null;
-  this.j2 = prefix;
+  this.j0 = null;
+  this.j0 = prefix;
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor;
@@ -10323,10 +10221,10 @@ function $h_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor.prototype = $p;
 $p.k = (function(name) {
-  return ((this.j2 === "") ? $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), name) : $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), ((this.j2 + ".") + name)));
+  return ((this.j0 === "") ? $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), name) : $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), ((this.j0 + ".") + name)));
 });
 var $d_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor, "trivalibs.graphics.shader.dsl.TypedExprAccessor", ({
-  fn: 1,
+  f9: 1,
   A: 1
 }));
 /** @constructor */
@@ -10339,7 +10237,7 @@ function $h_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor, "trivalibs.graphics.shader.dsl.TypedLocalAccessor", ({
-  fo: 1,
+  fa: 1,
   A: 1
 }));
 /** @constructor */
@@ -10352,15 +10250,15 @@ function $h_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor, "trivalibs.graphics.shader.dsl.TypedPanelAccessor", ({
-  fp: 1,
+  fb: 1,
   A: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_VertexOut(prefix) {
-  this.lg = null;
-  this.hP = null;
-  this.lg = prefix;
-  this.hP = new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget((prefix + ".position"));
+  this.lb = null;
+  this.hO = null;
+  this.lb = prefix;
+  this.hO = new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget((prefix + ".position"));
 }
 $p = $c_Ltrivalibs_graphics_shader_dsl_VertexOut.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_dsl_VertexOut;
@@ -10369,10 +10267,10 @@ function $h_Ltrivalibs_graphics_shader_dsl_VertexOut() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_VertexOut.prototype = $p;
 $p.a1 = (function(name) {
-  return new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget(((this.lg + ".") + name));
+  return new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget(((this.lb + ".") + name));
 });
 var $d_Ltrivalibs_graphics_shader_dsl_VertexOut = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_VertexOut, "trivalibs.graphics.shader.dsl.VertexOut", ({
-  fr: 1,
+  fd: 1,
   A: 1
 }));
 /** @constructor */
@@ -10388,7 +10286,7 @@ $p.y = (function() {
   return "f32";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fFloat$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fFloat$, "trivalibs.graphics.shader.types$package$given_WGSLType_Float$", ({
-  fy: 1,
+  fk: 1,
   x: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fFloat$;
@@ -10411,7 +10309,7 @@ $p.y = (function() {
   return "mat4x4<f32>";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$, "trivalibs.graphics.shader.types$package$given_WGSLType_Mat4$", ({
-  fz: 1,
+  fl: 1,
   x: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$;
@@ -10434,7 +10332,7 @@ $p.y = (function() {
   return "sampler";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fSampler$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fSampler$, "trivalibs.graphics.shader.types$package$given_WGSLType_Sampler$", ({
-  fA: 1,
+  fm: 1,
   x: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fSampler$;
@@ -10457,7 +10355,7 @@ $p.y = (function() {
   return "vec4<f32>";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fVec4$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fVec4$, "trivalibs.graphics.shader.types$package$given_WGSLType_Vec4$", ({
-  fB: 1,
+  fn: 1,
   x: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fVec4$;
@@ -10469,7 +10367,7 @@ function $m_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fVe
 }
 /** @constructor */
 function $c_jl_Class($data) {
-  this.i9 = $data;
+  this.i8 = $data;
 }
 $p = $c_jl_Class.prototype = new $h_O();
 $p.constructor = $c_jl_Class;
@@ -10478,10 +10376,10 @@ function $h_jl_Class() {
 }
 $h_jl_Class.prototype = $p;
 $p.m = (function() {
-  return ((this.i9.Y ? "interface " : (this.i9.X ? "" : "class ")) + this.i9.N);
+  return ((this.i8.Y ? "interface " : (this.i8.X ? "" : "class ")) + this.i8.N);
 });
 var $d_jl_Class = new $TypeData().i($c_jl_Class, "java.lang.Class", ({
-  b3: 1,
+  aX: 1,
   a: 1,
   g: 1
 }));
@@ -10501,9 +10399,9 @@ function $h_s_Predef$() {
 }
 $h_s_Predef$.prototype = $p;
 var $d_s_Predef$ = new $TypeData().i($c_s_Predef$, "scala.Predef$", ({
-  bA: 1,
-  bx: 1,
-  by: 1
+  bq: 1,
+  bn: 1,
+  bo: 1
 }));
 var $n_s_Predef$;
 function $m_s_Predef$() {
@@ -11675,7 +11573,7 @@ function $f_s_Product9__productElement__I__O($thiz, n) {
   }
 }
 function $f_sc_Iterator__concat__F0__sc_Iterator($thiz, xs) {
-  return new $c_sc_Iterator$ConcatIterator($thiz).n0(xs);
+  return new $c_sc_Iterator$ConcatIterator($thiz).mT(xs);
 }
 function $f_sc_Iterator__sliceIterator__I__I__sc_Iterator($thiz, from, until) {
   var lo = ((from > 0) ? from : 0);
@@ -11707,9 +11605,9 @@ function $h_sc_Iterator$() {
 }
 $h_sc_Iterator$.prototype = $p;
 var $d_sc_Iterator$ = new $TypeData().i($c_sc_Iterator$, "scala.collection.Iterator$", ({
-  c6: 1,
+  bW: 1,
   a: 1,
-  ax: 1
+  as: 1
 }));
 var $n_sc_Iterator$;
 function $m_sc_Iterator$() {
@@ -11719,12 +11617,12 @@ function $m_sc_Iterator$() {
   return $n_sc_Iterator$;
 }
 function $isArrayOf_s_math_ScalaNumber(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.cB)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.cq)));
 }
 /** @constructor */
 function $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c(f) {
-  this.k1 = null;
-  this.k1 = f;
+  this.jW = null;
+  this.jW = f;
 }
 $p = $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c.prototype = new $h_sr_AbstractFunction0();
 $p.constructor = $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c;
@@ -11732,18 +11630,18 @@ $p.constructor = $c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd5
 function $h_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c() {
 }
 $h_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c.prototype = $p;
-$p.gL = (function() {
-  return (0, this.k1)();
+$p.gK = (function() {
+  return (0, this.jW)();
 });
 var $d_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c = new $TypeData().i($c_sr_AbstractFunction0_$$Lambda$07eded5776954a9c145e92c329afd52873ad179c, "scala.runtime.AbstractFunction0.$$Lambda$07eded5776954a9c145e92c329afd52873ad179c", ({
-  cK: 1,
-  cJ: 1,
-  bs: 1
+  cz: 1,
+  cy: 1,
+  bi: 1
 }));
 /** @constructor */
 function $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(f) {
-  this.k2 = null;
-  this.k2 = f;
+  this.jX = null;
+  this.jX = f;
 }
 $p = $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919.prototype = new $h_sr_AbstractFunction1();
 $p.constructor = $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919;
@@ -11752,17 +11650,17 @@ function $h_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa9
 }
 $h_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919.prototype = $p;
 $p.g = (function(x0) {
-  return (0, this.k2)(x0);
+  return (0, this.jX)(x0);
 });
 var $d_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919 = new $TypeData().i($c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919, "scala.runtime.AbstractFunction1.$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919", ({
-  cM: 1,
-  cL: 1,
+  cB: 1,
+  cA: 1,
   h: 1
 }));
 /** @constructor */
 function $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(f) {
-  this.k3 = null;
-  this.k3 = f;
+  this.jY = null;
+  this.jY = f;
 }
 $p = $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8.prototype = new $h_sr_AbstractFunction2();
 $p.constructor = $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8;
@@ -11771,17 +11669,17 @@ function $h_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55
 }
 $h_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8.prototype = $p;
 $p.F = (function(x0, x1) {
-  return (0, this.k3)(x0, x1);
+  return (0, this.jY)(x0, x1);
 });
 var $d_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8 = new $TypeData().i($c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8, "scala.runtime.AbstractFunction2.$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8", ({
-  cO: 1,
-  cN: 1,
-  bt: 1
+  cD: 1,
+  cC: 1,
+  bj: 1
 }));
 /** @constructor */
 function $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825(f) {
-  this.k4 = null;
-  this.k4 = f;
+  this.jZ = null;
+  this.jZ = f;
 }
 $p = $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825.prototype = new $h_sr_AbstractFunction3();
 $p.constructor = $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825;
@@ -11789,18 +11687,18 @@ $p.constructor = $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea
 function $h_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825() {
 }
 $h_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825.prototype = $p;
-$p.lC = (function(x0, x1, x2) {
-  return (0, this.k4)(x0, x1, x2);
+$p.lx = (function(x0, x1, x2) {
+  return (0, this.jZ)(x0, x1, x2);
 });
 var $d_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825 = new $TypeData().i($c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825, "scala.runtime.AbstractFunction3.$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825", ({
-  cQ: 1,
-  cP: 1,
-  bu: 1
+  cF: 1,
+  cE: 1,
+  bk: 1
 }));
 /** @constructor */
 function $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a(f) {
-  this.k5 = null;
-  this.k5 = f;
+  this.k0 = null;
+  this.k0 = f;
 }
 $p = $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a.prototype = new $h_sr_AbstractFunction4();
 $p.constructor = $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a;
@@ -11808,18 +11706,18 @@ $p.constructor = $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba6
 function $h_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a() {
 }
 $h_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a.prototype = $p;
-$p.jm = (function(x0, x1, x2, x3) {
-  return (0, this.k5)(x0, x1, x2, x3);
+$p.jk = (function(x0, x1, x2, x3) {
+  return (0, this.k0)(x0, x1, x2, x3);
 });
 var $d_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a = new $TypeData().i($c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a, "scala.runtime.AbstractFunction4.$$Lambda$451042f443265710aa66de6985cba67480d9b00a", ({
-  cS: 1,
-  cR: 1,
-  bv: 1
+  cH: 1,
+  cG: 1,
+  bl: 1
 }));
 /** @constructor */
 function $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078(f) {
-  this.k6 = null;
-  this.k6 = f;
+  this.k1 = null;
+  this.k1 = f;
 }
 $p = $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078.prototype = new $h_sr_AbstractFunction5();
 $p.constructor = $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078;
@@ -11827,16 +11725,16 @@ $p.constructor = $c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c20
 function $h_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078() {
 }
 $h_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078.prototype = $p;
-$p.mH = (function(x0, x1, x2, x3, x4) {
-  return (0, this.k6)(x0, x1, x2, x3, x4);
+$p.mA = (function(x0, x1, x2, x3, x4) {
+  return (0, this.k1)(x0, x1, x2, x3, x4);
 });
 var $d_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078 = new $TypeData().i($c_sr_AbstractFunction5_$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078, "scala.runtime.AbstractFunction5.$$Lambda$e688b1adbc65539969b4b8c5192c202236fd1078", ({
-  cU: 1,
-  cT: 1,
-  bw: 1
+  cJ: 1,
+  cI: 1,
+  bm: 1
 }));
 var $d_sr_Nothing$ = new $TypeData().i(0, "scala.runtime.Nothing$", ({
-  cW: 1,
+  cL: 1,
   f: 1,
   a: 1
 }));
@@ -11845,7 +11743,7 @@ function $c_sr_TupleXXL(es) {
   this.W = null;
   this.W = es;
   if ((es.b.length <= 22)) {
-    $m_sr_Scala3RunTime$().mP();
+    $m_sr_Scala3RunTime$().mI();
   }
 }
 $p = $c_sr_TupleXXL.prototype = new $h_O();
@@ -11867,10 +11765,10 @@ $p.A = (function() {
   return "Tuple";
 });
 $p.m = (function() {
-  return $f_sc_IterableOnceOps__mkString__T__T__T__T($m_s_Predef$().pg(this.W), "(", ",", ")");
+  return $f_sc_IterableOnceOps__mkString__T__T__T__T($m_s_Predef$().p6(this.W), "(", ",", ")");
 });
 $p.r = (function() {
-  return $m_s_util_hashing_MurmurHash3$().mY(this, (-889275714), null);
+  return $m_s_util_hashing_MurmurHash3$().mR(this, (-889275714), null);
 });
 $p.p = (function(that) {
   if ((that instanceof $c_sr_TupleXXL)) {
@@ -11900,10 +11798,10 @@ $p.p = (function(that) {
   }
 });
 function $isArrayOf_sr_TupleXXL(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aJ)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aE)));
 }
 var $d_sr_TupleXXL = new $TypeData().i($c_sr_TupleXXL, "scala.runtime.TupleXXL", ({
-  aJ: 1,
+  aE: 1,
   b: 1,
   c: 1
 }));
@@ -11916,13 +11814,13 @@ $p.constructor = $c_sjs_js_Any$;
 function $h_sjs_js_Any$() {
 }
 $h_sjs_js_Any$.prototype = $p;
-$p.gN = (function(f) {
+$p.gM = (function(f) {
   return ((arg1$2) => f.g(arg1$2));
 });
 var $d_sjs_js_Any$ = new $TypeData().i($c_sjs_js_Any$, "scala.scalajs.js.Any$", ({
-  d2: 1,
-  d6: 1,
-  d7: 1
+  cR: 1,
+  cV: 1,
+  cW: 1
 }));
 var $n_sjs_js_Any$;
 function $m_sjs_js_Any$() {
@@ -11973,7 +11871,7 @@ $p.g = (function(x) {
   return new $c_Ltrivalibs_graphics_math_cpu_Vec4((+x.eA), (+x.b8), (+x.b9), (+x.ba));
 });
 var $d_Ltrivalibs_graphics_math_cpu_Vec4$$anon$3 = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec4$$anon$3, "trivalibs.graphics.math.cpu.Vec4$$anon$3", ({
-  eq: 1,
+  ec: 1,
   H: 1,
   h: 1
 }));
@@ -11981,9 +11879,9 @@ var $d_Ltrivalibs_graphics_math_cpu_Vec4$$anon$3 = new $TypeData().i($c_Ltrivali
 function $c_Ltrivalibs_graphics_math_gpu_VarExpr(name) {
   this.f = null;
   this.f7 = null;
-  this.iE = false;
+  this.iC = false;
   $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(this, name);
-  this.iE = false;
+  this.iC = false;
 }
 $p = $c_Ltrivalibs_graphics_math_gpu_VarExpr.prototype = new $h_Ltrivalibs_graphics_math_gpu_LetExpr();
 $p.constructor = $c_Ltrivalibs_graphics_math_gpu_VarExpr;
@@ -11992,22 +11890,22 @@ function $h_Ltrivalibs_graphics_math_gpu_VarExpr() {
 }
 $h_Ltrivalibs_graphics_math_gpu_VarExpr.prototype = $p;
 $p.B = (function(value) {
-  if ((!this.iE)) {
-    this.iE = true;
+  if ((!this.iC)) {
+    this.iC = true;
     return (((("  var " + this.f7) + " = ") + value.f) + ";");
   } else {
     return (((("  " + this.f7) + " = ") + value.f) + ";");
   }
 });
-$p.mz = (function(value) {
+$p.ms = (function(value) {
   return (((("  " + this.f7) + " += ") + value.f) + ";");
 });
-$p.lB = (function(value) {
+$p.lw = (function(value) {
   return (((("  " + this.f7) + " *= ") + value.f) + ";");
 });
 var $d_Ltrivalibs_graphics_math_gpu_VarExpr = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_VarExpr, "trivalibs.graphics.math.gpu.VarExpr", ({
-  eB: 1,
-  aT: 1,
+  en: 1,
+  aO: 1,
   Y: 1
 }));
 /** @constructor */
@@ -12023,7 +11921,7 @@ $p.g = (function(x) {
   return x;
 });
 var $d_Ltrivalibs_graphics_math_gpu_expr$package$$anon$2 = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_expr$package$$anon$2, "trivalibs.graphics.math.gpu.expr$package$$anon$2", ({
-  eD: 1,
+  ep: 1,
   H: 1,
   h: 1
 }));
@@ -12040,7 +11938,7 @@ $p.g = (function(x) {
   return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().b5((+x)));
 });
 var $d_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$1 = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$$anon$1, "trivalibs.graphics.math.gpu.float_expr$package$$anon$1", ({
-  eF: 1,
+  er: 1,
   H: 1,
   h: 1
 }));
@@ -12168,7 +12066,7 @@ function $a_Ltrivalibs_graphics_shader_dsl_WgslFnData() {
         var deps = null;
         name = arg;
         src = arg$2;
-        deps = ((rest[0] === (void 0)) ? $m_Ltrivalibs_graphics_shader_dsl_WgslFnData$().mv() : rest[0]);
+        deps = ((rest[0] === (void 0)) ? $m_Ltrivalibs_graphics_shader_dsl_WgslFnData$().mo() : rest[0]);
         super();
         Object.defineProperty(this, "name", ({
           "configurable": true,
@@ -12197,19 +12095,10 @@ function $a_Ltrivalibs_graphics_shader_dsl_WgslFnData() {
   return $b_Ltrivalibs_graphics_shader_dsl_WgslFnData;
 }
 var $d_Ltrivalibs_graphics_shader_dsl_WgslFnData = new $TypeData().i(2, "trivalibs.graphics.shader.dsl.WgslFnData", ({
-  fs: 1,
-  d8: 1,
-  aK: 1
+  fe: 1,
+  cX: 1,
+  aF: 1
 }), ((x) => (x instanceof $a_Ltrivalibs_graphics_shader_dsl_WgslFnData())));
-/** @constructor */
-function $c_Ljava_io_OutputStream() {
-}
-$p = $c_Ljava_io_OutputStream.prototype = new $h_O();
-$p.constructor = $c_Ljava_io_OutputStream;
-/** @constructor */
-function $h_Ljava_io_OutputStream() {
-}
-$h_Ljava_io_OutputStream.prototype = $p;
 class $c_jl_AssertionError extends $c_jl_Error {
   constructor(detailMessage) {
     super();
@@ -12217,8 +12106,8 @@ class $c_jl_AssertionError extends $c_jl_Error {
   }
 }
 var $d_jl_AssertionError = new $TypeData().i($c_jl_AssertionError, "java.lang.AssertionError", ({
-  aZ: 1,
-  b4: 1,
+  aT: 1,
+  aY: 1,
   f: 1,
   a: 1
 }));
@@ -12232,7 +12121,7 @@ function $f_jl_Boolean__toString__T($thiz) {
   return ("" + $thiz);
 }
 var $d_jl_Boolean = new $TypeData().i(0, "java.lang.Boolean", ({
-  b0: 1,
+  aU: 1,
   a: 1,
   i: 1,
   g: 1
@@ -12247,10 +12136,10 @@ function $f_jl_Character__toString__T($thiz) {
   return ("" + $cToS($thiz));
 }
 function $isArrayOf_jl_Character(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a4)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.Z)));
 }
 var $d_jl_Character = new $TypeData().i(0, "java.lang.Character", ({
-  a4: 1,
+  Z: 1,
   a: 1,
   i: 1,
   g: 1
@@ -12274,13 +12163,13 @@ $p.m = (function() {
 $p.K = (function() {
   return this.a8.length;
 });
-$p.lG = (function(index) {
+$p.lB = (function(index) {
   return this.a8.charCodeAt(index);
 });
 var $d_jl_StringBuilder = new $TypeData().i($c_jl_StringBuilder, "java.lang.StringBuilder", ({
-  bg: 1,
+  b8: 1,
   G: 1,
-  a2: 1,
+  aR: 1,
   a: 1
 }));
 /** @constructor */
@@ -12295,19 +12184,19 @@ $h_sc_AbstractIterator.prototype = $p;
 $p.ae = (function() {
   return (-1);
 });
-$p.lI = (function(dest, start, n) {
+$p.lD = (function(dest, start, n) {
   return $f_sc_IterableOnceOps__copyToArray__O__I__I__I(this, dest, start, n);
 });
-$p.jj = (function(b, start, sep, end) {
+$p.jh = (function(b, start, sep, end) {
   return $f_sc_IterableOnceOps__addString__scm_StringBuilder__T__T__T__scm_StringBuilder(this, b, start, sep, end);
 });
 $p.a0 = (function() {
   return this;
 });
-$p.hY = (function(n) {
-  return this.i6(n, (-1));
+$p.hX = (function(n) {
+  return this.i5(n, (-1));
 });
-$p.i6 = (function(from, until) {
+$p.i5 = (function(from, until) {
   return $f_sc_Iterator__sliceIterator__I__I__sc_Iterator(this, from, until);
 });
 $p.m = (function() {
@@ -12331,9 +12220,6 @@ function $f_sc_SeqOps__sameElements__sc_IterableOnce__Z($thiz, that) {
   }
   return $f_sc_Iterator__sameElements__sc_IterableOnce__Z($thiz.a0(), that);
 }
-function $isArrayOf_s_util_CommandLineParser$ParseError(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.df)));
-}
 /** @constructor */
 function $c_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$() {
 }
@@ -12343,107 +12229,107 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff
 function $h_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$.prototype = $p;
+$p.gQ = (function(m) {
+  return m.il;
+});
 $p.gR = (function(m) {
-  return m.io;
+  return m.im;
 });
 $p.gS = (function(m) {
-  return m.ip;
+  return m.io;
 });
 $p.gT = (function(m) {
-  return m.iq;
+  return m.ip;
 });
 $p.gU = (function(m) {
-  return m.ir;
+  return m.iq;
 });
 $p.gV = (function(m) {
-  return m.is;
+  return m.ir;
 });
 $p.gW = (function(m) {
-  return m.it;
+  return m.is;
 });
 $p.gX = (function(m) {
-  return m.iu;
+  return m.it;
 });
 $p.gY = (function(m) {
-  return m.iv;
+  return m.iu;
 });
 $p.gZ = (function(m) {
-  return m.iw;
+  return m.iv;
 });
 $p.h0 = (function(m) {
-  return m.ix;
+  return m.iw;
 });
 $p.h1 = (function(m) {
-  return m.iy;
+  return m.ix;
 });
 $p.h2 = (function(m) {
-  return m.iz;
+  return m.iy;
 });
 $p.h3 = (function(m) {
-  return m.iA;
+  return m.iz;
 });
 $p.h4 = (function(m) {
-  return m.iB;
+  return m.iA;
 });
 $p.h5 = (function(m) {
-  return m.iC;
+  return m.iB;
 });
-$p.h6 = (function(m) {
-  return m.iD;
+$p.lK = (function(m, v) {
+  m.il = v;
 });
-$p.lQ = (function(m, v) {
+$p.lL = (function(m, v) {
+  m.im = v;
+});
+$p.lM = (function(m, v) {
   m.io = v;
 });
-$p.lR = (function(m, v) {
+$p.lN = (function(m, v) {
   m.ip = v;
 });
-$p.lS = (function(m, v) {
+$p.lO = (function(m, v) {
   m.iq = v;
 });
-$p.lT = (function(m, v) {
+$p.lP = (function(m, v) {
   m.ir = v;
 });
-$p.lU = (function(m, v) {
+$p.lQ = (function(m, v) {
   m.is = v;
 });
-$p.lV = (function(m, v) {
+$p.lR = (function(m, v) {
   m.it = v;
 });
-$p.lW = (function(m, v) {
+$p.lS = (function(m, v) {
   m.iu = v;
 });
-$p.lX = (function(m, v) {
+$p.lT = (function(m, v) {
   m.iv = v;
 });
-$p.lY = (function(m, v) {
+$p.lU = (function(m, v) {
   m.iw = v;
 });
-$p.lZ = (function(m, v) {
+$p.lV = (function(m, v) {
   m.ix = v;
 });
-$p.m0 = (function(m, v) {
+$p.lW = (function(m, v) {
   m.iy = v;
 });
-$p.m1 = (function(m, v) {
+$p.lX = (function(m, v) {
   m.iz = v;
 });
-$p.m2 = (function(m, v) {
+$p.lY = (function(m, v) {
   m.iA = v;
 });
-$p.m3 = (function(m, v) {
+$p.lZ = (function(m, v) {
   m.iB = v;
 });
-$p.m4 = (function(m, v) {
-  m.iC = v;
-});
-$p.m5 = (function(m, v) {
-  m.iD = v;
-});
 var $d_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$, "trivalibs.graphics.math.cpu.Mat4$given_Mat4Mutable_Mat4$", ({
-  ee: 1,
+  e0: 1,
   V: 1,
-  aQ: 1,
-  aR: 1
+  aL: 1,
+  aM: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$;
 function $m_Ltrivalibs_graphics_math_cpu_Mat4$given\uff3fMat4Mutable\uff3fMat4$() {
@@ -12462,31 +12348,31 @@ function $h_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$(
 }
 $h_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$.prototype = $p;
 $p.aO = (function(v) {
-  return v.hx;
-});
-$p.aP = (function(v) {
-  return v.hy;
-});
-$p.aQ = (function(v) {
-  return v.hz;
-});
-$p.aM = (function(v) {
   return v.hw;
 });
-$p.jG = (function(v, value) {
+$p.aP = (function(v) {
+  return v.hx;
+});
+$p.aQ = (function(v) {
+  return v.hy;
+});
+$p.aM = (function(v) {
+  return v.hv;
+});
+$p.jE = (function(v, value) {
+  v.hw = value;
+});
+$p.jF = (function(v, value) {
   v.hx = value;
 });
 $p.jH = (function(v, value) {
   v.hy = value;
 });
-$p.jJ = (function(v, value) {
-  v.hz = value;
-});
-$p.jF = (function(v, value) {
-  v.hw = value;
+$p.jD = (function(v, value) {
+  v.hv = value;
 });
 var $d_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Quat$given\uff3fVec4Mutable\uff3fQuat$, "trivalibs.graphics.math.cpu.Quat$given_Vec4Mutable_Quat$", ({
-  ei: 1,
+  e4: 1,
   F: 1,
   W: 1,
   X: 1
@@ -12508,10 +12394,10 @@ function $h_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$(
 }
 $h_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$.prototype = $p;
 var $d_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$, "trivalibs.graphics.math.cpu.Vec3$given_Vec3Mutable_Vec3$", ({
-  en: 1,
-  aS: 1,
-  e5: 1,
-  e8: 1
+  e9: 1,
+  aN: 1,
+  dR: 1,
+  dU: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$;
 function $m_Ltrivalibs_graphics_math_cpu_Vec3$given\uff3fVec3Mutable\uff3fVec3$() {
@@ -12541,20 +12427,20 @@ $p.aQ = (function(v) {
 $p.aM = (function(v) {
   return v.fO;
 });
-$p.jG = (function(v, value) {
+$p.jE = (function(v, value) {
   v.fP = value;
 });
-$p.jH = (function(v, value) {
+$p.jF = (function(v, value) {
   v.fQ = value;
 });
-$p.jJ = (function(v, value) {
+$p.jH = (function(v, value) {
   v.fR = value;
 });
-$p.jF = (function(v, value) {
+$p.jD = (function(v, value) {
   v.fO = value;
 });
 var $d_Ltrivalibs_graphics_math_cpu_Vec4$given\uff3fVec4Mutable\uff3fVec4$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_Vec4$given\uff3fVec4Mutable\uff3fVec4$, "trivalibs.graphics.math.cpu.Vec4$given_Vec4Mutable_Vec4$", ({
-  er: 1,
+  ed: 1,
   F: 1,
   W: 1,
   X: 1
@@ -12575,251 +12461,251 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\u
 function $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$.prototype = $p;
-$p.nU = (function(m) {
+$p.nM = (function(m) {
   var offset$proxy1 = (m.off | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy1, true));
 });
-$p.nW = (function(m) {
+$p.nO = (function(m) {
   var offset$proxy2 = ((4 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy2, true));
 });
-$p.nY = (function(m) {
+$p.nQ = (function(m) {
   var offset$proxy3 = ((8 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy3, true));
 });
-$p.o0 = (function(m) {
+$p.nS = (function(m) {
   var offset$proxy4 = ((12 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy4, true));
 });
-$p.o2 = (function(m) {
+$p.nU = (function(m) {
   var offset$proxy5 = ((16 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy5, true));
 });
-$p.o4 = (function(m) {
+$p.nW = (function(m) {
   var offset$proxy6 = ((20 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy6, true));
 });
-$p.o6 = (function(m) {
+$p.nY = (function(m) {
   var offset$proxy7 = ((24 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy7, true));
 });
-$p.o8 = (function(m) {
+$p.o0 = (function(m) {
   var offset$proxy8 = ((28 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy8, true));
 });
-$p.oa = (function(m) {
+$p.o2 = (function(m) {
   var offset$proxy9 = ((32 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy9, true));
 });
-$p.oc = (function(m) {
+$p.o4 = (function(m) {
   var offset$proxy10 = ((36 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy10, true));
 });
-$p.oe = (function(m) {
+$p.o6 = (function(m) {
   var offset$proxy11 = ((40 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy11, true));
 });
-$p.og = (function(m) {
+$p.o8 = (function(m) {
   var offset$proxy12 = ((44 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy12, true));
 });
-$p.oi = (function(m) {
+$p.oa = (function(m) {
   var offset$proxy13 = ((48 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy13, true));
 });
-$p.ok = (function(m) {
+$p.oc = (function(m) {
   var offset$proxy14 = ((52 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy14, true));
 });
-$p.om = (function(m) {
+$p.oe = (function(m) {
   var offset$proxy15 = ((56 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy15, true));
 });
-$p.oo = (function(m) {
+$p.og = (function(m) {
   var offset$proxy16 = ((60 + (m.off | 0)) | 0);
   return Math.fround(m.dv.getFloat32(offset$proxy16, true));
 });
-$p.nV = (function(m, v) {
+$p.nN = (function(m, v) {
   var value$proxy1 = Math.fround(v);
   var offset$proxy17 = (m.off | 0);
   m.dv.setFloat32(offset$proxy17, value$proxy1, true);
 });
-$p.nX = (function(m, v) {
+$p.nP = (function(m, v) {
   var value$proxy2 = Math.fround(v);
   var offset$proxy18 = ((4 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy18, value$proxy2, true);
 });
-$p.nZ = (function(m, v) {
+$p.nR = (function(m, v) {
   var value$proxy3 = Math.fround(v);
   var offset$proxy19 = ((8 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy19, value$proxy3, true);
 });
-$p.o1 = (function(m, v) {
+$p.nT = (function(m, v) {
   var value$proxy4 = Math.fround(v);
   var offset$proxy20 = ((12 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy20, value$proxy4, true);
 });
-$p.o3 = (function(m, v) {
+$p.nV = (function(m, v) {
   var value$proxy5 = Math.fround(v);
   var offset$proxy21 = ((16 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy21, value$proxy5, true);
 });
-$p.o5 = (function(m, v) {
+$p.nX = (function(m, v) {
   var value$proxy6 = Math.fround(v);
   var offset$proxy22 = ((20 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy22, value$proxy6, true);
 });
-$p.o7 = (function(m, v) {
+$p.nZ = (function(m, v) {
   var value$proxy7 = Math.fround(v);
   var offset$proxy23 = ((24 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy23, value$proxy7, true);
 });
-$p.o9 = (function(m, v) {
+$p.o1 = (function(m, v) {
   var value$proxy8 = Math.fround(v);
   var offset$proxy24 = ((28 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy24, value$proxy8, true);
 });
-$p.ob = (function(m, v) {
+$p.o3 = (function(m, v) {
   var value$proxy9 = Math.fround(v);
   var offset$proxy25 = ((32 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy25, value$proxy9, true);
 });
-$p.od = (function(m, v) {
+$p.o5 = (function(m, v) {
   var value$proxy10 = Math.fround(v);
   var offset$proxy26 = ((36 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy26, value$proxy10, true);
 });
-$p.of = (function(m, v) {
+$p.o7 = (function(m, v) {
   var value$proxy11 = Math.fround(v);
   var offset$proxy27 = ((40 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy27, value$proxy11, true);
 });
-$p.oh = (function(m, v) {
+$p.o9 = (function(m, v) {
   var value$proxy12 = Math.fround(v);
   var offset$proxy28 = ((44 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy28, value$proxy12, true);
 });
-$p.oj = (function(m, v) {
+$p.ob = (function(m, v) {
   var value$proxy13 = Math.fround(v);
   var offset$proxy29 = ((48 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy29, value$proxy13, true);
 });
-$p.ol = (function(m, v) {
+$p.od = (function(m, v) {
   var value$proxy14 = Math.fround(v);
   var offset$proxy30 = ((52 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy30, value$proxy14, true);
 });
-$p.on = (function(m, v) {
+$p.of = (function(m, v) {
   var value$proxy15 = Math.fround(v);
   var offset$proxy31 = ((56 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy31, value$proxy15, true);
 });
-$p.op = (function(m, v) {
+$p.oh = (function(m, v) {
   var value$proxy16 = Math.fround(v);
   var offset$proxy32 = ((60 + (m.off | 0)) | 0);
   m.dv.setFloat32(offset$proxy32, value$proxy16, true);
 });
+$p.gQ = (function(m) {
+  return this.nM(m);
+});
 $p.gR = (function(m) {
-  return this.nU(m);
+  return this.nO(m);
 });
 $p.gS = (function(m) {
-  return this.nW(m);
+  return this.nQ(m);
 });
 $p.gT = (function(m) {
-  return this.nY(m);
+  return this.nS(m);
 });
 $p.gU = (function(m) {
-  return this.o0(m);
+  return this.nU(m);
 });
 $p.gV = (function(m) {
-  return this.o2(m);
+  return this.nW(m);
 });
 $p.gW = (function(m) {
-  return this.o4(m);
+  return this.nY(m);
 });
 $p.gX = (function(m) {
-  return this.o6(m);
+  return this.o0(m);
 });
 $p.gY = (function(m) {
-  return this.o8(m);
+  return this.o2(m);
 });
 $p.gZ = (function(m) {
-  return this.oa(m);
+  return this.o4(m);
 });
 $p.h0 = (function(m) {
-  return this.oc(m);
+  return this.o6(m);
 });
 $p.h1 = (function(m) {
-  return this.oe(m);
+  return this.o8(m);
 });
 $p.h2 = (function(m) {
-  return this.og(m);
+  return this.oa(m);
 });
 $p.h3 = (function(m) {
-  return this.oi(m);
+  return this.oc(m);
 });
 $p.h4 = (function(m) {
-  return this.ok(m);
+  return this.oe(m);
 });
 $p.h5 = (function(m) {
-  return this.om(m);
+  return this.og(m);
 });
-$p.h6 = (function(m) {
-  return this.oo(m);
+$p.lK = (function(m, v) {
+  this.nN(m, v);
 });
-$p.lQ = (function(m, v) {
+$p.lL = (function(m, v) {
+  this.nP(m, v);
+});
+$p.lM = (function(m, v) {
+  this.nR(m, v);
+});
+$p.lN = (function(m, v) {
+  this.nT(m, v);
+});
+$p.lO = (function(m, v) {
   this.nV(m, v);
 });
-$p.lR = (function(m, v) {
+$p.lP = (function(m, v) {
   this.nX(m, v);
 });
-$p.lS = (function(m, v) {
+$p.lQ = (function(m, v) {
   this.nZ(m, v);
 });
-$p.lT = (function(m, v) {
+$p.lR = (function(m, v) {
   this.o1(m, v);
 });
-$p.lU = (function(m, v) {
+$p.lS = (function(m, v) {
   this.o3(m, v);
 });
-$p.lV = (function(m, v) {
+$p.lT = (function(m, v) {
   this.o5(m, v);
 });
-$p.lW = (function(m, v) {
+$p.lU = (function(m, v) {
   this.o7(m, v);
 });
-$p.lX = (function(m, v) {
+$p.lV = (function(m, v) {
   this.o9(m, v);
 });
-$p.lY = (function(m, v) {
+$p.lW = (function(m, v) {
   this.ob(m, v);
 });
-$p.lZ = (function(m, v) {
+$p.lX = (function(m, v) {
   this.od(m, v);
 });
-$p.m0 = (function(m, v) {
+$p.lY = (function(m, v) {
   this.of(m, v);
 });
-$p.m1 = (function(m, v) {
+$p.lZ = (function(m, v) {
   this.oh(m, v);
 });
-$p.m2 = (function(m, v) {
-  this.oj(m, v);
-});
-$p.m3 = (function(m, v) {
-  this.ol(m, v);
-});
-$p.m4 = (function(m, v) {
-  this.on(m, v);
-});
-$p.m5 = (function(m, v) {
-  this.op(m, v);
-});
 var $d_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$, "trivalibs.graphics.math.cpu.mat4$package$Mat4Buffer$given_Mat4Mutable_StructRef$", ({
-  eu: 1,
+  eg: 1,
   V: 1,
-  aQ: 1,
-  aR: 1
+  aL: 1,
+  aM: 1
 }));
 var $n_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$;
 function $m_Ltrivalibs_graphics_math_cpu_mat4$package$Mat4Buffer$given\uff3fMat4Mutable\uff3fStructRef$() {
@@ -12837,68 +12723,68 @@ $p.constructor = $c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4Mut
 function $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$() {
 }
 $h_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$.prototype = $p;
-$p.pj = (function(v) {
+$p.p9 = (function(v) {
   var offset$proxy1 = (v.off | 0);
   return Math.fround(v.dv.getFloat32(offset$proxy1, true));
 });
-$p.pl = (function(v) {
+$p.pb = (function(v) {
   var offset$proxy2 = ((4 + (v.off | 0)) | 0);
   return Math.fround(v.dv.getFloat32(offset$proxy2, true));
 });
-$p.pn = (function(v) {
+$p.pd = (function(v) {
   var offset$proxy3 = ((8 + (v.off | 0)) | 0);
   return Math.fround(v.dv.getFloat32(offset$proxy3, true));
 });
-$p.pd = (function(v) {
+$p.p3 = (function(v) {
   var offset$proxy4 = ((12 + (v.off | 0)) | 0);
   return Math.fround(v.dv.getFloat32(offset$proxy4, true));
 });
-$p.pk = (function(v, value) {
+$p.pa = (function(v, value) {
   var value$proxy1 = Math.fround(value);
   var offset$proxy5 = (v.off | 0);
   v.dv.setFloat32(offset$proxy5, value$proxy1, true);
 });
-$p.pm = (function(v, value) {
+$p.pc = (function(v, value) {
   var value$proxy2 = Math.fround(value);
   var offset$proxy6 = ((4 + (v.off | 0)) | 0);
   v.dv.setFloat32(offset$proxy6, value$proxy2, true);
 });
-$p.po = (function(v, value) {
+$p.pe = (function(v, value) {
   var value$proxy3 = Math.fround(value);
   var offset$proxy7 = ((8 + (v.off | 0)) | 0);
   v.dv.setFloat32(offset$proxy7, value$proxy3, true);
 });
-$p.pe = (function(v, value) {
+$p.p4 = (function(v, value) {
   var value$proxy4 = Math.fround(value);
   var offset$proxy8 = ((12 + (v.off | 0)) | 0);
   v.dv.setFloat32(offset$proxy8, value$proxy4, true);
 });
 $p.aO = (function(v) {
-  return this.pj(v);
+  return this.p9(v);
 });
 $p.aP = (function(v) {
-  return this.pl(v);
+  return this.pb(v);
 });
 $p.aQ = (function(v) {
-  return this.pn(v);
-});
-$p.aM = (function(v) {
   return this.pd(v);
 });
-$p.jG = (function(v, value) {
-  this.pk(v, value);
+$p.aM = (function(v) {
+  return this.p3(v);
 });
-$p.jH = (function(v, value) {
-  this.pm(v, value);
-});
-$p.jJ = (function(v, value) {
-  this.po(v, value);
+$p.jE = (function(v, value) {
+  this.pa(v, value);
 });
 $p.jF = (function(v, value) {
+  this.pc(v, value);
+});
+$p.jH = (function(v, value) {
   this.pe(v, value);
 });
+$p.jD = (function(v, value) {
+  this.p4(v, value);
+});
 var $d_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$ = new $TypeData().i($c_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuffer$, "trivalibs.graphics.math.cpu.vec4$package$Vec4Buffer$vec4MutableBuffer$", ({
-  ex: 1,
+  ej: 1,
   F: 1,
   W: 1,
   X: 1
@@ -12913,7 +12799,7 @@ function $m_Ltrivalibs_graphics_math_cpu_vec4$package$Vec4Buffer$vec4MutableBuff
 function $p_Ltrivalibs_graphics_shader_ShaderDef__buildWGSL__T__T__T__T__T__T__T__T($thiz, vertexInputStruct, vertexOutputStruct, fragmentOutputStruct, uniformDecls, vertexBody, fragmentBody, fragBuiltinParams) {
   var f$proxy1 = $p_Ltrivalibs_graphics_shader_ShaderDef__buildVertexMain__T__T($thiz, vertexBody);
   var g$proxy1 = $p_Ltrivalibs_graphics_shader_ShaderDef__buildFragmentMain__T__T__T($thiz, fragmentBody, fragBuiltinParams);
-  var all = [vertexInputStruct, vertexOutputStruct, fragmentOutputStruct, uniformDecls, $thiz.gC, f$proxy1, g$proxy1];
+  var all = [vertexInputStruct, vertexOutputStruct, fragmentOutputStruct, uniformDecls, $thiz.gB, f$proxy1, g$proxy1];
   var parts = [];
   var i = 0;
   while ((i < (all.length | 0))) {
@@ -12934,10 +12820,10 @@ function $p_Ltrivalibs_graphics_shader_ShaderDef__buildFragmentMain__T__T__T($th
 function $c_Ltrivalibs_graphics_shader_ShaderDef(vertexBody, fragmentBody, helperFns) {
   this.ac = null;
   this.ab = null;
-  this.gC = null;
+  this.gB = null;
   this.ac = vertexBody;
   this.ab = fragmentBody;
-  this.gC = helperFns;
+  this.gB = helperFns;
 }
 $p = $c_Ltrivalibs_graphics_shader_ShaderDef.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_shader_ShaderDef;
@@ -12952,10 +12838,10 @@ $p.r = (function() {
   return $m_s_util_hashing_MurmurHash3$().N(this, (-1488826029), true);
 });
 $p.p = (function(x$0) {
-  return ((this === x$0) || ((x$0 instanceof $c_Ltrivalibs_graphics_shader_ShaderDef) && (((this.ac === x$0.ac) && (this.ab === x$0.ab)) && (this.gC === x$0.gC))));
+  return ((this === x$0) || ((x$0 instanceof $c_Ltrivalibs_graphics_shader_ShaderDef) && (((this.ac === x$0.ac) && (this.ab === x$0.ab)) && (this.gB === x$0.gB))));
 });
 $p.m = (function() {
-  return $m_sr_ScalaRunTime$().mA(this);
+  return $m_sr_ScalaRunTime$().mt(this);
 });
 $p.v = (function() {
   return 3;
@@ -12974,7 +12860,7 @@ $p.o = (function(n) {
       break;
     }
     case 2: {
-      return this.gC;
+      return this.gB;
       break;
     }
     default: {
@@ -12983,26 +12869,14 @@ $p.o = (function(n) {
   }
 });
 function $isArrayOf_Ltrivalibs_graphics_shader_ShaderDef(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aV)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aQ)));
 }
 var $d_Ltrivalibs_graphics_shader_ShaderDef = new $TypeData().i($c_Ltrivalibs_graphics_shader_ShaderDef, "trivalibs.graphics.shader.ShaderDef", ({
-  aV: 1,
+  aQ: 1,
   b: 1,
   c: 1,
   a: 1
 }));
-function $ct_Ljava_io_FilterOutputStream__Ljava_io_OutputStream__($thiz, out) {
-  return $thiz;
-}
-/** @constructor */
-function $c_Ljava_io_FilterOutputStream() {
-}
-$p = $c_Ljava_io_FilterOutputStream.prototype = new $h_Ljava_io_OutputStream();
-$p.constructor = $c_Ljava_io_FilterOutputStream;
-/** @constructor */
-function $h_Ljava_io_FilterOutputStream() {
-}
-$h_Ljava_io_FilterOutputStream.prototype = $p;
 class $c_jl_ArithmeticException extends $c_jl_RuntimeException {
   constructor(s) {
     super();
@@ -13010,7 +12884,7 @@ class $c_jl_ArithmeticException extends $c_jl_RuntimeException {
   }
 }
 var $d_jl_ArithmeticException = new $TypeData().i($c_jl_ArithmeticException, "java.lang.ArithmeticException", ({
-  aY: 1,
+  aS: 1,
   k: 1,
   j: 1,
   f: 1,
@@ -13026,7 +12900,7 @@ function $f_jl_Byte__toString__T($thiz) {
   return ("" + $thiz);
 }
 var $d_jl_Byte = new $TypeData().i(0, "java.lang.Byte", ({
-  b1: 1,
+  aV: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -13043,7 +12917,7 @@ function $ct_jl_IllegalArgumentException__($thiz) {
 class $c_jl_IllegalArgumentException extends $c_jl_RuntimeException {
 }
 var $d_jl_IllegalArgumentException = new $TypeData().i($c_jl_IllegalArgumentException, "java.lang.IllegalArgumentException", ({
-  a6: 1,
+  a1: 1,
   k: 1,
   j: 1,
   f: 1,
@@ -13056,27 +12930,11 @@ class $c_jl_IndexOutOfBoundsException extends $c_jl_RuntimeException {
   }
 }
 var $d_jl_IndexOutOfBoundsException = new $TypeData().i($c_jl_IndexOutOfBoundsException, "java.lang.IndexOutOfBoundsException", ({
-  b6: 1,
+  b0: 1,
   k: 1,
   j: 1,
   f: 1,
   a: 1
-}));
-/** @constructor */
-function $c_jl_JSConsoleBasedPrintStream$DummyOutputStream() {
-}
-$p = $c_jl_JSConsoleBasedPrintStream$DummyOutputStream.prototype = new $h_Ljava_io_OutputStream();
-$p.constructor = $c_jl_JSConsoleBasedPrintStream$DummyOutputStream;
-/** @constructor */
-function $h_jl_JSConsoleBasedPrintStream$DummyOutputStream() {
-}
-$h_jl_JSConsoleBasedPrintStream$DummyOutputStream.prototype = $p;
-var $d_jl_JSConsoleBasedPrintStream$DummyOutputStream = new $TypeData().i($c_jl_JSConsoleBasedPrintStream$DummyOutputStream, "java.lang.JSConsoleBasedPrintStream$DummyOutputStream", ({
-  ba: 1,
-  a1: 1,
-  Z: 1,
-  a3: 1,
-  a0: 1
 }));
 function $ct_jl_NullPointerException__T__($thiz, s) {
   $ct_jl_Throwable__T__jl_Throwable__Z__Z__($thiz, s, null, true, true);
@@ -13089,14 +12947,14 @@ function $ct_jl_NullPointerException__($thiz) {
 class $c_jl_NullPointerException extends $c_jl_RuntimeException {
 }
 var $d_jl_NullPointerException = new $TypeData().i($c_jl_NullPointerException, "java.lang.NullPointerException", ({
-  bb: 1,
+  b3: 1,
   k: 1,
   j: 1,
   f: 1,
   a: 1
 }));
 function $isArrayOf_jl_SecurityException(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.bd)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.b5)));
 }
 function $f_jl_Short__equals__O__Z($thiz, that) {
   return Object.is($thiz, that);
@@ -13108,7 +12966,7 @@ function $f_jl_Short__toString__T($thiz) {
   return ("" + $thiz);
 }
 var $d_jl_Short = new $TypeData().i(0, "java.lang.Short", ({
-  be: 1,
+  b6: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -13121,7 +12979,7 @@ class $c_jl_UnsupportedOperationException extends $c_jl_RuntimeException {
   }
 }
 var $d_jl_UnsupportedOperationException = new $TypeData().i($c_jl_UnsupportedOperationException, "java.lang.UnsupportedOperationException", ({
-  bj: 1,
+  ba: 1,
   k: 1,
   j: 1,
   f: 1,
@@ -13134,46 +12992,46 @@ class $c_ju_NoSuchElementException extends $c_jl_RuntimeException {
   }
 }
 var $d_ju_NoSuchElementException = new $TypeData().i($c_ju_NoSuchElementException, "java.util.NoSuchElementException", ({
-  bo: 1,
+  bf: 1,
   k: 1,
   j: 1,
   f: 1,
   a: 1
 }));
 function $p_s_MatchError__objString__T($thiz) {
-  if ((!$thiz.jR)) {
-    if (($thiz.he === null)) {
+  if ((!$thiz.jM)) {
+    if (($thiz.hd === null)) {
       var $x_1 = "null";
     } else {
-      var this$1 = $thiz.he;
+      var this$1 = $thiz.hd;
       var cls = $objectGetClass(this$1);
-      var ofClass = ((cls === null) ? "of a JS class" : ("of class " + cls.i9.N));
+      var ofClass = ((cls === null) ? "of a JS class" : ("of class " + cls.i8.N));
       try {
-        var $x_1 = ((($thiz.he + " (") + ofClass) + ")");
+        var $x_1 = ((($thiz.hd + " (") + ofClass) + ")");
       } catch (e) {
         var $x_1 = ("an instance " + ofClass);
       }
     }
-    $thiz.jQ = $x_1;
-    $thiz.jR = true;
+    $thiz.jL = $x_1;
+    $thiz.jM = true;
   }
-  return $thiz.jQ;
+  return $thiz.jL;
 }
 class $c_s_MatchError extends $c_jl_RuntimeException {
   constructor(obj) {
     super();
-    this.he = null;
-    this.jQ = null;
-    this.jR = false;
-    this.he = obj;
+    this.hd = null;
+    this.jL = null;
+    this.jM = false;
+    this.hd = obj;
     $ct_jl_Throwable__T__jl_Throwable__Z__Z__(this, null, null, true, true);
   }
-  hZ() {
+  hY() {
     return $p_s_MatchError__objString__T(this);
   }
 }
 var $d_s_MatchError = new $TypeData().i($c_s_MatchError, "scala.MatchError", ({
-  bz: 1,
+  bp: 1,
   k: 1,
   j: 1,
   f: 1,
@@ -13181,15 +13039,15 @@ var $d_s_MatchError = new $TypeData().i($c_s_MatchError, "scala.MatchError", ({
 }));
 /** @constructor */
 function $c_s_Product$$anon$1(outer) {
-  this.gd = 0;
-  this.jT = 0;
-  this.jS = null;
+  this.gc = 0;
+  this.jO = 0;
+  this.jN = null;
   if ((outer === null)) {
     throw $ct_jl_NullPointerException__(new $c_jl_NullPointerException());
   }
-  this.jS = outer;
-  this.gd = 0;
-  this.jT = outer.v();
+  this.jN = outer;
+  this.gc = 0;
+  this.jO = outer.v();
 }
 $p = $c_s_Product$$anon$1.prototype = new $h_sc_AbstractIterator();
 $p.constructor = $c_s_Product$$anon$1;
@@ -13198,15 +13056,15 @@ function $h_s_Product$$anon$1() {
 }
 $h_s_Product$$anon$1.prototype = $p;
 $p.J = (function() {
-  return (this.gd < this.jT);
+  return (this.gc < this.jO);
 });
 $p.D = (function() {
-  var result = this.jS.o(this.gd);
-  this.gd = ((1 + this.gd) | 0);
+  var result = this.jN.o(this.gc);
+  this.gc = ((1 + this.gc) | 0);
   return result;
 });
 var $d_s_Product$$anon$1 = new $TypeData().i($c_s_Product$$anon$1, "scala.Product$$anon$1", ({
-  bB: 1,
+  br: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -13245,11 +13103,11 @@ $p.p = (function(x$1) {
   return ((this === x$1) || ((x$1 instanceof $c_T1) && $m_sr_BoxesRunTime$().c(this.fq, x$1.fq)));
 });
 function $isArrayOf_T1(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a8)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a3)));
 }
 var $d_T1 = new $TypeData().i($c_T1, "scala.Tuple1", ({
-  a8: 1,
-  bC: 1,
+  a3: 1,
+  bs: 1,
   c: 1,
   b: 1,
   a: 1
@@ -13305,13 +13163,13 @@ $p.m = (function() {
   return (((((((((((((((((((("(" + this.fr) + ",") + this.br) + ",") + this.bs) + ",") + this.bt) + ",") + this.bu) + ",") + this.bv) + ",") + this.bw) + ",") + this.bx) + ",") + this.by) + ",") + this.bq) + ")");
 });
 function $isArrayOf_T10(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a9)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a4)));
 }
 var $d_T10 = new $TypeData().i($c_T10, "scala.Tuple10", ({
-  a9: 1,
+  a4: 1,
   b: 1,
   c: 1,
-  bD: 1,
+  bt: 1,
   a: 1
 }));
 /** @constructor */
@@ -13367,13 +13225,13 @@ $p.m = (function() {
   return (((((((((((((((((((((("(" + this.fs) + ",") + this.bB) + ",") + this.bC) + ",") + this.bD) + ",") + this.bE) + ",") + this.bF) + ",") + this.bG) + ",") + this.bH) + ",") + this.bI) + ",") + this.bz) + ",") + this.bA) + ")");
 });
 function $isArrayOf_T11(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aa)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a5)));
 }
 var $d_T11 = new $TypeData().i($c_T11, "scala.Tuple11", ({
-  aa: 1,
+  a5: 1,
   b: 1,
   c: 1,
-  bE: 1,
+  bu: 1,
   a: 1
 }));
 /** @constructor */
@@ -13431,13 +13289,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((("(" + this.ft) + ",") + this.bM) + ",") + this.bN) + ",") + this.bO) + ",") + this.bP) + ",") + this.bQ) + ",") + this.bR) + ",") + this.bS) + ",") + this.bT) + ",") + this.bJ) + ",") + this.bK) + ",") + this.bL) + ")");
 });
 function $isArrayOf_T12(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ab)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a6)));
 }
 var $d_T12 = new $TypeData().i($c_T12, "scala.Tuple12", ({
-  ab: 1,
+  a6: 1,
   b: 1,
   c: 1,
-  bF: 1,
+  bv: 1,
   a: 1
 }));
 /** @constructor */
@@ -13497,13 +13355,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((("(" + this.fu) + ",") + this.bY) + ",") + this.bZ) + ",") + this.c0) + ",") + this.c1) + ",") + this.c2) + ",") + this.c3) + ",") + this.c4) + ",") + this.c5) + ",") + this.bU) + ",") + this.bV) + ",") + this.bW) + ",") + this.bX) + ")");
 });
 function $isArrayOf_T13(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ac)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a7)));
 }
 var $d_T13 = new $TypeData().i($c_T13, "scala.Tuple13", ({
-  ac: 1,
+  a7: 1,
   b: 1,
   c: 1,
-  bG: 1,
+  bw: 1,
   a: 1
 }));
 /** @constructor */
@@ -13565,13 +13423,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((("(" + this.fv) + ",") + this.cb) + ",") + this.cc) + ",") + this.cd) + ",") + this.ce) + ",") + this.cf) + ",") + this.cg) + ",") + this.ch) + ",") + this.ci) + ",") + this.c6) + ",") + this.c7) + ",") + this.c8) + ",") + this.c9) + ",") + this.ca) + ")");
 });
 function $isArrayOf_T14(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ad)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a8)));
 }
 var $d_T14 = new $TypeData().i($c_T14, "scala.Tuple14", ({
-  ad: 1,
+  a8: 1,
   b: 1,
   c: 1,
-  bH: 1,
+  bx: 1,
   a: 1
 }));
 /** @constructor */
@@ -13635,13 +13493,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((("(" + this.fw) + ",") + this.cp) + ",") + this.cq) + ",") + this.cr) + ",") + this.cs) + ",") + this.ct) + ",") + this.cu) + ",") + this.cv) + ",") + this.cw) + ",") + this.cj) + ",") + this.ck) + ",") + this.cl) + ",") + this.cm) + ",") + this.cn) + ",") + this.co) + ")");
 });
 function $isArrayOf_T15(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ae)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a9)));
 }
 var $d_T15 = new $TypeData().i($c_T15, "scala.Tuple15", ({
-  ae: 1,
+  a9: 1,
   b: 1,
   c: 1,
-  bI: 1,
+  by: 1,
   a: 1
 }));
 /** @constructor */
@@ -13707,13 +13565,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((("(" + this.fx) + ",") + this.cE) + ",") + this.cF) + ",") + this.cG) + ",") + this.cH) + ",") + this.cI) + ",") + this.cJ) + ",") + this.cK) + ",") + this.cL) + ",") + this.cx) + ",") + this.cy) + ",") + this.cz) + ",") + this.cA) + ",") + this.cB) + ",") + this.cC) + ",") + this.cD) + ")");
 });
 function $isArrayOf_T16(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.af)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aa)));
 }
 var $d_T16 = new $TypeData().i($c_T16, "scala.Tuple16", ({
-  af: 1,
+  aa: 1,
   b: 1,
   c: 1,
-  bJ: 1,
+  bz: 1,
   a: 1
 }));
 /** @constructor */
@@ -13781,13 +13639,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((("(" + this.fy) + ",") + this.cU) + ",") + this.cV) + ",") + this.cW) + ",") + this.cX) + ",") + this.cY) + ",") + this.cZ) + ",") + this.d0) + ",") + this.d1) + ",") + this.cM) + ",") + this.cN) + ",") + this.cO) + ",") + this.cP) + ",") + this.cQ) + ",") + this.cR) + ",") + this.cS) + ",") + this.cT) + ")");
 });
 function $isArrayOf_T17(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ag)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ab)));
 }
 var $d_T17 = new $TypeData().i($c_T17, "scala.Tuple17", ({
-  ag: 1,
+  ab: 1,
   b: 1,
   c: 1,
-  bK: 1,
+  bA: 1,
   a: 1
 }));
 /** @constructor */
@@ -13857,13 +13715,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((((("(" + this.fz) + ",") + this.db) + ",") + this.dc) + ",") + this.dd) + ",") + this.de) + ",") + this.df) + ",") + this.dg) + ",") + this.dh) + ",") + this.di) + ",") + this.d2) + ",") + this.d3) + ",") + this.d4) + ",") + this.d5) + ",") + this.d6) + ",") + this.d7) + ",") + this.d8) + ",") + this.d9) + ",") + this.da) + ")");
 });
 function $isArrayOf_T18(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ah)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ac)));
 }
 var $d_T18 = new $TypeData().i($c_T18, "scala.Tuple18", ({
-  ah: 1,
+  ac: 1,
   b: 1,
   c: 1,
-  bL: 1,
+  bB: 1,
   a: 1
 }));
 /** @constructor */
@@ -13935,13 +13793,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((((((("(" + this.fA) + ",") + this.du) + ",") + this.dv) + ",") + this.dw) + ",") + this.dx) + ",") + this.dy) + ",") + this.dz) + ",") + this.dA) + ",") + this.dB) + ",") + this.dj) + ",") + this.dk) + ",") + this.dl) + ",") + this.dm) + ",") + this.dn) + ",") + this.dp) + ",") + this.dq) + ",") + this.dr) + ",") + this.ds) + ",") + this.dt) + ")");
 });
 function $isArrayOf_T19(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ai)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ad)));
 }
 var $d_T19 = new $TypeData().i($c_T19, "scala.Tuple19", ({
-  ai: 1,
+  ad: 1,
   b: 1,
   c: 1,
-  bM: 1,
+  bC: 1,
   a: 1
 }));
 /** @constructor */
@@ -13979,11 +13837,11 @@ $p.p = (function(x$1) {
   return ((this === x$1) || ((x$1 instanceof $c_T2) && ($m_sr_BoxesRunTime$().c(this.E, x$1.E) && $m_sr_BoxesRunTime$().c(this.af, x$1.af))));
 });
 function $isArrayOf_T2(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aj)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ae)));
 }
 var $d_T2 = new $TypeData().i($c_T2, "scala.Tuple2", ({
-  aj: 1,
-  bN: 1,
+  ae: 1,
+  bD: 1,
   c: 1,
   b: 1,
   a: 1
@@ -14059,13 +13917,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((((((((("(" + this.fB) + ",") + this.dM) + ",") + this.dO) + ",") + this.dP) + ",") + this.dQ) + ",") + this.dR) + ",") + this.dS) + ",") + this.dT) + ",") + this.dU) + ",") + this.dC) + ",") + this.dD) + ",") + this.dE) + ",") + this.dF) + ",") + this.dG) + ",") + this.dH) + ",") + this.dI) + ",") + this.dJ) + ",") + this.dK) + ",") + this.dL) + ",") + this.dN) + ")");
 });
 function $isArrayOf_T20(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ak)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.af)));
 }
 var $d_T20 = new $TypeData().i($c_T20, "scala.Tuple20", ({
-  ak: 1,
+  af: 1,
   b: 1,
   c: 1,
-  bO: 1,
+  bE: 1,
   a: 1
 }));
 /** @constructor */
@@ -14141,13 +13999,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((((((((((("(" + this.fC) + ",") + this.e5) + ",") + this.e8) + ",") + this.e9) + ",") + this.ea) + ",") + this.eb) + ",") + this.ec) + ",") + this.ed) + ",") + this.ee) + ",") + this.dV) + ",") + this.dW) + ",") + this.dX) + ",") + this.dY) + ",") + this.dZ) + ",") + this.e0) + ",") + this.e1) + ",") + this.e2) + ",") + this.e3) + ",") + this.e4) + ",") + this.e6) + ",") + this.e7) + ")");
 });
 function $isArrayOf_T21(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.al)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ag)));
 }
 var $d_T21 = new $TypeData().i($c_T21, "scala.Tuple21", ({
-  al: 1,
+  ag: 1,
   b: 1,
   c: 1,
-  bP: 1,
+  bF: 1,
   a: 1
 }));
 /** @constructor */
@@ -14225,13 +14083,13 @@ $p.m = (function() {
   return (((((((((((((((((((((((((((((((((((((((((((("(" + this.fD) + ",") + this.ep) + ",") + this.et) + ",") + this.eu) + ",") + this.ev) + ",") + this.ew) + ",") + this.ex) + ",") + this.ey) + ",") + this.ez) + ",") + this.ef) + ",") + this.eg) + ",") + this.eh) + ",") + this.ei) + ",") + this.ej) + ",") + this.ek) + ",") + this.el) + ",") + this.em) + ",") + this.en) + ",") + this.eo) + ",") + this.eq) + ",") + this.er) + ",") + this.es) + ")");
 });
 function $isArrayOf_T22(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.am)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ah)));
 }
 var $d_T22 = new $TypeData().i($c_T22, "scala.Tuple22", ({
-  am: 1,
+  ah: 1,
   b: 1,
   c: 1,
-  bQ: 1,
+  bG: 1,
   a: 1
 }));
 /** @constructor */
@@ -14271,13 +14129,13 @@ $p.m = (function() {
   return (((((("(" + this.b7) + ",") + this.aV) + ",") + this.aW) + ")");
 });
 function $isArrayOf_T3(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.an)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ai)));
 }
 var $d_T3 = new $TypeData().i($c_T3, "scala.Tuple3", ({
-  an: 1,
+  ai: 1,
   b: 1,
   c: 1,
-  bR: 1,
+  bH: 1,
   a: 1
 }));
 /** @constructor */
@@ -14319,13 +14177,13 @@ $p.m = (function() {
   return (((((((("(" + this.eA) + ",") + this.b8) + ",") + this.b9) + ",") + this.ba) + ")");
 });
 function $isArrayOf_T4(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ao)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aj)));
 }
 var $d_T4 = new $TypeData().i($c_T4, "scala.Tuple4", ({
-  ao: 1,
+  aj: 1,
   b: 1,
   c: 1,
-  bS: 1,
+  bI: 1,
   a: 1
 }));
 /** @constructor */
@@ -14369,13 +14227,13 @@ $p.m = (function() {
   return (((((((((("(" + this.fE) + ",") + this.eB) + ",") + this.eC) + ",") + this.eD) + ",") + this.eE) + ")");
 });
 function $isArrayOf_T5(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ap)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ak)));
 }
 var $d_T5 = new $TypeData().i($c_T5, "scala.Tuple5", ({
-  ap: 1,
+  ak: 1,
   b: 1,
   c: 1,
-  bT: 1,
+  bJ: 1,
   a: 1
 }));
 /** @constructor */
@@ -14421,13 +14279,13 @@ $p.m = (function() {
   return (((((((((((("(" + this.fF) + ",") + this.eF) + ",") + this.eG) + ",") + this.eH) + ",") + this.eI) + ",") + this.eJ) + ")");
 });
 function $isArrayOf_T6(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aq)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.al)));
 }
 var $d_T6 = new $TypeData().i($c_T6, "scala.Tuple6", ({
-  aq: 1,
+  al: 1,
   b: 1,
   c: 1,
-  bU: 1,
+  bK: 1,
   a: 1
 }));
 /** @constructor */
@@ -14475,13 +14333,13 @@ $p.m = (function() {
   return (((((((((((((("(" + this.fG) + ",") + this.eK) + ",") + this.eL) + ",") + this.eM) + ",") + this.eN) + ",") + this.eO) + ",") + this.eP) + ")");
 });
 function $isArrayOf_T7(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ar)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.am)));
 }
 var $d_T7 = new $TypeData().i($c_T7, "scala.Tuple7", ({
-  ar: 1,
+  am: 1,
   b: 1,
   c: 1,
-  bV: 1,
+  bL: 1,
   a: 1
 }));
 /** @constructor */
@@ -14531,13 +14389,13 @@ $p.m = (function() {
   return (((((((((((((((("(" + this.fH) + ",") + this.eQ) + ",") + this.eR) + ",") + this.eS) + ",") + this.eT) + ",") + this.eU) + ",") + this.eV) + ",") + this.eW) + ")");
 });
 function $isArrayOf_T8(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.as)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.an)));
 }
 var $d_T8 = new $TypeData().i($c_T8, "scala.Tuple8", ({
-  as: 1,
+  an: 1,
   b: 1,
   c: 1,
-  bW: 1,
+  bM: 1,
   a: 1
 }));
 /** @constructor */
@@ -14589,13 +14447,13 @@ $p.m = (function() {
   return (((((((((((((((((("(" + this.fI) + ",") + this.eX) + ",") + this.eY) + ",") + this.eZ) + ",") + this.f0) + ",") + this.f1) + ",") + this.f2) + ",") + this.f3) + ",") + this.f4) + ")");
 });
 function $isArrayOf_T9(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.at)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ao)));
 }
 var $d_T9 = new $TypeData().i($c_T9, "scala.Tuple9", ({
-  at: 1,
+  ao: 1,
   b: 1,
   c: 1,
-  bX: 1,
+  bN: 1,
   a: 1
 }));
 function $f_sc_Iterable__toString__T($thiz) {
@@ -14613,20 +14471,20 @@ $h_sc_Iterator$$anon$19.prototype = $p;
 $p.J = (function() {
   return false;
 });
-$p.ox = (function() {
+$p.op = (function() {
   throw new $c_ju_NoSuchElementException("next on empty iterator");
 });
 $p.ae = (function() {
   return 0;
 });
 $p.D = (function() {
-  this.ox();
+  this.op();
 });
-$p.i6 = (function(from, until) {
+$p.i5 = (function(from, until) {
   return this;
 });
 var $d_sc_Iterator$$anon$19 = new $TypeData().i($c_sc_Iterator$$anon$19, "scala.collection.Iterator$$anon$19", ({
-  c7: 1,
+  bX: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -14644,9 +14502,9 @@ function $p_sc_Iterator$ConcatIterator__merge$1__V($thiz) {
         }
         var x$proxy10 = c.aw;
         if ((x$proxy10 === null)) {
-          $m_sr_Scala3RunTime$().i3();
+          $m_sr_Scala3RunTime$().i2();
         }
-        x$proxy10.gf = $thiz.ax;
+        x$proxy10.ge = $thiz.ax;
         $thiz.ax = c.ax;
       }
     } else {
@@ -14661,15 +14519,15 @@ function $p_sc_Iterator$ConcatIterator__advance$1__Z($thiz) {
       $thiz.aw = null;
       return false;
     } else {
-      $thiz.aj = $thiz.ax.nG();
+      $thiz.aj = $thiz.ax.nz();
       if (($thiz.aw === $thiz.ax)) {
         var x$proxy12 = $thiz.aw;
         if ((x$proxy12 === null)) {
-          $m_sr_Scala3RunTime$().i3();
+          $m_sr_Scala3RunTime$().i2();
         }
-        $thiz.aw = x$proxy12.gf;
+        $thiz.aw = x$proxy12.ge;
       }
-      $thiz.ax = $thiz.ax.gf;
+      $thiz.ax = $thiz.ax.ge;
       $p_sc_Iterator$ConcatIterator__merge$1__V($thiz);
       if ($thiz.bc) {
         return true;
@@ -14719,14 +14577,14 @@ $p.D = (function() {
     this.bc = false;
     var x$proxy13 = this.aj;
     if ((x$proxy13 === null)) {
-      $m_sr_Scala3RunTime$().i3();
+      $m_sr_Scala3RunTime$().i2();
     }
     return x$proxy13.D();
   } else {
     return $m_sc_Iterator$().aY.D();
   }
 });
-$p.n0 = (function(that) {
+$p.mT = (function(that) {
   var c = new $c_sc_Iterator$ConcatIteratorCell(that, null);
   if ((this.ax === null)) {
     this.ax = c;
@@ -14734,9 +14592,9 @@ $p.n0 = (function(that) {
   } else {
     var x$proxy14 = this.aw;
     if ((x$proxy14 === null)) {
-      $m_sr_Scala3RunTime$().i3();
+      $m_sr_Scala3RunTime$().i2();
     }
-    x$proxy14.gf = c;
+    x$proxy14.ge = c;
     this.aw = c;
   }
   if ((this.aj === null)) {
@@ -14745,10 +14603,10 @@ $p.n0 = (function(that) {
   return this;
 });
 function $isArrayOf_sc_Iterator$ConcatIterator(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ay)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.at)));
 }
 var $d_sc_Iterator$ConcatIterator = new $TypeData().i($c_sc_Iterator$ConcatIterator, "scala.collection.Iterator$ConcatIterator", ({
-  ay: 1,
+  at: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -14815,7 +14673,7 @@ $p.D = (function() {
     return ((this.am < 0) ? this.bd.D() : $m_sc_Iterator$().aY.D());
   }
 });
-$p.i6 = (function(from, until) {
+$p.i5 = (function(from, until) {
   var lo = ((from > 0) ? from : 0);
   if ((until < 0)) {
     var rest = $p_sc_Iterator$SliceIterator__adjustedBound$1__I__I(this, lo);
@@ -14842,7 +14700,7 @@ $p.i6 = (function(from, until) {
   }
 });
 var $d_sc_Iterator$SliceIterator = new $TypeData().i($c_sc_Iterator$SliceIterator, "scala.collection.Iterator$SliceIterator", ({
-  c9: 1,
+  bZ: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -14852,11 +14710,11 @@ function $f_sc_LinearSeqOps__apply__I__O($thiz, n) {
   if ((n < 0)) {
     throw new $c_jl_IndexOutOfBoundsException(("" + n));
   }
-  var skipped = $thiz.nd(n);
+  var skipped = $thiz.n6(n);
   if (skipped.Z()) {
     throw new $c_jl_IndexOutOfBoundsException(("" + n));
   }
-  return skipped.js();
+  return skipped.jq();
 }
 function $f_sc_LinearSeqOps__sameElements__sc_IterableOnce__Z($thiz, that) {
   return ($is_sc_LinearSeq(that) ? $p_sc_LinearSeqOps__linearSeqEq$1__sc_LinearSeq__sc_LinearSeq__Z($thiz, $thiz, that) : $f_sc_SeqOps__sameElements__sc_IterableOnce__Z($thiz, that));
@@ -14868,9 +14726,9 @@ function $p_sc_LinearSeqOps__linearSeqEq$1__sc_LinearSeq__sc_LinearSeq__Z($thiz,
     if ((a$tailLocal1 === b$tailLocal1)) {
       return true;
     } else {
-      if ((((!a$tailLocal1.Z()) && (!b$tailLocal1.Z())) && $m_sr_BoxesRunTime$().c(a$tailLocal1.js(), b$tailLocal1.js()))) {
-        var a$tailLocal1$tmp1 = a$tailLocal1.jA();
-        var b$tailLocal1$tmp1 = b$tailLocal1.jA();
+      if ((((!a$tailLocal1.Z()) && (!b$tailLocal1.Z())) && $m_sr_BoxesRunTime$().c(a$tailLocal1.jq(), b$tailLocal1.jq()))) {
+        var a$tailLocal1$tmp1 = a$tailLocal1.jy();
+        var b$tailLocal1$tmp1 = b$tailLocal1.jy();
         a$tailLocal1 = a$tailLocal1$tmp1;
         b$tailLocal1 = b$tailLocal1$tmp1;
         continue;
@@ -14892,11 +14750,11 @@ function $h_sci_List$() {
 }
 $h_sci_List$.prototype = $p;
 var $d_sci_List$ = new $TypeData().i($c_sci_List$, "scala.collection.immutable.List$", ({
-  co: 1,
+  ce: 1,
   a: 1,
-  ax: 1,
-  cb: 1,
-  cf: 1
+  as: 1,
+  c1: 1,
+  c5: 1
 }));
 var $n_sci_List$;
 function $m_sci_List$() {
@@ -14907,12 +14765,12 @@ function $m_sci_List$() {
 }
 /** @constructor */
 function $c_sr_ScalaRunTime$$anon$1(x$1) {
-  this.k8 = null;
-  this.gh = 0;
-  this.k7 = 0;
-  this.k8 = x$1;
-  this.gh = 0;
-  this.k7 = x$1.v();
+  this.k3 = null;
+  this.gg = 0;
+  this.k2 = 0;
+  this.k3 = x$1;
+  this.gg = 0;
+  this.k2 = x$1.v();
 }
 $p = $c_sr_ScalaRunTime$$anon$1.prototype = new $h_sc_AbstractIterator();
 $p.constructor = $c_sr_ScalaRunTime$$anon$1;
@@ -14921,15 +14779,15 @@ function $h_sr_ScalaRunTime$$anon$1() {
 }
 $h_sr_ScalaRunTime$$anon$1.prototype = $p;
 $p.J = (function() {
-  return (this.gh < this.k7);
+  return (this.gg < this.k2);
 });
 $p.D = (function() {
-  var result = this.k8.o(this.gh);
-  this.gh = ((1 + this.gh) | 0);
+  var result = this.k3.o(this.gg);
+  this.gg = ((1 + this.gg) | 0);
   return result;
 });
 var $d_sr_ScalaRunTime$$anon$1 = new $TypeData().i($c_sr_ScalaRunTime$$anon$1, "scala.runtime.ScalaRunTime$$anon$1", ({
-  cZ: 1,
+  cO: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -14954,10 +14812,10 @@ function $f_jl_Double__toString__T($thiz) {
   return ("" + $thiz);
 }
 function $isArrayOf_jl_Double(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a5)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a0)));
 }
 var $d_jl_Double = new $TypeData().i(0, "java.lang.Double", ({
-  a5: 1,
+  a0: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -14984,7 +14842,7 @@ function $f_jl_Float__toString__T($thiz) {
   return ("" + $thiz);
 }
 var $d_jl_Float = new $TypeData().i(0, "java.lang.Float", ({
-  b5: 1,
+  aZ: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -15001,7 +14859,7 @@ function $f_jl_Integer__toString__T($thiz) {
   return ("" + $thiz);
 }
 var $d_jl_Integer = new $TypeData().i(0, "java.lang.Integer", ({
-  b7: 1,
+  b1: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -15022,13 +14880,13 @@ function $f_jl_Long__hashCode__I($thiz, $thizhi) {
   return ($thiz ^ $thizhi);
 }
 function $f_jl_Long__toString__T($thiz, $thizhi) {
-  return $m_RTLong$().mj($thiz, $thizhi);
+  return $m_RTLong$().md($thiz, $thizhi);
 }
 function $isArrayOf_jl_Long(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a7)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.a2)));
 }
 var $d_jl_Long = new $TypeData().i(0, "java.lang.Long", ({
-  a7: 1,
+  a2: 1,
   m: 1,
   a: 1,
   i: 1,
@@ -15042,8 +14900,8 @@ class $c_jl_NumberFormatException extends $c_jl_IllegalArgumentException {
   }
 }
 var $d_jl_NumberFormatException = new $TypeData().i($c_jl_NumberFormatException, "java.lang.NumberFormatException", ({
-  bc: 1,
-  a6: 1,
+  b4: 1,
+  a1: 1,
   k: 1,
   j: 1,
   f: 1,
@@ -15063,14 +14921,14 @@ function $f_T__equals__O__Z($thiz, that) {
   return ($thiz === that);
 }
 function $f_T__indexOf__I__I($thiz, ch) {
-  var str = $m_jl_Character$().p6(ch);
+  var str = $m_jl_Character$().oW(ch);
   return ($thiz.indexOf(str) | 0);
 }
 function $f_T__toString__T($thiz) {
   return $thiz;
 }
 var $d_T = new $TypeData().i(0, "java.lang.String", ({
-  bf: 1,
+  b7: 1,
   a: 1,
   i: 1,
   G: 1,
@@ -15086,10 +14944,10 @@ $p.constructor = $c_sc_AbstractIterable;
 function $h_sc_AbstractIterable() {
 }
 $h_sc_AbstractIterable.prototype = $p;
-$p.gM = (function(f) {
+$p.gL = (function(f) {
   $f_sc_IterableOnceOps__foreach__F1__V(this, f);
 });
-$p.jj = (function(b, start, sep, end) {
+$p.jh = (function(b, start, sep, end) {
   return $f_sc_IterableOnceOps__addString__scm_StringBuilder__T__T__T__scm_StringBuilder(this, b, start, sep, end);
 });
 $p.g8 = (function() {
@@ -15097,12 +14955,12 @@ $p.g8 = (function() {
 });
 /** @constructor */
 function $c_sc_ArrayOps$ArrayIterator(xs) {
-  this.hf = null;
+  this.he = null;
   this.aX = 0;
-  this.ge = 0;
-  this.hf = xs;
+  this.gd = 0;
+  this.he = xs;
   this.aX = 0;
-  this.ge = $m_jl_reflect_Array$().gO(this.hf);
+  this.gd = $m_jl_reflect_Array$().gN(this.he);
 }
 $p = $c_sc_ArrayOps$ArrayIterator.prototype = new $h_sc_AbstractIterator();
 $p.constructor = $c_sc_ArrayOps$ArrayIterator;
@@ -15111,26 +14969,26 @@ function $h_sc_ArrayOps$ArrayIterator() {
 }
 $h_sc_ArrayOps$ArrayIterator.prototype = $p;
 $p.ae = (function() {
-  return ((this.ge - this.aX) | 0);
+  return ((this.gd - this.aX) | 0);
 });
 $p.J = (function() {
-  return (this.aX < this.ge);
+  return (this.aX < this.gd);
 });
 $p.D = (function() {
-  if ((this.aX >= $m_jl_reflect_Array$().gO(this.hf))) {
+  if ((this.aX >= $m_jl_reflect_Array$().gN(this.he))) {
     $m_sc_Iterator$().aY.D();
   }
-  var r = $m_sr_ScalaRunTime$().g7(this.hf, this.aX);
+  var r = $m_sr_ScalaRunTime$().g7(this.he, this.aX);
   this.aX = ((1 + this.aX) | 0);
   return r;
 });
-$p.hY = (function(n) {
+$p.hX = (function(n) {
   if ((n > 0)) {
     var newPos = ((this.aX + n) | 0);
     if ((newPos < 0)) {
-      var $x_1 = this.ge;
+      var $x_1 = this.gd;
     } else {
-      var a = this.ge;
+      var a = this.gd;
       var $x_1 = ((a < newPos) ? a : newPos);
     }
     this.aX = $x_1;
@@ -15138,7 +14996,7 @@ $p.hY = (function(n) {
   return this;
 });
 var $d_sc_ArrayOps$ArrayIterator = new $TypeData().i($c_sc_ArrayOps$ArrayIterator, "scala.collection.ArrayOps$ArrayIterator", ({
-  c1: 1,
+  bR: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -15150,10 +15008,10 @@ function $p_sc_IndexedSeqView$IndexedSeqViewIterator__formatRange$1__I__I($thiz,
 }
 /** @constructor */
 function $c_sc_IndexedSeqView$IndexedSeqViewIterator(self) {
-  this.jU = null;
+  this.jP = null;
   this.bb = 0;
   this.aE = 0;
-  this.jU = self;
+  this.jP = self;
   this.bb = 0;
   this.aE = self.K();
 }
@@ -15171,7 +15029,7 @@ $p.J = (function() {
 });
 $p.D = (function() {
   if ((this.aE > 0)) {
-    var r = this.jU.Y(this.bb);
+    var r = this.jP.Y(this.bb);
     this.bb = ((1 + this.bb) | 0);
     this.aE = ((this.aE - 1) | 0);
     return r;
@@ -15179,7 +15037,7 @@ $p.D = (function() {
     return $m_sc_Iterator$().aY.D();
   }
 });
-$p.hY = (function(n) {
+$p.hX = (function(n) {
   if ((n > 0)) {
     this.bb = ((this.bb + n) | 0);
     var b = ((this.aE - n) | 0);
@@ -15187,7 +15045,7 @@ $p.hY = (function(n) {
   }
   return this;
 });
-$p.i6 = (function(from, until) {
+$p.i5 = (function(from, until) {
   var formatFrom = $p_sc_IndexedSeqView$IndexedSeqViewIterator__formatRange$1__I__I(this, from);
   var formatUntil = $p_sc_IndexedSeqView$IndexedSeqViewIterator__formatRange$1__I__I(this, until);
   var b = ((formatUntil - formatFrom) | 0);
@@ -15196,7 +15054,7 @@ $p.i6 = (function(from, until) {
   return this;
 });
 var $d_sc_IndexedSeqView$IndexedSeqViewIterator = new $TypeData().i($c_sc_IndexedSeqView$IndexedSeqViewIterator, "scala.collection.IndexedSeqView$IndexedSeqViewIterator", ({
-  c5: 1,
+  bV: 1,
   n: 1,
   d: 1,
   e: 1,
@@ -15204,16 +15062,16 @@ var $d_sc_IndexedSeqView$IndexedSeqViewIterator = new $TypeData().i($c_sc_Indexe
   a: 1
 }));
 function $p_sci_ArraySeq$__emptyImpl__sci_ArraySeq$ofRef($thiz) {
-  if ((!$thiz.jY)) {
-    $thiz.jX = new $c_sci_ArraySeq$ofRef(new ($d_sr_Nothing$.r().C)(0));
-    $thiz.jY = true;
+  if ((!$thiz.jT)) {
+    $thiz.jS = new $c_sci_ArraySeq$ofRef(new ($d_sr_Nothing$.r().C)(0));
+    $thiz.jT = true;
   }
-  return $thiz.jX;
+  return $thiz.jS;
 }
 /** @constructor */
 function $c_sci_ArraySeq$() {
-  this.jX = null;
-  this.jY = false;
+  this.jS = null;
+  this.jT = false;
 }
 $p = $c_sci_ArraySeq$.prototype = new $h_O();
 $p.constructor = $c_sci_ArraySeq$;
@@ -15222,12 +15080,12 @@ function $h_sci_ArraySeq$() {
 }
 $h_sci_ArraySeq$.prototype = $p;
 var $d_sci_ArraySeq$ = new $TypeData().i($c_sci_ArraySeq$, "scala.collection.immutable.ArraySeq$", ({
-  ck: 1,
+  ca: 1,
   a: 1,
-  aw: 1,
-  au: 1,
-  av: 1,
-  az: 1
+  ar: 1,
+  ap: 1,
+  aq: 1,
+  au: 1
 }));
 var $n_sci_ArraySeq$;
 function $m_sci_ArraySeq$() {
@@ -15238,9 +15096,9 @@ function $m_sci_ArraySeq$() {
 }
 /** @constructor */
 function $c_scm_ArraySeq$() {
-  this.k0 = null;
+  this.jV = null;
   $n_scm_ArraySeq$ = this;
-  this.k0 = new $c_scm_ArraySeq$ofRef(new $ac_O(0));
+  this.jV = new $c_scm_ArraySeq$ofRef(new $ac_O(0));
 }
 $p = $c_scm_ArraySeq$.prototype = new $h_O();
 $p.constructor = $c_scm_ArraySeq$;
@@ -15249,12 +15107,12 @@ function $h_scm_ArraySeq$() {
 }
 $h_scm_ArraySeq$.prototype = $p;
 var $d_scm_ArraySeq$ = new $TypeData().i($c_scm_ArraySeq$, "scala.collection.mutable.ArraySeq$", ({
-  cr: 1,
+  ch: 1,
   a: 1,
-  aw: 1,
-  au: 1,
-  av: 1,
-  az: 1
+  ar: 1,
+  ap: 1,
+  aq: 1,
+  au: 1
 }));
 var $n_scm_ArraySeq$;
 function $m_scm_ArraySeq$() {
@@ -15263,19 +15121,6 @@ function $m_scm_ArraySeq$() {
   }
   return $n_scm_ArraySeq$;
 }
-function $ct_Ljava_io_PrintStream__Ljava_io_OutputStream__Z__Ljava_nio_charset_Charset__($thiz, _out, autoFlush, charset) {
-  $ct_Ljava_io_FilterOutputStream__Ljava_io_OutputStream__($thiz, _out);
-  return $thiz;
-}
-/** @constructor */
-function $c_Ljava_io_PrintStream() {
-}
-$p = $c_Ljava_io_PrintStream.prototype = new $h_Ljava_io_FilterOutputStream();
-$p.constructor = $c_Ljava_io_PrintStream;
-/** @constructor */
-function $h_Ljava_io_PrintStream() {
-}
-$h_Ljava_io_PrintStream.prototype = $p;
 /** @constructor */
 function $c_T$package$EmptyTuple$() {
 }
@@ -15304,13 +15149,13 @@ $p.m = (function() {
   return "()";
 });
 var $d_T$package$EmptyTuple$ = new $TypeData().i($c_T$package$EmptyTuple$, "scala.Tuple$package$EmptyTuple$", ({
-  bY: 1,
+  bO: 1,
   b: 1,
   c: 1,
   a: 1,
-  cx: 1,
-  cy: 1,
-  cz: 1
+  cn: 1,
+  co: 1,
+  cp: 1
 }));
 var $n_T$package$EmptyTuple$;
 function $m_T$package$EmptyTuple$() {
@@ -15338,7 +15183,7 @@ class $c_sjs_js_JavaScriptException extends $c_jl_RuntimeException {
     this.aG = exception;
     $ct_jl_Throwable__T__jl_Throwable__Z__Z__(this, null, null, true, true);
   }
-  hZ() {
+  hY() {
     return $dp_toString__T(this.aG);
   }
   A() {
@@ -15348,7 +15193,7 @@ class $c_sjs_js_JavaScriptException extends $c_jl_RuntimeException {
     return 1;
   }
   o(x$1) {
-    return ((x$1 === 0) ? this.aG : $m_sr_Statics$().nL(x$1));
+    return ((x$1 === 0) ? this.aG : $m_sr_Statics$().nE(x$1));
   }
   C() {
     return new $c_sr_ScalaRunTime$$anon$1(this);
@@ -15361,68 +15206,16 @@ class $c_sjs_js_JavaScriptException extends $c_jl_RuntimeException {
   }
 }
 function $isArrayOf_sjs_js_JavaScriptException(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aL)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aG)));
 }
 var $d_sjs_js_JavaScriptException = new $TypeData().i($c_sjs_js_JavaScriptException, "scala.scalajs.js.JavaScriptException", ({
-  aL: 1,
+  aG: 1,
   k: 1,
   j: 1,
   f: 1,
   a: 1,
   c: 1,
   b: 1
-}));
-function $p_jl_JSConsoleBasedPrintStream__doWriteLine__T__V($thiz, line) {
-  if (((typeof console) !== "undefined")) {
-    if (($thiz.jK && (!(!(!(!console.error)))))) {
-      console.error(line);
-    } else {
-      console.log(line);
-    }
-  }
-}
-/** @constructor */
-function $c_jl_JSConsoleBasedPrintStream(isErr) {
-  this.jK = false;
-  this.gc = null;
-  this.jK = isErr;
-  $ct_Ljava_io_PrintStream__Ljava_io_OutputStream__Z__Ljava_nio_charset_Charset__(this, new $c_jl_JSConsoleBasedPrintStream$DummyOutputStream(), false, null);
-  this.gc = "";
-}
-$p = $c_jl_JSConsoleBasedPrintStream.prototype = new $h_Ljava_io_PrintStream();
-$p.constructor = $c_jl_JSConsoleBasedPrintStream;
-/** @constructor */
-function $h_jl_JSConsoleBasedPrintStream() {
-}
-$h_jl_JSConsoleBasedPrintStream.prototype = $p;
-$p.nO = (function(s) {
-  var rest = s;
-  while ((rest !== "")) {
-    var this$1 = rest;
-    var nlPos = (this$1.indexOf("\n") | 0);
-    if ((nlPos < 0)) {
-      this.gc = (("" + this.gc) + rest);
-      rest = "";
-    } else {
-      var $x_1 = this.gc;
-      var this$2 = rest;
-      $p_jl_JSConsoleBasedPrintStream__doWriteLine__T__V(this, (("" + $x_1) + this$2.substring(0, nlPos)));
-      this.gc = "";
-      var this$3 = rest;
-      var beginIndex = ((1 + nlPos) | 0);
-      rest = this$3.substring(beginIndex);
-    }
-  }
-});
-var $d_jl_JSConsoleBasedPrintStream = new $TypeData().i($c_jl_JSConsoleBasedPrintStream, "java.lang.JSConsoleBasedPrintStream", ({
-  b9: 1,
-  aX: 1,
-  aW: 1,
-  a1: 1,
-  Z: 1,
-  a3: 1,
-  a0: 1,
-  a2: 1
 }));
 function $p_sc_StrictOptimizedLinearSeqOps__loop$2__I__sc_LinearSeq__sc_LinearSeq($thiz, n, s) {
   var s$tailLocal1 = s;
@@ -15432,7 +15225,7 @@ function $p_sc_StrictOptimizedLinearSeqOps__loop$2__I__sc_LinearSeq__sc_LinearSe
       return s$tailLocal1;
     } else {
       var n$tailLocal1$tmp1 = ((n$tailLocal1 - 1) | 0);
-      var s$tailLocal1$tmp1 = s$tailLocal1.jA();
+      var s$tailLocal1$tmp1 = s$tailLocal1.jy();
       n$tailLocal1 = n$tailLocal1$tmp1;
       s$tailLocal1 = s$tailLocal1$tmp1;
     }
@@ -15440,7 +15233,7 @@ function $p_sc_StrictOptimizedLinearSeqOps__loop$2__I__sc_LinearSeq__sc_LinearSe
 }
 /** @constructor */
 function $c_s_reflect_ManifestFactory$PhantomManifest() {
-  this.ic = null;
+  this.ib = null;
 }
 $p = $c_s_reflect_ManifestFactory$PhantomManifest.prototype = new $h_s_reflect_ManifestFactory$ClassTypeManifest();
 $p.constructor = $c_s_reflect_ManifestFactory$PhantomManifest;
@@ -15449,7 +15242,7 @@ function $h_s_reflect_ManifestFactory$PhantomManifest() {
 }
 $h_s_reflect_ManifestFactory$PhantomManifest.prototype = $p;
 $p.m = (function() {
-  return this.ic;
+  return this.ib;
 });
 $p.p = (function(that) {
   return (this === that);
@@ -15471,8 +15264,8 @@ $p.m = (function() {
 });
 /** @constructor */
 function $c_s_reflect_ManifestFactory$ObjectManifest$() {
-  this.ic = null;
-  this.ic = "Object";
+  this.ib = null;
+  this.ib = "Object";
   $m_sci_Nil$();
 }
 $p = $c_s_reflect_ManifestFactory$ObjectManifest$.prototype = new $h_s_reflect_ManifestFactory$PhantomManifest();
@@ -15482,15 +15275,15 @@ function $h_s_reflect_ManifestFactory$ObjectManifest$() {
 }
 $h_s_reflect_ManifestFactory$ObjectManifest$.prototype = $p;
 var $d_s_reflect_ManifestFactory$ObjectManifest$ = new $TypeData().i($c_s_reflect_ManifestFactory$ObjectManifest$, "scala.reflect.ManifestFactory$ObjectManifest$", ({
-  cG: 1,
-  cH: 1,
-  cF: 1,
+  cv: 1,
+  cw: 1,
+  cu: 1,
   a: 1,
-  cI: 1,
-  cC: 1,
+  cx: 1,
+  cr: 1,
   b: 1,
-  cD: 1,
-  cE: 1
+  cs: 1,
+  ct: 1
 }));
 var $n_s_reflect_ManifestFactory$ObjectManifest$;
 function $m_s_reflect_ManifestFactory$ObjectManifest$() {
@@ -15504,8 +15297,8 @@ function $f_sc_Seq__equals__O__Z($thiz, o) {
     return true;
   } else {
     if ($is_sc_Seq(o)) {
-      if (o.jp($thiz)) {
-        return $thiz.i5(o);
+      if (o.jn($thiz)) {
+        return $thiz.i4(o);
       }
     }
     return false;
@@ -15529,17 +15322,17 @@ $h_sc_AbstractSeq.prototype = $p;
 $p.Z = (function() {
   return $f_sc_SeqOps__isEmpty__Z(this);
 });
-$p.i5 = (function(that) {
+$p.i4 = (function(that) {
   return $f_sc_SeqOps__sameElements__sc_IterableOnce__Z(this, that);
 });
-$p.jp = (function(that) {
+$p.jn = (function(that) {
   return true;
 });
 $p.p = (function(o) {
   return $f_sc_Seq__equals__O__Z(this, o);
 });
 $p.r = (function() {
-  return $m_s_util_hashing_MurmurHash3$().mg(this);
+  return $m_s_util_hashing_MurmurHash3$().ma(this);
 });
 $p.m = (function() {
   return $f_sc_Iterable__toString__T(this);
@@ -15566,12 +15359,12 @@ function $isArrayOf_sc_LinearSeq(obj, depth) {
   return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.I)));
 }
 function $ct_sc_SeqView$Id__sc_SeqOps__($thiz, underlying) {
-  $thiz.gg = underlying;
+  $thiz.gf = underlying;
   return $thiz;
 }
 /** @constructor */
 function $c_sc_SeqView$Id() {
-  this.gg = null;
+  this.gf = null;
 }
 $p = $c_sc_SeqView$Id.prototype = new $h_sc_AbstractSeqView();
 $p.constructor = $c_sc_SeqView$Id;
@@ -15580,17 +15373,17 @@ function $h_sc_SeqView$Id() {
 }
 $h_sc_SeqView$Id.prototype = $p;
 $p.Y = (function(idx) {
-  return this.gg.Y(idx);
+  return this.gf.Y(idx);
 });
 $p.K = (function() {
-  return this.gg.K();
+  return this.gf.K();
 });
 $p.Z = (function() {
-  return this.gg.Z();
+  return this.gf.Z();
 });
 /** @constructor */
 function $c_sc_IndexedSeqView$Id(underlying) {
-  this.gg = null;
+  this.gf = null;
   $ct_sc_SeqView$Id__sc_SeqOps__(this, underlying);
 }
 $p = $c_sc_IndexedSeqView$Id.prototype = new $h_sc_SeqView$Id();
@@ -15613,10 +15406,10 @@ $p.fn = (function() {
   return "IndexedSeqView";
 });
 var $d_sc_IndexedSeqView$Id = new $TypeData().i($c_sc_IndexedSeqView$Id, "scala.collection.IndexedSeqView$Id", ({
-  c4: 1,
-  cd: 1,
-  bZ: 1,
-  c0: 1,
+  bU: 1,
+  c3: 1,
+  bP: 1,
+  bQ: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -15624,11 +15417,11 @@ var $d_sc_IndexedSeqView$Id = new $TypeData().i($c_sc_IndexedSeqView$Id, "scala.
   q: 1,
   p: 1,
   a: 1,
-  ch: 1,
+  c7: 1,
   t: 1,
-  cc: 1,
+  c2: 1,
   w: 1,
-  c3: 1
+  bT: 1
 }));
 /** @constructor */
 function $c_sci_AbstractSeq() {
@@ -15651,8 +15444,8 @@ function $f_sci_IndexedSeq__sameElements__sc_IterableOnce__Z($thiz, o) {
       var equal = (length === o.K());
       if (equal) {
         var index = 0;
-        var a = $thiz.jo();
-        var b = o.jo();
+        var a = $thiz.jm();
+        var b = o.jm();
         var preferredLength = ((a < b) ? a : b);
         var hi = (length >> 31);
         var hi$1 = (preferredLength >> 31);
@@ -15668,8 +15461,8 @@ function $f_sci_IndexedSeq__sameElements__sc_IterableOnce__Z($thiz, o) {
           index = ((1 + index) | 0);
         }
         if (((index < length) && equal)) {
-          var thisIt = $thiz.a0().hY(index);
-          var thatIt = o.a0().hY(index);
+          var thisIt = $thiz.a0().hX(index);
+          var thatIt = o.a0().hX(index);
           while ((equal && thisIt.J())) {
             equal = $m_sr_BoxesRunTime$().c(thisIt.D(), thatIt.D());
           }
@@ -15698,8 +15491,8 @@ function $h_scm_AbstractSeq() {
 $h_scm_AbstractSeq.prototype = $p;
 /** @constructor */
 function $c_sjsr_WrappedVarArgs(array) {
-  this.hg = null;
-  this.hg = array;
+  this.hf = null;
+  this.hf = array;
 }
 $p = $c_sjsr_WrappedVarArgs.prototype = new $h_O();
 $p.constructor = $c_sjsr_WrappedVarArgs;
@@ -15707,14 +15500,14 @@ $p.constructor = $c_sjsr_WrappedVarArgs;
 function $h_sjsr_WrappedVarArgs() {
 }
 $h_sjsr_WrappedVarArgs.prototype = $p;
-$p.jp = (function(that) {
+$p.jn = (function(that) {
   return $f_sci_IndexedSeq__canEqual__O__Z(this, that);
 });
-$p.i5 = (function(o) {
+$p.i4 = (function(o) {
   return $f_sci_IndexedSeq__sameElements__sc_IterableOnce__Z(this, o);
 });
-$p.jo = (function() {
-  return $m_sci_IndexedSeqDefaults$().jZ;
+$p.jm = (function() {
+  return $m_sci_IndexedSeqDefaults$().jU;
 });
 $p.a0 = (function() {
   return new $c_sc_IndexedSeqView$IndexedSeqViewIterator(new $c_sc_IndexedSeqView$Id(this));
@@ -15730,7 +15523,7 @@ $p.p = (function(o) {
   return $f_sc_Seq__equals__O__Z(this, o);
 });
 $p.r = (function() {
-  return $m_s_util_hashing_MurmurHash3$().mg(this);
+  return $m_s_util_hashing_MurmurHash3$().ma(this);
 });
 $p.m = (function() {
   return $f_sc_Iterable__toString__T(this);
@@ -15738,17 +15531,17 @@ $p.m = (function() {
 $p.Z = (function() {
   return $f_sc_SeqOps__isEmpty__Z(this);
 });
-$p.gM = (function(f) {
+$p.gL = (function(f) {
   $f_sc_IterableOnceOps__foreach__F1__V(this, f);
 });
-$p.jj = (function(b, start, sep, end) {
+$p.jh = (function(b, start, sep, end) {
   return $f_sc_IterableOnceOps__addString__scm_StringBuilder__T__T__T__scm_StringBuilder(this, b, start, sep, end);
 });
 $p.K = (function() {
-  return (this.hg.length | 0);
+  return (this.hf.length | 0);
 });
 $p.Y = (function(idx) {
-  return this.hg[idx];
+  return this.hf[idx];
 });
 $p.g8 = (function() {
   return "WrappedVarArgs";
@@ -15757,10 +15550,10 @@ $p.g = (function(v1) {
   return this.Y((v1 | 0));
 });
 function $isArrayOf_sjsr_WrappedVarArgs(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aM)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aH)));
 }
 var $d_sjsr_WrappedVarArgs = new $TypeData().i($c_sjsr_WrappedVarArgs, "scala.scalajs.runtime.WrappedVarArgs", ({
-  aM: 1,
+  aH: 1,
   E: 1,
   d: 1,
   e: 1,
@@ -15777,7 +15570,7 @@ var $d_sjsr_WrappedVarArgs = new $TypeData().i($c_sjsr_WrappedVarArgs, "scala.sc
   K: 1,
   w: 1,
   o: 1,
-  aC: 1,
+  ax: 1,
   M: 1,
   C: 1,
   D: 1,
@@ -15811,16 +15604,16 @@ $p.ae = (function() {
 $p.fn = (function() {
   return "IndexedSeq";
 });
-$p.jp = (function(that) {
+$p.jn = (function(that) {
   return $f_sci_IndexedSeq__canEqual__O__Z(this, that);
 });
-$p.i5 = (function(o) {
+$p.i4 = (function(o) {
   return $f_sci_IndexedSeq__sameElements__sc_IterableOnce__Z(this, o);
 });
 $p.g8 = (function() {
   return "ArraySeq";
 });
-$p.jo = (function() {
+$p.jm = (function() {
   return 2147483647;
 });
 /** @constructor */
@@ -15854,7 +15647,7 @@ $p.p = (function(other) {
   return $f_sc_Seq__equals__O__Z(this, other);
 });
 function $isArrayOf_scm_ArraySeq(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aE)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.az)));
 }
 /** @constructor */
 function $c_sci_ArraySeq$ofRef(unsafeArray) {
@@ -15875,10 +15668,10 @@ $p.Y = (function(i) {
 });
 $p.r = (function() {
   var this$1 = $m_s_util_hashing_MurmurHash3$();
-  return this$1.lD(this.b0, this$1.fK);
+  return this$1.ly(this.b0, this$1.fK);
 });
 $p.p = (function(that) {
-  return ((that instanceof $c_sci_ArraySeq$ofRef) ? $m_s_Array$().lL(this.b0, that.b0) : $f_sc_Seq__equals__O__Z(this, that));
+  return ((that instanceof $c_sci_ArraySeq$ofRef) ? $m_s_Array$().lG(this.b0, that.b0) : $f_sc_Seq__equals__O__Z(this, that));
 });
 $p.a0 = (function() {
   return new $c_sc_ArrayOps$ArrayIterator(this.b0);
@@ -15887,12 +15680,12 @@ $p.g = (function(v1) {
   return this.Y((v1 | 0));
 });
 function $isArrayOf_sci_ArraySeq$ofRef(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aB)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aw)));
 }
 var $d_sci_ArraySeq$ofRef = new $TypeData().i($c_sci_ArraySeq$ofRef, "scala.collection.immutable.ArraySeq$ofRef", ({
-  aB: 1,
-  cj: 1,
-  aA: 1,
+  aw: 1,
+  c9: 1,
+  av: 1,
   B: 1,
   v: 1,
   d: 1,
@@ -15910,19 +15703,19 @@ var $d_sci_ArraySeq$ofRef = new $TypeData().i($c_sci_ArraySeq$ofRef, "scala.coll
   K: 1,
   w: 1,
   o: 1,
-  aC: 1,
+  ax: 1,
   E: 1,
   C: 1,
   D: 1,
   M: 1,
-  c2: 1,
+  bS: 1,
   a: 1
 }));
 function $p_sci_List__loop$2__I__I__sci_List__I($thiz, len$1, i, xs) {
   var xs$tailLocal1 = xs;
   var i$tailLocal1 = i;
   while (true) {
-    return ((i$tailLocal1 === len$1) ? (xs$tailLocal1.Z() ? 0 : 1) : (xs$tailLocal1.Z() ? (-1) : xs$tailLocal1.hb()));
+    return ((i$tailLocal1 === len$1) ? (xs$tailLocal1.Z() ? 0 : 1) : (xs$tailLocal1.Z() ? (-1) : xs$tailLocal1.ha()));
   }
 }
 function $p_sci_List__listEq$1__sci_List__sci_List__Z($thiz, a, b) {
@@ -15935,10 +15728,10 @@ function $p_sci_List__listEq$1__sci_List__sci_List__Z($thiz, a, b) {
       var aEmpty = a$tailLocal1.Z();
       var bEmpty = b$tailLocal1.Z();
       if ((!(aEmpty || bEmpty))) {
-        a$tailLocal1.i1();
+        a$tailLocal1.i0();
       }
       if (false) {
-        a$tailLocal1.hb();
+        a$tailLocal1.ha();
       }
       return (aEmpty && bEmpty);
     }
@@ -15956,7 +15749,7 @@ $h_sci_List.prototype = $p;
 $p.Y = (function(n) {
   return $f_sc_LinearSeqOps__apply__I__O(this, n);
 });
-$p.i5 = (function(that) {
+$p.i4 = (function(that) {
   return $f_sc_LinearSeqOps__sameElements__sc_IterableOnce__Z(this, that);
 });
 $p.fn = (function() {
@@ -15965,11 +15758,11 @@ $p.fn = (function() {
 $p.Z = (function() {
   return (this === $m_sci_Nil$());
 });
-$p.gM = (function(f) {
+$p.gL = (function(f) {
   var these = this;
   while ((!these.Z())) {
-    f.g(these.i1());
-    these.hb();
+    f.g(these.i0());
+    these.ha();
   }
 });
 $p.K = (function() {
@@ -15977,7 +15770,7 @@ $p.K = (function() {
   var len = 0;
   while ((!these.Z())) {
     len = ((1 + len) | 0);
-    these.hb();
+    these.ha();
   }
   return len;
 });
@@ -15990,14 +15783,14 @@ $p.g8 = (function() {
 $p.p = (function(o) {
   return ((o instanceof $c_sci_List) ? $p_sci_List__listEq$1__sci_List__sci_List__Z(this, this, o) : $f_sc_Seq__equals__O__Z(this, o));
 });
-$p.nd = (function(n) {
+$p.n6 = (function(n) {
   return $p_sc_StrictOptimizedLinearSeqOps__loop$2__I__sc_LinearSeq__sc_LinearSeq(this, n, this);
 });
 $p.g = (function(v1) {
   return $f_sc_LinearSeqOps__apply__I__O(this, (v1 | 0));
 });
 function $isArrayOf_sci_List(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aD)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.ay)));
 }
 /** @constructor */
 function $c_scm_ArraySeq$ofRef(array) {
@@ -16018,10 +15811,10 @@ $p.Y = (function(index) {
 });
 $p.r = (function() {
   var this$1 = $m_s_util_hashing_MurmurHash3$();
-  return this$1.lD(this.aF, this$1.fK);
+  return this$1.ly(this.aF, this$1.fK);
 });
 $p.p = (function(that) {
-  return ((that instanceof $c_scm_ArraySeq$ofRef) ? $m_s_Array$().lL(this.aF, that.aF) : $c_scm_ArraySeq.prototype.p.call(this, that));
+  return ((that instanceof $c_scm_ArraySeq$ofRef) ? $m_s_Array$().lG(this.aF, that.aF) : $c_scm_ArraySeq.prototype.p.call(this, that));
 });
 $p.a0 = (function() {
   return new $c_sc_ArrayOps$ArrayIterator(this.aF);
@@ -16030,11 +15823,11 @@ $p.g = (function(v1) {
   return this.Y((v1 | 0));
 });
 function $isArrayOf_scm_ArraySeq$ofRef(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aF)));
+  return (!(!(((obj && obj.$classData) && (obj.$classData.D === depth)) && obj.$classData.B.n.aA)));
 }
 var $d_scm_ArraySeq$ofRef = new $TypeData().i($c_scm_ArraySeq$ofRef, "scala.collection.mutable.ArraySeq$ofRef", ({
-  aF: 1,
-  aE: 1,
+  aA: 1,
+  az: 1,
   N: 1,
   B: 1,
   v: 1,
@@ -16085,10 +15878,10 @@ $p.A = (function() {
 $p.o = (function(n) {
   throw new $c_jl_IndexOutOfBoundsException(("" + n));
 });
-$p.i1 = (function() {
+$p.i0 = (function() {
   throw new $c_ju_NoSuchElementException("head of empty list");
 });
-$p.hb = (function() {
+$p.ha = (function() {
   throw new $c_jl_UnsupportedOperationException("tail of empty list");
 });
 $p.ae = (function() {
@@ -16097,16 +15890,16 @@ $p.ae = (function() {
 $p.a0 = (function() {
   return $m_sc_Iterator$().aY;
 });
-$p.js = (function() {
-  this.i1();
+$p.jq = (function() {
+  this.i0();
 });
-$p.jA = (function() {
-  this.hb();
+$p.jy = (function() {
+  this.ha();
 });
 var $d_sci_Nil$ = new $TypeData().i($c_sci_Nil$, "scala.collection.immutable.Nil$", ({
-  cp: 1,
-  aD: 1,
-  aA: 1,
+  cf: 1,
+  ay: 1,
+  av: 1,
   B: 1,
   v: 1,
   d: 1,
@@ -16122,16 +15915,16 @@ var $d_sci_Nil$ = new $TypeData().i($c_sci_Nil$, "scala.collection.immutable.Nil
   J: 1,
   L: 1,
   K: 1,
-  ca: 1,
+  c0: 1,
   I: 1,
-  cn: 1,
-  cm: 1,
+  cd: 1,
+  cc: 1,
   C: 1,
   D: 1,
-  ce: 1,
+  c4: 1,
   M: 1,
   a: 1,
-  ci: 1,
+  c8: 1,
   c: 1
 }));
 var $n_sci_Nil$;
@@ -16182,14 +15975,14 @@ $p.Z = (function() {
   return (this.aR.K() === 0);
 });
 $p.Y = (function(i) {
-  return $bC(this.aR.lG(i));
+  return $bC(this.aR.lB(i));
 });
 $p.g = (function(v1) {
   var i = (v1 | 0);
-  return $bC(this.aR.lG(i));
+  return $bC(this.aR.lB(i));
 });
 var $d_scm_StringBuilder = new $TypeData().i($c_scm_StringBuilder, "scala.collection.mutable.StringBuilder", ({
-  cw: 1,
+  cm: 1,
   N: 1,
   B: 1,
   v: 1,
@@ -16208,10 +16001,10 @@ var $d_scm_StringBuilder = new $TypeData().i($c_scm_StringBuilder, "scala.collec
   O: 1,
   T: 1,
   S: 1,
-  aH: 1,
-  aI: 1,
-  aG: 1,
-  cu: 1,
+  aC: 1,
+  aD: 1,
+  aB: 1,
+  ck: 1,
   w: 1,
   o: 1,
   Q: 1,
@@ -16257,8 +16050,8 @@ $p.g = (function(v1) {
   return this.fJ[index];
 });
 var $d_sjs_js_WrappedArray = new $TypeData().i($c_sjs_js_WrappedArray, "scala.scalajs.js.WrappedArray", ({
-  d9: 1,
-  cq: 1,
+  cY: 1,
+  cg: 1,
   N: 1,
   B: 1,
   v: 1,
@@ -16277,18 +16070,21 @@ var $d_sjs_js_WrappedArray = new $TypeData().i($c_sjs_js_WrappedArray, "scala.sc
   O: 1,
   T: 1,
   S: 1,
-  aH: 1,
-  aI: 1,
-  cv: 1,
-  cs: 1,
+  aC: 1,
+  aD: 1,
+  cl: 1,
+  ci: 1,
   D: 1,
   C: 1,
   P: 1,
   w: 1,
   o: 1,
   Q: 1,
-  ct: 1,
-  aG: 1,
+  cj: 1,
+  aB: 1,
   a: 1
 }));
-$s_Lsketches_rooms_base_roomsBase__main__AT__V(new ($d_T.r().C)([]));
+let $e_sketch = (function(arg) {
+  $m_Lsketches_rooms_base_Base$package$().oJ(arg);
+});
+export { $e_sketch as sketch };

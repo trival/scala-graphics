@@ -1,7 +1,7 @@
 package sketches.textures.lines
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
@@ -105,9 +105,8 @@ import trivalibs.utils.numbers.NumExt.given
 // The Rust fixed-size arrays + bubble sort are unrolled by *Scala* loops at
 // build time: each iteration emits shader statements into the frag `Block`.
 
-@main def lines(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def lines(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type U = (res: Vec2, time: Float)
 

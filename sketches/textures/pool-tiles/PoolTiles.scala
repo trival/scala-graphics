@@ -1,7 +1,7 @@
 package sketches.textures.pool_tiles
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Uv
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -70,9 +70,8 @@ import trivalibs.utils.numbers.NumExt.given
 // warp a rotating, drifting tile grid; each cell picks one of two HSV palettes
 // from hashed / noise-driven values.
 
-@main def poolTiles(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def poolTiles(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type U = (res: Vec2, time: Float)
 

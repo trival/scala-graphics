@@ -1,7 +1,7 @@
 package sketches.tests.texture_bake
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import trivalibs.graphics.geometry.{*, given}
@@ -51,9 +51,8 @@ val RadiusMax = 0.42
 // Soft edge width, in UV. Wide enough to read as deliberate at 256 px.
 val DiscSoftness = 0.02
 
-@main def textureBake(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def textureBake(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     // Per-face geometry: a single quad, UV [0,1] by corner order (the box face
     // accessors return corners as TL, BL, BR, TR). A generated face normal is

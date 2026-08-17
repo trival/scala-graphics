@@ -4,6 +4,7 @@ import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.console
 import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.utils.bloom.Bloom
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -17,9 +18,8 @@ import trivalibs.utils.numbers.NumExt.given
 // Bloom post-processing demo. Drives the shared `sketchlib.utils.bloom.Bloom`
 // pyramid with an HDR test scene of bright + dim SDF circles.
 
-@main def bloom(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def bloom(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     // -----------------------------------------------------------------------
     // Tunables

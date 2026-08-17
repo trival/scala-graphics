@@ -1,7 +1,7 @@
 package sketches.rooms.canvases
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -152,9 +152,8 @@ type PaintingUniforms = (
 )
 type PaintingPanels = (img: FragmentPanel)
 
-@main def roomsCanvases(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def roomsCanvases(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val sampler = p.samplerLinear
 

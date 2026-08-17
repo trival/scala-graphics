@@ -23,7 +23,7 @@ if (!existsSync(root)) {
 }
 
 // A sketch dir is the first directory (descending from the root) that holds
-// .scala code — that's the sketch root (its @main / index.html). A sketch may
+// .scala code — that's the sketch root (its entry point / index.html). A sketch may
 // have multiple .scala files and nested subfolders of helpers, so once a dir
 // has .scala we take it and stop descending; deeper folders belong to that
 // sketch, they are not separate sketches.

@@ -1,7 +1,7 @@
 package sketches.textures.moving_plates
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Shapes
 import sketchlib.shaders.Uv
 import trivalibs.graphics.math.cpu.{*, given}
@@ -147,9 +147,8 @@ import trivalibs.utils.numbers.NumExt.given
 // quadrant branch selects the 3 neighbors + dirs into vars, so the ground /
 // shadow logic is written once instead of duplicated per branch.
 
-@main def movingPlates(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def movingPlates(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type U = (res: Vec2, time: Float)
 

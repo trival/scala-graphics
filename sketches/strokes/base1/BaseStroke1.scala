@@ -1,7 +1,7 @@
 package sketches.strokes.base1
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
 import trivalibs.graphics.painter.*
@@ -13,9 +13,8 @@ import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
 
-@main def main(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def baseStroke1(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type U = (res: Vec2)
 

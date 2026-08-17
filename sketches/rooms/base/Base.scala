@@ -1,7 +1,7 @@
 package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -37,9 +37,8 @@ val WallLength = RoomDepth * 2.0 + RoomWidth * 2.0
 // geometry dimensions × this factor, so texel density is uniform in space.
 val TexScale = 164.0
 
-@main def roomsBase(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def roomsBase(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val cam = PerspectiveCamera(
       fov = 0.9,

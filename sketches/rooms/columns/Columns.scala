@@ -1,7 +1,7 @@
 package sketches.rooms.columns
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
@@ -31,9 +31,8 @@ private val BalkHeight = ColWidth * 3.4
 private val ColsZHalf = 8
 private val ColsXHalf = 4
 
-@main def roomsColumns(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def roomsColumns(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type CV = (position: Vec3, uv: Vec2)
 

@@ -1,7 +1,7 @@
 package sketches.strokes.tile_strokes
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.geometry.*
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -124,9 +124,8 @@ val TilesPerRecolor = 8
   */
 val MaxBrushStepsPerFrame = 16
 
-@main def tileStrokes(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def tileStrokes(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val painting = createPainting(p.width, p.height, ColorCount)
 

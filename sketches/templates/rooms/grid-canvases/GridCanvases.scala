@@ -1,7 +1,7 @@
 package sketches.templates.rooms.gridcanvases
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -1273,9 +1273,8 @@ val PieceShadowDims = Arr(
   0.4, // near white
 )
 
-@main def roomsGridCanvases(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val sampler = p.samplerLinear
 

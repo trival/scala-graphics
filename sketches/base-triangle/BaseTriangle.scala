@@ -1,7 +1,7 @@
 package sketches.base_triangle
 
 import org.scalajs.dom.HTMLCanvasElement
-import org.scalajs.dom.document
+import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -12,9 +12,8 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.numbers.NumExt.given
 
-@main def baseTriangle(): Unit =
-  val canvas = document.getElementById("canvas").asInstanceOf[HTMLCanvasElement]
-
+@JSExportTopLevel("sketch")
+def baseTriangle(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type Attribs = (position: Vec3, color: Vec3)
     type Varyings = (color: Vec3)

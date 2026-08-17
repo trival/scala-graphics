@@ -40,13 +40,49 @@ be nested in arbitrary category folders (e.g. `sketches/geometry/voronoi/`);
 ```
 sketches/<path>/
 ├── <Name>.scala     # the sketch source
-├── index.html       # loads ./main.js
+├── index.html       # imports ./main.js and calls sketch(canvas)
 └── main.js          # scala-cli output (checked into git, for now)
 ```
 
 `sketches/base-triangle/` is the minimal starter — `cp -r` it to seed a new
 sketch. The Scala `package` should mirror the path (e.g.
 `package sketches.geometry.voronoi`).
+
+### Sketch entry point: `@JSExportTopLevel("sketch")`, never `@main`
+
+A sketch exports one function that **takes the canvas element** and does not
+touch the DOM to find it:
+
+```scala
+@JSExportTopLevel("sketch")
+def mySketch(canvas: HTMLCanvasElement): Unit =
+  Painter.init(canvas): p =>
+    ...
+```
+
+The export name is the literal `"sketch"` in every sketch, so the glue is
+identical everywhere and copies with the directory; the Scala `def` keeps a
+descriptive name. `index.html` provides the host glue:
+
+```html
+<script type="module">
+  import { sketch } from "./main.js"
+  sketch(document.getElementById("canvas"))
+</script>
+```
+
+The point is that the sketch never assumes a browser host. Getting the canvas
+from `document`, or running on import via `@main`, ties the code to the DOM;
+passing the canvas in lets the same bundle be driven by
+[NativeScript Canvas](https://canvas.nativescript.org/canvas/installation),
+where the canvas comes from the native view tree and there is no `document`.
+
+That reasoning extends past the entry point: **DOM access anywhere in a sketch
+is a portability cost**, so keep it out of the sketch where a trivalibs /
+`src/` abstraction can carry it (input handling, resize, fullscreen). Where a
+sketch genuinely needs the browser today (`sketches/tests/bloom/` listens on
+`document` for keys), that is fine — it is just the part that will need a host
+abstraction later.
 
 ### Always register a sketch in `sketches/index.html`
 

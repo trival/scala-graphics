@@ -46,8 +46,13 @@ its own sources, `trivalibs/src/`, and the root `project.scala`. The output
 lands in `<sketch-dir>/main.js` (checked into git for now) and is loaded
 directly by the sketch's `index.html` via an ES module import.
 
-The Scala entry point is a top-level `@main` function, so the bundle auto-runs
-on import — no JS bootstrap file needed.
+The Scala entry point is a `@JSExportTopLevel("sketch")` function taking the
+canvas element, and `index.html` carries the few lines of glue that import it
+and hand it the canvas. Nothing runs on import and nothing reaches into the DOM
+for its canvas, so the same sketch code can be driven by a non-browser host —
+the reason for this shape is
+[NativeScript Canvas](https://canvas.nativescript.org/canvas/installation),
+which supplies a canvas object but no `document`.
 
 ### Build a sketch
 
@@ -81,10 +86,22 @@ Run `sketch:watch` and `dev` side-by-side in two terminals to iterate.
 1. Create `sketches/<category>/my-sketch/` (category folder optional — top level
    works too).
 2. Add `MySketch.scala` with a package matching the path (e.g.
-   `package sketches.category.my_sketch`) and an
-   `@main def mySketch(): Unit = ...` entry.
-3. Add `index.html` with a `<canvas id="canvas">` and
-   `<script type="module" src="./main.js"></script>`.
+   `package sketches.category.my_sketch`) and an entry point
+
+   ```scala
+   @JSExportTopLevel("sketch")
+   def mySketch(canvas: HTMLCanvasElement): Unit = ...
+   ```
+
+3. Add `index.html` with a `<canvas id="canvas">` and the glue script
+
+   ```html
+   <script type="module">
+     import { sketch } from "./main.js"
+     sketch(document.getElementById("canvas"))
+   </script>
+   ```
+
 4. (Optional) Add a card to `sketches/index.html`.
 5. `bun run sketch <category>/my-sketch` to build.
 
