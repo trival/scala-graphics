@@ -3094,11 +3094,11 @@ $p.rd = (function(canvas) {
     var lw$2 = (\u03b44$.Y() | 0);
     var lh$2 = (\u03b44$.Z() | 0);
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var transform$1 = (void 0);
+    var transform$proxy2 = (void 0);
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var mips$1 = true;
+    var mips$proxy2 = true;
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var clearColor$1 = (void 0);
+    var clearColor$proxy2 = (void 0);
     var frag$proxy2 = new $c_sr_AbstractFunction4_$$Lambda$451042f443265710aa66de6985cba67480d9b00a(((wp$2$1, _$2$2, _$3$2, color$2) => {
       var wave = new $c_Ltrivalibs_graphics_math_gpu_LetExpr("wave");
       var $x_5 = $m_sjsr_package$();
@@ -3177,7 +3177,7 @@ $p.rd = (function(canvas) {
     var \u03b42$$3 = x10;
     var bgls$4 = \u03b42$$3.aF;
     var pl$2 = $m_Ltrivalibs_graphics_shader_layouts$().M(p$7.g, bgls$4);
-    var lightTex = $x_7.kL(new $c_Lsketchlib_utils_bake_TextureBaker(p$7, new $c_Ltrivalibs_graphics_painter_Shade(id$2, module$2, vbl$2, bgls$4[0], null, pl$2, false, dict$3, dict$4)), lightForm, lw$2, lh$2, transform$1, "rgba16float", mips$1, clearColor$1);
+    var lightTex = $x_7.kL(new $c_Lsketchlib_utils_bake_TextureBaker(p$7, new $c_Ltrivalibs_graphics_painter_Shade(id$2, module$2, vbl$2, bgls$4[0], null, pl$2, false, dict$3, dict$4)), lightForm, lw$2, lh$2, transform$proxy2, "rgba16float", mips$proxy2, clearColor$proxy2);
     matchResult5$1: {
       var \u03b46$;
       var x13 = atlas.rx($m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().iv, $m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().lD);
@@ -3191,13 +3191,13 @@ $p.rd = (function(canvas) {
     }
     var baw$2 = (\u03b46$.Y() | 0);
     var bah$2 = (\u03b46$.Z() | 0);
-    var clearColor$2 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().o9().h(new $c_T4($m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.x, $m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.J, $m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.y, 1.0));
+    var clearColor$1 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().o9().h(new $c_T4($m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.x, $m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.J, $m_Lsketches_templates_rooms_hexpartitions_HexPartitions$package$().gG.y, 1.0));
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var transform$2 = (void 0);
+    var transform$1 = (void 0);
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var format$2 = (void 0);
+    var format$1 = (void 0);
     $m_Lsketchlib_utils_bake_TextureBaker$();
-    var mips$2 = true;
+    var mips$1 = true;
     var frag$proxy3 = new $c_sr_AbstractFunction3_$$Lambda$d1e06cbab540de4f9f09e7182f18ea80659b9825(((wp$2$2, normal$2$1, uv$2) => {
       var dEdge = atlas.pr(uv$2);
       var dFromSoffitCenter = atlas.rr(uv$2);
@@ -3308,7 +3308,7 @@ $p.rd = (function(canvas) {
     var \u03b42$$4 = x16;
     var bgls$6 = \u03b42$$4.aF;
     var pl$3 = $m_Ltrivalibs_graphics_shader_layouts$().M(p$7.g, bgls$6);
-    var beamTex = $x_10.kL(new $c_Lsketchlib_utils_bake_TextureBaker(p$7, new $c_Ltrivalibs_graphics_painter_Shade(id$3, module$3, vbl$3, bgls$6[0], null, pl$3, false, dict$5, dict$6)), beamForm, baw$2, bah$2, transform$2, format$2, mips$2, clearColor$2);
+    var beamTex = $x_10.kL(new $c_Lsketchlib_utils_bake_TextureBaker(p$7, new $c_Ltrivalibs_graphics_painter_Shade(id$3, module$3, vbl$3, bgls$6[0], null, pl$3, false, dict$5, dict$6)), beamForm, baw$2, bah$2, transform$1, format$1, mips$1, clearColor$1);
     var frag$proxy4 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$3) => {
       var wp = ctx$2$3.a6.n("worldPos");
       var normal = ctx$2$3.a6.n("normal");
@@ -3755,9 +3755,9 @@ $p.rd = (function(canvas) {
     var buffer$2 = new ArrayBuffer(64);
     var arr$proxy11 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
     var sceneVp = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy11.dv, 0), p$7.g, uv$proxy3);
-    var clearColor$4 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().o9().h(new $c_T4(0.5, 0.6, 0.7, 1.0));
+    var clearColor$3 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().o9().h(new $c_T4(0.5, 0.6, 0.7, 1.0));
     var shapes$2 = aboveGround.concat([Bindable_this$7]);
-    var Panel_this = p$7.bE((void 0), (void 0), clearColor$4, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$2, (void 0), (void 0));
+    var Panel_this = p$7.bE((void 0), (void 0), clearColor$3, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$2, (void 0), (void 0));
     var e1$proxy8 = new $c_Ltrivalibs_graphics_painter_BindPair("vp", sceneVp);
     var \u03b4scrutinee701 = e1$proxy8.t;
     var dict$proxy1 = Panel_this.hK;

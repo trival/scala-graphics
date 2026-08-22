@@ -2474,7 +2474,7 @@ $p.lx = (function(canvas) {
     var buffer = new ArrayBuffer(64);
     var arr$proxy6 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer), 1);
     var mvp = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), p$3.d, uv$proxy1);
-    var sampler = p$3.lk("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
+    var sampler$1 = p$3.lk("linear", "linear", "linear", "clamp-to-edge", (void 0), (void 0));
     var box = $m_Ltrivalibs_graphics_geometry_Box$().jO(new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 0.0, 0.0), 2.0, 2.0, 2.0);
     var faces = box.k7();
     var shapes = [];
@@ -2515,11 +2515,11 @@ $p.lx = (function(canvas) {
         var s$proxy3 = BufferBinding_this$3.F;
         $x_16.writeBuffer($x_15, 0.0, s$proxy3.dv.buffer);
       } else {
-        var uv$2 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
+        var uv$3 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
         var device$proxy1 = Bindable_this$3.h5.d;
         var buffer$2 = new ArrayBuffer(4);
         var arr$proxy8 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
-        var b$2$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy8.dv, 0), device$proxy1, uv$2);
+        var b$2$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy8.dv, 0), device$proxy1, uv$3);
         b$2$1.ae.a9(b$2$1.F, \u03b4scrutinee207);
         var $x_18 = b$2$1.ad.queue;
         var $x_17 = b$2$1.a2;
@@ -2558,7 +2558,7 @@ $p.lx = (function(canvas) {
       $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(p$2, x$proxy2.C);
       var Bindable_this$8 = p$2.ja(form, sceneShade, "back", (void 0));
       var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("mvp", mvp);
-      var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
+      var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler$1);
       var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", x$proxy2.C);
       var \u03b4scrutinee237 = e1$proxy3.af;
       var idx$4 = (Bindable_this$8.y.a7.mvp | 0);

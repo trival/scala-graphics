@@ -3,17 +3,12 @@ package sketches.textures.pool_tiles
 import org.scalajs.dom.HTMLCanvasElement
 import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Uv
-import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.graphics.math.gpu.{*, given}
-import trivalibs.graphics.painter.*
-import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.color.*
 import trivalibs.graphics.shader.lib.coords.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
-import trivalibs.graphics.shader.{*, given}
-import trivalibs.utils.animation.animate
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
+import trivalibs.prelude.painter.{*, given}
 
 // ============================================================================
 // Reference: original Rust shader (pool_tiles.rs) — kept for comparison.

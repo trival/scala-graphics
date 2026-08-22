@@ -2,8 +2,7 @@ package sketches.strokes.base1
 
 import trivalibs.graphics.geometry.*
 import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.utils.js.*
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
 import trivalibs.utils.random.*
 
 // ---------------------------------------------------------------------------

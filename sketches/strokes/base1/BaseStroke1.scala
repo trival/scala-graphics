@@ -2,16 +2,11 @@ package sketches.strokes.base1
 
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
-import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.graphics.math.gpu.{*, given}
-import trivalibs.graphics.painter.*
-import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.lib.color.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
-import trivalibs.graphics.shader.{*, given}
-import trivalibs.utils.js.*
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
+import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.rand
 import trivalibs.utils.random.randNormal01
 import trivalibs.utils.random.randNormal11

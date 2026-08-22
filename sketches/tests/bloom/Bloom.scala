@@ -6,14 +6,8 @@ import org.scalajs.dom.console
 import org.scalajs.dom.document
 import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.utils.bloom.Bloom
-import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.graphics.math.gpu.{*, given}
-import trivalibs.graphics.painter.*
-import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.{*, given}
-import trivalibs.utils.animation.animate
-import trivalibs.utils.js.*
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
+import trivalibs.prelude.painter.{*, given}
 
 // Bloom post-processing demo. Drives the shared `sketchlib.utils.bloom.Bloom`
 // pyramid with an HDR test scene of bright + dim SDF circles.

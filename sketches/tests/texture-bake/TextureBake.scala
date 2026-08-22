@@ -5,15 +5,9 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import trivalibs.graphics.geometry.{*, given}
-import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.graphics.math.gpu.{*, given}
-import trivalibs.graphics.painter.*
 import trivalibs.graphics.scene.PerspectiveCamera
-import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.{*, given}
-import trivalibs.utils.animation.animate
-import trivalibs.utils.js.*
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
+import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.randInRange
 
 // ---------------------------------------------------------------------------

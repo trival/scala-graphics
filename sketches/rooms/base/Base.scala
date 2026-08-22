@@ -8,16 +8,10 @@ import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
 import trivalibs.graphics.geometry.{*, given}
-import trivalibs.graphics.math.cpu.{*, given}
-import trivalibs.graphics.math.gpu.{*, given}
-import trivalibs.graphics.painter.*
 import trivalibs.graphics.scene.BasicFirstPersonCameraController
 import trivalibs.graphics.scene.PerspectiveCamera
-import trivalibs.graphics.shader.dsl.{*, given}
-import trivalibs.graphics.shader.{*, given}
-import trivalibs.utils.animation.animate
-import trivalibs.utils.js.*
-import trivalibs.utils.numbers.NumExt.given
+import trivalibs.prelude.core.{*, given}
+import trivalibs.prelude.painter.{*, given}
 
 // ---------------------------------------------------------------------------
 // A first-person walkable room. Utilizing some indirect light approximation,

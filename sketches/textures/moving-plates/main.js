@@ -1749,7 +1749,7 @@ $p.ei = (function(canvas) {
       $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V(program, array$6[i$3]);
       i$3 = ((1 + i$3) | 0);
     }
-    var b = program.bN;
+    var b$7 = program.bN;
     var helperFns$proxy1 = program.e3();
     var id = p$3.aY;
     p$3.aY = ((1 + p$3.aY) | 0);
@@ -1767,7 +1767,7 @@ $p.ei = (function(canvas) {
       dict$2[names$2[i$2$1]] = i$2$1;
       i$2$1 = ((1 + i$2$1) | 0);
     }
-    var sd = new $c_Ltrivalibs_graphics_shader_ShaderDef("  let x = f32((in.vertex_index << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(in.vertex_index & 2u) * 2.0 - 1.0;\n  out.uv = vec2f(x * 0.5 + 0.5, 0.5 - y * 0.5);\n  out.position = vec4f(x, y, 0.0, 1.0);", b, helperFns$proxy1);
+    var sd = new $c_Ltrivalibs_graphics_shader_ShaderDef("  let x = f32((in.vertex_index << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(in.vertex_index & 2u) * 2.0 - 1.0;\n  out.uv = vec2f(x * 0.5 + 0.5, 0.5 - y * 0.5);\n  out.position = vec4f(x, y, 0.0, 1.0);", b$7, helperFns$proxy1);
     var vertexInputStruct = $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists__T__sjs_js_Array__sjs_js_Array__sjs_js_Array__T($m_Ltrivalibs_graphics_shader_derive$(), "VertexInput", [], [], $m_sjs_js_ArrayOpsCommon$().d([new $c_T3("vertex_index", "vertex_index", "u32")], []));
     var vertexOutputStruct = $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists__T__sjs_js_Array__sjs_js_Array__sjs_js_Array__T($m_Ltrivalibs_graphics_shader_derive$(), "VertexOutput", $m_sjs_js_ArrayOpsCommon$().d(["uv"], []), $m_sjs_js_ArrayOpsCommon$().d(["vec2<f32>"], []), $m_sjs_js_ArrayOpsCommon$().d([new $c_T3("position", "position", "vec4<f32>")], []));
     var fragmentOutputStruct = $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists__T__sjs_js_Array__sjs_js_Array__sjs_js_Array__T($m_Ltrivalibs_graphics_shader_derive$(), "FragmentOutput", $m_sjs_js_ArrayOpsCommon$().d(["color"], []), $m_sjs_js_ArrayOpsCommon$().d(["vec4<f32>"], []), []);
@@ -1821,15 +1821,15 @@ $p.ei = (function(canvas) {
     var uv$proxy2 = ul$proxy2.bq;
     var buffer$2 = new ArrayBuffer(4);
     var arr$proxy2 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
-    var b$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy2.dv, 0), p$3.g, uv$proxy2);
-    b$1.aQ.bm(b$1.Q, 0.0);
-    var $x_11 = b$1.aP.queue;
-    var $x_10 = b$1.ai;
-    var s$proxy3 = b$1.Q;
+    var b$8 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy2.dv, 0), p$3.g, uv$proxy2);
+    b$8.aQ.bm(b$8.Q, 0.0);
+    var $x_11 = b$8.aP.queue;
+    var $x_10 = b$8.ai;
+    var s$proxy3 = b$8.Q;
     $x_11.writeBuffer($x_10, 0.0, s$proxy3.dv.buffer);
     var Bindable_this = p$3.ec(shade, (void 0), (void 0), (void 0));
     var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("res", uRes);
-    var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("time", b$1);
+    var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("time", b$8);
     var \u03b4scrutinee61 = e1$proxy1.bu;
     var idx$1 = (Bindable_this.r.av.res | 0);
     while (((Bindable_this.A.length | 0) <= idx$1)) {
@@ -1859,10 +1859,10 @@ $p.ei = (function(canvas) {
       var tpf = (+arg1$2);
       time.ae = (time.ae + (0.001 * tpf));
       var value$proxy3 = time.ae;
-      b$1.aQ.bm(b$1.Q, value$proxy3);
-      var $x_15 = b$1.aP.queue;
-      var $x_14 = b$1.ai;
-      var s$proxy5 = b$1.Q;
+      b$8.aQ.bm(b$8.Q, value$proxy3);
+      var $x_15 = b$8.aP.queue;
+      var $x_14 = b$8.ai;
+      var s$proxy5 = b$8.Q;
       $x_15.writeBuffer($x_14, 0.0, s$proxy5.dv.buffer);
       p$2.em(panel);
     }))(new $c_sr_DoubleRef(0.0), p$3));

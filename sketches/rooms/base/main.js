@@ -3056,8 +3056,8 @@ $p.oJ = (function(canvas) {
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
     var overscan$1 = 3.0;
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
-    var clearColor$2 = new $c_Ltrivalibs_graphics_math_cpu_Vec4(0.0, 0.0, 0.0, 0.0);
-    var mirror = $m_Lsketchlib_utils_mirror_MirrorReflection$().mF(p$5, cam, shapes$1, "vp", $m_Lsketches_rooms_base_Base$package$().fL, mirror$1, 10.0, stretch$1, 6, overscan$1, clearColor$2);
+    var clearColor$1 = new $c_Ltrivalibs_graphics_math_cpu_Vec4(0.0, 0.0, 0.0, 0.0);
+    var mirror = $m_Lsketchlib_utils_mirror_MirrorReflection$().mF(p$5, cam, shapes$1, "vp", $m_Lsketches_rooms_base_Base$package$().fL, mirror$1, 10.0, stretch$1, 6, overscan$1, clearColor$1);
     var build$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$5) => {
       var body$proxy11 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$6) => {
         var $x_29 = $m_sjsr_package$();
@@ -3217,9 +3217,9 @@ $p.oJ = (function(canvas) {
     var buffer$2 = new ArrayBuffer(64);
     var arr$proxy7 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
     var sceneVp = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy7.dv, 0), p$5.h, uv$proxy2);
-    var clearColor$3 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().nv().g(new $c_T4(0.5, 0.6, 0.7, 1.0));
+    var clearColor$2 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().nv().g(new $c_T4(0.5, 0.6, 0.7, 1.0));
     var shapes$2 = [Bindable_this, wallShapeW, ceilShape];
-    var Panel_this = p$5.fm((void 0), (void 0), clearColor$3, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$2, (void 0), (void 0));
+    var Panel_this = p$5.fm((void 0), (void 0), clearColor$2, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$2, (void 0), (void 0));
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("vp", sceneVp);
     var \u03b4scrutinee500 = e1$proxy3.x;
     var dict$proxy1 = Panel_this.gz;
