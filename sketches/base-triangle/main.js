@@ -1819,13 +1819,13 @@ $p.ej = (function(canvas) {
       var w = (+v1$2);
       var h$1 = (+v2$2);
       var aspect$2 = (w / h$1);
-      var fov$2 = cam.aw;
+      var fov$1 = cam.aw;
       var near$1 = cam.bt;
       var far$1 = cam.bs;
       var rotH$2 = cam.ax;
       var rotV$2 = cam.ay;
       var pos$2 = cam.bu;
-      cam.ft(fov$2, aspect$2, near$1, far$1, rotH$2, rotV$2, pos$2);
+      cam.ft(fov$1, aspect$2, near$1, far$1, rotH$2, rotV$2, pos$2);
     })));
     $m_Ltrivalibs_utils_animation_animate$package$().ef(((time, p$2) => ((arg1$2) => {
       var tpf = (+arg1$2);

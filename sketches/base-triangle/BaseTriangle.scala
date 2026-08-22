@@ -1,7 +1,6 @@
 package sketches.base_triangle
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.graphics.math.gpu.{*, given}
@@ -11,6 +10,9 @@ import trivalibs.graphics.shader.dsl.{*, given}
 import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.numbers.NumExt.given
+import trivalibs.utils.numbers.Pi
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 @JSExportTopLevel("sketch")
 def baseTriangle(canvas: HTMLCanvasElement): Unit =
@@ -41,7 +43,7 @@ def baseTriangle(canvas: HTMLCanvasElement): Unit =
     val shape = p.shape(form, shade).bind("mvp" := mvp)
 
     val cam = PerspectiveCamera(
-      fov = math.Pi / 3.0,
+      fov = Pi / 3.0,
       near = 0.1,
       far = 100.0,
       pos = Vec3(0.0, 0.0, 2.5),

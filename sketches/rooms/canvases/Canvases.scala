@@ -1,7 +1,6 @@
 package sketches.rooms.canvases
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -20,7 +19,10 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
+import trivalibs.utils.numbers.Tau
 import trivalibs.utils.random.randInRange
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // A first-person walkable room with paintings hanging on the walls.
@@ -528,7 +530,6 @@ def roomsCanvases(canvas: HTMLCanvasElement): Unit =
       )
 
     // Four walls, each from the room box's extent, facing inward.
-    val Tau = 2.0 * math.Pi
     val wallFront = mkWall(
       Vec3(0.0, RoomHeight / 2.0, RoomDepth / 2.0),
       RoomWidth,

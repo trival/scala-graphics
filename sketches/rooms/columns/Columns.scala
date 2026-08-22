@@ -1,7 +1,6 @@
 package sketches.rooms.columns
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.dev.*
 import trivalibs.graphics.buffers.*
 import trivalibs.graphics.geometry.{*, given}
@@ -14,6 +13,10 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
+import trivalibs.utils.numbers.Pi
+import trivalibs.utils.numbers.Tau
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // Port of the Rust `rooms/columns` sketch: a first-person outdoor courtyard
@@ -198,7 +201,7 @@ def roomsColumns(canvas: HTMLCanvasElement): Unit =
       balkInst(
         Transform(
           translation = Vec3(0.0, balkY, iz * ColSpace),
-          rotation = Quat.fromRotationY(math.Pi / 2.0),
+          rotation = Quat.fromRotationY(Pi / 2.0),
           scale = Vec3(1.0, 1.0, ColsXHalf * 2.0),
         ),
       )
@@ -206,7 +209,6 @@ def roomsColumns(canvas: HTMLCanvasElement): Unit =
 
     // Walls — 4 around the perimeter, each rotated to face inward and
     // stretched along its local X to span the courtyard side.
-    val Tau = 2.0 * math.Pi
     inline def wallInst(t: Transform): Unit =
       val m = t.matrix
       wallShape.instances.add("model" := m, "normalMat" := normalMat(m))

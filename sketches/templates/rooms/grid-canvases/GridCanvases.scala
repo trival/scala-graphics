@@ -18,6 +18,7 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
+import trivalibs.utils.numbers.Tau
 
 // ---------------------------------------------------------------------------
 // TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
@@ -499,7 +500,6 @@ val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
 // ===========================================================================
 
 val Up = Vec3.Y
-val Tau = 2.0 * math.Pi
 
 /** Which side of a ring the room is on. An ABSOLUTE claim about the world, not
   * a claim relative to how the ring's points happen to be ordered — see `Ring`
@@ -1184,7 +1184,7 @@ extension (w: Wall)
   *
   * The wall's top is `topY`, not the room height: with a grid ceiling the
   * perimeter beam takes over the wall plane above `WallTopY`, and a partition
-  * stops at its own ring height.
+  * stops at its own ring height.inset
   *
   * Orientation is carried ONCE, as `inwardNormal`. Anything wanting it as an
   * angle — a painting's model matrix, say — takes `atan2(n.x, n.z)` where it
