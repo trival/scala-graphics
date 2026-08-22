@@ -27,30 +27,143 @@ it. Each step's check is `bun run sketch <path>` followed by a look at
 
 ---
 
-## STATUS — as of 2026-08-02
+## STATUS — as of 2026-08-22
 
-**Template A is built through A7, and A7 grew into a refactor as well as a
-tuning pass.** The author considers the grid, the bloom and the geometry types a
-finished foundation to build B and C on. Next action is **A8**.
+**Template A is done and visually verified. X, B and C are built and compile;
+all three await a visual check.**
 
 | Step                        | State                                                  |
 | --------------------------- | ------------------------------------------------------ |
-| A0 scaffold + taxonomy move | ✅ verified in browser                                 |
-| A1 footprint replaces box   | ✅ verified identical to `canvases`                    |
-| A2 camera confinement       | ✅ verified, incl. the devMode gate in `bun run build` |
-| A3 library prerequisites    | ✅ verified via `tests/texture-bake`                   |
-| A4 coffer light             | ✅ verified                                            |
-| A5 raster geometry          | ✅ verified                                            |
-| A6 raster shading           | ✅ verified, after four artifact fixes below           |
-| A7 tuning + refactor        | ✅ verified — see _What A7 settled_                    |
-| A8 hanging affordance       | ✅ built — **awaiting the author's visual check**      |
-| A9 template pass            | ✅ built — **awaiting the author's cold-read check**   |
+| A0–A7                       | ✅ verified                                            |
+| A8 hanging affordance       | ✅ verified                                            |
+| A9 template pass            | ✅ verified                                            |
+| **X** extraction to `src/`  | ✅ built + 36 unit tests — **awaiting visual check**   |
+| **B** `l-room`              | ✅ built — **awaiting visual check**                   |
+| **C** `hex-partitions`      | ✅ built — **awaiting visual check**                   |
 
-**Template A is code-complete.** Both remaining gates are judgement calls the
-author has to make: A8's is visual (do the shadows land, do the pieces read
-under the coffer light), A9's is a cold read of the file. Until those pass, B
-should not be started — B is a copy of A, and anything wrong here is copied
-three times.
+### The order was changed, deliberately
+
+The plan sequenced this **A → B → X → C**, triggering the extraction on "the
+second shape". B and C were built simultaneously instead, so the extraction ran
+**first**, and all three templates are written against it rather than A being
+retrofitted and C being a third copy that then has to be unpicked. The reason
+the plan gave for putting X before C applies just as much to B.
+
+### The extraction is wider than the plan's list
+
+The plan said "extract exactly the roadmap's list and stop there". That list was
+written when B was the only consumer. With three templates and a `canvases`
+rewrite coming as the acceptance test, the following were pulled as well:
+
+| Also extracted                                    | Why                                                                                                                                                   |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Beam` / `BeamFamily` / `familyBeams`             | pure geometry, no look decision; would otherwise be three copies                                                                                       |
+| `perimeterBeams`                                  | C needs it, and it is the same shape of function                                                                                                       |
+| `BeamAtlas` — the faces + the band layout         | **the layout and the expressions that read it are one fact**, and they drifted once already (the beams rendered inside out). Now they cannot disagree |
+| `planeQuad`                                       | the bounding-box floor / ceiling / light plane, identical in all three                                                                                 |
+| `PaintingSpec` / `Painting` / `Hanging`           | see below — this is the one with a design change in it                                                                                                 |
+| `Ring.rect`                                       | a thin closed rectangle: partition, plinth, O-shape inner box                                                                                          |
+
+Still **not** extracted, and still duplicated per template: `roomNoise`'s
+tuning, every tint, the raster's shading, the beam profile, the grime line, the
+light shader. Those are where the look lives.
+
+### `Hanging` — and the animated `canvases` planned for
+
+The plan deferred the hanging machinery until "static and animated are two equal
+cases". They are now literally the same case: `Painting` carries `model` and
+`shadowRect` as mutable bindings plus `basePos` / `baseRect`, and `moveBy`
+couples a piece to its shadow. A static piece never writes them and pays one
+small uniform buffer for there being one type, one `hang`, and a composite that
+never asks which kind it holds.
+
+This also closes the wart the plan recorded under _What this sequence
+deliberately leaves out_: **`hang` no longer takes a `PaintingShade`**. `Hanging`
+is the per-painter cache the plan said would let it obtain the shade itself.
+
+`canvases`' sway then becomes, in the sketch:
+
+```scala
+sways.foreach: sw =>
+  sw.painting.moveBy(0.0, sw.amp * (t * sw.speed + sw.phase).sin)
+```
+
+The rhythm stays in the sketch, where it belongs.
+
+### Tests exist now — `bun run test`
+
+munit is wired up for `src/` (`scala-cli test src trivalibs/src test
+project.scala`). 36 tests in `test/room/` cover winding independence on a
+concave plan, the `Boundary` parity invariant on nested rings, `confine`
+convergence and its slide, `clipLine` split intervals, `perimeterBeams`' inset,
+the atlas band order at five beam angles, and the atlas size ceiling.
+
+### Things found while building, that the plan got wrong
+
+- **An axis-aligned L does NOT split `clipLine` intervals.** The plan expected B
+  to be where that path switches on. An L is monotone in both axes, so any
+  axis-parallel line enters and leaves once. Splitting needs a U, T or O, or a
+  diagonal family. The path is real and is covered by tests; B just does not
+  exercise it. Recorded in B's `PLAN.md`.
+- **C did not have to redo the atlas band-order reasoning.** The plan warned it
+  would. The argument is angle-independent — `perp` is `dir` rotated 90°, so
+  `perp × dir` is `+Y` whichever way a beam runs — so a 60° beam lays out
+  exactly like a 0° one. Asserted at five angles rather than argued.
+
+### What still needs the author
+
+- ~~All three templates, visually.~~ ✅ **Confirmed by the author.**
+  `grid-canvases` is visually unchanged by the extraction; `l-room` and
+  `hex-partitions` both behave and look as expected.
+- ~~C3, the open question by design.~~ ✅ **Decided by looking: the 60° wedges
+  DO read implausibly flat, so `hex-partitions` darkens its junctions.** See
+  _C3, decided_ below.
+- **B and C tuning.** Neither has had a pass like A7. In particular B's light
+  pool spacing / radius / floor and C's `HexRadius` and partition placement were
+  set by reasoning, not by looking.
+
+### C3, decided — the one place this family darkens an edge
+
+`grid-canvases` leaves junctions alone on a geometric argument, not taste: a 90°
+wedge admits most of the hemisphere, so the light reaches into all of it
+near-equally. **That argument is about 90° wedges and does not carry at 60°**,
+so `hex-partitions` darkens its junctions, asked for by name with its own
+constants. Nothing in the shared code accommodates it and nothing needed to.
+
+Two findings came out of building it, both of which changed the result:
+
+- **Every junction in a triangular raster is a TRIPLE POINT.** Three families of
+  parallel lines at 60°, equally spaced, all at `phase = 0` is the standard
+  triangular lattice — all three lines meet at every vertex. Verified
+  numerically: along any beam the distance to family B and to family C are equal
+  everywhere. The plan's phrasing ("triple points exist where three families
+  cross") reads as though they are a special case among ordinary crossings;
+  there are no ordinary crossings.
+
+  This is what made the first attempt **twice as strong as intended** — it was
+  tuned as though a typical junction scored 1 on the family count, and every
+  junction scores 2.
+
+- **The right bound is "not as dark as the soffit", and it can be structural.**
+  A side face that reached the soffit tint reads as the beam turned inside out;
+  the raster depends on downward faces being the dark ones. So the constant is a
+  dimensionless **fraction of the gap** to the soffit's brightness rather than an
+  absolute multiplier — `1` would exactly reach it. The gap is only about 10 %
+  (`1 - CeilTint/WallTintLow`), so the shipped `0.5` costs a junction ~5 %. As
+  an absolute number that bound is a discipline you have to remember; this way
+  it is arithmetic, and it tracks if the tints are re-tuned.
+
+The term is on **side faces only** (gated by the same `s` the noise uses — a
+soffit faces straight down into the open room and is not occluded by anything),
+uses **its own radius** about ten times `ArrisSoften` (a lighting falloff, not a
+material transition, so it wants the scale of the pocket), ramps in **before**
+the junction (inside the overlap the face is buried and invisible), and is
+applied **after** `BeamTopGlow` (the glow is "how much light plane this face
+sees", which is exactly what a junction reduces).
+
+It stays **off at the walls**, deliberately: the count includes only the three
+field families, so the generated perimeter beams contribute nothing. The house
+rule that the raster does not darken where it meets a wall is left standing.
 
 ### What A7 settled
 
@@ -785,8 +898,17 @@ per-surface `topY` since A1.
   them out by height).
 - Camera keeps 0.5 m clearance walking a full lap around each one, and the
   even-odd `isInside` test correctly treats the partition interior as outside.
-- Each partition's own top rim gets the tint gradient and the noise edge fade,
-  anchored to _its_ `topY`, not the room's.
+- Each partition's own top rim gets the **noise edge fade**, anchored to _its_
+  `topY` — an open rim is a real geometry edge and the material rounds off
+  there.
+
+  **The tint gradient is NOT per-surface, and this was wrong here until built.**
+  It is anchored to `WallTopY`, the room's ceiling line, always. It depicts a
+  broad settling of tone approaching the _ceiling_, so a partition stopping at
+  2.5 m never reaches that zone and stays at `WallTintLow` all the way up. Given
+  its own top instead, a short partition gets a private ceiling-settling at its
+  rim that reads as a shadow nothing casts. The two heights in the wall bake
+  genuinely differ; only the fade follows the surface.
 - One pipeline still bakes every wall in the room — partitions at a third height
   did not add a shade. If they did, A3's uniforms are not wired through.
 - No top caps, and none needed: with `y` locked to `EyeHeight` the tops are
@@ -821,7 +943,10 @@ whatever C3 decided about triple points.
   purpose; the first real exhibition is its own sketch and will send A7's
   constants back for another pass, which is normal.
 - **Prebaked AO and the ambience stack.** Available modules, off by default.
-  Nothing darkens an edge until a room asks for it by name.
+  Nothing darkens an edge until a room asks for it by name. `hex-partitions` is
+  the first room to ask — see _C3, decided_ — and it did so with its own two
+  constants inside its own beam bake, needing no accommodation here whatever.
+  That is the shape any future occlusion should take.
 - **`boundsCeiling` on `Ring`.** The `height >= roomHeight` predicate holds for
   all three templates. It breaks on columns, which reach the ceiling but must
   not clip the raster — substitute it then, and the change is invisible until

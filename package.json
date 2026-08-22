@@ -5,6 +5,7 @@
 		"sketch": "bun scripts/sketch.ts",
 		"sketch:watch": "bun scripts/sketch.ts --watch",
 		"sketches": "bun scripts/sketches.ts",
+		"test": "scala-cli test src trivalibs/src test project.scala",
 		"dev": "vite",
 		"build": "vite build",
 		"preview": "vite preview"

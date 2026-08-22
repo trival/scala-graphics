@@ -1,4 +1,4 @@
-package sketches.templates.rooms.gridcanvases
+package sketches.templates.rooms.hexpartitions
 
 import org.scalajs.dom.HTMLCanvasElement
 import scala.scalajs.js.annotation.JSExportTopLevel
@@ -22,39 +22,63 @@ import trivalibs.utils.numbers.NumExt.given
 import trivalibs.utils.numbers.Tau
 
 // ---------------------------------------------------------------------------
-// TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
+// TEMPLATE — a hexagonal room with a triangular raster and two free-standing
+// partitions.
 //
 // Open it, read it, copy it, tune it. It is meant to be read cold and then
 // edited, not maintained as a finished scene; a sketch copied from it is an
 // OUTCOME and should be lean and sparsely commented, with the explanatory
 // weight left behind here.
 //
-// It enables one situation: a floor plan, an ambient-baked shell, a grid
-// ceiling over a recessed light, camera confinement, and walls that accept
-// hung pieces.
+// THIS IS `grid-canvases` WITH A PLAN THAT CANNOT SNAP AND THINGS STANDING IN
+// IT. Read that one first — it carries the full account of the room, the
+// raster, the coffer and the hang. Two independent features land here, and they
+// happen to share a template because each is small:
+//
+//   1. **A plan that cannot snap to the lattice.** A hexagon's walls are not
+//      parallel to any two beam families at once, so the trick every
+//      axis-aligned room uses — derive the room FROM the grid and get a
+//      perimeter beam against each wall for free — is unavailable. The plan is
+//      authored directly in meters, and `perimeterBeams` generates explicitly
+//      what snapping would have given. That is the whole cost of an odd plan.
+//
+//   2. **Rings the room is OUTSIDE of.** A free-standing partition is an
+//      `Outward` ring that stops below the ceiling. It is not a new concept and
+//      needs no new code path: the floor sees it, the camera is confined by it,
+//      both its faces hang pieces, and the raster runs straight over it — all
+//      of that by filtering the same ring list two different ways.
+//
+// It also takes the raster somewhere `grid-canvases` explicitly declined to go.
+// Three families at 60° close far tighter wedges than two at 90°, and this
+// lattice is ALL triple points — so the argument for leaving junctions alone,
+// which is an argument about 90° wedges, does not apply and this template
+// darkens them. See _Junction darkening_ in TUNABLES; it is the only place in
+// the family that darkens an edge for a reason that is about light.
 //
 // WHERE TO TOUCH
-//   room shape ....... the single `Ring` in `main`. An L is a 6-point ring;
-//                      a hexagon is 6 points at 60°. Nothing else changes.
-//   room size ........ the wanted extents passed to `snapHalfExtent` — never
-//                      `RoomWidth` directly, which is derived from them.
+//   room shape ....... `hexagon` in `main`. Authored in METERS — there is no
+//                      snapping here and there cannot be.
+//   room size ........ `HexRadius`. Watch the atlas ceiling noted on
+//                      `BeamCrossTexScale`: beam count grows as the square.
+//   partitions ....... `Partitions` in TUNABLES. Add, move, remove; nothing
+//                      downstream needs to know.
 //   any look value ... the TUNABLES block below. Nothing tunable lives lower
 //                      down; if you had to hunt for a knob, it belongs up there.
 //   the light ........ the fenced light-shader block. That one is yours.
 //   what hangs ....... the CURATION block above `main`, and `curate` inside it.
 //                      Delete both and write your own.
-//   a partition ...... a second `Ring`, `Facing.Outward`, `height` below the
-//                      room's. Everything downstream already handles it.
 //
 // THE FILE IN ORDER
 //   TUNABLES ......... look decisions, including `roomNoise` and `grime`, which
 //                      are functions rather than constants because every number
 //                      in them is a look decision and none means anything alone.
-//   STRUCTURAL ....... a pointer. The plan types, the wall and beam geometry,
-//                      the camera clamp, the distance fields and the hanging
-//                      mechanism all live in `sketchlib.utils.room`
-//                      (`src/utils/room/`), shared by every room template —
-//                      because none of them makes a look decision.
+//   STRUCTURAL ....... a pointer. The plan types, the wall and beam geometry
+//                      (including `perimeterBeams`, which this template is the
+//                      first to need), the camera clamp, the distance fields
+//                      and the hanging mechanism all live in
+//                      `sketchlib.utils.room` (`src/utils/room/`), shared by
+//                      every room template — because none of them makes a look
+//                      decision.
 //   CURATION ......... crude stand-in content. Not a layout to imitate.
 //   `main` ........... bakes, shades, scene assembly, camera.
 //
@@ -71,10 +95,21 @@ import trivalibs.utils.numbers.Tau
 // function bodies here, which is how confusing them becomes a bug rather than a
 // style quibble.
 //
-// NOTHING DARKENS AT AN EDGE. Not where walls meet, not where the raster meets
-// a wall, not where beams cross. That is a design decision, not an omission —
-// see PLAN.md before adding occlusion. The one darkening is the grime line at
-// the floor, and it is dirt, not light.
+// ALMOST NOTHING DARKENS AT AN EDGE, and this template is the one exception in
+// the family. Nothing darkens where walls meet, and nothing darkens where the
+// raster meets a wall — that is a design decision with an argument behind it,
+// not an omission, and PLAN.md carries the argument.
+//
+// TWO THINGS DO DARKEN HERE, and both are named:
+//   * the grime line at the floor, which is DIRT, not light — which is exactly
+//     why it belongs only there and generalizes to no other edge;
+//   * the raster's junctions, because at 60° the wedges genuinely close and
+//     `grid-canvases`' argument for leaving them alone is an argument about
+//     90° wedges. See _Junction darkening_ in TUNABLES.
+//
+// Neither is a licence for the third. Occlusion in this family is always a
+// module asked for BY NAME with its own constants, never a reuse of a fade
+// tuned for something else.
 //
 // See PLAN.md for the longer why and the list of things that are load-bearing,
 // and `documents/grid-ceiling-rooms-plan.md` for the full design rationale.
@@ -87,20 +122,36 @@ import trivalibs.utils.numbers.Tau
 
 // ---- The ceiling beam lattice, and the room derived from it ----------------
 //
-// For an axis-aligned plan, do NOT snap the grid to the room — derive the room
-// from the grid. Beam centerlines sit at k·GridSpacing; each wall plane lands
-// flush with the outer face of the beam nearest the wanted extent. The beam
-// adjacent to each wall then IS the perimeter beam: no extra generator, no
-// special-cased geometry, and the light openings are inset by one beam width at
-// every wall rather than dying into the corner. That inset is the intended
-// architectural transition, not a side effect.
+// THIS PLAN CANNOT SNAP, and that is the premise of the template.
 //
-// A plan whose walls are not parallel to a beam family — a hexagon — cannot
-// snap, and needs an explicit perimeter-beam generator instead. This is the
-// free path where it applies.
-val GridSpacing = 0.50
+// An axis-aligned room derives itself FROM the lattice: beam centerlines sit at
+// k·GridSpacing, each wall plane lands flush with the outer face of the nearest
+// beam, and the beam against each wall then IS the perimeter beam — no extra
+// generator, no special-cased geometry, and light openings inset by one beam
+// width at every wall rather than dying into a corner.
+//
+// A hexagon's six walls are not parallel to any two of the three beam families
+// at once, so no single lattice offset can put a beam face on every wall plane.
+// The plan is therefore authored in METERS and `perimeterBeams` generates
+// explicitly what snapping would have given. Everything downstream — the inset
+// openings, the culled outward faces, the `atWall` term — is unchanged, because
+// the generator insets each beam by half a strip so its soffit spans the same
+// `0 … StripWidth` from the wall that a snapped one does.
+val GridSpacing = 0.55
 val StripWidth = 0.10
 val StripHeight = 0.32
+
+/** Circumradius of the hexagon, meters — the distance from its center to a
+  * VERTEX. Across the flats it is `√3 ×` this, which is the number that
+  * actually reads as the room's width.
+  *
+  * **Watch the beam count.** Three families over a hexagon give roughly
+  * `3 · √3 · HexRadius / GridSpacing` beams plus six perimeter ones, and the
+  * atlas is one row per beam — see `BeamCrossTexScale` for the ceiling that
+  * runs into and what it looks like when it does (the raster simply vanishes).
+  * At the values here that is about 60 beams against a limit near 86.
+  */
+val HexRadius = 5.5
 
 /** Vertical offset between successive beam families, to keep their soffits from
   * being coplanar where they cross. See the family loop for why this is needed
@@ -127,19 +178,134 @@ val FamilyYStagger = 0.0006
   */
 val ArrisSoften = 0.02
 
-/** Snap a wanted half-extent (meters) out to the outer face of the nearest
-  * beam.
-  */
-def snapHalfExtent(wanted: Double): Double =
-  val k = Math.round((wanted - StripWidth / 2.0) / GridSpacing).toDouble
-  k * GridSpacing + StripWidth / 2.0
+// ---- Junction darkening — THE ONE PLACE THIS FAMILY DARKENS AN EDGE --------
+//
+// Every other room template darkens nothing anywhere, and that is a design
+// decision with an argument behind it rather than an omission: a 90° wedge
+// admits most of the hemisphere, so under a large diffuse source above the grid
+// the light reaches into all of it near-equally, and adding occlusion produces
+// a recognisable game-engine look that reads as artificial against this
+// subject.
+//
+// **That argument does not carry at 60°.** Three families meeting at sixty
+// degrees close far tighter wedges than two at ninety, and at a TRIPLE POINT
+// three of them close at once around a small triangular pocket. There is
+// materially less open sky there, and the eye reads a wedge that bright as
+// wrong. So this raster asks for occlusion BY NAME, with its own constants,
+// rather than inheriting a rule written for a square grid.
+//
+// Two properties keep it from becoming the thing the rule was guarding against:
+// it is on the SIDE FACES only — the soffits face straight down into the open
+// room and are not occluded by anything — and it is expressed as a FRACTION OF
+// THE GAP to the soffit's own brightness, so it structurally cannot reach it.
+//
+// **EVERY JUNCTION IN THIS RASTER IS A TRIPLE POINT**, which is worth knowing
+// before you go looking for the two-family crossings and fail to find any.
+// Three families of parallel lines at 60°, equally spaced, all with `phase = 0`
+// is the standard triangular lattice: all three lines meet at every vertex. So
+// the "a triple point is twice a plain crossing" scaling below never actually
+// contrasts two cases here — it is uniform, and it is only there so the term
+// stays correct if a family's `phase` or `spacing` is ever changed to break the
+// coincidence.
 
-// Room extents are DERIVED, not authored — tune the wanted values, read the
-// snapped ones — they will not usually be what you asked for, and that is the
-// mechanism working. (At the spacing above: 6.5 → 6.50, 10.0 → 9.70.)
-val RoomWidth = snapHalfExtent(6.5 / 2.0) * 2.0
-val RoomDepth = snapHalfExtent(10.0 / 2.0) * 2.0
+/** How far along a beam's run the darkening reaches, in meters — the wedge's
+  * falloff, not the wedge itself.
+  *
+  * It has to be MUCH wider than `ArrisSoften`. That one is a material
+  * transition a couple of centimeters across; this is a lighting falloff and
+  * wants to be on the order of the pocket, so roughly half `GridSpacing`.
+  * Narrower and it reads as a drawn line at each junction instead of as shading.
+  *
+  * Bounded above by the cell: past `GridSpacing / 2` every point in the raster
+  * is within reach of some other family and the darkening stops varying — it
+  * just dims the whole raster, which is what `CeilTint` is for.
+  */
+val JunctionRadius = 0.28
+
+/** How far a fully-enclosed junction darkens a side face, as a FRACTION OF THE
+  * WAY toward the soffit's own brightness. `0` is off, `1` would take the wedge
+  * exactly as dark as the ceiling.
+  *
+  * **A fraction rather than a brightness, so the bound is structural.** A side
+  * face that reached the soffit tint would read as the beam turned inside out:
+  * the whole raster depends on downward faces being the dark ones and the
+  * vertical faces catching more light. Expressed as an absolute multiplier that
+  * is a discipline you have to remember; expressed this way it is arithmetic,
+  * and it tracks automatically if `CeilTint` or `WallTintLow` are re-tuned.
+  *
+  * The gap it is a fraction OF is small — `1 - CeilTint/WallTintLow` is about
+  * 10 % — so at `0.5` a junction loses roughly 5 % of its brightness. That is
+  * the right order: this stands in for a solid-angle difference, not a cast
+  * shadow, and the room's whole look rests on near-uniform brightness with
+  * slight variation. Past ~0.7 the raster starts reading as dirty rather than
+  * as deep.
+  */
+val JunctionDarken = 0.5
+
+/** The gap the above is a fraction of, measured where it is TIGHTEST — just
+  * above the arris, where a side face is still `WallTintLow` and has not begun
+  * lifting toward `BeamSideTopTint`. Higher up the side there is far more
+  * headroom, and the same fraction produces a bigger absolute dip, which is
+  * right: more of the view is being blocked where there was more to see.
+  *
+  * Red channel only. The tints are near-neutral greys, so a per-channel or
+  * luminance version would differ in the third decimal and cost a reader a
+  * paragraph.
+  *
+  * **A `def`, and it has to be.** It reads tints declared further down this
+  * block, and top-level `val`s initialize in declaration order — as a `val`
+  * here it would read them before they exist. Do not tidy it into one without
+  * also moving it below the tints.
+  */
+def junctionMaxDim: Double = 1.0 - CeilTint.x / WallTintLow.x
+
 val RoomHeight = 5.5
+
+/** The room's widest span, across the flats. Only `LightOverhang` needs it. */
+val RoomSpan = HexRadius * 3.0.sqrt
+
+// ---- The partitions --------------------------------------------------------
+//
+// A free-standing partition is an `Outward` ring that stops below the ceiling,
+// and it is NOT A NEW CONCEPT — an O-shape's inner box is the same object at
+// full height. That collapse is the point: one code path covers both, and every
+// consumer gets the behavior it should by filtering the same ring list.
+//
+//   floor grime + noise fade   floorBoundary     wraps all four faces
+//   camera confinement         floorBoundary     0.5 m clearance, walk around
+//   walls + hanging            every ring        both faces hangable
+//   raster clipping            ceilingBoundary   the grid runs straight over
+//   wall tint + noise fade     its own topY      fades against ITS open rim
+//
+// NO TOP CAP, and none is needed: `y` is locked to `EyeHeight`, so the top of
+// anything taller than 1.7 m is never in view, and the floor mirror reflects to
+// below the floor and sees undersides. Flying in dev mode shows the open tops
+// the way noclip shows a level's backstage — expected, not a defect. A
+// partition SHORTER than eye height is a different case and does need its top.
+
+/** Partition height. Below `RoomHeight`, which is the whole of what makes
+  * `ceilingBoundary` filter these out and the raster run over them.
+  */
+val PartitionHeight = 2.5
+
+val PartitionThickness = 0.25
+
+/** Where the partitions stand: center, direction, length. Meters.
+  *
+  * Two of them, offset from each other rather than mirrored, so the room does
+  * not read as symmetrical and there is a genuine route around each. They run
+  * parallel to one of the hexagon's wall pairs, which reads as deliberate
+  * rather than as furniture dropped at an angle.
+  *
+  * **Leave room to walk.** A visitor needs `WallClearance` from each face plus
+  * their own width, so a partition wants at least ~1.5 m of clear floor around
+  * it — the camera does not get stuck, it simply cannot reach the gap, which
+  * looks like an invisible wall.
+  */
+val Partitions = Arr(
+  (center = Vec2(-1.9, -1.6), dir = Vec2(1.0, 0.0), length = 3.6),
+  (center = Vec2(1.9, 1.6), dir = Vec2(1.0, 0.0), length = 3.6),
+)
 
 /** How close the visitor may get to any surface, including the outer faces of
   * anything standing in the room and the faces of hung pieces.
@@ -204,7 +370,7 @@ val LightY = CeilY + CofferDepth
   * silently goes stale.
   */
 val LightOverhang =
-  (LightY - WallTopY) * (RoomWidth.max(RoomDepth) - WallClearance)
+  (LightY - WallTopY) * (RoomSpan - WallClearance)
     / (WallTopY - EyeHeight) * 1.05 // 5 % margin off the exact tangent
 
 /** Baked texels per world meter for the AMBIENCE field only. It is smooth,
@@ -571,7 +737,7 @@ val PieceShadowDims = Arr(
 )
 
 @JSExportTopLevel("sketch")
-def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
+def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val sampler = p.samplerLinear
 
@@ -587,31 +753,41 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     // The floor plan
     // -----------------------------------------------------------------------
 
-    // A rectangle: (-x,-z) → (+x,-z) → (+x,+z) → (-x,+z). The order is free —
-    // `Facing.Inward` says the room is inside the loop and that settles the
-    // normals whichever way round the points run (see `Ring`). What the order
-    // DOES fix is which wall is wall 0, 1, 2, 3.
+    // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED.
     //
-    // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED. An L is a 6-point ring
-    // here and nothing else; a hexagon is a 6-point ring at 60°. Everything
-    // below derives from these points.
-    val hw = RoomWidth / 2.0
-    val hd = RoomDepth / 2.0
-    val footprint = Footprint(
-      Arr(
-        Ring(
-          points = Arr(
-            Vec2(-hw, -hd),
-            Vec2(hw, -hd),
-            Vec2(hw, hd),
-            Vec2(-hw, hd),
-          ),
-          facing = Facing.Inward,
-          height = RoomHeight,
-        ),
-      ),
-    )
+    // Vertex `i` at `i · 60°`, so edge directions come out at 120°, 180°, 240°,
+    // 300°, 0°, 60° — THREE distinct axes, each shared by an opposite wall pair.
+    // Those three axes are exactly the beam family directions below, and that
+    // correspondence is the whole reason a hexagon wants a triangular raster
+    // rather than the square one every axis-aligned room uses.
+    //
+    // Authored in meters. There is no snapping here and there cannot be: no
+    // single lattice offset can put a beam face on all six wall planes, since
+    // each family is parallel to only one pair of them.
+    val hexPoints = Arr[Vec2]()
+    for i <- 0 until 6 do
+      val a = i.toDouble / 6.0 * Tau
+      hexPoints.push(Vec2(HexRadius * a.cos, HexRadius * a.sin))
+    val hexagon =
+      Ring(points = hexPoints, facing = Facing.Inward, height = RoomHeight)
 
+    // `Facing.Outward` — the room is OUTSIDE these — and a height below the
+    // room's, which is the one bit that makes the raster ignore them.
+    val partitions = Partitions.map: s =>
+      Ring.rect(
+        center = s.center,
+        dir = s.dir,
+        length = s.length,
+        thickness = PartitionThickness,
+        facing = Facing.Outward,
+        height = PartitionHeight,
+      )
+
+    val footprint = Footprint(Arr(hexagon) ++ partitions)
+
+    // The SAME ring list, filtered two ways — which is the whole of what makes
+    // a partition free. Everything that meets the floor is bounded by all of
+    // them; only what reaches the ceiling bounds the raster and the light.
     val floorBnd = footprint.floorBoundary
     val ceilBnd = footprint.ceilingBoundary(RoomHeight)
     val bb = footprint.bounds
@@ -637,20 +813,31 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     val lightForm =
       form(Arr(planeQuad(bb, LightY, faceUp = true, margin = LightOverhang)))
 
-    val walls = wallsFrom(floorBnd, WallTopY)
+    // Room walls stop below the ceiling line, where the perimeter beam takes
+    // over the wall plane; a partition stops at its OWN height. Same builder,
+    // same shade, same bake — `topY` is a per-bake uniform, so a partition at a
+    // third height adds no pipeline. If it ever seems to need one, that uniform
+    // is not wired through.
+    val walls = wallsFrom(hexagon.boundary, WallTopY)
+    val partitionWalls = Arr[Wall]()
+    for r <- partitions do
+      for w <- wallsFrom(r.boundary, PartitionHeight) do partitionWalls.push(w)
 
     // ----- The raster ------------------------------------------------------
     //
-    // Two families at 90°. A hexagon calls this three times at 60° — that is
-    // the whole difference, data rather than new code.
+    // THREE families at 60°, each parallel to one opposite wall pair — a
+    // triangular raster. Against `grid-canvases`' two at 90° that is DATA, not
+    // new code: same generator, same clip, same atlas, same bake.
     //
-    // `phase = 0` with the lattice-derived room puts the outermost centerline
-    // at k·GridSpacing and its outer face exactly on the wall plane, so each
-    // wall's perimeter beam falls out for free.
-    val families = Arr(
-      BeamFamily(Vec2(1.0, 0.0), GridSpacing, 0.0, StripWidth),
-      BeamFamily(Vec2(0.0, 1.0), GridSpacing, 0.0, StripWidth),
-    )
+    // `phase = 0` puts one centerline of each family through the origin, so the
+    // pattern is symmetric about the room's center. It cannot also put a beam
+    // face on a wall plane — no offset can, for all six at once — which is what
+    // the perimeter generator below is for.
+    val families = Arr[BeamFamily]()
+    for i <- 0 until 3 do
+      val a = i.toDouble / 3.0 * Tau / 2.0 // 0°, 60°, 120°
+      families.push(BeamFamily(Vec2(a.cos, a.sin), GridSpacing, 0.0, StripWidth))
+
     val beams = Arr[Beam]()
     for i <- 0 until families.length do
       // Each family's soffit is dropped a hair below the previous one. Beams
@@ -679,6 +866,28 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       while j < bs.length do
         beams.push(bs(j))
         j += 1
+
+    // THE PERIMETER, GENERATED — one beam along every wall, inset so its outer
+    // face is flush with the wall plane. This is the generator the roadmap
+    // defers precisely until a plan that cannot snap needs it, and it is
+    // ANOTHER PRODUCER INTO THE SAME `Arr[Beam]`, not a second kind of thing:
+    // everything downstream — the face layout, the culled outward side, the
+    // atlas row, the bake — treats these exactly like field beams.
+    //
+    // Its own stagger step, for the same reason the families have theirs: a
+    // perimeter beam's soffit is coplanar with the field beams it crosses, and
+    // a depth buffer cannot resolve coplanar faces.
+    //
+    // Beams interpenetrating at the wall is fine and expected. A field beam
+    // runs right up to the wall plane and its open end is coplanar with the
+    // wall, so it is never visible from inside.
+    for b <- perimeterBeams(
+        ceilBnd,
+        StripWidth,
+        StripHeight,
+        WallTopY - families.length * FamilyYStagger,
+      )
+    do beams.push(b)
 
     // The faces and the atlas frame they are addressed in. `BeamAtlas` owns the
     // band layout across the beam's cross-section AND the expressions that read
@@ -755,12 +964,27 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     // the whole integration story. The beams read as sitting in the ceiling
     // because they are lit like the ceiling and share its noise field.
     //
-    // NO JUNCTION DARKENING. Not at beam crossings, not where the raster meets
-    // a wall, not in the pockets between beams. Under a large diffuse source
-    // above the grid the light reaches into all of it near-equally, and adding
-    // occlusion there is the game-engine look this room avoids. (A 60° raster
-    // in a hexagon meets in far sharper wedges and might genuinely want it —
-    // decide that there, on its own merits, not by inheriting this.)
+    // NO JUNCTION DARKENING — SHIPPED THAT WAY, BUT THIS IS THE ONE TEMPLATE
+    // WHERE THE QUESTION IS GENUINELY OPEN.
+    //
+    // `grid-canvases` rules it out with an argument about geometry, not taste:
+    // a 90° wedge admits most of the hemisphere, so under a large diffuse
+    // source above the grid the light reaches into all of it near-equally, and
+    // adding occlusion produces the game-engine look this room avoids.
+    //
+    // **That argument does not carry here.** Three families at 60° meet in far
+    // sharper wedges, and at a TRIPLE POINT three of them meet at once —
+    // materially less open sky than a square crossing has. So the answer is not
+    // inherited from A; it is decided in this template by looking up at a triple
+    // point and asking whether the wedges read implausibly flat.
+    //
+    // They are shipped flat. If yours do not: add the term HERE, in this
+    // sketch's beam bake, with its own constant beside `ArrisSoften` above.
+    // `crossing` below already computes exactly the quantity it would key on —
+    // `overlap` reaches 3 at a triple point and 2 at a plain crossing — so this
+    // is a few lines and needs no accommodation in the shared code whatever.
+    // Do not reach for `EdgeFadeWorld`, which is tuned to round corners off
+    // rather than to absorb light.
     //
     // Two things vary across the beam, and neither is an edge effect. Both are
     // driven by one value, `soffitness` below — read that first.
@@ -899,6 +1123,51 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       val atWall =
         1.0 - edgeSetDist(wp.xz, ceilBnd).smoothstep(0.0, StripWidth)
 
+      /** How many OTHER beam families close in on this point: 0 along an open
+        * run, 1 at a two-family crossing, 2 at a triple point. The quantity the
+        * junction darkening is proportional to.
+        *
+        * Note this is NOT `overlap` above, and the difference is the point.
+        * `overlap` ramps over `ArrisSoften` — two centimeters — because it
+        * drives a material transition that has to land exactly on an arris.
+        * This ramps over `JunctionRadius`, half a cell, because it drives a
+        * lighting falloff. It also must not saturate: `crossing` clamps at 1
+        * and so cannot tell a triple point from a plain one, which is precisely
+        * the distinction this template exists to make.
+        *
+        * **It also has to ramp in BEFORE the junction, not at it.** Inside the
+        * overlap region a side face is buried in the perpendicular beam and
+        * invisible; the wedge you actually see is the run leading up to it. A
+        * radius on the order of the pocket puts the shading where the wedge is.
+        */
+      def nearFamily(f: BeamFamily): FloatExpr =
+        val o = wp.x * -f.dir.y + wp.z * f.dir.x
+        val d = (((o - f.phase) / f.spacing + 0.5).fract - 0.5).abs * f.spacing
+        1.0 - d.smoothstep(0.0, JunctionRadius)
+      var enclosure = nearFamily(families(0))
+      var ji = 1
+      while ji < families.length do
+        enclosure = enclosure + nearFamily(families(ji))
+        ji += 1
+
+      // A SIDE FACE IS ALWAYS EXACTLY `StripWidth / 2` FROM ITS OWN
+      // CENTERLINE — everywhere, on every beam, at every angle. So its own
+      // family contributes this same constant to `enclosure` wherever it is,
+      // and subtracting it leaves the count of OTHER families nearby.
+      //
+      // That makes the baseline exactly zero on an open run rather than
+      // approximately zero, which matters more here than it would in a square
+      // grid: a triangular raster's cells are small, so a fudged baseline would
+      // show up as a general dimming of the whole ceiling and get tuned out
+      // again by raising `CeilTint`.
+      //
+      // Written out rather than reusing `smoothstep` on a Double, because it is
+      // build-time arithmetic that constant-folds into a single WGSL literal.
+      val ownFamilyBase =
+        val t = ((StripWidth / 2.0) / JunctionRadius).clamp01
+        1.0 - t * t * (3.0 - 2.0 * t)
+      val junction = (enclosure - ownFamilyBase).clamp(0.0, 2.0)
+
       // AT A CROSSING THERE IS NO ARRIS. The perpendicular beam's material sits
       // right where the soffit's edge would be, so an edge transition there
       // depicts an edge that does not exist — and, drawn into the atlas, it is
@@ -942,7 +1211,32 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       // and nothing less. Zero on the soffit, which keeps its full ambience.
       val ambience = roomNoise(wp, normal, dEdge * (1.0 - s))
       val lit = ambience + (1.0 - ambience) * (sideLift * BeamTopGlow)
-      vec4(tint * lit, 1.0)
+
+      // JUNCTION DARKENING — see the tunables block for why this template has
+      // it and no other does.
+      //
+      // Gated by `1 - s`, so it is zero across every soffit and every arris and
+      // touches only the side faces. That is not a saving, it is the model: a
+      // soffit faces straight down into the open room and sees exactly what any
+      // other soffit sees, junction or not. The occluded surfaces are the
+      // vertical ones forming the wedge. Reusing `s` also means the term
+      // inherits the widening that `crossing` and `atWall` already do, so it
+      // cannot reintroduce a step where those two deliberately flattened one.
+      //
+      // Applied AFTER `BeamTopGlow`, deliberately. The glow says "this face is
+      // close to the light plane and sees a lot of it"; a junction is exactly
+      // what takes some of that view away, so darkening the ambience alone
+      // would be erased at the top of every side where the wedge is tightest.
+      //
+      // Normalized by how many families there ARE, so `JunctionDarken` keeps
+      // meaning "at a fully-enclosed junction" whether the raster has three
+      // families or two. With three, `junction` reaches 2 at every vertex of
+      // this lattice — see the tunables block on why that is every junction.
+      val maxEnclosure = (families.length - 1).toDouble
+      val junctionDim = 1.0
+        - (junction / maxEnclosure) * JunctionDarken * junctionMaxDim
+          * (1.0 - s)
+      vec4(tint * lit * junctionDim, 1.0)
 
     /** Wall ambience. ONE baker — and therefore one pipeline — for every wall
       * in the room, whatever its height.
@@ -966,9 +1260,9 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       val wp = ctx.in.worldPos
       val normal = ctx.in.normal
       val topY = ctx.bindings.topY
-      // TWO THINGS KEY ON A HEIGHT HERE, AND THEY KEY ON DIFFERENT ONES. Every
-      // wall in THIS room shares a top, so the distinction is invisible here —
-      // and glaring the moment you add the partition the header offers you.
+      // TWO THINGS KEY ON A HEIGHT HERE, AND THEY KEY ON DIFFERENT ONES. Mixing
+      // them up is invisible until something shorter than the room stands in
+      // it, at which point it is glaring.
       //
       //   the TINT gradient  → `WallTopY`, the ROOM's ceiling line, always
       //   the NOISE edge fade → `topY`, THIS surface's own top rim
@@ -976,7 +1270,7 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       // The gradient is a broad settling of tone approaching the CEILING — it
       // depicts proximity to the ceiling and nothing about the wall carrying
       // it. So it is anchored in absolute room coordinates, and a partition
-      // stopping below the room simply never reaches the zone and stays at
+      // stopping at 2.5 m simply never reaches the zone and stays at
       // `WallTintLow` all the way up. Anchoring it to the wall's own top
       // instead gives a short partition its own private ceiling-settling at its
       // rim, which reads as a shadow that nothing casts.
@@ -1125,13 +1419,20 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     // raster reflected in the floor is a large part of the payoff, so both it
     // and the light plane belong in here from the start.
     val aboveGround = Arr[AnyShape](lightShape, beamShape)
-    for i <- 0 until walls.length do
-      val wall = walls(i)
+
+    /** Build one wall's surface and hang whatever curation puts on it.
+      *
+      * A PARTITION FACE GOES THROUGH THIS UNCHANGED, which is the point. It is
+      * a `Wall` like any other — it just carries a lower `height`, which the
+      * bake reads as a uniform and the shading anchors its top-rim gradient and
+      * noise fade to. Nothing here asks whether it is a room wall.
+      */
+    def raiseWall(wall: Wall, index: Int): Unit =
       val wallForm = form(Arr(wall.quad))
       // Curation decides what hangs; the wall only needs to know the rects, and
       // only so it can darken under them. Swap `curate` for anything at all and
       // nothing below this line changes.
-      val pieces = curate(wall, i)
+      val pieces = curate(wall, index)
       aboveGround.push(
         p.shape(wallForm, texturedShade, cullMode = CullMode.None)
           .bind("samp" := sampler, "tex" := wallTex(wallForm, wall, pieces)),
@@ -1139,6 +1440,14 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       // The pieces go into `aboveGround` too, so the floor mirror reflects them
       // along with everything else. Nothing about them is special-cased there.
       for piece <- pieces do aboveGround.push(piece.shape)
+
+    for i <- 0 until walls.length do raiseWall(walls(i), i)
+    // The partitions' four faces each, hung on both sides — the proof that
+    // `Facing` gives hangable faces on both sides of a free-standing wall. The
+    // index continues past the room's walls so the color wheel keeps turning
+    // rather than restarting.
+    for i <- 0 until partitionWalls.length do
+      raiseWall(partitionWalls(i), walls.length + i)
 
     val wallColor = Vec4(0.90, 0.90, 0.90, 0.0)
 

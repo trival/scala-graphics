@@ -14,6 +14,37 @@ order and its visual checkpoints are
 `documents/room-templates-implementation.md`. This file carries the part a
 reader of _this sketch_ needs.
 
+## Where the code is
+
+**The structural half of this template now lives in `src/utils/room/`**
+(`sketchlib.utils.room`), shared by every room template. The sorting rule is
+"extract what contains no look decision", and it is what the seam runs on:
+
+| In `sketchlib.utils.room`                        | Still here in the sketch                    |
+| ------------------------------------------------ | ------------------------------------------- |
+| `Ring` / `Footprint` / `Boundary`, `clipLine`    | `roomNoise`, `grime`, every tint            |
+| `confine` / `nearest` / `contains`               | the raster's shading and beam profile       |
+| `Wall`, `wallsFrom`, `wall.quad` / `rotY`        | the atlas bake and its clear color          |
+| `planeQuad` — the bounding-box floor / ceiling   | the light shader, entirely                  |
+| `Beam` / `BeamFamily`, `familyBeams`, `BeamAtlas` | `ArrisSoften`, `crossing`, `atWall` widths |
+| `edgeSetDist` / `cornerDist` / `edgeDist`        | the shadow falloff's four numbers           |
+| `PaintingSpec` / `Painting` / `Hanging`          | what hangs, where, and how dim its shadow   |
+
+Geometry and behavior are shared because they are either right or wrong. Taste
+is not, so it stays duplicated between templates — a room re-tunes it, and a
+shared function that has to be re-parameterized every time is worse than a copy.
+
+**The bar the shared code has to keep clearing** is not "can this be
+configured?" but **"can a sketch replace this one step inline and keep
+everything downstream?"** Every intermediate value is plain data a sketch can
+construct itself: hand-build an `Arr[Beam]` and the atlas, the bake and the
+shading all still work. If a variation ever seems to need a new flag on a shared
+type, the seam is in the wrong place.
+
+Because none of it touches a `Painter`, it is also finally testable — see
+`test/room/`, run with `bun run test`. The invariants there used to be carried by
+argument in comments.
+
 ## Where to touch
 
 The one-screen answer, before any of the reasoning below.
@@ -56,7 +87,18 @@ wall `i` face wall `i`, which is how curation addresses opposing walls.
 **A wall is plan data.** No `Form`, no `rotY` — a GPU resource would force the
 whole derivation to run inside `Painter.init`, and a stored angle is a second
 copy of `inwardNormal` that can drift. Forms are built at the use site from
-`wall.quad`; the angle is an extension.
+`wall.quad`; the angle is an extension. That is also what makes the whole plan
+layer headless and therefore testable.
+
+**Static and animated pieces are one case.** `Painting` carries `model` and
+`shadowRect` as mutable bindings and `basePos` / `baseRect` as the resting pose
+they are measured from. Nothing in this template moves, so nothing writes them —
+it pays one small uniform buffer per piece for the privilege of there being one
+`Painting` type, one `hang`, and a shadow composite that never asks which kind
+it is holding. Move a piece with `Painting.moveBy`, never by writing `model`
+alone: the piece and its shadow have to travel together, and the world-meters →
+wall-UV conversion (with `v` running down) is exactly the bit worth not
+re-deriving.
 
 Six things are load-bearing and easy to undo by accident while tuning. Each has
 its reasoning beside the code; `documents/room-templates-implementation.md` has
@@ -125,10 +167,11 @@ piece in a single pass, so there is no cap on how many hang and no per-piece
 cost beyond an instance. And they are _shaped, not simulated_: there is no light
 position anywhere in this room, and hanging something does not introduce one.
 
-**No animation.** `canvases` sways its paintings and carries mutable bindings
-for it; nothing here moves, so `Painting` holds plain values. Animation returns
-when hanging becomes a shared utility with static and animated as two equal
-cases.
+**No animation _here_.** Nothing in this template moves. The machinery for it is
+in `Hanging` — `Painting.moveBy` couples a piece to its shadow, and a wall
+carrying moving pieces is re-composited by painting its panel each frame — but
+the RHYTHM of an animation (amplitude, speed, phase) is a look decision and
+belongs to the sketch that wants one.
 
 ## Conventions
 

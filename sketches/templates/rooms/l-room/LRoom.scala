@@ -1,4 +1,4 @@
-package sketches.templates.rooms.gridcanvases
+package sketches.templates.rooms.lroom
 
 import org.scalajs.dom.HTMLCanvasElement
 import scala.scalajs.js.annotation.JSExportTopLevel
@@ -19,25 +19,40 @@ import trivalibs.graphics.shader.{*, given}
 import trivalibs.utils.animation.animate
 import trivalibs.utils.js.*
 import trivalibs.utils.numbers.NumExt.given
-import trivalibs.utils.numbers.Tau
 
 // ---------------------------------------------------------------------------
-// TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
+// TEMPLATE — a walkable exhibition room on a CONCAVE floor plan.
 //
 // Open it, read it, copy it, tune it. It is meant to be read cold and then
 // edited, not maintained as a finished scene; a sketch copied from it is an
 // OUTCOME and should be lean and sparsely commented, with the explanatory
 // weight left behind here.
 //
+// THIS IS `grid-canvases` WITH SIX POINTS INSTEAD OF FOUR. Read that one first
+// — it carries the full account of the room, the raster, the coffer and the
+// hang. Only two things here are genuinely its own:
+//
+//   1. `snapWall`, which generalizes `grid-canvases`' `snapHalfExtent`. A
+//      rectangle centered on the origin can snap by half-extent because its
+//      walls come in mirrored pairs; an L has walls facing both ways on both
+//      axes, so each plane snaps on its own, and the direction the room lies in
+//      has to be said out loud.
+//
+//   2. **The light shader is anchored in world METERS, and this is the template
+//      where that stops being arbitrary.** On a rectangle, UV and meters differ
+//      only by a constant. On an L they diverge for a reason you can see: the
+//      bounding box is not a room. See the fenced light block.
+//
 // It enables one situation: a floor plan, an ambient-baked shell, a grid
 // ceiling over a recessed light, camera confinement, and walls that accept
 // hung pieces.
 //
 // WHERE TO TOUCH
-//   room shape ....... the single `Ring` in `main`. An L is a 6-point ring;
-//                      a hexagon is 6 points at 60°. Nothing else changes.
-//   room size ........ the wanted extents passed to `snapHalfExtent` — never
-//                      `RoomWidth` directly, which is derived from them.
+//   room shape ....... the single `Ring` in `main`. Six points here; a hexagon
+//                      is six at 60° (see `hex-partitions`). Nothing else
+//                      changes.
+//   room size ........ the wanted coordinates passed to `snapWall` — never the
+//                      snapped values, which are derived from them.
 //   any look value ... the TUNABLES block below. Nothing tunable lives lower
 //                      down; if you had to hunt for a knob, it belongs up there.
 //   the light ........ the fenced light-shader block. That one is yours.
@@ -127,18 +142,50 @@ val FamilyYStagger = 0.0006
   */
 val ArrisSoften = 0.02
 
-/** Snap a wanted half-extent (meters) out to the outer face of the nearest
-  * beam.
+/** Snap one wall plane (a signed X or Z coordinate, meters) out to the outer
+  * face of the nearest beam. `inwardSign` is +1 if the room lies toward LARGER
+  * coordinates from this wall, -1 if toward smaller.
+  *
+  * `grid-canvases` gets away with a half-extent form because a rectangle
+  * centered on the origin has mirrored wall pairs, so one number does both
+  * sides. **An L does not.** Its six walls face four different ways, two of
+  * them at the notch, and each plane has to land on the correct SIDE of its
+  * beam — put a wall on the wrong side and its perimeter beam ends up outside
+  * the room, which shows immediately as an opening running into a corner.
+  *
+  * Beam centerlines sit at `k · GridSpacing`. A wall plane goes half a strip
+  * beyond the nearest centerline, on the far side from the room, so the beam at
+  * `k · GridSpacing` is the one inside — and that beam IS the perimeter beam.
+  * No extra generator, no special-cased geometry. (`hex-partitions` cannot do
+  * this and has to generate them; snapping is the free path where it applies.)
   */
-def snapHalfExtent(wanted: Double): Double =
-  val k = Math.round((wanted - StripWidth / 2.0) / GridSpacing).toDouble
-  k * GridSpacing + StripWidth / 2.0
+def snapWall(wanted: Double, inwardSign: Double): Double =
+  val k = Math
+    .round((wanted + inwardSign * StripWidth / 2.0) / GridSpacing)
+    .toDouble
+  k * GridSpacing - inwardSign * StripWidth / 2.0
 
-// Room extents are DERIVED, not authored — tune the wanted values, read the
-// snapped ones — they will not usually be what you asked for, and that is the
-// mechanism working. (At the spacing above: 6.5 → 6.50, 10.0 → 9.70.)
-val RoomWidth = snapHalfExtent(6.5 / 2.0) * 2.0
-val RoomDepth = snapHalfExtent(10.0 / 2.0) * 2.0
+// The L, in WANTED coordinates. These are what you tune; the snapped values in
+// `main` are derived from them and will not usually be what you asked for —
+// that is the mechanism working, not a rounding bug.
+//
+//        WantX0                     WantX1
+//   WantZ0 ┌──────────────────────────┐
+//          │                          │
+//          │                          │
+//   WantZm │            WantXm ┌──────┘
+//          │                   │
+//   WantZ1 └───────────────────┘
+//
+// The notch is the region beyond `WantXm` and `WantZm`. The concave corner
+// where those two walls meet is what this template exists to exercise.
+val WantX0 = -5.0 // left wall; the room is to its right
+val WantX1 = 5.0 // right wall of the wide leg; the room is to its left
+val WantXm = 0.5 // the notch's vertical wall; the room is to its left
+val WantZ0 = -5.0 // near wall; the room is beyond it
+val WantZm = 0.5 // the notch's horizontal wall; the room is before it
+val WantZ1 = 5.0 // far wall of the narrow leg; the room is before it
+
 val RoomHeight = 5.5
 
 /** How close the visitor may get to any surface, including the outer faces of
@@ -202,9 +249,17 @@ val LightY = CeilY + CofferDepth
   * constant": that rule is about LOOK values, which hide an assumption when
   * computed. This one is a correctness bound, and hard-coding it is how it
   * silently goes stale.
+  *
+  * On a concave plan the SPAN is the bounding box's, not a leg's, because the
+  * bound has to cover the longest sightline that exists — which on an L runs
+  * corner to corner across the whole box even though no single leg is that
+  * long. Being generous here is free; being short shows as a strip of
+  * background at a wall top.
   */
+val RoomSpan = (WantX1 - WantX0).max(WantZ1 - WantZ0)
+
 val LightOverhang =
-  (LightY - WallTopY) * (RoomWidth.max(RoomDepth) - WallClearance)
+  (LightY - WallTopY) * (RoomSpan - WallClearance)
     / (WallTopY - EyeHeight) * 1.05 // 5 % margin off the exact tangent
 
 /** Baked texels per world meter for the AMBIENCE field only. It is smooth,
@@ -468,18 +523,57 @@ val ShadowBotFadeMul = 2.7 // how much broader the lower falloff is
   */
 val LightColor = Vec3(2.0, 1.9, 1.7)
 
-// A slow undulation in strength, so the plane is not a flat field. Deliberately
-// minimal: this is the shader you are meant to replace.
+// DISCRETE POOLS OF LIGHT ON THE BEAM LATTICE — and the reason this template
+// has a different light shader from `grid-canvases` at all.
 //
-// Meters rather than UV here because the blob size should not stretch when the
-// room's aspect changes — NOT because UV is discouraged. The two say different
-// things and both are right sometimes: UV means "N features spanning the plane"
-// (six halos stay six in any room), meters means "features every N m" (spacing
-// stays put, count grows). A halo shader in this slot would rightly use UV.
-val LightWaveMetersX = 5.0 // period along X
-val LightWaveMetersZ = 3.7 // along Z — deliberately not a multiple of X, so the
-// two never line up into a visible grid
-val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
+// **On a concave plan, UV and meters stop being interchangeable.** A UV layout
+// says "N features across the plane", and the plane is the plan's BOUNDING BOX
+// — a rectangle neither leg of the L fills and no visitor can perceive. The
+// count is anchored to a frame that is not there, so the spacing comes out
+// different in the two legs and drifts against the raster overhead. A metric
+// layout is perceptible everywhere and carries CONTINUOUSLY through the notch.
+//
+// Worth doing once as a negative control, then throwing away: re-express this
+// same layout in `uv` and walk from one leg to the other. The spacing changes
+// between the legs and the pools slide out of step with the beams. That is the
+// demonstration; on a rectangle it is invisible, which is why A's shader proves
+// nothing either way.
+//
+// This is not an argument against UV. UV means "N features spanning the plane"
+// and is right when the count is the point — six halos stay six in any room. It
+// is wrong here because the count would be counting a box.
+//
+// The plan is already snapped to `GridSpacing`, so putting a pool every _k_
+// cells makes the light lattice and the raster above it AGREE. That agreement
+// is only expressible in world meters, and it reads as deliberate architectural
+// alignment rather than as a texture.
+//
+// It also needs no boundary treatment: discrete pools do not fade at the plan
+// edge, and a pool falling outside is occluded by a wall like everything else
+// out there.
+
+/** Cells between pools. The pools land on cell CENTERS — `(n·k + ½)·GridSpacing`
+  * — which is what puts each one squarely inside a grid opening rather than
+  * behind a beam.
+  */
+val LightPoolEvery = 3
+
+/** Radius of a pool's full-strength core, and the meters of falloff around it.
+  * The core stays at `LightColor` and so stays above the bloom threshold; the
+  * falloff carries it down to `LightPoolFloor`.
+  */
+val LightPoolRadius = 0.55
+val LightPoolSoften = 0.5
+
+/** What the plane emits BETWEEN pools, as a fraction of `LightColor`.
+  *
+  * Deliberately below the bloom threshold — `2.0 × 0.42 = 0.84` — so only the
+  * pools glare and the field between them reads as a dim luminous ceiling. Do
+  * not take it to zero: the plane still has to cover the overhang with
+  * something that is plainly not the background, or a shallow sightline at a
+  * wall top finds a dark strip and the coffer stops reading as a recess.
+  */
+val LightPoolFloor = 0.42
 
 // ===========================================================================
 // STRUCTURAL — the floor plan and everything derived from it.
@@ -571,7 +665,7 @@ val PieceShadowDims = Arr(
 )
 
 @JSExportTopLevel("sketch")
-def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
+def roomsLRoom(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     val sampler = p.samplerLinear
 
@@ -587,24 +681,35 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     // The floor plan
     // -----------------------------------------------------------------------
 
-    // A rectangle: (-x,-z) → (+x,-z) → (+x,+z) → (-x,+z). The order is free —
-    // `Facing.Inward` says the room is inside the loop and that settles the
-    // normals whichever way round the points run (see `Ring`). What the order
-    // DOES fix is which wall is wall 0, 1, 2, 3.
+    // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED, and against
+    // `grid-canvases` it is the ONLY difference in the whole file bar the light
+    // shader: six points instead of four. Walls, floor, ceiling, the raster's
+    // clip, the grime line, the noise fade and the camera clamp all follow.
     //
-    // THIS IS THE ONLY PLACE THE ROOM SHAPE IS DECIDED. An L is a 6-point ring
-    // here and nothing else; a hexagon is a 6-point ring at 60°. Everything
-    // below derives from these points.
-    val hw = RoomWidth / 2.0
-    val hd = RoomDepth / 2.0
+    // Every coordinate is snapped, so every one of the six walls gets a
+    // perimeter beam flush with it — including the two at the notch, which is
+    // the thing to check first if the raster looks wrong.
+    //
+    // The order is free: `Facing.Inward` says the room is inside the loop and
+    // that settles the normals whichever way round the points run (see `Ring`).
+    // What the order DOES fix is which wall is wall 0…5, which is how `curate`
+    // below addresses them.
+    val x0 = snapWall(WantX0, inwardSign = 1.0)
+    val x1 = snapWall(WantX1, inwardSign = -1.0)
+    val xm = snapWall(WantXm, inwardSign = -1.0)
+    val z0 = snapWall(WantZ0, inwardSign = 1.0)
+    val zm = snapWall(WantZm, inwardSign = -1.0)
+    val z1 = snapWall(WantZ1, inwardSign = -1.0)
     val footprint = Footprint(
       Arr(
         Ring(
           points = Arr(
-            Vec2(-hw, -hd),
-            Vec2(hw, -hd),
-            Vec2(hw, hd),
-            Vec2(-hw, hd),
+            Vec2(x0, z0), // ┐ the wide leg, running the full width
+            Vec2(x1, z0), // ┘
+            Vec2(x1, zm), // the wide leg's far wall
+            Vec2(xm, zm), // the notch's horizontal wall  ┐ the concave
+            Vec2(xm, z1), // the notch's vertical wall    ┘ corner is between
+            Vec2(x0, z1), // the narrow leg's far wall
           ),
           facing = Facing.Inward,
           height = RoomHeight,
@@ -720,19 +825,31 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     // THE LIGHT SHADER — swap this out. Everything else in the ceiling is the
     // room's; this is the exhibition's.
     //
-    // An HDR base with a slow undulation in strength. Multiplicative on the
-    // base and bounded, so it cannot dip below the bloom threshold or fade
-    // toward the overhang however the periods are tuned — the amplitude is the
-    // knob, the base is not. It needs no boundary treatment at all because it
-    // never fades, which is what keeps it this short.
+    // Discrete pools of light on the beam lattice. See the tunables block for
+    // why this template's light is anchored in WORLD METERS and what that buys
+    // on a concave plan that it does not buy on a rectangle.
     //
-    // Structure in world meters, not the plane's UV. On a rectangle the two
-    // differ only by a constant, so this choice proves nothing here; on an L it
-    // does, because the bounding box is not a room. Anything anchored to the
-    // plan boundary — an end-cap, a vignette — must use
-    // `edgeSetDist(pxz, ceilBnd)` rather than the UV rectangle.
+    // Anything anchored to the plan BOUNDARY rather than to the lattice — an
+    // end-cap, a vignette — must use `edgeSetDist(pxz, ceilBnd)`, not the UV
+    // rectangle, for exactly the same reason. This shader needs neither,
+    // because pools do not fade at the edge.
     // =======================================================================
     val (lw, lh) = texSize(bbW + 2.0 * LightOverhang, bbD + 2.0 * LightOverhang)
+    val poolSpacing = GridSpacing * LightPoolEvery
+
+    /** Distance from `v` to the nearest pool centerline on this axis, in
+      * meters. Pool centers sit at `(n·LightPoolEvery + ½)·GridSpacing`, i.e.
+      * on CELL centers — half a cell off the beam centerlines, which is what
+      * puts a pool inside an opening rather than behind a beam.
+      *
+      * One `fract`, and it is periodic over the whole plane rather than
+      * anchored to any corner of it — which is exactly the property the notch
+      * needs. Nothing here knows where the room is.
+      */
+    def poolAxisDist(v: FloatExpr): FloatExpr =
+      val cellCenter = (v - GridSpacing * 0.5) / poolSpacing
+      ((cellCenter + 0.5).fract - 0.5).abs * poolSpacing
+
     val lightTex = TextureBaker.bakeBlock(
       p,
       lightForm,
@@ -740,13 +857,17 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       lh,
       format = TextureFormat.Rgba16Float,
     ): (wp, _, _, color) =>
-      val wave = LetFloat("wave")
+      val pool = LetFloat("pool")
       Block(
-        wave := 1.0 + LightWaveAmount * 0.5 * (
-          (wp.x * Tau / LightWaveMetersX).sin
-            + (wp.z * Tau / LightWaveMetersZ).sin
+        // Radial, not the product of two axis falloffs: a product gives square
+        // pools with soft corners, which read as a checker rather than as
+        // lights.
+        pool := 1.0 - vec2(poolAxisDist(wp.x), poolAxisDist(wp.z)).length
+          .smoothstep(LightPoolRadius, LightPoolRadius + LightPoolSoften),
+        color := vec4(
+          vec3(LightColor) * lerp(LightPoolFloor, 1.0, pool),
+          1.0,
         ),
-        color := vec4(vec3(LightColor) * wave, 1.0),
       )
 
     // Raster atlas — THE SAME MATERIAL AS THE WALLS, so it gets the same
@@ -968,7 +1089,7 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
       val topY = ctx.bindings.topY
       // TWO THINGS KEY ON A HEIGHT HERE, AND THEY KEY ON DIFFERENT ONES. Every
       // wall in THIS room shares a top, so the distinction is invisible here —
-      // and glaring the moment you add the partition the header offers you.
+      // and glaring the moment something shorter than the room stands in it.
       //
       //   the TINT gradient  → `WallTopY`, the ROOM's ceiling line, always
       //   the NOISE edge fade → `topY`, THIS surface's own top rim

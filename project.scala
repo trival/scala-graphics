@@ -15,3 +15,5 @@
 //> using exclude trivalibs/examples/**
 
 //> using dep org.scala-js::scalajs-dom::2.8.1
+
+//> using test.dep org.scalameta::munit::1.3.3

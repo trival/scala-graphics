@@ -198,6 +198,22 @@ essentially everywhere equally. Corners do not go dark. Adding occlusion there
 produces the recognisable look of a game engine, and against this subject it
 reads as **artificial, not more realistic**.
 
+**The rule is about 90° wedges, and that turned out to matter.** The argument
+above is geometric, not aesthetic: a right-angled wedge still admits most of the
+hemisphere, so the light really does reach into it. `templates/rooms/hex-partitions`
+has a triangular raster whose wedges close at 60° and whose every junction is a
+triple point, and there the argument does not hold — the wedges read implausibly
+flat, decided by looking. That template darkens its junctions, with its own
+constants, gated to side faces only, and bounded as a fraction of the gap to the
+soffit's brightness so it can never reach it.
+
+That is not a loosening of the rule; it is the rule working as intended.
+Occlusion is **a module asked for by name**, in the one room whose geometry
+argues for it, never a general default and never a reuse of a fade tuned for
+something else (`EdgeFadeWorld` rounds corners off; it does not absorb light).
+Everywhere the original argument applies — walls meeting, the raster meeting a
+wall, 90° crossings — nothing darkens, including inside that template.
+
 The realism comes from the opposite direction: near-uniform brightness with a
 slight world-space noise, varied slightly by normal. That is the whole effect.
 
@@ -867,8 +883,19 @@ Derived, in this order:
   (WallTopY - wp.y).smoothstep(TopFadeDepth, 0.0)   // TopFadeDepth ≈ 0.9
   ```
 
-  One tunable, same curve, and a 2.5 m partition's own top rim now gets the same
-  treatment with no extra code.
+  One tunable, same curve.
+
+  **`WallTopY` here means the ROOM's ceiling line, not the surface's own top,
+  and that distinction turned out to be load-bearing.** A free-standing
+  partition must _not_ get this gradient at its own rim: the curve depicts a
+  settling of tone approaching the ceiling, so a 2.5 m partition should simply
+  never reach it and stay at `WallTintLow` the whole way up. Anchored to its own
+  top it reads as a shadow that nothing casts. (Verified by looking, in
+  `templates/rooms/hex-partitions`.)
+
+  The per-surface `topY` uniform is still needed — but for the **noise edge
+  fade** only, where an open top rim genuinely is a geometry edge. Two heights,
+  two anchors, one bake.
 
   Note this is a **broad tint gradient over ~0.9 m, not an edge effect**. There
   is no darkening where the wall meets the beam above it; see _No ambient
@@ -1633,7 +1660,7 @@ What then falls out with no further work:
 | Wall geometry + canvases   | all rings              | both faces hangable via `facing`                             |
 | Ceiling / light plane      | `ceilingEdges`         | unaffected, no contact line                                  |
 | Raster clipping            | `ceilingEdges`         | grid runs over it uninterrupted                              |
-| Wall lighting profile      | absolute `topY - wp.y` | its own top rim grazes and shadows just like a full wall's   |
+| Wall tint gradient         | the ROOM's `WallTopY`  | stays at the low tint — a short wall never reaches the zone  |
 | Wall noise edge fade       | per-surface `topY`     | fades against its own open top rim                           |
 
 What genuinely remains to add, and it is small:
