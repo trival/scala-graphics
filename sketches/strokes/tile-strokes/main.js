@@ -2128,8 +2128,8 @@ function $p_Lsketches_strokes_tile\uff3fstrokes_TileStrokesSketch$package$__draw
   var $x_1 = brushTip$1.ax;
   var s$proxy4 = brushTip$1.Y;
   $x_2.writeBuffer($x_1, 0.0, s$proxy4.dv.buffer);
-  var geometries$2 = $m_Ltrivalibs_graphics_geometry_Line$().gs(lines, 0, 0.05, 3.0, stroke.bU);
-  form$1.dp((void 0), (void 0), geometries$2, (void 0), (void 0), (void 0));
+  var geometries$1 = $m_Ltrivalibs_graphics_geometry_Line$().gs(lines, 0, 0.05, 3.0, stroke.bU);
+  form$1.dp((void 0), (void 0), geometries$1, (void 0), (void 0), (void 0));
   $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(p$1, strokePanel$1);
 }
 function $p_Lsketches_strokes_tile\uff3fstrokes_TileStrokesSketch$package$__mergeStroke$1__Ltrivalibs_graphics_painter_Painter__Ltrivalibs_graphics_painter_Panel__V($thiz, p$2, canvasPanel$1) {
