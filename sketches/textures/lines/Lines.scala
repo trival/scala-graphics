@@ -1,11 +1,12 @@
 package sketches.textures.lines
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ============================================================================
 // Reference: original Rust shader (lines_1.rs) — kept for comparison.

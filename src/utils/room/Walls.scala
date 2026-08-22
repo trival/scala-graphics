@@ -25,8 +25,8 @@ type RoomVertex = (position: Vec3, uv: Vec2)
   * Note also what is not here: no `Form`. A wall is PLAN DATA, and a `Form` is
   * a GPU resource that only a `Painter` can make — carrying one would mean this
   * whole derivation could not run without a painter, and could not be inspected
-  * or tested apart from one. [[Beam]] is pure the same way; the form is built at
-  * the use site from [[quad]].
+  * or tested apart from one. [[Beam]] is pure the same way; the form is built
+  * at the use site from [[quad]].
   */
 case class Wall(
     center: Vec3,
@@ -79,8 +79,8 @@ extension (w: Wall)
   * `CeilY`, a grid room passes `CeilY - StripHeight`.
   *
   * Orientation is carried ONCE, as `inwardNormal`. Anything wanting it as an
-  * angle takes [[rotY]] where it needs it, rather than the wall storing a second
-  * copy of the same fact that can drift out of step with the first.
+  * angle takes [[rotY]] where it needs it, rather than the wall storing a
+  * second copy of the same fact that can drift out of step with the first.
   *
   * LATENT ASSUMPTION: `center.y = topY/2` and `height = topY` put the floor at
   * `y = 0`. The representation supports a raised wall fine — only those two

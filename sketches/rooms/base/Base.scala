@@ -1,7 +1,6 @@
 package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -12,6 +11,8 @@ import trivalibs.graphics.scene.BasicFirstPersonCameraController
 import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // A first-person walkable room. Utilizing some indirect light approximation,

@@ -1,12 +1,13 @@
 package sketches.strokes.tile_strokes
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import trivalibs.graphics.geometry.*
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.*
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // Generative brush painting — a subdivided canvas where every tile is filled

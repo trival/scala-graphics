@@ -54,8 +54,8 @@ trait MirrorReflection:
 
   /** Reflect the camera across the mirror plane and render + resolve. Pass an
     * explicit `vp` to skip re-deriving it from the construction-time camera
-    * (e.g. when the caller already computed it for the scene panel this
-    * frame — a small perf win, not a requirement).
+    * (e.g. when the caller already computed it for the scene panel this frame —
+    * a small perf win, not a requirement).
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
@@ -68,19 +68,19 @@ trait MirrorReflection:
     * Also re-derives `blurStrength`'s compensation for the construction-time
     * (or last [[setCamera]]) camera's
     * [[trivalibs.graphics.scene.PerspectiveCamera.effectiveFovY]], which
-    * changes with `aspect` — without it, the blur would read relatively
-    * smaller against the scene on a tall viewport than on a wide one.
+    * changes with `aspect` — without it, the blur would read relatively smaller
+    * against the scene on a tall viewport than on a wide one.
     *
     * [[resultPanel]] is not affected — it keeps tracking the canvas, so
     * consumers still `load` it at their own `fragCoord`.
     */
   def resize(w: Double, h: Double): Unit
 
-  /** Swap the camera used to source [[paint]]'s default `vp` and to
-    * compensate `blurStrength` (see [[resize]]). Only needed if the sketch's
-    * camera object is itself ever disposed and recreated, or otherwise
-    * switched, at runtime — most sketches construct one camera for the whole
-    * session and never call this.
+  /** Swap the camera used to source [[paint]]'s default `vp` and to compensate
+    * `blurStrength` (see [[resize]]). Only needed if the sketch's camera object
+    * is itself ever disposed and recreated, or otherwise switched, at runtime —
+    * most sketches construct one camera for the whole session and never call
+    * this.
     */
   def setCamera(camera: PerspectiveCamera): Unit
 
@@ -219,16 +219,16 @@ object MirrorReflection:
     *   canvas height a square-aspect viewport would have** — useful band
     *   roughly `1`–`5`. It ramps linearly from sharp at the mirror plane to
     *   `blurStrength%` at `alphaScale`, then stays flat — so this sets *how
-    *   blurry* the far end gets while `alphaScale` sets *where* it gets
-    *   there. Relative to the image rather than in pixels, so the perceived
-    *   blur holds constant against object size across resolutions and device
-    *   pixel ratios — and, since [[resize]] compensates for `camera`'s
-    *   `effectiveFovY`, across aspect ratios too, rather than reading smaller
-    *   on a tall portrait viewport than on a wide desktop one. Denominated in
-    *   σ, so the same value means
-    *   the same spread in [[GaussianMirrorReflection]]. Clips at the pyramid's
-    *   reach, `2^(mipLevels-1) - 1` pixels of mip radius, which is what
-    *   `mipLevels` must be sized for. Runtime-tunable via [[setBlurStrength]].
+    *   blurry* the far end gets while `alphaScale` sets *where* it gets there.
+    *   Relative to the image rather than in pixels, so the perceived blur holds
+    *   constant against object size across resolutions and device pixel ratios
+    *   — and, since [[resize]] compensates for `camera`'s `effectiveFovY`,
+    *   across aspect ratios too, rather than reading smaller on a tall portrait
+    *   viewport than on a wide desktop one. Denominated in σ, so the same value
+    *   means the same spread in [[GaussianMirrorReflection]]. Clips at the
+    *   pyramid's reach, `2^(mipLevels-1) - 1` pixels of mip radius, which is
+    *   what `mipLevels` must be sized for. Runtime-tunable via
+    *   [[setBlurStrength]].
     * @param stretch
     *   Initial vertical stretch (anisotropy), as a **0..1 fraction of the
     *   maximum artifact-free stretch** — `0` is isotropic, `1` is as far as the

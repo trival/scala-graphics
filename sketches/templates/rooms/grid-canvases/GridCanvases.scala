@@ -1,7 +1,6 @@
 package sketches.templates.rooms.gridcanvases
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -13,6 +12,8 @@ import trivalibs.graphics.scene.BasicFirstPersonCameraController
 import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // TEMPLATE — a walkable exhibition room on an arbitrary floor plan.
@@ -498,7 +499,6 @@ val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
 // shading. If a variation ever seems to need a new flag on a shared type, the
 // seam is in the wrong place — substitute your own code there instead.
 // ===========================================================================
-
 
 // ===========================================================================
 // CURATION — WHAT HANGS AND WHERE IS NOT THE STAGE'S BUSINESS.
@@ -1044,8 +1044,8 @@ def roomsGridCanvases(canvas: HTMLCanvasElement): Unit =
     /** Ambience with every piece's shadow composited over it.
       *
       * A wall binds A PANEL, WHATEVER PRODUCED IT — which is the whole seam.
-      * Going from the bare bake to the composite is a change at the producer and
-      * nothing at all at the shade, and a wall with no pieces gets the bake
+      * Going from the bare bake to the composite is a change at the producer
+      * and nothing at all at the shade, and a wall with no pieces gets the bake
       * straight back rather than paying for an empty pass.
       */
     def wallTex(wallForm: Form, wall: Wall, pieces: Arr[Painting]): Panel =

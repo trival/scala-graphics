@@ -1,7 +1,6 @@
 package sketches.tests.texture_bake
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import trivalibs.graphics.geometry.{*, given}
@@ -9,6 +8,8 @@ import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.randInRange
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // Verification sketch for `sketchlib.utils.bake.TextureBaker`.

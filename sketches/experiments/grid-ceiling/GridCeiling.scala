@@ -1,7 +1,6 @@
 package sketches.experiments.gridceiling
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
 import trivalibs.dev.*
@@ -11,6 +10,8 @@ import trivalibs.graphics.shader.lib.blur.Blur
 import trivalibs.graphics.shader.lib.random.Psrdnoise
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // Open endless "indirect light" space (see PLAN.md). No walls — a floor and a

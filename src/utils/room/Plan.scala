@@ -26,17 +26,17 @@ import trivalibs.utils.numbers.NumExt.given
 // ---------------------------------------------------------------------------
 
 /** Which side of a ring the room is on. An ABSOLUTE claim about the world, not
-  * a claim relative to how the ring's points happen to be ordered — see [[Ring]]
-  * for why that distinction is the whole point, and [[Boundary.ringEdges]] for
-  * the two lines that make it true.
+  * a claim relative to how the ring's points happen to be ordered — see
+  * [[Ring]] for why that distinction is the whole point, and
+  * [[Boundary.ringEdges]] for the two lines that make it true.
   *
   * The codebase's opaque-type enum pattern
-  * (`trivalibs/src/graphics/painter/enums.scala`) — a Scala `enum` compiles to a
-  * class hierarchy plus `$values`/`ordinal` machinery, which is JS-bundle weight
-  * for something that wants to be a constant. The library's opaque enums alias
-  * `String` because their values cross into WebGPU; this one never leaves Scala
-  * and is only ever used to flip an edge normal, so it aliases `Double` and *is*
-  * that sign — no branch.
+  * (`trivalibs/src/graphics/painter/enums.scala`) — a Scala `enum` compiles to
+  * a class hierarchy plus `$values`/`ordinal` machinery, which is JS-bundle
+  * weight for something that wants to be a constant. The library's opaque enums
+  * alias `String` because their values cross into WebGPU; this one never leaves
+  * Scala and is only ever used to flip an edge normal, so it aliases `Double`
+  * and *is* that sign — no branch.
   */
 opaque type Facing = Double
 object Facing:
@@ -84,8 +84,8 @@ object Ring:
     * an open polyline and IS the one case that needs new code — reach for it
     * only if a room really wants one.
     *
-    * `dir` need not be normalized. `Facing.Outward` is the normal case here: the
-    * room is outside a partition.
+    * `dir` need not be normalized. `Facing.Outward` is the normal case here:
+    * the room is outside a partition.
     */
   def rect(
       center: Vec2,
@@ -134,23 +134,23 @@ inline def perp(d: Vec2): Vec2 = Vec2(-d.y, d.x)
   *
   * This earns a type rather than an extension on `Arr[Edge]` because two of the
   * queries depend on the invariant SILENTLY. [[contains]] counts ray crossings,
-  * so an unclosed loop gives an arbitrary answer and a duplicated edge flips the
-  * parity twice and inverts it; [[cornerDist]] reads only each edge's `a`, and
-  * only finds every vertex because the edges are loops. Order, by contrast, is
-  * irrelevant to all of them — so this is a SET of loops, not a path, and the
-  * concatenation of two boundaries is again a boundary. That is what lets an
-  * inner ring join the outer one with no special casing anywhere.
+  * so an unclosed loop gives an arbitrary answer and a duplicated edge flips
+  * the parity twice and inverts it; [[cornerDist]] reads only each edge's `a`,
+  * and only finds every vertex because the edges are loops. Order, by contrast,
+  * is irrelevant to all of them — so this is a SET of loops, not a path, and
+  * the concatenation of two boundaries is again a boundary. That is what lets
+  * an inner ring join the outer one with no special casing anywhere.
   *
   * Rings are the ONLY source of edges: `ringEdges` is private to the companion,
-  * so there is no way to reach a loose `Arr[Edge]` except by taking `.edges` off
-  * something already valid.
+  * so there is no way to reach a loose `Arr[Edge]` except by taking `.edges`
+  * off something already valid.
   *
   * A class rather than an opaque alias over `Arr[Edge]`. Both would enforce the
-  * invariant now that this lives in its own file (an opaque alias is transparent
-  * only within its defining scope — in the sketch, where the whole room was one
-  * file, it would have enforced nothing at all). The class is kept because it
-  * costs one allocation per boundary at build time, `.edges` is a field read,
-  * and the name appears in signatures and error messages.
+  * invariant now that this lives in its own file (an opaque alias is
+  * transparent only within its defining scope — in the sketch, where the whole
+  * room was one file, it would have enforced nothing at all). The class is kept
+  * because it costs one allocation per boundary at build time, `.edges` is a
+  * field read, and the name appears in signatures and error messages.
   */
 class Boundary private (val edges: Arr[Edge])
 
@@ -268,15 +268,15 @@ extension (fp: Footprint)
     (minX = minX, minZ = minZ, maxX = maxX, maxZ = maxZ)
 
 extension (bnd: Boundary)
-  /** Intersect the infinite line `origin + t·dir` with every edge, sort the hits
-    * by `t`, and keep the intervals whose midpoint is inside the plan.
+  /** Intersect the infinite line `origin + t·dir` with every edge, sort the
+    * hits by `t`, and keep the intervals whose midpoint is inside the plan.
     *
     * Parameterized by a LINE rather than an axis, so it serves beams at any
     * angle. Called on an explicit boundary because a ceiling raster is bounded
-    * only by what reaches the ceiling — using `ceilingBoundary` is what lets the
-    * grid run over a free-standing partition uninterrupted, which is the correct
-    * read: the grid is a ceiling feature and does not know the partition is
-    * there.
+    * only by what reaches the ceiling — using `ceilingBoundary` is what lets
+    * the grid run over a free-standing partition uninterrupted, which is the
+    * correct read: the grid is a ceiling feature and does not know the
+    * partition is there.
     *
     * On a convex plan this returns one interval; on an L, lines crossing the
     * notch return two.

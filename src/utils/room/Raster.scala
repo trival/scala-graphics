@@ -104,22 +104,23 @@ def familyBeams(
   *
   * The fallback where snapping does not apply. An axis-aligned plan gets its
   * perimeter beams for free by deriving the room from the lattice — each wall
-  * plane flush with the outer face of the nearest field beam — and needs none of
-  * this. A hexagon cannot do that, because its walls are not parallel to any two
-  * of the three beam families at once, so the perimeter has to be generated.
+  * plane flush with the outer face of the nearest field beam — and needs none
+  * of this. A hexagon cannot do that, because its walls are not parallel to any
+  * two of the three beam families at once, so the perimeter has to be
+  * generated.
   *
   * **The inset is what makes the shading work unchanged.** With the beam's
   * centerline on the boundary, half its soffit would hang outside the plan and
-  * every term keyed on distance-to-boundary would read one strip width out. Inset
-  * by `width/2` the soffit spans `0 … width` from the wall, exactly as a snapped
-  * plan's perimeter beam does, so a template's `atWall` term and its
+  * every term keyed on distance-to-boundary would read one strip width out.
+  * Inset by `width/2` the soffit spans `0 … width` from the wall, exactly as a
+  * snapped plan's perimeter beam does, so a template's `atWall` term and its
   * cull-the-outward-face test both transfer with no change.
   *
-  * The offset line is CLIPPED against the plan rather than run corner to corner,
-  * which mitres the corners for free: at a convex corner the two offset lines
-  * each stop on the neighbouring wall, so the beams overlap slightly instead of
-  * leaving a notch. It also does the right thing on a concave plan, where an
-  * offset line can return more than one interval.
+  * The offset line is CLIPPED against the plan rather than run corner to
+  * corner, which mitres the corners for free: at a convex corner the two offset
+  * lines each stop on the neighbouring wall, so the beams overlap slightly
+  * instead of leaving a notch. It also does the right thing on a concave plan,
+  * where an offset line can return more than one interval.
   */
 def perimeterBeams(
     bnd: Boundary,
@@ -178,19 +179,19 @@ def perimeterBeams(
   *   sideA top   arris      soffit     arris     sideB top
   * }}}
   *
-  * Getting that order right is not cosmetic. `Quad.fromDimensions` sets `v` from
-  * `-(n × tangent)`, and the two side faces have opposite normals — so
+  * Getting that order right is not cosmetic. `Quad.fromDimensions` sets `v`
+  * from `-(n × tangent)`, and the two side faces have opposite normals — so
   * `perp × dir = +Y` puts sideA's TOP at `uv.y = 0`, while `-perp × dir = -Y`
   * puts sideB's BOTTOM there. **The two sides run opposite ways in `v`.** Laid
-  * out as `soffit, sideA, sideB` both side TOPS end up against the soffit's ends
-  * and both arrises land mid-row, so anything measuring position across the
-  * section reads the beam inside out.
+  * out as `soffit, sideA, sideB` both side TOPS end up against the soffit's
+  * ends and both arrises land mid-row, so anything measuring position across
+  * the section reads the beam inside out.
   *
   * In this order every atlas adjacency is a real geometric adjacency: the two
-  * internal boundaries are the two arrises, and the row's outer ends are the two
-  * open top edges, which neighbour the next beam's open top edge and share its
-  * tint. Nothing bleeds across a seam that is not there. The argument holds at
-  * any beam angle — `perp` is `dir` rotated 90°, so `perp × dir` is `+Y`
+  * internal boundaries are the two arrises, and the row's outer ends are the
+  * two open top edges, which neighbour the next beam's open top edge and share
+  * its tint. Nothing bleeds across a seam that is not there. The argument holds
+  * at any beam angle — `perp` is `dir` rotated 90°, so `perp × dir` is `+Y`
   * whichever way the beam runs — so a triangular raster needs no rework.
   *
   * `u` runs `[0, length/maxLen]`: normalized, clamp-safe, proportional, and
@@ -199,9 +200,9 @@ def perimeterBeams(
   * than one unit would run `u` past 1 and a clamping sampler would silently pin
   * it at the edge.
   *
-  * **One profile for the whole raster.** Every row is the same size, so the band
-  * layout is taken from `beams(0)`. A raster mixing beam profiles needs its own
-  * layout; it is not a case this handles quietly.
+  * **One profile for the whole raster.** Every row is the same size, so the
+  * band layout is taken from `beams(0)`. A raster mixing beam profiles needs
+  * its own layout; it is not a case this handles quietly.
   *
   * @param clip
   *   the boundary a face is tested against before being built — the ceiling
@@ -236,9 +237,9 @@ class BeamAtlas(val beams: Arr[Beam], clip: Boundary):
     * nothing above the raster is ever seen from below, and a floor mirror
     * reflects to below the floor, so it sees undersides too.
     *
-    * Built in each beam's OWN frame `(center, dir, perp, Y)` rather than from an
-    * axis-aligned box, which is what makes an odd-angle beam no different from
-    * an axis-aligned one.
+    * Built in each beam's OWN frame `(center, dir, perp, Y)` rather than from
+    * an axis-aligned box, which is what makes an odd-angle beam no different
+    * from an axis-aligned one.
     */
   val faces: Arr[Quad[RoomVertex]] =
     val out = Arr[Quad[RoomVertex]]()
@@ -281,10 +282,10 @@ class BeamAtlas(val beams: Arr[Beam], clip: Boundary):
 
       val midY = b.soffitY + b.height / 2.0
 
-      /** A perimeter beam's outer side face is coplanar with the wall and points
-        * out of the room, so from inside you only ever see its back at grazing
-        * incidence — a thin sliver that samples a high mip level of its atlas
-        * row and reads as a dark line along the wall junction. Drop it.
+      /** A perimeter beam's outer side face is coplanar with the wall and
+        * points out of the room, so from inside you only ever see its back at
+        * grazing incidence — a thin sliver that samples a high mip level of its
+        * atlas row and reads as a dark line along the wall junction. Drop it.
         *
         * The test is general rather than "is this the outermost beam": step a
         * centimeter along the face's outward normal and ask whether that point
@@ -340,11 +341,11 @@ class BeamAtlas(val beams: Arr[Beam], clip: Boundary):
     * look intermittent rather than systematic.
     *
     * Two scales, because the two axes carry different content. ACROSS the
-    * section the atlas has real structure — the band boundaries are the arrises,
-    * and a soffit only `width` meters wide is a handful of texels, so one texel
-    * of bilinear bleed from a bright side band is a large fraction of it. ALONG
-    * the run the content genuinely is low-frequency and can share the room's
-    * ambience scale.
+    * section the atlas has real structure — the band boundaries are the
+    * arrises, and a soffit only `width` meters wide is a handful of texels, so
+    * one texel of bilinear bleed from a bright side band is a large fraction of
+    * it. ALONG the run the content genuinely is low-frequency and can share the
+    * room's ambience scale.
     *
     * **NOT CLAMPED against `maxTextureDimension2D`, deliberately.** Clamping
     * would silently trade away the resolution `crossScale` exists to provide,
@@ -366,8 +367,8 @@ class BeamAtlas(val beams: Arr[Beam], clip: Boundary):
     * sit at [[height]] and `height + width`.
     *
     * Needs no per-beam frame — one expression serves every beam at any angle,
-    * which a world-space formulation could not do without per-beam uniforms, and
-    * a single shared atlas bake has none.
+    * which a world-space formulation could not do without per-beam uniforms,
+    * and a single shared atlas bake has none.
     */
   def across(uv: Vec2Expr): FloatExpr = (uv.y * rows.toDouble).fract * bandWorld
 
@@ -385,11 +386,11 @@ class BeamAtlas(val beams: Arr[Beam], clip: Boundary):
       .min(bandWorld - a)
 
   /** Distance in meters from the soffit's centerline, across the section. The
-    * soffit sits in the MIDDLE of the row, so this is a plain distance — the row
-    * is a cross-section laid out in order, not a wrapped loop.
+    * soffit sits in the MIDDLE of the row, so this is a plain distance — the
+    * row is a cross-section laid out in order, not a wrapped loop.
     *
-    * What a sketch builds its soffit/side blend out of. The blend's WIDTH is the
-    * sketch's to choose, which is why this stops at a distance.
+    * What a sketch builds its soffit/side blend out of. The blend's WIDTH is
+    * the sketch's to choose, which is why this stops at a distance.
     */
   def soffitCenterDist(uv: Vec2Expr): FloatExpr =
     (across(uv) - (height + width / 2.0)).abs

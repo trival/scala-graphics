@@ -1,7 +1,6 @@
 package sketches.templates.rooms.hexpartitions
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
@@ -13,6 +12,8 @@ import trivalibs.graphics.scene.BasicFirstPersonCameraController
 import trivalibs.graphics.scene.PerspectiveCamera
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ---------------------------------------------------------------------------
 // TEMPLATE — a hexagonal room with a triangular raster and two free-standing
@@ -207,7 +208,8 @@ val ArrisSoften = 0.02
   * It has to be MUCH wider than `ArrisSoften`. That one is a material
   * transition a couple of centimeters across; this is a lighting falloff and
   * wants to be on the order of the pocket, so roughly half `GridSpacing`.
-  * Narrower and it reads as a drawn line at each junction instead of as shading.
+  * Narrower and it reads as a drawn line at each junction instead of as
+  * shading.
   *
   * Bounded above by the cell: past `GridSpacing / 2` every point in the raster
   * is within reach of some other family and the darkening stops varying — it
@@ -665,7 +667,6 @@ val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
 // seam is in the wrong place — substitute your own code there instead.
 // ===========================================================================
 
-
 // ===========================================================================
 // CURATION — WHAT HANGS AND WHERE IS NOT THE STAGE'S BUSINESS.
 //
@@ -829,7 +830,9 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
     val families = Arr[BeamFamily]()
     for i <- 0 until 3 do
       val a = i.toDouble / 3.0 * Tau / 2.0 // 0°, 60°, 120°
-      families.push(BeamFamily(Vec2(a.cos, a.sin), GridSpacing, 0.0, StripWidth))
+      families.push(
+        BeamFamily(Vec2(a.cos, a.sin), GridSpacing, 0.0, StripWidth),
+      )
 
     val beams = Arr[Beam]()
     for i <- 0 until families.length do
@@ -1228,7 +1231,7 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
       val maxEnclosure = (families.length - 1).toDouble
       val junctionDim = 1.0
         - (junction / maxEnclosure) * JunctionDarken * junctionMaxDim
-          * (1.0 - s)
+        * (1.0 - s)
       vec4(tint * lit * junctionDim, 1.0)
 
     /** Wall ambience. ONE baker — and therefore one pipeline — for every wall
@@ -1338,8 +1341,8 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
     /** Ambience with every piece's shadow composited over it.
       *
       * A wall binds A PANEL, WHATEVER PRODUCED IT — which is the whole seam.
-      * Going from the bare bake to the composite is a change at the producer and
-      * nothing at all at the shade, and a wall with no pieces gets the bake
+      * Going from the bare bake to the composite is a change at the producer
+      * and nothing at all at the shade, and a wall with no pieces gets the bake
       * straight back rather than paying for an empty pass.
       */
     def wallTex(wallForm: Form, wall: Wall, pieces: Arr[Painting]): Panel =

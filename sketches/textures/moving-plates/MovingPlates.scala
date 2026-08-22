@@ -1,13 +1,14 @@
 package sketches.textures.moving_plates
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Shapes
 import sketchlib.shaders.Uv
 import trivalibs.graphics.shader.lib.color.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ============================================================================
 // Reference: original Rust shader (moving_plates.rs) — kept for comparison.

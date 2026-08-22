@@ -1,7 +1,6 @@
 package sketches.textures.pool_tiles
 
 import org.scalajs.dom.HTMLCanvasElement
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.shaders.Uv
 import trivalibs.graphics.shader.lib.color.*
 import trivalibs.graphics.shader.lib.coords.*
@@ -9,6 +8,8 @@ import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // ============================================================================
 // Reference: original Rust shader (pool_tiles.rs) — kept for comparison.

@@ -24,8 +24,8 @@ import trivalibs.utils.js.*
 trait Bloom:
   /** The bloom-only HDR panel: mip 0 is the thresholded scene, mips 1..N the
     * blurred pyramid, with the upsample chain accumulated back into mip 0. You
-    * normally sample [[resultPanel]] instead; this is exposed for debugging or a
-    * custom composite (read the accumulated glow at `bloomPanel.binding()`).
+    * normally sample [[resultPanel]] instead; this is exposed for debugging or
+    * a custom composite (read the accumulated glow at `bloomPanel.binding()`).
     */
   def bloomPanel: Panel
 
@@ -40,8 +40,8 @@ trait Bloom:
     */
   def paint(): Unit
 
-  /** Set the down/upsample kernel tap offset (in source-mip texels) at runtime —
-    * larger ⇒ wider, softer bloom. Defaults to `apply`'s `blurRadius`.
+  /** Set the down/upsample kernel tap offset (in source-mip texels) at runtime
+    * — larger ⇒ wider, softer bloom. Defaults to `apply`'s `blurRadius`.
     */
   def setBlurRadius(v: Double): Unit
 
@@ -100,27 +100,27 @@ object Bloom:
     *   (~0.002–0.1) read as a subtle glow; `0` disables bloom. Runtime-tunable
     *   via [[Bloom.setIntensity]].
     * @param threshold
-    *   Rec.709 luminance cutoff (`0.2126·r + 0.7152·g + 0.0722·b`): pixels at or
-    *   below it contribute nothing, brighter pixels bloom. `~1.0` blooms only
-    *   HDR highlights. Fixed after construction.
+    *   Rec.709 luminance cutoff (`0.2126·r + 0.7152·g + 0.0722·b`): pixels at
+    *   or below it contribute nothing, brighter pixels bloom. `~1.0` blooms
+    *   only HDR highlights. Fixed after construction.
     * @param blurRadius
     *   Down/upsample kernel tap offset in source-mip texels — larger ⇒ wider,
     *   softer glow. Runtime-tunable via [[Bloom.setBlurRadius]].
     * @param mipLevels
-    *   Pyramid depth (must be `>= 2`). `N` levels = 1 threshold + `(N-1)`
-    *   box downsamples + `(N-1)` additive tent upsamples; deeper ⇒ wider glow.
-    *   5 is the canonical value; 4–6 covers most needs.
+    *   Pyramid depth (must be `>= 2`). `N` levels = 1 threshold + `(N-1)` box
+    *   downsamples + `(N-1)` additive tent upsamples; deeper ⇒ wider glow. 5 is
+    *   the canonical value; 4–6 covers most needs.
     * @param toneKnee
     *   Where the display shoulder starts. Everything below passes through
     *   untouched, so set it at or just above the brightest NON-emitting surface
     *   in the scene and its tones will not shift. The default `1.0` disables
     *   the shoulder entirely, giving the plain hard clamp.
     * @param toneWhite
-    *   Length of the shoulder above the knee, in scene units — roughly "the
-    *   HDR value that should read as near-white". It does not clip there: the
-    *   curve approaches 1.0 asymptotically, which is what keeps a strong bloom
-    *   from flattening into a plateau. Larger ⇒ gentler compression, so a wider
-    *   HDR range stays distinguishable and the emitter reads dimmer.
+    *   Length of the shoulder above the knee, in scene units — roughly "the HDR
+    *   value that should read as near-white". It does not clip there: the curve
+    *   approaches 1.0 asymptotically, which is what keeps a strong bloom from
+    *   flattening into a plateau. Larger ⇒ gentler compression, so a wider HDR
+    *   range stays distinguishable and the emitter reads dimmer.
     * @return
     *   a [[Bloom]] exposing `resultPanel` (present this) and `bloomPanel` (raw
     *   glow), plus `paint` / `setIntensity` / `setBlurRadius`.

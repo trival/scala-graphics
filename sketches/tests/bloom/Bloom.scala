@@ -4,10 +4,11 @@ import org.scalajs.dom.HTMLCanvasElement
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.console
 import org.scalajs.dom.document
-import scala.scalajs.js.annotation.JSExportTopLevel
 import sketchlib.utils.bloom.Bloom
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
+
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 // Bloom post-processing demo. Drives the shared `sketchlib.utils.bloom.Bloom`
 // pyramid with an HDR test scene of bright + dim SDF circles.

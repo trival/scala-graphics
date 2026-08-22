@@ -175,9 +175,9 @@ extension (baker: TextureBaker[NoUniforms])
     * then pull it back into the faces that do. Three kinds of texel are always
     * uncovered: partially-covered ones along every band edge, whole bands whose
     * face was skipped, and the tail of any row whose `u` range stops short of
-    * 1. Left at the default those read as BLACK, and bleed out as dark seams
-    * along the edges of every band — worst where a band is only a few texels
-    * thick, which is exactly what a thin strip in an atlas is.
+    *   1. Left at the default those read as BLACK, and bleed out as dark seams
+    *      along the edges of every band — worst where a band is only a few
+    *      texels thick, which is exactly what a thin strip in an atlas is.
     *
     * So for an atlas bake, pass the material's own average color. The bleed
     * still happens; it just becomes invisible.

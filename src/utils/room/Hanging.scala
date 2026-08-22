@@ -48,8 +48,8 @@ case class PaintingSpec(
   *
   * **STATIC AND ANIMATED ARE THE SAME CASE**, which is the whole reason this
   * type looks the way it does. `model` and `shadowRect` are mutable bindings,
-  * and `basePos` / `baseRect` are the resting values an offset is measured from;
-  * a piece that never moves simply never writes them, and costs one small
+  * and `basePos` / `baseRect` are the resting values an offset is measured
+  * from; a piece that never moves simply never writes them, and costs one small
   * uniform buffer for the privilege. The alternative — a static `Painting` and
   * an animated one — buys back that buffer and pays for it with two types, two
   * `hang`s and a shadow composite that has to know which it is holding.
@@ -114,7 +114,8 @@ extension (pt: Painting)
 /** Uniforms a hung piece's shade takes. `vp` is bound at PANEL level, so it
   * must be named `vp` to match the scene panel's binding (and
   * `GaussianMirrorReflection`'s `vpName` default). The named-tuple schema fixes
-  * that name at compile time; a room using a different one writes its own shade.
+  * that name at compile time; a room using a different one writes its own
+  * shade.
   */
 type PaintingUniforms = (
     vp: VertexUniform[Mat4],
@@ -234,9 +235,9 @@ extension (spec: PaintingSpec)
   *
   * **This class exists because a shade is a compiled pipeline.** It has to be
   * created once per painter, not once per piece, and before this module existed
-  * that forced every `hang` call to take a shade the calling sketch had to build
-  * and otherwise never think about. There is now somewhere to cache it, so the
-  * parameter is gone.
+  * that forced every `hang` call to take a shade the calling sketch had to
+  * build and otherwise never think about. There is now somewhere to cache it,
+  * so the parameter is gone.
   *
   * Construct one in `Painter.init` and hang from it. It compiles three
   * pipelines eagerly — the piece shade, the ambience copy layer and the shadow
@@ -265,15 +266,16 @@ class Hanging(
     * panel the spec carries.
     */
   private val pieceShade =
-    p.shade[RoomVertex, (uv: Vec2), PaintingUniforms, PaintingPanels]: program =>
-      program.vert: ctx =>
-        Block(
-          ctx.out.uv := ctx.in.uv,
-          ctx.out.position := ctx.bindings.vp * ctx.bindings.model
-            * vec4(ctx.in.position, 1.0),
-        )
-      program.frag: ctx =>
-        ctx.out.color := ctx.textures.img(ctx.in.uv, ctx.bindings.samp)
+    p.shade[RoomVertex, (uv: Vec2), PaintingUniforms, PaintingPanels]:
+      program =>
+        program.vert: ctx =>
+          Block(
+            ctx.out.uv := ctx.in.uv,
+            ctx.out.position := ctx.bindings.vp * ctx.bindings.model
+              * vec4(ctx.in.position, 1.0),
+          )
+        program.frag: ctx =>
+          ctx.out.color := ctx.textures.img(ctx.in.uv, ctx.bindings.samp)
 
   // Copy layer — write a pre-baked ambience panel into the composite target.
   private type CopyU = (samp: Sampler)

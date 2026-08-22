@@ -67,8 +67,8 @@ trait GaussianMirrorReflection:
 
   /** Reflect the camera across the mirror plane and render + blur. Pass an
     * explicit `vp` to skip re-deriving it from the construction-time camera
-    * (e.g. when the caller already computed it for the scene panel this
-    * frame — a small perf win, not a requirement).
+    * (e.g. when the caller already computed it for the scene panel this frame —
+    * a small perf win, not a requirement).
     */
   def paint(vp: Maybe[Mat4] = Maybe.Not): Unit
 
@@ -81,16 +81,16 @@ trait GaussianMirrorReflection:
     * Also re-derives `blurStrength`'s compensation for the construction-time
     * (or last [[setCamera]]) camera's
     * [[trivalibs.graphics.scene.PerspectiveCamera.effectiveFovY]], which
-    * changes with `aspect` — without it, the blur would read relatively
-    * smaller against the scene on a tall viewport than on a wide one.
+    * changes with `aspect` — without it, the blur would read relatively smaller
+    * against the scene on a tall viewport than on a wide one.
     */
   def resize(w: Double, h: Double): Unit
 
-  /** Swap the camera used to source [[paint]]'s default `vp` and to
-    * compensate `blurStrength` (see [[resize]]). Only needed if the sketch's
-    * camera object is itself ever disposed and recreated, or otherwise
-    * switched, at runtime — most sketches construct one camera for the whole
-    * session and never call this.
+  /** Swap the camera used to source [[paint]]'s default `vp` and to compensate
+    * `blurStrength` (see [[resize]]). Only needed if the sketch's camera object
+    * is itself ever disposed and recreated, or otherwise switched, at runtime —
+    * most sketches construct one camera for the whole session and never call
+    * this.
     */
   def setCamera(camera: PerspectiveCamera): Unit
 
@@ -181,12 +181,12 @@ object GaussianMirrorReflection:
     *   **percent of the canvas height a square-aspect viewport would have**
     *   (useful band roughly `1`–`10`), reached at `alphaScale` and ramping
     *   linearly from 0 at the plane. Relative to the image rather than in
-    *   pixels, so the perceived blur holds constant against object size
-    *   across resolutions and device pixel ratios — and, since [[resize]]
-    *   compensates for `camera`'s `effectiveFovY`, across aspect ratios too,
-    *   rather than reading smaller on a tall portrait viewport than on a wide
-    *   desktop one. Denominated in σ, so the same value means the same spread
-    *   in [[MirrorReflection]]. Together with `blurRatioVertical` and the
+    *   pixels, so the perceived blur holds constant against object size across
+    *   resolutions and device pixel ratios — and, since [[resize]] compensates
+    *   for `camera`'s `effectiveFovY`, across aspect ratios too, rather than
+    *   reading smaller on a tall portrait viewport than on a wide desktop one.
+    *   Denominated in σ, so the same value means the same spread in
+    *   [[MirrorReflection]]. Together with `blurRatioVertical` and the
     *   (compensated) panel height it also determines **the pass count**,
     *   re-derived on every [[resize]] and on either strength setter.
     *   Runtime-tunable via [[setBlurStrength]].
@@ -207,17 +207,17 @@ object GaussianMirrorReflection:
     *   blurred anyway, so `0.5` (default) costs a quarter of the fill for
     *   virtually no visible loss.
     * @param overscan
-    *   Width of the guard band around the reflected render, in multiples of
-    *   the blur's σ. The mirror scene is rendered through a correspondingly
-    *   widened frustum and cropped back afterwards, so that pixels near the
-    *   frame edge blur against real geometry instead of the clamped-to-edge
-    *   border — without it, a large `blurStrength` smears the border inward.
-    *   `3` (default) covers ~99.7% of the kernel; `0` disables the band and
-    *   the crop pass entirely. Costs `((v + 2·overscan·σ) / v)²` in fill (~1.3×
-    *   at the defaults), capped at 2× per axis.
+    *   Width of the guard band around the reflected render, in multiples of the
+    *   blur's σ. The mirror scene is rendered through a correspondingly widened
+    *   frustum and cropped back afterwards, so that pixels near the frame edge
+    *   blur against real geometry instead of the clamped-to-edge border —
+    *   without it, a large `blurStrength` smears the border inward. `3`
+    *   (default) covers ~99.7% of the kernel; `0` disables the band and the
+    *   crop pass entirely. Costs `((v + 2·overscan·σ) / v)²` in fill (~1.3× at
+    *   the defaults), capped at 2× per axis.
     * @param clearColor
-    *   RGBA the mirror render clears to where no shape draws. An
-    *   `(r, g, b, a)` tuple converts implicitly.
+    *   RGBA the mirror render clears to where no shape draws. An `(r, g, b, a)`
+    *   tuple converts implicitly.
     * @return
     *   a [[GaussianMirrorReflection]] exposing `resultPanel` (sample this by
     *   UV) and `mirrorScenePanel` (raw), plus `paint` and the runtime setters.
@@ -527,8 +527,8 @@ object GaussianMirrorReflection:
         * The band exists because the blur samples with `ClampToEdge` (WebGPU
         * has no border mode): without it, every tap that falls outside the
         * panel returns the border texel, so the frame edges smear inward — and
-        * worse as the radius grows. Rendering a wider frustum fills that
-        * margin with real geometry instead.
+        * worse as the radius grows. Rendering a wider frustum fills that margin
+        * with real geometry instead.
         *
         * `overscan` σ of margin covers the kernel's reach (3σ ≈ 99.7% of the
         * Gaussian). The half-dimension cap bounds the cost at extreme blur
