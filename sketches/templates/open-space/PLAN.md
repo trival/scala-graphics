@@ -157,11 +157,19 @@ magnitude larger than a room's — `Bloom`'s threshold pass passes the bright
 pixel **through** rather than its excess, so what is blurred here is the whole
 of `EnvColor` over the whole background rather than a small bright patch.
 
-**The wall's tint gradient runs the opposite way to a room's.** A room's walls
-settle toward a darker tone approaching the ceiling; here the whole upper
-hemisphere is the emitter, so the wall is most exposed at its top and its rim is
-the brightest thing on it. Inverting it is a two-line change and it is the
-single most legible sign that this is not a room.
+**The wall carries NO vertical tint gradient, where a room's walls do.** A
+room's is a broad settling of tone approaching the ceiling — it depicts
+proximity to the surface above. Under an open sky the ambient illumination is
+**uniform**: every part of the wall sees essentially the same hemisphere, so
+there is no height-dependent lighting effect to depict, and a gradient reads as
+a painted stripe or as light from a source that is not there.
+
+This shipped first with the room gradient _inverted_ — lifting toward the rim,
+on the argument that the top is most exposed to the sky. The direction of the
+mistake is worth recording, because the inverted version looked plausible in the
+file and only failed by eye: the premise was that a wall's exposure varies with
+height, and in a uniform environment it does not. What varies across this wall
+is the ambience field and the grime line, and that is enough.
 
 ### 4. `clearOf` — one of two things shared code had to grow
 

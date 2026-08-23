@@ -422,27 +422,27 @@ def grime(dist: FloatExpr, creep: FloatExpr, patch: FloatExpr): FloatExpr =
   */
 val GroundTint = Vec3(0.82, 0.81, 0.79)
 
-/** The wall's gradient, and it runs the OPPOSITE way to a room's.
+/** The wall. ONE tint, with no vertical gradient on it at all.
   *
-  * A room's walls settle toward a darker tone as they approach the ceiling,
-  * because a ceiling is what is above them. Here the whole upper hemisphere is
-  * the emitter, so a wall is most exposed at its top and its rim is the
-  * brightest thing on it — which is also what makes the silhouette against the
-  * sky read as an edge rather than a cut-out.
+  * A room's walls carry one — a broad settling of tone as they approach the
+  * ceiling, depicting proximity to the surface above. **Under an open sky the
+  * ambient illumination is uniform**: every part of this wall sees essentially
+  * the same hemisphere, so there is no height-dependent lighting effect to
+  * depict at all. A gradient here reads as a painted stripe, or as light from a
+  * source the space does not have.
   *
-  * Inverting it is a two-line change (the pair below and the `smoothstep` in
-  * the wall bake), and it is the single most legible sign that this is not a
-  * room. Keep the top under 1.0 or the wall's rim starts blooming as if it were
-  * an emitter itself.
+  * That is a difference in KIND from a room, not a tuning: it is not that the
+  * gradient should be gentler or should run the other way, it is that the
+  * mechanism producing one in a room is absent here. This template shipped with
+  * the room gradient inverted — lifting toward the rim, on the argument that
+  * the top is most exposed to the sky — and the premise was simply wrong.
+  *
+  * What varies across the wall is the ambience field and the grime line, and
+  * that is enough. A gradient earned back would have to come from something the
+  * space actually has: a lift low down where the mirror ground bounces into it,
+  * say — keyed on that surface, not on height for its own sake.
   */
-val WallTintBase = Vec3(0.84, 0.84, 0.83)
-val WallTintTop = Vec3(0.97, 0.97, 0.98)
-
-/** Over how many meters below the rim the wall lifts to `WallTintTop`. A broad
-  * settling of tone, NOT an edge effect — keep it a large fraction of the
-  * wall's height or it reads as a painted stripe.
-  */
-val TopLiftDepth = 1.8
+val WallTint = Vec3(0.84, 0.84, 0.83)
 
 // ---- The mirror ground ------------------------------------------------------
 
@@ -719,7 +719,6 @@ def openSpaceWall(canvas: HTMLCanvasElement): Unit =
       */
     val wallBaker = TextureBaker(p): (wp, normal, _, out) =>
       val amb = LetFloat("amb")
-      val tint = LetVec3("tint")
       Block(
         // The edge factor: 0 at the four vertical arrises, at the ground line
         // and at the top rim, 1 in the open middle of a face — each over its
@@ -732,14 +731,12 @@ def openSpaceWall(canvas: HTMLCanvasElement): Unit =
           orientNoise(wp, normal),
           edgeFade(wp, normal, wallBnd, WallHeight, Fades),
         ),
-        // Lifting toward the rim, not settling toward it — see `WallTintTop`.
-        tint := vec3(WallTintBase).lerp(
-          WallTintTop,
-          (WallHeight - wp.y).smoothstep(TopLiftDepth, 0.0),
-        ),
-        // The wall's distance to the junction is simply its height above it.
+        // One flat tint, no height term — see `WallTint`. The wall's distance
+        // to the junction is simply its height above it.
         out := vec4(
-          tint * amb * grime(wp.y, creepField(wp.xz), patchField(wp.xz)),
+          vec3(WallTint)
+            * amb
+            * grime(wp.y, creepField(wp.xz), patchField(wp.xz)),
           1.0,
         ),
       )
