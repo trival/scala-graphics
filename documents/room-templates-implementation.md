@@ -110,8 +110,70 @@ the atlas band order at five beam angles, and the atlas size ceiling.
   `perp × dir` is `+Y` whichever way a beam runs — so a 60° beam lays out
   exactly like a 0° one. Asserted at five angles rather than argued.
 
+### B2's open question, answered — a corner and an arris are different edges
+
+B2 asked the author to check the L's protruding corner from the room side and,
+if its noise fade read wrong, to "gate `cornerDist` with a per-wall CPU flag".
+It did read wrong, and **the flag turned out to be unnecessary: the distinction
+is derivable from the ring itself.**
+
+The defect first: `edgeDist` faded the normal-varied term over one radius
+(`EdgeFadeWorld = 0.08`) at every vertex, tuned for a box, where both faces of a
+corner are visible meeting and the wide blend is what stops the corner reading
+as a seam. At a vertex whose faces turn AWAY from each other — the L's
+protruding corner, every corner of a partition — you see one face at a time
+against a silhouette, there is nothing to blend with, and the same fade reads as
+a broad soft band running down the wall. An arris wants a rounding on the scale
+of a broken edge, an order of magnitude tighter.
+
+**It is static geometry, not view direction.** The fade is baked, so a
+view-dependent term could not live in it at all without moving the whole
+normal-varied noise into the runtime shade — which is what the bake exists to
+avoid. It does not need to: whether the two faces can be seen meeting is a
+property of the vertex, and one dot product decides it in
+`Boundary.ringEdges`, where the ring is still a ring:
+
+```
+dot(nᵢ, dᵢ₋₁) < 0   the faces wrap toward the room — a room corner
+dot(nᵢ, dᵢ₋₁) > 0   they turn away from each other — an arris
+```
+
+It needs neither the winding nor `facing`, because A7's winding normalization
+already folded both into the normal — the clearest payoff that decision has
+produced. The result rides on `Edge.arrisAtA`, because `Boundary` flattens its
+rings with no marker between them and `edges(i - 1)` is not reliably the
+neighbour.
+
+Three consequences worth carrying:
+
+- **`edgeDist` is gone, replaced by `edgeFade`**, which returns a `[0,1]` factor
+  rather than meters. Forced, not stylistic: with a per-vertex radius the terms
+  stop being commensurable as distances, and a caller holding meters cannot
+  recover which radius each was measured against. Per-vertex radii are otherwise
+  free — each term becomes `dist / radius`, one folded multiply, one `min`
+  chain, no per-vertex `smoothstep`.
+- **The radii split four ways** (`EdgeFades`: `plane`, `top`, `corner`,
+  `arris`), and `top` is the one that is NOT derivable — a full-height wall's
+  top is not an edge at all, a partition's rim is an arris, and nothing in the
+  ring says which. `hex-partitions` passes it as a second bake uniform beside
+  `topY`, which is what A3's uniform work was for.
+- **`arris` has a floor set by the bake.** At `AmbienceTexScale = 64` a texel is
+  1.56 cm, so under about two texels the fade stops resolving and the hard seam
+  comes back. 0.03 is roughly that floor — the same bound `ArrisSoften` hit in
+  the beam atlas at its own resolution.
+
+All four templates were converted; the beams keep their own `BeamEdgeFade` at
+the old value, since a beam's cross-section is a different scale of object and
+A7 tuned it. Five tests in `test/room/Plan.test.scala` cover the classification,
+including its winding independence and a boundary mixing a room with a
+partition.
+
 ### What still needs the author
 
+- **The arris fades, visually, in all three templates.** `l-room`'s notch corner
+  is the one B2 asked about; `hex-partitions` has eight of them on its
+  partitions plus the `topFade` split at their rims. Both were set by the
+  argument above and by the resolution floor, not by looking.
 - ~~All three templates, visually.~~ ✅ **Confirmed by the author.**
   `grid-canvases` is visually unchanged by the extraction; `l-room` and
   `hex-partitions` both behave and look as expected.

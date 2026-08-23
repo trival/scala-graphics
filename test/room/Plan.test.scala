@@ -231,3 +231,71 @@ class PlanTest extends FunSuite:
 
   test("a line missing the plan entirely returns nothing"):
     assertEquals(lRing().boundary.clipLine(Vec2(0, 9), Vec2(1, 0)).length, 0)
+
+  // ---------------------------------------------------------------------------
+  // Vertex classification — which corners are arrises
+  // ---------------------------------------------------------------------------
+
+  /** The vertices flagged as arrises, identified by position rather than by
+    * index: reversing a ring changes which EDGE carries a given vertex, and the
+    * set of classified vertices is what must not change.
+    */
+  def arrises(b: Boundary): Set[String] =
+    var s = Set.empty[String]
+    var i = 0
+    while i < b.edges.length do
+      val e = b.edges(i)
+      if e.arrisAtA then s = s + f"${e.a.x + 0.0}%.4f,${e.a.y + 0.0}%.4f"
+      i += 1
+    s
+
+  test("a box room has no arris — every corner wraps toward the room"):
+    val box = Ring(
+      Arr(Vec2(0, 0), Vec2(10, 0), Vec2(10, 10), Vec2(0, 10)),
+      Facing.Inward,
+      3.0,
+    ).boundary
+    assertEquals(arrises(box), Set.empty[String])
+
+  test("the L has exactly one arris, at the notch's protruding corner"):
+    // The corner at (2,2) is the one that sticks out into the room: its two
+    // faces turn away from each other, so you see one at a time. Every other
+    // vertex of the L is an ordinary room corner.
+    assertEquals(arrises(lRing().boundary), Set("2.0000,2.0000"))
+
+  test("the classification is winding-independent, like the normals"):
+    assertEquals(
+      arrises(lRing().boundary),
+      arrises(lRing(reversed = true).boundary),
+    )
+
+  test("every corner of a free-standing partition is an arris"):
+    val partition = Ring(
+      Arr(Vec2(4, 4.9), Vec2(6, 4.9), Vec2(6, 5.1), Vec2(4, 5.1)),
+      Facing.Outward,
+      2.5,
+    )
+    assertEquals(arrises(partition.boundary).size, 4)
+    // And the same points read as a room instead — `facing` alone flips every
+    // one of them, which is the invariant that makes this derivable at all.
+    assertEquals(
+      arrises(partition.copy(facing = Facing.Inward).boundary).size,
+      0,
+    )
+
+  test("a room and a partition are classified independently in one boundary"):
+    val room = Ring(
+      Arr(Vec2(0, 0), Vec2(10, 0), Vec2(10, 10), Vec2(0, 10)),
+      Facing.Inward,
+      3.0,
+    )
+    val partition = Ring(
+      Arr(Vec2(4, 4.9), Vec2(6, 4.9), Vec2(6, 5.1), Vec2(4, 5.1)),
+      Facing.Outward,
+      2.5,
+    )
+    // The flat edge array concatenates rings with no marker between them, so
+    // this is the case index arithmetic over `bnd.edges` would get wrong — the
+    // room's last edge is followed by the partition's first.
+    val bnd = Footprint(Arr(room, partition)).floorBoundary
+    assertEquals(arrises(bnd).size, 4)

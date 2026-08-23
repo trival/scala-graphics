@@ -27,7 +27,7 @@ reader of _this sketch_ needs.
 | `Wall`, `wallsFrom`, `wall.quad` / `rotY`        | the atlas bake and its clear color          |
 | `planeQuad` — the bounding-box floor / ceiling   | the light shader, entirely                  |
 | `Beam` / `BeamFamily`, `familyBeams`, `BeamAtlas` | `ArrisSoften`, `crossing`, `atWall` widths |
-| `edgeSetDist` / `cornerDist` / `edgeDist`        | the shadow falloff's four numbers           |
+| `edgeSetDist` / `cornerDist` / `edgeFade`        | the shadow falloff's four numbers           |
 | `PaintingSpec` / `Painting` / `Hanging`          | what hangs, where, and how dim its shadow   |
 
 Geometry and behavior are shared because they are either right or wrong. Taste
@@ -126,7 +126,7 @@ three side orientations and needs the same argument redone, not copied.
 | --------------------------------------- | ---------------------------------------------------- |
 | Footprint rings                         | the room's shape, and everything derived from it     |
 | World-space noise + normal-varied noise | the material read; the core of the illusion          |
-| Edge fade                               | how rounded corners appear where materials meet      |
+| Edge fades                              | how rounded each KIND of edge appears (see below)    |
 | Grime line                              | dirt at the floor junction, not light                |
 | Tints per surface                       | wall / soffit / floor material color                 |
 | Prebaking                               | what is cached at init vs computed per frame         |
@@ -148,8 +148,42 @@ normal.
 The one darkening that stays is the **grime line** where wall meets floor, and
 it is _dirt, not light_ — which is why it belongs only there and generalizes to
 no other edge. If you want occlusion, it is a deliberate module with its own
-falloff radius, never a reuse of `EdgeFadeWorld` (which is tuned to round
-corners off, not to absorb light).
+falloff radius, never a reuse of `Fades` (which is tuned to round edges off, not
+to absorb light).
+
+## A room corner and an arris are different edges
+
+`Fades` carries one radius per KIND of edge rather than one number, and the
+reason is not tuning latitude — it is that the two cases want opposite widths.
+
+Where two faces **wrap toward** the visitor — a box's corner, a hexagon's — you
+see both of them meeting, and the wide blend between their two materials is what
+stops the corner reading as a seam. Where they **turn away** from each other —
+an L's protruding corner, any corner of a free-standing partition — you see one
+face at a time against a silhouette, and that same blend reads instead as a
+broad soft band running down the wall near its edge. An arris wants a rounding,
+on the scale of a broken edge, not a blend.
+
+A box room has only the first kind, so this template cannot show the
+distinction — it is `l-room` and `hex-partitions` that need it. Nothing in
+either names the vertices, though: `edgeFade` reads the classification off the
+boundary, where `Boundary.ringEdges` computed it with one dot product per vertex
+against the previous edge's direction. The winding normalization is what makes
+that free — `facing` is already folded into the normal, so the test needs
+neither the shoelace nor a convention.
+
+Two things about it are worth carrying to a copy:
+
+- **`arris` has a floor set by the bake, not by taste.** At 64 texels/m a texel
+  is 1.56 cm, so a fade under about two texels stops resolving and the hard seam
+  it exists to hide comes back. 0.03 m is roughly that floor.
+- **`top` is the one radius that is NOT derivable**, and it is a `FloatExpr` for
+  that reason. A wall here stops at `WallTopY` where the perimeter beam
+  continues the same plane, so its top is not an edge at all and takes the wide
+  value — which is also what hands the normal-varied term to the raster at zero.
+  A partition's top is an open rim and wants `arris`. Nothing in the ring data
+  says which, so a room mixing both passes it as a bake uniform beside `topY`
+  (see `hex-partitions`).
 
 **No curation.** The room provides walls, not a hang. How many pieces, where,
 what size, whether they move and what is on them are the exhibition's decisions,

@@ -116,7 +116,11 @@ class ConfineTest extends FunSuite:
       val f = (t * bnd.edges.length) % 1.0
       val on = Vec2(e.a.x + (e.b.x - e.a.x) * f, e.a.y + (e.b.y - e.a.y) * f)
       val probe =
-        Vec3(on.x + e.inwardNormal.x * 0.01, 1.7, on.y + e.inwardNormal.y * 0.01)
+        Vec3(
+          on.x + e.inwardNormal.x * 0.01,
+          1.7,
+          on.y + e.inwardNormal.y * 0.01,
+        )
       val out = l.confine(probe, Margin, 1.7)
       assert(l.contains(Vec2(out.x, out.z)), s"t=$t left the plan")
       assert(
@@ -146,3 +150,90 @@ class ConfineTest extends FunSuite:
     val out = bnd.confine(Vec3(5, 1.7, 5.05), Margin, 1.7)
     assert(bnd.contains(Vec2(out.x, out.z)))
     assert(clearance(bnd, out) >= Margin - 1e-9)
+
+  // ---------------------------------------------------------------------------
+  // `clearOf` — the same clamp with no room around it
+  // ---------------------------------------------------------------------------
+
+  // A free-standing wall in an open space: one Outward ring and nothing else.
+  val slab: Boundary = Ring(
+    Arr(Vec2(-6, -0.2), Vec2(6, -0.2), Vec2(6, 0.2), Vec2(-6, 0.2)),
+    Facing.Outward,
+    4.5,
+  ).boundary
+
+  test("open space is left alone — `confine` could not do this"):
+    // The precondition is the whole reason `clearOf` exists: with only an
+    // Outward ring present, every point in the open space fails `contains`, so
+    // `confine` would take its recovery branch and teleport the camera.
+    assert(!slab.contains(Vec2(0, 30)), "precondition: parity is inverted")
+    val out = slab.clearOf(Vec3(0, 1.7, 30), Margin, 1.7)
+    assertEqualsDouble(out.x, 0.0, 1e-12)
+    assertEqualsDouble(out.z, 30.0, 1e-12)
+    assertEqualsDouble(out.y, 1.7, 1e-12)
+
+  test("pressing into a face stops exactly at the margin, on both sides"):
+    val front = slab.clearOf(Vec3(0, 1.7, 0.25), Margin, 1.7)
+    assertEqualsDouble(front.z, 0.2 + Margin, 1e-9)
+    assertEqualsDouble(front.x, 0.0, 1e-9)
+    val back = slab.clearOf(Vec3(0, 1.7, -0.25), Margin, 1.7)
+    assertEqualsDouble(back.z, -(0.2 + Margin), 1e-9)
+
+  test("a diagonal approach slides along the face"):
+    val out = slab.clearOf(Vec3(2.4, 1.7, 0.3), Margin, 1.7)
+    assertEqualsDouble(out.z, 0.2 + Margin, 1e-9)
+    assertEqualsDouble(out.x, 2.4, 1e-9)
+
+  test("a point inside the solid is pushed out, not trapped"):
+    val out = slab.clearOf(Vec3(0, 1.7, 0.0), Margin, 1.7)
+    assert(!slab.contains(Vec2(out.x, out.z)))
+    assert(
+      clearance(slab, out) >= Margin - 1e-9,
+      s"clearance ${clearance(slab, out)} < $Margin",
+    )
+
+  test("a lap around the wall keeps the margin, corners included"):
+    // A lap 5 cm off every face, which passes through all four corners — the
+    // convex ones a single nearest-point clamp has to round correctly.
+    var t = 0.0
+    while t < 1.0 do
+      val e =
+        slab.edges((t * slab.edges.length).toInt.min(slab.edges.length - 1))
+      val f = (t * slab.edges.length) % 1.0
+      val on = Vec2(e.a.x + (e.b.x - e.a.x) * f, e.a.y + (e.b.y - e.a.y) * f)
+      val probe =
+        Vec3(
+          on.x + e.inwardNormal.x * 0.05,
+          1.7,
+          on.y + e.inwardNormal.y * 0.05,
+        )
+      val out = slab.clearOf(probe, Margin, 1.7)
+      assert(
+        clearance(slab, out) >= Margin - 1e-9,
+        s"t=$t: clearance ${clearance(slab, out)} < $Margin",
+      )
+      t += 0.013
+
+  test("the wedge between two solids needs the second pass"):
+    // Two slabs meeting in an L. Seen from the open side its inner corner is a
+    // CONCAVE wedge, which is the case one pass cannot clear: the first push
+    // clears the slab it picked and leaves the camera 5 cm off the other.
+    val ell = Boundary(
+      Arr(
+        Ring(
+          Arr(Vec2(0, 0), Vec2(4, 0), Vec2(4, 1), Vec2(0, 1)),
+          Facing.Outward,
+          3.0,
+        ),
+        Ring(
+          Arr(Vec2(0, 0), Vec2(1, 0), Vec2(1, 4), Vec2(0, 4)),
+          Facing.Outward,
+          3.0,
+        ),
+      ),
+    )
+    val out = ell.clearOf(Vec3(1.05, 1.7, 1.05), Margin, 1.7)
+    assert(
+      clearance(ell, out) >= Margin - 1e-9,
+      s"clearance ${clearance(ell, out)} < $Margin",
+    )

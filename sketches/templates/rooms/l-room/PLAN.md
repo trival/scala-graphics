@@ -15,13 +15,12 @@ that is the finding.
 
 **Geometrically, nothing.** The roadmap's claim was that shapes are "nothing but
 ring data". For the geometry that is exactly true: walls, floor, ceiling, the
-raster's clip, the grime line, the noise fade and the camera clamp all come out
-of the six points with no code aware that the plan is concave. The concave
-corner needed no treatment at all — no per-wall flag, no gated `cornerDist`, no
-shader math.
+raster's clip, the grime line and the camera clamp all come out of the six
+points with no code aware that the plan is concave. The notch's inner wedge —
+where two walls meet at 90° as they do in any box — needed no treatment at all.
 
-Two things are **not** free, and both are worth knowing before copying this to
-another odd plan.
+Three things are **not** free, and all three are worth knowing before copying
+this to another odd plan.
 
 ### 1. Snapping has to say which side the room is on
 
@@ -69,6 +68,27 @@ legs and the pools slide out of step with the beams. That is the demonstration.
 This is not an argument against UV. UV means "N features spanning the plane" and
 is right when the count is the point — six halos stay six in any room. It is
 wrong here because the count would be counting a box.
+
+### 3. The protruding corner is a different edge, and the noise fade has to know
+
+The L has **one vertex the box never had**: the corner at the notch that sticks
+out into the room. Its two faces turn away from each other, so you see one at a
+time against a silhouette — where a box's corners all wrap toward you and show
+both faces meeting.
+
+`grid-canvases` faded the normal-varied noise over a single radius at every
+vertex, tuned for the wrapping case, where the wide blend is what stops the
+corner reading as a seam. At the protruding one the same fade has nothing to
+blend with and reads as **a broad soft band running down the wall** near its
+edge. It wants a rounding, on the scale of a broken edge, not a blend — so
+`Fades` carries a radius per kind and this vertex takes `arris`.
+
+**Nothing in this sketch names it.** The build plan expected a per-wall CPU flag
+here; it turned out to be derivable. `Boundary.ringEdges` classifies every
+vertex with one dot product against the previous edge's direction, and
+`edgeFade` reads it off the boundary — so the six points stay the only place the
+shape is decided, and any plan gets it for free. The mechanism is in
+`../grid-canvases/PLAN.md`; the L is simply the first plan where it fires.
 
 ## What an L does _not_ exercise, contrary to the build plan
 

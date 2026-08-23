@@ -114,3 +114,45 @@ extension (bnd: Boundary)
     val once = bnd.confinePass(pos.xz, margin)
     val twice = bnd.confinePass(once, margin)
     Vec3(twice.x, eyeY, twice.y)
+
+  /** One clearance pass — [[confinePass]] with the containment test inverted.
+    */
+  private def clearPass(pxz: Vec2, margin: Double): Vec2 =
+    val nb = bnd.nearest(pxz)
+    if bnd.contains(pxz) || nb.dist < 1e-9 then
+      Vec2(nb.point.x + nb.inward.x * margin, nb.point.y + nb.inward.y * margin)
+    else if nb.dist < margin then
+      val s = margin / nb.dist
+      Vec2(
+        nb.point.x + (pxz.x - nb.point.x) * s,
+        nb.point.y + (pxz.y - nb.point.y) * s,
+      )
+    else pxz
+
+  /** [[confine]]'s complement: keep the camera `margin` meters OUTSIDE every
+    * loop in `bnd`, then pin `y`. Pass `pos.y` as `eyeY` to leave height free.
+    *
+    * For a space that has no outer boundary at all — a free-standing wall on an
+    * open plate, a cluster of objects standing in the open — where the only
+    * thing to clamp against is the solid the camera must not walk into.
+    * [[confine]] cannot express that: it reads `contains` as "in the room", and
+    * with only `Facing.Outward` rings present that parity is inverted, so every
+    * point in the open space looks like an escape and takes the recovery
+    * branch. Same edges, same margin, opposite sense — hence a second function
+    * rather than a flag.
+    *
+    * It needs no matching `Facing`: `contains` is pure even-odd parity over the
+    * loops and never reads one, and the push-out direction comes from the
+    * edges' own normals — which for the `Facing.Outward` rings these loops
+    * normally are, already point away from the solid.
+    *
+    * Two passes, like [[confine]], and for the same reason — one pass satisfies
+    * only the nearest edge, so a camera squeezed between two separate solids
+    * would settle inside the margin of one of them. A single convex solid
+    * converges in one, since its margin curve is a rounded arc that a
+    * nearest-point clamp already produces correctly.
+    */
+  def clearOf(pos: Vec3, margin: Double, eyeY: Double): Vec3 =
+    val once = bnd.clearPass(pos.xz, margin)
+    val twice = bnd.clearPass(once, margin)
+    Vec3(twice.x, eyeY, twice.y)

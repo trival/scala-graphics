@@ -106,8 +106,23 @@ something shorter stands in it:
 
 - **The noise edge fade stays per-surface, on `topY`.** An open top rim really
   is a geometry edge, and rounding the material off there is exactly what
-  `edgeDist`'s vertical term is for. That is the whole reason `topY` is a
+  `edgeFade`'s vertical term is for. That is the whole reason `topY` is a
   per-bake uniform rather than a constant.
+
+- **`topFade` rides along beside it, and answers a question the ring cannot.** A
+  hexagon wall's top is not an edge at all — the perimeter beam continues the
+  plane above it — while a partition's is an open rim, an arris seen one face at
+  a time. Those want opposite widths (see `../grid-canvases/PLAN.md`), and
+  nothing in the plan data distinguishes them, so the caller says which. Height
+  is the stand-in it says it with, the same stand-in `ceilingBoundary` uses; if
+  a room ever needs the real predicate, both move to a flag on `Ring` together.
+
+- **The partitions' eight end corners are arrises, and that IS derivable.**
+  Unlike the top, which vertex turns away from the visitor follows from the ring
+  itself, so `edgeFade` classifies them off the boundary and nothing here names
+  them. This room has more of them than any other — six wrapping corners on the
+  hexagon against eight turning ones on the partitions — which is what makes it
+  the template where the split is most visible.
 
 This is what the four hooks carried since A1 were carried **for** — `Facing`,
 `Ring.height`, explicit boundaries per consumer, and per-surface `topY`. None of
@@ -191,8 +206,8 @@ junction scores 2.
   of that view away. Darkening the ambience alone would be erased at the top of
   every side, where the wedge is tightest.
 
-Do not reuse `EdgeFadeWorld` for any of this — it is tuned to round corners off,
-not to absorb light.
+Do not reuse `Fades` or `BeamEdgeFade` for any of this — they are tuned to round
+edges off, not to absorb light.
 
 ### It stays off at the walls
 

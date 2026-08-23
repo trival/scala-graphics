@@ -378,11 +378,42 @@ val AmbienceTexScale = 64.0
 /** How far from a geometry edge the normal-dependent noise term is fully faded
   * out. This makes corners read as slightly ROUNDED — one noise blending into
   * the other. It is a material property, not light absorption.
+  *
+  * ONE RADIUS PER KIND OF EDGE, and **this room has more of the awkward kind
+  * than any other.** Its six hexagon corners wrap toward the visitor and take
+  * `corner`, where a wide blend is what stops two walls meeting as a seam. The
+  * partitions contribute eight vertices that all turn away — you see one face
+  * of a partition at a time, against a silhouette — and take `arris`: at the
+  * `corner` width the fade reads there as a broad soft band running down each
+  * end of each partition rather than a rounded edge.
+  *
+  * Nothing in the sketch names those vertices. `edgeFade` reads the
+  * classification off the boundary, so adding or moving a partition needs no
+  * change here — see `EdgeFades` in `sketchlib.utils.room`.
+  *
+  * `top` is the exception that is NOT derivable, and this room is why: a
+  * hexagon wall stops at `WallTopY` where the perimeter beam continues the
+  * plane, so its top is not an edge at all and wants the wide value, while a
+  * partition's top is an open rim and wants `arris`. Nothing about the ring
+  * says which — so it travels as a per-bake uniform beside `topY`, and the
+  * value below is only the default the shape binding overrides.
   */
-val EdgeFadeWorld = 0.08
+val Fades: EdgeFades = (
+  plane = 0.08,
+  top = 0.08,
+  corner = 0.08,
+  arris = 0.03,
+)
+
+/** How far the SAME term is faded across a beam's cross-section, which the
+  * atlas measures for itself rather than from the plan. Its own constant
+  * because the beam is a different scale of object: `Fades.arris` is a rounding
+  * on a wall metres across, while a beam's side face is 0.32 m tall.
+  */
+val BeamEdgeFade = 0.08
 
 /** The floor grime line: dirt collecting where wall meets floor. Its own width,
-  * deliberately separate from `EdgeFadeWorld` — they are unrelated quantities
+  * deliberately separate from the fades above — they are unrelated quantities
   * that `canvases` happened to give the same number.
   */
 val GrimeWidth = 0.06
@@ -532,17 +563,20 @@ def grime(dist: FloatExpr, wp: Vec3Expr): FloatExpr =
   )
   lerp(darkest, 1.0, (dist + creep).smoothstep(0.0, GrimeWidth))
 
-/** The ambience field, given the distance to the nearest geometry edge.
+/** The ambience field, given how far the point is from being ON a geometry
+  * edge: 0 at an edge, 1 well clear of every one, smooth between.
   *
-  * Takes that distance rather than deriving it, because what counts as an edge
-  * is the caller's business: `edgeDist`'s vertical term assumes a surface
-  * spanning `0 … topY`, true of a wall and false of a ceiling beam hanging in
-  * the middle of the room. The beams pass their own and reuse everything else.
+  * Takes that FACTOR rather than a distance, and derives neither, because what
+  * counts as an edge is the caller's business and so is how wide each kind of
+  * edge rounds off. `edgeFade`'s vertical term assumes a surface spanning
+  * `0 … topY`, true of a wall and false of a ceiling beam hanging in the middle
+  * of the room; the beams measure their own cross-section and fade it over
+  * `BeamEdgeFade`, reusing everything else here.
   */
 def roomNoise(
     wp: Vec3Expr,
     normal: Vec3Expr,
-    edgeDistance: FloatExpr,
+    edge: FloatExpr,
 ): FloatExpr =
   // Anisotropic world space: the field is stretched and sheared before it is
   // sampled, so it does not read as an isotropic blob field pinned to the room
@@ -553,10 +587,10 @@ def roomNoise(
     wp.z * 0.8 + wp.y * 0.2,
   )
   // The normal-dependent term gives each orientation its own look, which would
-  // otherwise meet as a hard seam in the corners. Fade it out over
-  // `EdgeFadeWorld` so the edge itself is uniform across all surfaces — this is
+  // otherwise meet as a hard seam in the corners. `edge` fades it out at every
+  // geometry edge so the edge itself is uniform across all surfaces — this is
   // what makes corners read as slightly rounded.
-  val edge = edgeDistance.smoothstep(0.0, EdgeFadeWorld)
+  //
   // Not a free knob, unlike everything else here: it weights the second term
   // AND normalizes the sum, so the two uses have to move together or the
   // field's range drifts. Written once for that reason.
@@ -656,7 +690,7 @@ val LightWaveAmount = 0.52 // ±12 % on strength; stays well above threshold
 //   Walls.scala     Wall, wallsFrom, wall.quad / rotY / pointAt
 //   Surfaces.scala  planeQuad — the bounding-box floor / ceiling / light plane
 //   Raster.scala    Beam / BeamFamily, familyBeams, perimeterBeams, BeamAtlas
-//   Fields.scala    edgeSetDist / cornerDist / edgeDist shader emitters
+//   Fields.scala    edgeSetDist / cornerDist / edgeFade shader emitters
 //   Hanging.scala   PaintingSpec / Painting / Hanging — hang + shadow composite
 //
 // **Every one of them is a free function over plain data**, and that is load
@@ -896,12 +930,17 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
     val atlas = BeamAtlas(beams, ceilBnd)
     val beamForm = form(atlas.faces)
 
-    // The distance fields this room's bakes are built on — `edgeSetDist`,
-    // `cornerDist` and `edgeDist` — come from `sketchlib.utils.room`. Each
-    // unrolls the CPU-known ring data into a `min` chain at build time, which
-    // is free inside a bake and constant-folds away, and each takes an explicit
-    // BOUNDARY: not every surface is bounded by every ring, and passing it in
-    // makes that a call-site decision rather than a rewrite.
+    // The distance fields this room's bakes are built on — `edgeSetDist` and
+    // `edgeFade` — come from `sketchlib.utils.room`. Each unrolls the CPU-known
+    // ring data into a `min` chain at build time, which is free inside a bake
+    // and constant-folds away, and each takes an explicit BOUNDARY: not every
+    // surface is bounded by every ring, and passing it in makes that a
+    // call-site decision rather than a rewrite.
+    //
+    // `edgeFade` also reads each vertex's KIND off the boundary and gives each
+    // its own radius from `Fades` — which is what rounds the partitions' eight
+    // end corners tightly while the hexagon's six keep the broad blend, without
+    // either the plan or the curation naming any of them.
     //
     // None of them is an occlusion distance. What this room does with them is a
     // noise fade and a grime line, and it darkens no edge anywhere — see
@@ -916,7 +955,7 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
     val floorTex = TextureBaker.bake(p, floorForm, rfw, rfh): (wp, normal, _) =>
       vec4(
         vec3(FloorTint)
-          * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, CeilY))
+          * roomNoise(wp, normal, edgeFade(wp, normal, floorBnd, CeilY, Fades))
           * grime(edgeSetDist(wp.xz, floorBnd), wp),
         1.0,
       )
@@ -979,8 +1018,8 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
     // `crossing` below already computes exactly the quantity it would key on —
     // `overlap` reaches 3 at a triple point and 2 at a plain crossing — so this
     // is a few lines and needs no accommodation in the shared code whatever.
-    // Do not reach for `EdgeFadeWorld`, which is tuned to round corners off
-    // rather than to absorb light.
+    // Do not reach for `Fades` or `BeamEdgeFade`, which round edges off rather
+    // than absorb light.
     //
     // Two things vary across the beam, and neither is an edge effect. Both are
     // driven by one value, `soffitness` below — read that first.
@@ -1181,7 +1220,7 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
 
       // The DOWNWARD faces take no normal-varied noise at all — `1 - s` is zero
       // across the soffit. That is a deliberate join with the walls, not a
-      // saving: a wall's own `edgeDist` fades this same term to nothing exactly
+      // saving: a wall's own `edgeFade` fades this same term to nothing exactly
       // at `WallTopY`, which is the soffit plane, so the term arrives at the
       // ceiling already at zero and stays there across every soffit. One
       // continuous unvaried band from the top of the wall through the raster —
@@ -1205,7 +1244,11 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
       // rendered color unless the darkening is lifted with it. Lift it by the
       // same `sideLift`, so a side face arrives at the ceiling line as its tint
       // and nothing less. Zero on the soffit, which keeps its full ambience.
-      val ambience = roomNoise(wp, normal, dEdge * (1.0 - s))
+      // The beam measures its own edges across the atlas row, so it fades them
+      // here rather than through `edgeFade` — the plan knows nothing about a
+      // beam's cross-section, and `BeamEdgeFade` is its own scale of object.
+      val ambience =
+        roomNoise(wp, normal, (dEdge * (1.0 - s)).smoothstep(0.0, BeamEdgeFade))
       val lit = ambience + (1.0 - ambience) * (sideLift * BeamTopGlow)
 
       // JUNCTION DARKENING — see the tunables block for why this template has
@@ -1238,19 +1281,27 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
       * in the room, whatever its height.
       *
       * `topY` is a per-bake uniform rather than a constant closed over by the
-      * shade. Every wall happens to share a top right now, so this changes
-      * nothing visually; it matters the moment one does not. A partition
-      * stopping below the ceiling, a plinth, a room of pillars at assorted
-      * heights would each otherwise need a specialized shade and its own WGSL
-      * compile, to express what is properly a uniform buffer write.
+      * shade, and THIS is the room where that pays: the hexagon's walls stop at
+      * `WallTopY` and the partitions at 2.5 m. Without it each height would
+      * need a specialized shade and its own WGSL compile, to express what is
+      * properly a uniform buffer write.
       *
       * `topY` cannot be applied afterwards by the runtime shader, either: it
       * changes the distance field itself, which is the entire thing the bake
-      * caches. A per-wall TINT would join this same schema — that one could go
-      * either way, but once a uniform block exists there is no reason to keep
-      * it out and run a second mechanism.
+      * caches.
+      *
+      * **`topFade` rides along for the same reason, and answers a question the
+      * ring cannot.** A hexagon wall's top is not an edge at all — the
+      * perimeter beam continues the plane above it — while a partition's is an
+      * open rim, an arris seen one face at a time. Same expression, same
+      * pipeline, different constant; nothing in the plan data distinguishes
+      * them, so the caller says which. A per-wall TINT would join this same
+      * schema on the same argument.
       */
-    type WallU = (topY: FragmentUniform[Float])
+    type WallU = (
+        topY: FragmentUniform[Float],
+        topFade: FragmentUniform[Float],
+    )
 
     val wallBaker = TextureBaker[WallU](p): ctx =>
       val wp = ctx.in.worldPos
@@ -1273,8 +1324,9 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
       //
       // The edge fade is the opposite case and correctly stays per-surface: an
       // open top rim IS a geometry edge, and rounding the material off there is
-      // what `edgeDist`'s vertical term does. That is the whole reason `topY`
-      // is a per-bake uniform.
+      // what `edgeFade`'s vertical term does. That is the whole reason `topY`
+      // is a per-bake uniform — and `topFade` beside it, since a partition's
+      // rim is an arris and a hexagon wall's top is not an edge at all.
       //
       // Neither is an edge effect in the occlusion sense: nothing darkens where
       // the wall meets the ceiling.
@@ -1283,7 +1335,17 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
           vec3(WallTintLow).lerp(
             WallTintHigh,
             (WallTopY - wp.y).smoothstep(TopFadeDepth, 0.0),
-          ) * roomNoise(wp, normal, edgeDist(wp, normal, floorBnd, topY))
+          ) * roomNoise(
+            wp,
+            normal,
+            edgeFade(
+              wp,
+              normal,
+              floorBnd,
+              topY,
+              Fades.withTop(ctx.bindings.topFade),
+            ),
+          )
             * grime(wp.y, wp),
           1.0,
         ),
@@ -1334,7 +1396,18 @@ def roomsHexPartitions(canvas: HTMLCanvasElement): Unit =
       */
     def wallAmbience(wallForm: Form, wall: Wall, w: Int, h: Int): Panel =
       val bake = wallBaker.prepare(wallForm, w, h)
-      bake.shape.bind("topY" := wall.height)
+      // A wall that stops short of `WallTopY` is a PARTITION, and its top is an
+      // open rim — an arris, seen one face at a time — while a hexagon wall's
+      // top is not an edge at all, since the perimeter beam continues the plane
+      // above it. Height is the only thing that distinguishes them here, which
+      // is the same stand-in `Footprint.ceilingBoundary` uses to decide what
+      // interrupts the raster; when a room needs the real predicate both move
+      // to an explicit flag on `Ring` together.
+      bake.shape.bind(
+        "topY" := wall.height,
+        "topFade" :=
+          (if wall.height < WallTopY then Fades.arris else Fades.corner),
+      )
       p.paint(bake.panel)
       bake.panel
 

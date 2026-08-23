@@ -119,9 +119,32 @@ object Ring:
 case class Footprint(rings: Arr[Ring]) // rings(0) is the Inward outer boundary
 
 /** One boundary segment `a → b` in XZ, with the room-side normal already
-  * resolved from its ring's facing.
+  * resolved from its ring's facing, and the vertex at `a` already classified.
+  *
+  * `arrisAtA` says which KIND of vertical edge stands at `a`, and it is carried
+  * here because [[Boundary]] flattens its rings into one array with no marker
+  * between them — so `edges(i - 1)` is not reliably the neighbouring edge, and
+  * the classification has to be made where the ring is still a ring. It hangs
+  * off `a` rather than off some vertex type for the same reason [[cornerDist]]
+  * reads only `a`: the edges form closed loops, so every vertex is the `a` of
+  * exactly one of them.
+  *
+  * **The two kinds are not a matter of degree, and one number cannot serve
+  * both.** At a vertex where the faces wrap TOWARD the room — a box's corner, a
+  * hexagon's — you see both of them meeting, and a wide blend between their two
+  * materials is what stops the corner reading as a seam. At a vertex where they
+  * turn AWAY from each other — an L's protruding corner, any corner of a
+  * free-standing wall — you see one face at a time against a silhouette, and
+  * that same wide blend reads instead as a broad soft band running down the
+  * wall near its edge. An arris wants a rounding, measured in the width of a
+  * broken edge, not a blend.
   */
-case class Edge(a: Vec2, b: Vec2, inwardNormal: Vec2)
+case class Edge(
+    a: Vec2,
+    b: Vec2,
+    inwardNormal: Vec2,
+    arrisAtA: Boolean = false,
+)
 
 /** Rotate a 2D direction 90°. `perp(dir)` points into a counter-clockwise loop
   * and out of a clockwise one, which is exactly the winding dependence that
@@ -203,6 +226,30 @@ object Boundary:
     *
     * One shoelace pass per ring, at build time — four multiply-subtract-adds
     * for a rectangle.
+    *
+    * It also classifies each vertex — see [[Edge.arrisAtA]] for what the two
+    * kinds are and why they cannot share a number. The test is one dot product
+    * between this edge's inward normal and the direction the PREVIOUS edge
+    * arrived along:
+    *
+    * {{{
+    * dot(nᵢ, dᵢ₋₁) < 0  the faces wrap toward the room — a room corner
+    * dot(nᵢ, dᵢ₋₁) > 0  they turn away from each other  — an arris
+    * }}}
+    *
+    * It needs neither the winding nor `facing`, because both are already folded
+    * into `nᵢ` two lines above — which is the payoff of normalizing the winding
+    * away rather than requiring a convention. Algebraically it is
+    * `-s · cross(dᵢ₋₁, dᵢ)`, so it is the usual convexity test with the sign
+    * question already answered. It is winding-INDEPENDENT for the same reason
+    * the normals are: reversing the points swaps which edge carries a given
+    * vertex and negates both factors, leaving the set of classified vertices
+    * identical.
+    *
+    * A COLLINEAR vertex — a redundant point on a straight run — scores exactly
+    * 0 and falls to the room-corner side. Neither answer is right there,
+    * because there is no edge to round: [[cornerDist]] will fade around a
+    * vertex that depicts nothing. Do not author them.
     */
   private def ringEdges(r: Ring): Arr[Edge] =
     val n = r.points.length
@@ -213,10 +260,15 @@ object Boundary:
     while i < n do
       val a = r.points(i)
       val b = r.points(if i + 1 == n then 0 else i + 1)
+      val prev = r.points(if i == 0 then n - 1 else i - 1)
       val dx = b.x - a.x
       val dz = b.y - a.y
       val len = (dx * dx + dz * dz).sqrt
-      out.push(Edge(a, b, Vec2(-dz / len * s, dx / len * s)))
+      val nx = -dz / len * s
+      val nz = dx / len * s
+      // Unnormalized: only the sign is read.
+      val arris = nx * (a.x - prev.x) + nz * (a.y - prev.y) > 0.0
+      out.push(Edge(a, b, Vec2(nx, nz), arris))
       i += 1
     out
 
