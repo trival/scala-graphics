@@ -352,7 +352,7 @@ val Fades: EdgeFades = (
   * looks like it is hovering, this is the knob, not a shadow.
   */
 val GrimeWidth = 0.06
-val GrimeDarken = 0.90 // brightness multiplier right at the junction
+val GrimeDarken = 0.85 // brightness multiplier right at the junction
 
 /** How far the line wanders in and out along the junction, in meters, and how
   * much its darkness varies independently of that (0 = none, 1 = it fades out
@@ -362,7 +362,7 @@ val GrimeDarken = 0.90 // brightness multiplier right at the junction
   * on, an irregular one reads as accumulated. The patchiness stops the result
   * looking like a single wobbly stroke.
   */
-val GrimeCreep = 0.03
+val GrimeCreep = 0.02
 val GrimePatchiness = 0.3
 
 /** The two grime FIELDS, in `[0, 1]`. Both are functions of WORLD XZ ONLY, and
@@ -442,7 +442,7 @@ val GroundTint = Vec3(0.82, 0.81, 0.79)
   * space actually has: a lift low down where the mirror ground bounces into it,
   * say — keyed on that surface, not on height for its own sake.
   */
-val WallTint = Vec3(0.84, 0.84, 0.83)
+val WallTint = Vec3(0.92, 0.92, 0.91)
 
 // ---- The mirror ground ------------------------------------------------------
 
@@ -481,7 +481,7 @@ val ShadowBotFadeMul = 2.7 // how much broader the lower falloff is
   * This is the free knob for how much the space glows. `EnvColor` is not — it
   * is capped by the ground re-bloom check above.
   */
-val BloomIntensity = 0.005
+val BloomIntensity = 0.004
 
 // ===========================================================================
 // STRUCTURAL — the plan and everything derived from it.
@@ -1033,8 +1033,8 @@ def openSpaceWall(canvas: HTMLCanvasElement): Unit =
       // goes to pure white, MSAA's gradations collapse, and the edge reads as a
       // staircase. The knee sits just above the brightest surface in the scene,
       // so nothing material shifts; only the sky and its halo are compressed.
-      toneKnee = 0.9,
-      toneWhite = 1.5,
+      toneKnee = 0.94,
+      toneWhite = 1.2,
     )
 
     // -----------------------------------------------------------------------
