@@ -218,6 +218,19 @@ native JS over the Scala stdlib, `while` over `for`-comprehensions, and avoid
 `enum`/`Option`/collection traits in any runtime path. Keep them lightweight and
 performant.
 
+### Don't extract unasked
+
+**Every extraction into `src/` is a deliberate decision of its own, planned
+outside the work on any one sketch** — never done in passing because something
+got reused. Everything in `src/` today got there that way. Propose it; don't do
+it.
+
+This goes double for anything that carries a look — a weave, a grain, a
+background field, a stroke shade. Those are one option out of many not yet
+explored, and exploring them is the work. Keep them local to the sketch and copy
+them into the next one; a local copy is free to diverge, a shared one quietly
+becomes the house style before anyone decided it should be.
+
 ## Using trivalibs
 
 Sketches import from the `trivalibs.*` namespace:

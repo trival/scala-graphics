@@ -425,7 +425,7 @@ def gradientWall(canvas: HTMLCanvasElement): Unit =
     // One shade per entry: the function bakes into WGSL, nothing switches at
     // runtime.
     def gradientPanel(interp: Interp): Panel =
-      val shade = p.layerShade[EmptyTuple]: program =>
+      val shade = p.layerShade: program =>
         program.frag: ctx =>
           ctx.out.color := vec4(
             vec3(
