@@ -234,8 +234,6 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
       .shape(
         form,
         lineShade,
-        // The line crosses itself constantly, so overlaps keep the highest
-        // alpha seen rather than compounding it.
         blendState = BlendState(
           color = BlendFn(BlendFactor.One, BlendFactor.Zero, BlendOp.Add),
           alpha =

@@ -66,8 +66,8 @@ descriptive name. `index.html` provides the host glue:
 
 ```html
 <script type="module">
-  import { sketch } from "./main.js"
-  sketch(document.getElementById("canvas"))
+  import { sketch } from './main.js'
+  sketch(document.getElementById('canvas'))
 </script>
 ```
 
@@ -102,7 +102,7 @@ This is part of creating or moving a sketch, not a follow-up chore:
 - **Deleted sketch** → remove its entry.
 - **Changed controls or subject** → update the `<p>` description. It carries
   whatever a visitor needs to know before clicking: the interaction (`WASD /
-  arrows to move · Space / Shift up·down · drag to look`) or a one-line
+arrows to move · Space / Shift up·down · drag to look`) or a one-line
   description of what is on screen. One short line, no prose.
 
 Keep the entries in the same order as the plan or roadmap that produced them,
@@ -151,8 +151,9 @@ parts nobody wants to re-read or re-derive.
   is being built deliberately (see `documents/grid-ceiling-rooms-plan.md`).
 
 - **Everything else** — regular sketches, experiments, tests — does **not**.
-  This is most of `sketches/`, including `rooms/canvases/`. Comment them
-  normally and sparsely. A multi-line prose justification attached to code that
+  This is most of `sketches/`, including `rooms/canvases/`. See
+  [Comments in sketches](#comments-in-sketches-structure-never-explanation)
+  below for what is left. A multi-line prose justification attached to code that
   is obvious to its author is exactly the noise trivalibs is designed to
   eliminate: the whole library exists to keep the signal-to-noise ratio of
   graphics prototyping high, and explanatory ballast works directly against
@@ -162,6 +163,75 @@ parts nobody wants to re-read or re-derive.
 Do not turn a regular sketch into a template by commenting it. If it turns out
 to be worth reusing, that is the moment to make a deliberate template out of it,
 with all sketch specific details removed.
+
+### Comments in sketches: structure, never explanation
+
+There is a widespread convention that a comment restating what the code does is
+a useful second copy of the intent — a safety net for spotting where code and
+intent diverge. **We deliberately reject that convention outside
+`sketches/templates/`.** Sketches are read by people who understand every line
+of them, and are hacked constantly and fast. A comment describing behavior is
+read by nobody, is dimmed to invisibility in the editor, and rots on the first
+tuning pass. It does not catch divergence; it manufactures it.
+
+That is not hypothetical. `sketches/experiments/strokes/study1` carried
+`// The line crosses itself constantly, so overlaps keep the highest alpha seen
+rather than compounding it.` above a blend state that had since been swapped
+while tuning and no longer did that at all. The comment survived precisely
+because a human tuning a visual effect swaps a blend function and never reads
+the paragraph above it. The AI agent that wrote the comment created a lie with a
+long shelf life. The whole comment is gone now — not just the false half. The
+true half was not worth keeping either.
+
+So, in every sketch that is not a template:
+
+- **Comments structure code; they do not describe it.** Section markers
+  (`// ---- shades ----`, `// ---- panels ----`) are the main legitimate use, and
+  they are worth having.
+- **A short note on the _context_ a piece of code operates in can be fine, and
+  the bar is high.** The reader has the rendered canvas open beside the source,
+  so anything the running sketch shows them is not context either — "the stroke
+  crosses itself constantly" is visible at a glance and does not survive the
+  test. What can earn a line is a constraint arriving from outside the sketch
+  and outside the picture: a library default that had to be overridden, a
+  platform limit, a value another sketch depends on. Never what the code does
+  about it.
+- **Tunables may carry one brief line.** A constant that drives a critical
+  property of the sketch can say what turning it changes, what it is measured
+  in, or what range is meaningful — that is knowledge the reader cannot derive
+  from `val WidthMax = 1.0 / 4.0`. Keep it to a line or two, and only for
+  constants that are actually knobs. Implementation code gets no such licence.
+- **Implementation and logic carry no prose at all.** Encode it in names
+  instead: descriptive `val`s for intermediate values, and a named function
+  wherever a sketch-specific algorithm or behavior would otherwise want
+  explaining. If you feel the need to write a paragraph, that paragraph is
+  telling you the code needs a better name or a function boundary.
+- **Scaladoc is for code that does not live in the sketch.** Its job is to let a
+  sketch use something from `src/` or `trivalibs/` without jumping into foreign
+  source to look it up — the explanation arrives on hover, at the call site.
+  Those shared names stay concise and put their meaning in the doc comment.
+  Being copied into a sketch does not earn a name a Scaladoc; being defined
+  outside it does.
+- **Nothing inside a sketch gets a doc comment unless the human asks for it.**
+  That holds across the whole sketch, however many files it spans — a helper in
+  a second file of the same sketch is still sketch-local code, read by someone
+  who has the definition one keystroke away. Write the name well instead. Add a
+  doc comment only on explicit request, never on your own initiative and never
+  "while you are in there".
+- **Complex behavior and algorithms go in a sibling `PLAN.md`.** That is the
+  channel for specifying and communicating intent between humans and agents, and
+  it exists exactly so the code does not have to carry it. Strip it out of the
+  source.
+
+**For AI agents specifically:** do not add explanatory comments to sketches, and
+do not preserve or extend the ones already there. When you touch a region whose
+comment describes behavior, delete the comment — including ones written in an
+earlier session by an agent. When you feel the pull to explain something in the
+source, rename something, extract a named function, or write it in `PLAN.md`
+instead. Only `sketches/templates/` inverts this, and only because being read
+cold is a template's whole purpose.
+
+### Sketch code is user code
 
 Sketches are **user code**: Scala convenience shorthands (`for`-comprehensions,
 string interpolation, etc.) are fine in one-off sketch code under `sketches/` —
