@@ -23,7 +23,8 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 // The constants below are the knobs this study exists to turn.
 // ---------------------------------------------------------------------------
 
-type LineVaryings = (uv: Vec2, localUv: Vec2, canvasPos: Vec2)
+type LineVaryings =
+  (uv: Vec2, localUv: Vec2, canvasPos: Vec2, vNum: Double, vDen: Double)
 type LineUniforms = (aspect: VertexUniform[Float])
 
 type BgUniforms = (aspect: Float)
@@ -182,21 +183,30 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
           ctx.out.canvasPos := ctx.in.position,
+          ctx.out.vNum := ctx.in.uv.y * ctx.in.width,
+          ctx.out.vDen := ctx.in.width,
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>
+        val v = LetFloat("v")
         val base = VarFloat("base")
         val edgeFade = LetFloat("edgeFade")
         val weave = LetFloat("weave")
         val alpha = LetFloat("alpha")
         Block(
+          v := ctx.in.vNum / ctx.in.vDen,
           base := Simplex
-            .fbmSimplex2d(ctx.in.uv + bristleOffset.toExpr, 4.i, 2.2, 0.8)
+            .fbmSimplex2d(
+              vec2(ctx.in.uv.x, v) + bristleOffset.toExpr,
+              4.i,
+              2.2,
+              0.8,
+            )
             .fit1101 / 4.0 + 0.08,
           base := base.pow(0.9) - 0.04,
           edgeFade :=
             ctx.in.localUv.x.fit0111.abs.pow(13.0) +
-              ctx.in.uv.y.fit0111.abs.pow(10.0),
+              v.fit0111.abs.pow(10.0),
           weave := canvasWeave(ctx.in.canvasPos),
           alpha := (base - edgeFade + 0.3).clamp01 *
             ctx.in.uv.x.smoothstep(1.0, 0.87) *
