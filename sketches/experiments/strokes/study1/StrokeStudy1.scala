@@ -18,19 +18,15 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 // and smoothed — the line pipeline at its extremes.
 //
 // Everything — geometry and weave alike — is measured in canvas units: `y`
-// spans 0..1 over the canvas height, `x` spans 0..aspect. Nothing is in
-// pixels, so resolution changes the look by nothing at all and a resize is a
-// uniform zoom. The grain is read off a lattice with linear interpolation for
-// the same reason: it stays a fixed feature of the picture and softens as the
-// canvas grows, instead of breaking into pixel squares.
+// spans 0..1 over the canvas height, `x` spans 0..aspect.
 //
 // The constants below are the knobs this study exists to turn.
 // ---------------------------------------------------------------------------
 
 type LineVaryings = (uv: Vec2, localUv: Vec2, canvasPos: Vec2)
-type LineUniforms = (size: VertexUniform[Vec2])
+type LineUniforms = (aspect: VertexUniform[Float])
 
-type BgUniforms = (size: Vec2)
+type BgUniforms = (aspect: Float)
 
 type CanvasUniforms = (samp: Sampler)
 type CanvasPanels = (src: FragmentPanel)
@@ -90,39 +86,39 @@ val WeaveGrainPerThread = 8.0
 val StrokeWeaveBite = 0.35
 val StrokeWeaveShade = 0.78
 
-/** Hash noise on a unit lattice, read with linear interpolation — a sampled
-  * noise texture without the texture.
-  */
-val grain: WgslFn[(pos: Vec2), Float] =
+val grain: WgslFn[(cellPos: Vec2), Float] =
   WgslFn.dsl("grain"): (p, ret) =>
     val cell = LetVec2("cell")
     val t = LetVec2("t")
+
+    val bottomRow = Hash
+      .hash21(cell.bitsToU32)
+      .lerp(Hash.hash21((cell + vec2(1.0, 0.0)).bitsToU32), t.x)
+    val topRow = Hash
+      .hash21((cell + vec2(0.0, 1.0)).bitsToU32)
+      .lerp(Hash.hash21((cell + vec2(1.0, 1.0)).bitsToU32), t.x)
+
     Block(
-      cell := p.pos.floor,
-      t := p.pos.fract,
-      ret(
-        Hash
-          .hash21(cell.bitsToU32)
-          .mix(Hash.hash21((cell + vec2(1.0, 0.0)).bitsToU32), t.x)
-          .mix(
-            Hash
-              .hash21((cell + vec2(0.0, 1.0)).bitsToU32)
-              .mix(Hash.hash21((cell + vec2(1.0, 1.0)).bitsToU32), t.x),
-            t.y,
-          ),
-      ),
+      cell := p.cellPos.floor,
+      t := p.cellPos.fract,
+      ret(bottomRow.lerp(topRow, t.y)),
     )
 
-/** The canvas surface: grain crossed with a thread pattern, in `[0, 1]`. Takes
-  * a position in canvas units, so ground and stroke agree on one fabric.
-  */
-def canvasWeave(pos: Vec2Expr): FloatExpr =
-  val threadFreq = Tau * WeaveThreads
-  val threads =
-    (pos.x * threadFreq).sin.fit1101 * (pos.y * threadFreq).sin.fit1101
-  (grain(pos * (WeaveThreads * WeaveGrainPerThread)) + threads * 0.6) / 1.6
+def uvToCanvasUnits(uv: Vec2Expr, aspect: FloatExpr): Vec2Expr =
+  vec2(uv.x * aspect, uv.y)
 
-/** The stroke line, in canvas units with y down. */
+def canvasUnitsToUv(canvasPos: Vec2Expr, aspect: FloatExpr): Vec2Expr =
+  vec2(canvasPos.x / aspect, canvasPos.y)
+
+def canvasWeave(canvasPos: Vec2Expr): FloatExpr =
+  val threadFreq = Tau * WeaveThreads
+  val currGrain = grain(canvasPos * (WeaveThreads * WeaveGrainPerThread))
+  val threads =
+    (canvasPos.x * threadFreq).sin.fit1101 *
+      (canvasPos.y * threadFreq).sin.fit1101
+  (currGrain + threads * 0.6) / 1.6
+
+/* The stroke line, in canvas units with y down. */
 def strokeGeometry(aspect: Double): Arr[BufferedGeometry[LineAttribsBuffer]] =
   def randWidth(): Double = randInRange(WidthMin, WidthMax)
 
@@ -163,8 +159,6 @@ def strokeGeometry(aspect: Double): Arr[BufferedGeometry[LineAttribsBuffer]] =
 @JSExportTopLevel("sketch")
 def strokeStudy1(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
-    // Rolled once and baked into the shader — nothing here varies per frame or
-    // per shape, so none of it needs a binding.
     val strokeCol =
       Vec3(rand(), randInRange(0.35, 0.95), randInRange(0.2, 0.7)).hsv2rgbSmooth
     val bristleOffset = randVec2() * 100.0
@@ -175,7 +169,8 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
       program.frag: ctx =>
         val weave = LetFloat("weave")
         Block(
-          weave := canvasWeave(ctx.in.uv * ctx.bindings.size).lerpIn(0.81, 1.0),
+          weave := canvasWeave(uvToCanvasUnits(ctx.in.uv, ctx.bindings.aspect))
+            .lerpIn(0.81, 1.0),
           ctx.out.color := vec4(vec3(BgGray * (weave * 0.7 + 0.3)), 1.0),
         )
 
@@ -183,7 +178,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
       program.vert: ctx =>
         val pos = LetVec2("pos")
         Block(
-          pos := (ctx.in.position / ctx.bindings.size).fit0111,
+          pos := canvasUnitsToUv(ctx.in.position, ctx.bindings.aspect).fit0111,
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
           ctx.out.canvasPos := ctx.in.position,
@@ -218,15 +213,10 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
 
     // ---- panels ----------------------------------------------------------
 
-    // The canvas extent in canvas units — `(aspect, 1)`. Maps canvas units to
-    // clip space in the vertex stage and canvas uv to canvas units in the
-    // ground.
-    val uSize = p.binding[Vec2]
+    val uAspect = p.binding[Double]
 
-    // Rolled once, not per resize: a resize is meant to rescale this picture,
-    // not paint a new one.
     val form = p.form(
-      geometries = strokeGeometry(p.width.toDouble / p.height),
+      geometries = strokeGeometry(p.width / p.height),
       topology = PrimitiveTopology.TriangleStrip,
     )
 
@@ -240,7 +230,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
             BlendFn(BlendFactor.One, BlendFactor.OneMinusSrcAlpha, BlendOp.Add),
         ),
       )
-      .bind("size" := uSize)
+      .bind("aspect" := uAspect)
 
     val strokePanel = p.panel(
       clearColor = (0.0, 0.0, 0.0, 0.0),
@@ -248,17 +238,15 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
       multisample = true,
     )
 
-    // Ground first, stroke composited over it — a panel draws its layers in
-    // order.
     val canvasPanel = p.panel(layers =
       Arr[AnyLayer](
-        p.layer(bgShade).bind("size" := uSize),
+        p.layer(bgShade).bind("aspect" := uAspect),
         p.layer(canvasShade, blendState = BlendState.Alpha)
           .bind("src" := strokePanel, "samp" := p.samplerLinear),
       ),
     )
 
     p.onResize: (w, h) =>
-      uSize.set(Vec2(w / h, 1.0))
+      uAspect.set(w / h)
       p.paint(strokePanel, canvasPanel)
       p.show(canvasPanel)
