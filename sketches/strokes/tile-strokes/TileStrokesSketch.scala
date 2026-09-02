@@ -101,11 +101,11 @@ val BrushPointsPerSecond = 25.0
 val TilePauseMsMin = 500.0
 val TilePauseMsMax = 3000.0
 
-/** How far the brush tip tapers off, in brush half-widths. An absolute
-  * distance, so the tip keeps the same softness however far along the stroke it
-  * is; the geometry's end cap alone is a sharp point and reads as a hard cut.
+/** How far the brush tip tapers off, in brush widths. An absolute distance, so
+  * the tip keeps the same softness however far along the stroke it is; the
+  * geometry's end cap alone is a sharp point and reads as a hard cut.
   */
-val TipFadeBrushWidths = 2.0
+val TipFadeBrushWidths = 1.0
 
 /** Tiles painted between one tile being moved onto a different palette colour.
   *

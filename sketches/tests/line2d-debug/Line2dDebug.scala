@@ -52,11 +52,11 @@ val InkColor = Vec3(0.1, 0.25, 0.85)
 val Ground = 0.97
 
 val PointCount = 20
-val WidthMin = 1.0 / 50.0
-val WidthMax = 1.0 / 4.0
+val WidthMin = 1.0 / 25.0
+val WidthMax = 1.0 / 2.0
 val SubdivPerSegment = 2
 
-val CleanupMinLenWidRatio = 0.5
+val CleanupMinLenWidRatio = 0.25
 val CleanupWidthThreshold = 0.1
 val CleanupAngleThreshold = 0.1
 val CleanupMinLenFloor = 0.0

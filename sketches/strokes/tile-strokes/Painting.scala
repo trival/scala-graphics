@@ -219,7 +219,7 @@ def createPainting(width: Double, height: Double, colorCount: Int): Painting =
 
   def getColor(): Color = colors.pick()
 
-  val brushSize = height / 34.0
+  val brushSize = height / 17.0
   var tiles = Arr(Tile(0.0, 0.0, width, height, getColor()))
 
   for _ <- 0 until randInt(4) + 1 do
@@ -228,7 +228,7 @@ def createPainting(width: Double, height: Double, colorCount: Int): Painting =
       val maxSplits = randInt(3) + 2
       for t <- subdivideTile(
           tile,
-          brushSize * 3.0,
+          brushSize * 1.5,
           maxSplits,
           0.5,
           0.5,
@@ -267,11 +267,11 @@ def getLineEdges(
     brushSize: Double,
 ): (points: Arr[Vec2], isLeft: Boolean) =
   val steps =
-    ((tile.height * 1.3 * randInRange(0.8, 1.2)) / brushSize).floor.max(4.0)
+    ((tile.height * 2.6 * randInRange(0.8, 1.2)) / brushSize).floor.max(4.0)
   val step = tile.height / steps
   val pointWOffset = step * 0.09
   // wide tiles get proportionally more horizontal jitter
-  val widthJitter = (tile.width / brushSize.pow(1.4)).max(2.2)
+  val widthJitter = (tile.width * 2.64 / brushSize.pow(1.4)).max(2.2)
 
   var isLeft = randBool()
   def delta(): Double = step * 0.29 * ((rand() + rand()) / 2.0).fit0111
@@ -304,7 +304,7 @@ def makeCurve(
     p2: Vec2,
     reverse: Boolean,
 ): Arr[Vec2] =
-  val normalScale = (brushSize / 6.0) * (width / brushSize).min(15.0)
+  val normalScale = (brushSize / 12.0) * (width * 2.0 / brushSize).min(15.0)
   val line = p2 - p1
   val steps = (line.length / 35.0).floor.toInt.max(8)
   val normal =
@@ -330,10 +330,8 @@ def makeCurve(
   * build up depth.
   */
 def strokeForTile(painting: Painting, tile: Tile): TileStroke =
-  // clamp the brush to the tile: never thinner than the painting's base width,
-  // never so thick that a short tile gets a single fat smear
   val brushSize = painting.brushSize
-    .max((tile.height * 2.0).pow(0.8) / 10.0)
+    .max((tile.height * 2.0).pow(0.8) / 5.0)
     .min(painting.brushSize * 3.0)
 
   val edges = getLineEdges(tile, brushSize)

@@ -47,7 +47,7 @@ type CanvasPanels = (src: FragmentPanel)
 val StrokePasses = 2
 
 /** Brush width, as a fraction of canvas height. */
-val BrushHeightRatio = 1.0 / 14.0
+val BrushHeightRatio = 1.0 / 7.0
 
 /** How far the walk's turning points may sit off the base curve, as a fraction
   * of canvas height — the wobble that makes a stroke a gesture, not a spline.

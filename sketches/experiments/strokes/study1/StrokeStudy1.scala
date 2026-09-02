@@ -47,8 +47,8 @@ val PointInset = 0.0
 /** Stroke width range in canvas units. Deliberately extreme: the point is to
   * see how the bevels and uvs hold up.
   */
-val WidthMin = 1.0 / 50.0
-val WidthMax = 1.0 / 4.0
+val WidthMin = 1.0 / 25.0
+val WidthMax = 1.0 / 2.0
 
 /** Extra vertices inserted per segment, each with a fresh width — a jittery
   * ribbon that `cleanup` then has to thin back out.
@@ -59,7 +59,7 @@ val SubdivPerSegment = 2
   * The length floor has to come down from its pixel-sized default, or a line
   * measured in canvas units is thinned away to nothing.
   */
-val CleanupMinLenWidRatio = 0.5
+val CleanupMinLenWidRatio = 0.25
 val CleanupWidthThreshold = 0.1
 val CleanupAngleThreshold = 0.1
 val CleanupMinLenFloor = 0.0
