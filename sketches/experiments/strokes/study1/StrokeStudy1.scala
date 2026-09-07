@@ -68,6 +68,19 @@ val CleanupMinLenFloor = 0.0
   */
 val SplitAngle = Pi * 3.0 / 4.0
 
+/** `Line.narrowAtTightTurns` — `0.0` disables it, otherwise the headroom
+  * factor: below `1.0` narrows harder than the fold needs, above `1.0` allows
+  * some folding back.
+  */
+val NarrowFactor = 0.0
+
+/** `FoldTreatment.ClampInner` pulls the inner outline back where a turn is too
+  * tight for the width, keeping the stroke full width and cropping the pattern
+  * on the inside. `Leave` emits the fold. Composes with `NarrowFactor`, though
+  * narrowing enough leaves the clamp nothing to do.
+  */
+val Fold = FoldTreatment.ClampInner
+
 /** `toBufferedGeometries` corner smoothing. */
 val SmoothDepth = 4
 val SmoothAngleThreshold = 0.001
@@ -143,18 +156,22 @@ def strokeGeometry(aspect: Double): Arr[BufferedGeometry[LineAttribsBuffer]] =
         verts += LineVertex(curr.pos.lerp(n.pos, t), randWidth())
       verts
 
-  subdivided
+  val cleaned = subdivided
     .cleanup(
       CleanupMinLenWidRatio,
       CleanupWidthThreshold,
       CleanupAngleThreshold,
       CleanupMinLenFloor,
     )
+
+  (if NarrowFactor > 0.0 then cleaned.narrowAtTightTurns(NarrowFactor)
+   else cleaned)
     .splitAtAngle(SplitAngle)
     .toBufferedGeometries(
       smoothDepth = SmoothDepth,
       smoothAngleThreshold = SmoothAngleThreshold,
       smoothMinLength = SmoothMinLength,
+      foldTreatment = Fold,
     )
 
 @JSExportTopLevel("sketch")
