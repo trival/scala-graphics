@@ -16,9 +16,10 @@ opaque type DebugMode = Int
 object DebugMode:
   val Across: DebugMode = 0
   val AcrossRawV: DebugMode = 1
-  val Along: DebugMode = 2
-  val Grid: DebugMode = 3
-  val Coverage: DebugMode = 4
+  val WorldAcross: DebugMode = 2
+  val Along: DebugMode = 3
+  val Grid: DebugMode = 4
+  val Coverage: DebugMode = 5
   extension (m: DebugMode) inline def id: Int = m
 
 /** Which debug view is drawn. Every mode is one flat color whose **alpha** is
@@ -28,8 +29,12 @@ object DebugMode:
   * picture.
   *
   *   - `Across` — sine stripes across the stroke off the corrected `v`. A
-  *     cross-stroke kink bends a stripe.
+  *     cross-stroke kink bends a stripe. Stripes stretch as the stroke widens.
   *   - `AcrossRawV` — the same off raw `uv.y`, as the before/after control.
+  *   - `WorldAcross` — stripes off `d`, the signed distance from the centre
+  *     line in canvas units. Their physical width stays fixed however wide the
+  *     stroke gets, so a wider stroke shows *more* stripes rather than fatter
+  *     ones, and they run continuous across a split corner.
   *   - `Along` — sine stripes along the stroke, off `uv.x`.
   *   - `Grid` — both at once.
   *   - `Coverage` — flat alpha, no stripes: pure overlap density.
@@ -39,6 +44,11 @@ val Mode = DebugMode.Across
 /** Stripe cycles across the stroke and along it. */
 val StripesAcross = 10.0
 val StripesAlong = 120.0
+
+/** `WorldAcross` stripe cycles per canvas unit — a fixed physical size, unlike
+  * `StripesAcross` which divides whatever width the stroke happens to have.
+  */
+val StripesPerCanvasUnit = 60.0
 
 /** Raises the sine to this power — above 1 narrows the inked bands and widens
   * the gaps, which reads overlaps more clearly.
@@ -67,12 +77,14 @@ val SmoothDepth = 4
 val SmoothAngleThreshold = 0.001
 val SmoothMinLength = 0.006
 
-def stripePattern(v: FloatExpr, u: FloatExpr): FloatExpr =
+def stripePattern(v: FloatExpr, d: FloatExpr, u: FloatExpr): FloatExpr =
   if Mode.id == DebugMode.Coverage.id then 1.0
   else
     val across = (v * Tau * StripesAcross).sin.fit1101
     val along = (u * Tau * StripesAlong).sin.fit1101
-    if Mode.id == DebugMode.Along.id then along
+    if Mode.id == DebugMode.WorldAcross.id then
+      (d * Tau * StripesPerCanvasUnit).sin.fit1101
+    else if Mode.id == DebugMode.Along.id then along
     else if Mode.id == DebugMode.Grid.id then across * along
     else across
 
@@ -126,12 +138,15 @@ def line2dDebug(canvas: HTMLCanvasElement): Unit =
         )
       program.frag: ctx =>
         val v = LetFloat("v")
+        val d = LetFloat("d")
         val alpha = LetFloat("alpha")
         Block(
           v :=
             (if Mode.id == DebugMode.AcrossRawV.id then ctx.in.uv.y
              else ctx.in.vNum / ctx.in.vDen),
-          alpha := stripePattern(v, ctx.in.uv.x).pow(StripeContrast) * InkAlpha,
+          d := ctx.in.vNum - ctx.in.vDen * 0.5,
+          alpha := stripePattern(v, d, ctx.in.uv.x)
+            .pow(StripeContrast) * InkAlpha,
           ctx.out.color := vec4(InkColor.toExpr, alpha),
         )
 
