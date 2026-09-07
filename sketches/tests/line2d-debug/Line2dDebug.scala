@@ -2,14 +2,14 @@ package sketches.tests.line2d_debug
 
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
+import trivalibs.graphics.shader.lib.line.*
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.*
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-type DebugVaryings =
-  (uv: Vec2, localUv: Vec2, vNum: Double, vDen: Double)
+type DebugVaryings = (uv: Vec2, localUv: Vec2, cross: Vec2)
 type DebugUniforms = (aspect: VertexUniform[Float])
 
 opaque type DebugMode = Int
@@ -132,8 +132,7 @@ def line2dDebug(canvas: HTMLCanvasElement): Unit =
           ).fit0111,
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
-          ctx.out.vNum := ctx.in.uv.y * ctx.in.width,
-          ctx.out.vDen := ctx.in.width,
+          ctx.out.cross := lineCross(ctx.in.uv.y, ctx.in.width),
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>
@@ -143,8 +142,8 @@ def line2dDebug(canvas: HTMLCanvasElement): Unit =
         Block(
           v :=
             (if Mode.id == DebugMode.AcrossRawV.id then ctx.in.uv.y
-             else ctx.in.vNum / ctx.in.vDen),
-          d := ctx.in.vNum - ctx.in.vDen * 0.5,
+             else ctx.in.cross.lineV),
+          d := ctx.in.cross.lineOffset,
           alpha := stripePattern(v, d, ctx.in.uv.x)
             .pow(StripeContrast) * InkAlpha,
           ctx.out.color := vec4(InkColor.toExpr, alpha),

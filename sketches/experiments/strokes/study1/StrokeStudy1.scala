@@ -2,6 +2,7 @@ package sketches.experiments.strokes.study1
 
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
+import trivalibs.graphics.shader.lib.line.*
 import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
@@ -23,8 +24,7 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 // The constants below are the knobs this study exists to turn.
 // ---------------------------------------------------------------------------
 
-type LineVaryings =
-  (uv: Vec2, localUv: Vec2, canvasPos: Vec2, vNum: Double, vDen: Double)
+type LineVaryings = (uv: Vec2, localUv: Vec2, canvasPos: Vec2, cross: Vec2)
 type LineUniforms = (aspect: VertexUniform[Float])
 
 type BgUniforms = (aspect: Float)
@@ -183,8 +183,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
           ctx.out.canvasPos := ctx.in.position,
-          ctx.out.vNum := ctx.in.uv.y * ctx.in.width,
-          ctx.out.vDen := ctx.in.width,
+          ctx.out.cross := lineCross(ctx.in.uv.y, ctx.in.width),
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>
@@ -194,7 +193,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
         val weave = LetFloat("weave")
         val alpha = LetFloat("alpha")
         Block(
-          v := ctx.in.vNum / ctx.in.vDen,
+          v := ctx.in.cross.lineV,
           base := Simplex
             .fbmSimplex2d(
               vec2(ctx.in.uv.x, v) + bristleOffset.toExpr,
