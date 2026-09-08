@@ -164,9 +164,15 @@ def strokeGeometry(aspect: Double): Arr[BufferedGeometry[LineAttribsBuffer]] =
       CleanupMinLenFloor,
     )
 
-  (if NarrowFactor > 0.0 then cleaned.narrowAtTightTurns(NarrowFactor)
-   else cleaned)
-    .splitAtAngle(SplitAngle)
+  // narrowed per fragment, after the split: a reversal is the split's job, and
+  // narrowing it beforehand drives the width at that vertex to nothing
+  val fragments = Arr[Line[Unit]]()
+  for f <- cleaned.splitAtAngle(SplitAngle) do
+    fragments += (
+      if NarrowFactor > 0.0 then f.narrowAtTightTurns(NarrowFactor) else f
+    )
+
+  fragments
     .toBufferedGeometries(
       smoothDepth = SmoothDepth,
       smoothAngleThreshold = SmoothAngleThreshold,
