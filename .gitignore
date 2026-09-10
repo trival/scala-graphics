@@ -4,6 +4,7 @@
 .vscode
 .idea/
 .claude/
+.wrangler
 node_modules
 dist
 *.semanticdb
