@@ -217,8 +217,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
         stmts += (d2 := vec2(0.0))
         stmts += (d3 := vec2(0.0))
 
-        stmts += ifChain(
-          (uvTile.y < 0.0) && (uvTile.x < 0.0),
+        stmts += when((uvTile.y < 0.0) && (uvTile.x < 0.0))(
           Block(
             n1 := tl,
             n2 := tc,
@@ -227,8 +226,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
             d2 := dirTC,
             d3 := dirCL,
           ),
-        ).elseIf(
-          (uvTile.y < 0.0) && (uvTile.x >= 0.0),
+        ).elseIf((uvTile.y < 0.0) && (uvTile.x >= 0.0))(
           Block(
             n1 := tr,
             n2 := tc,
@@ -237,8 +235,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
             d2 := dirTC,
             d3 := dirCR,
           ),
-        ).elseIf(
-          uvTile.x < 0.0,
+        ).elseIf(uvTile.x < 0.0)(
           Block(
             n1 := bl,
             n2 := bc,
@@ -291,6 +288,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
           stmts += when(
             (tiles(i).y >= gHeight) &&
               (Shapes.roundedRect(uvs(i), vec2(0.0), vec2(1.0), 0.2) > 0.5),
+          )(
             Block(
               gHue := tiles(i).x,
               gHeight := tiles(i).y,
@@ -303,8 +301,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
         val shadow = VarFloat("shadow")
         stmts += (shadow := 0.0)
         for i <- 0 until 4 do
-          stmts += when(
-            tiles(i).y > gHeight,
+          stmts += when(tiles(i).y > gHeight)(
             Block(
               shadow := shadow + Shapes
                 .roundedRectSmooth(
