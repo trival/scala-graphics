@@ -295,7 +295,6 @@ object TextureBaker:
         BakeVaryings,
         BakeBindings[U],
         EmptyTuple,
-        EmptyTuple,
         FragOut,
       ] => Block,
   ): TextureBaker[U] =

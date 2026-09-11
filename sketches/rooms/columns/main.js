@@ -2747,8 +2747,7 @@ $p.mS = (function(canvas) {
     var columnForm = $p_Lsketches_rooms_columns_Columns$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$3, $p_Lsketches_rooms_columns_Columns$package$__columnFaces$1__sjs_js_Array(this));
     var balkForm = $p_Lsketches_rooms_columns_Columns$package$__meshForm$1__Ltrivalibs_graphics_painter_Painter__sjs_js_Array__Ltrivalibs_graphics_painter_Form(this, p$3, $p_Lsketches_rooms_columns_Columns$package$__balkFaces$1__sjs_js_Array(this));
     var program = new $c_Ltrivalibs_graphics_shader_dsl_Program();
-    var d = ({});
-    var ctx = new $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_VertexOut("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(d), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
+    var ctx = new $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_VertexOut("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
     var reg = new $c_Ltrivalibs_graphics_shader_dsl_FnRegistry();
     var prev = $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().eO;
     $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().eO = reg;
@@ -2776,8 +2775,7 @@ $p.mS = (function(canvas) {
       $p_Ltrivalibs_graphics_shader_dsl_Program__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V(program, array$1[i]);
       i = ((1 + i) | 0);
     }
-    var d$2 = ({});
-    var ctx$2 = new $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(d$2), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
+    var ctx$2 = new $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor("in"), new $c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor("out"), new $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(""), new $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor());
     var reg$2 = new $c_Ltrivalibs_graphics_shader_dsl_FnRegistry();
     var prev$2 = $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().eO;
     $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().eO = reg$2;
@@ -2910,11 +2908,11 @@ $p.mS = (function(canvas) {
     var Bindable_this = p$3.hr(groundForm, shade, (void 0), (void 0));
     var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("model", identityMat);
     var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", identityN);
-    var \u03b4scrutinee112 = e1$proxy1.v;
+    var \u03b4scrutinee110 = e1$proxy1.v;
     var idx = (Bindable_this.ac.t.model | 0);
     if (((idx < (Bindable_this.S.length | 0)) && (Bindable_this.S[idx] !== null))) {
       var BufferBinding_this = Bindable_this.S[idx];
-      BufferBinding_this.h.i(BufferBinding_this.d, \u03b4scrutinee112);
+      BufferBinding_this.h.i(BufferBinding_this.d, \u03b4scrutinee110);
       var $x_16 = BufferBinding_this.g.queue;
       var $x_15 = BufferBinding_this.f;
       var s$proxy2 = BufferBinding_this.d;
@@ -2925,7 +2923,7 @@ $p.mS = (function(canvas) {
       var buffer = new ArrayBuffer(64);
       var arr$proxy6 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer), 1);
       var b$4 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), device$proxy1, uv$1);
-      b$4.h.i(b$4.d, \u03b4scrutinee112);
+      b$4.h.i(b$4.d, \u03b4scrutinee110);
       var $x_18 = b$4.g.queue;
       var $x_17 = b$4.f;
       var s$proxy3 = b$4.d;
@@ -2935,11 +2933,11 @@ $p.mS = (function(canvas) {
       }
       Bindable_this.S[idx] = b$4;
     }
-    var \u03b4scrutinee123 = e2$proxy1.v;
+    var \u03b4scrutinee121 = e2$proxy1.v;
     var idx$2 = (Bindable_this.ac.t.normalMat | 0);
     if (((idx$2 < (Bindable_this.S.length | 0)) && (Bindable_this.S[idx$2] !== null))) {
       var BufferBinding_this$5 = Bindable_this.S[idx$2];
-      BufferBinding_this$5.h.i(BufferBinding_this$5.d, \u03b4scrutinee123);
+      BufferBinding_this$5.h.i(BufferBinding_this$5.d, \u03b4scrutinee121);
       var $x_20 = BufferBinding_this$5.g.queue;
       var $x_19 = BufferBinding_this$5.f;
       var s$proxy4 = BufferBinding_this$5.d;
@@ -2950,7 +2948,7 @@ $p.mS = (function(canvas) {
       var buffer$2 = new ArrayBuffer(48);
       var arr$proxy7 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
       var b$2$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy7.dv, 0), device$proxy2, uv$2$2);
-      b$2$1.h.i(b$2$1.d, \u03b4scrutinee123);
+      b$2$1.h.i(b$2$1.d, \u03b4scrutinee121);
       var $x_22 = b$2$1.g.queue;
       var $x_21 = b$2$1.f;
       var s$proxy5 = b$2$1.d;
@@ -2974,11 +2972,11 @@ $p.mS = (function(canvas) {
       var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m));
       var i$4$1 = InstanceList_this.a1();
       var Bindable_this$6 = InstanceList_this.G[i$4$1];
-      var \u03b4scrutinee134 = e1$proxy2.v;
+      var \u03b4scrutinee132 = e1$proxy2.v;
       var idx$3 = (Bindable_this$6.z.t.model | 0);
       if (((idx$3 < (Bindable_this$6.c.length | 0)) && (Bindable_this$6.c[idx$3] !== null))) {
         var BufferBinding_this$9 = Bindable_this$6.c[idx$3];
-        BufferBinding_this$9.h.i(BufferBinding_this$9.d, \u03b4scrutinee134);
+        BufferBinding_this$9.h.i(BufferBinding_this$9.d, \u03b4scrutinee132);
         var $x_24 = BufferBinding_this$9.g.queue;
         var $x_23 = BufferBinding_this$9.f;
         var s$proxy6 = BufferBinding_this$9.d;
@@ -2989,7 +2987,7 @@ $p.mS = (function(canvas) {
         var buffer$3 = new ArrayBuffer(64);
         var arr$proxy8 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$3), 1);
         var b$3$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy8.dv, 0), device$proxy3, uv$3);
-        b$3$1.h.i(b$3$1.d, \u03b4scrutinee134);
+        b$3$1.h.i(b$3$1.d, \u03b4scrutinee132);
         var $x_26 = b$3$1.g.queue;
         var $x_25 = b$3$1.f;
         var s$proxy7 = b$3$1.d;
@@ -2999,11 +2997,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$6.c[idx$3] = b$3$1;
       }
-      var \u03b4scrutinee145 = e2$proxy2.v;
+      var \u03b4scrutinee143 = e2$proxy2.v;
       var idx$4 = (Bindable_this$6.z.t.normalMat | 0);
       if (((idx$4 < (Bindable_this$6.c.length | 0)) && (Bindable_this$6.c[idx$4] !== null))) {
         var BufferBinding_this$13 = Bindable_this$6.c[idx$4];
-        BufferBinding_this$13.h.i(BufferBinding_this$13.d, \u03b4scrutinee145);
+        BufferBinding_this$13.h.i(BufferBinding_this$13.d, \u03b4scrutinee143);
         var $x_28 = BufferBinding_this$13.g.queue;
         var $x_27 = BufferBinding_this$13.f;
         var s$proxy8 = BufferBinding_this$13.d;
@@ -3014,7 +3012,7 @@ $p.mS = (function(canvas) {
         var buffer$4 = new ArrayBuffer(48);
         var arr$proxy9 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$4), 1);
         var b$4$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy9.dv, 0), device$proxy4, uv$4);
-        b$4$1.h.i(b$4$1.d, \u03b4scrutinee145);
+        b$4$1.h.i(b$4$1.d, \u03b4scrutinee143);
         var $x_30 = b$4$1.g.queue;
         var $x_29 = b$4$1.f;
         var s$proxy9 = b$4$1.d;
@@ -3031,11 +3029,11 @@ $p.mS = (function(canvas) {
       var e2$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$2));
       var i$5 = InstanceList_this$2.a1();
       var Bindable_this$11 = InstanceList_this$2.G[i$5];
-      var \u03b4scrutinee156 = e1$proxy3.v;
+      var \u03b4scrutinee154 = e1$proxy3.v;
       var idx$5 = (Bindable_this$11.z.t.model | 0);
       if (((idx$5 < (Bindable_this$11.c.length | 0)) && (Bindable_this$11.c[idx$5] !== null))) {
         var BufferBinding_this$17 = Bindable_this$11.c[idx$5];
-        BufferBinding_this$17.h.i(BufferBinding_this$17.d, \u03b4scrutinee156);
+        BufferBinding_this$17.h.i(BufferBinding_this$17.d, \u03b4scrutinee154);
         var $x_32 = BufferBinding_this$17.g.queue;
         var $x_31 = BufferBinding_this$17.f;
         var s$proxy10 = BufferBinding_this$17.d;
@@ -3046,7 +3044,7 @@ $p.mS = (function(canvas) {
         var buffer$5 = new ArrayBuffer(64);
         var arr$proxy10 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$5), 1);
         var b$5 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy10.dv, 0), device$proxy5, uv$5);
-        b$5.h.i(b$5.d, \u03b4scrutinee156);
+        b$5.h.i(b$5.d, \u03b4scrutinee154);
         var $x_34 = b$5.g.queue;
         var $x_33 = b$5.f;
         var s$proxy11 = b$5.d;
@@ -3056,11 +3054,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$11.c[idx$5] = b$5;
       }
-      var \u03b4scrutinee167 = e2$proxy3.v;
+      var \u03b4scrutinee165 = e2$proxy3.v;
       var idx$6 = (Bindable_this$11.z.t.normalMat | 0);
       if (((idx$6 < (Bindable_this$11.c.length | 0)) && (Bindable_this$11.c[idx$6] !== null))) {
         var BufferBinding_this$21 = Bindable_this$11.c[idx$6];
-        BufferBinding_this$21.h.i(BufferBinding_this$21.d, \u03b4scrutinee167);
+        BufferBinding_this$21.h.i(BufferBinding_this$21.d, \u03b4scrutinee165);
         var $x_36 = BufferBinding_this$21.g.queue;
         var $x_35 = BufferBinding_this$21.f;
         var s$proxy12 = BufferBinding_this$21.d;
@@ -3071,7 +3069,7 @@ $p.mS = (function(canvas) {
         var buffer$6 = new ArrayBuffer(48);
         var arr$proxy11 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$6), 1);
         var b$6 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy11.dv, 0), device$proxy6, uv$6);
-        b$6.h.i(b$6.d, \u03b4scrutinee167);
+        b$6.h.i(b$6.d, \u03b4scrutinee165);
         var $x_38 = b$6.g.queue;
         var $x_37 = b$6.f;
         var s$proxy13 = b$6.d;
@@ -3088,11 +3086,11 @@ $p.mS = (function(canvas) {
       var e2$proxy4 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$3));
       var i$6 = InstanceList_this$3.a1();
       var Bindable_this$16 = InstanceList_this$3.G[i$6];
-      var \u03b4scrutinee178 = e1$proxy4.v;
+      var \u03b4scrutinee176 = e1$proxy4.v;
       var idx$7 = (Bindable_this$16.z.t.model | 0);
       if (((idx$7 < (Bindable_this$16.c.length | 0)) && (Bindable_this$16.c[idx$7] !== null))) {
         var BufferBinding_this$25 = Bindable_this$16.c[idx$7];
-        BufferBinding_this$25.h.i(BufferBinding_this$25.d, \u03b4scrutinee178);
+        BufferBinding_this$25.h.i(BufferBinding_this$25.d, \u03b4scrutinee176);
         var $x_40 = BufferBinding_this$25.g.queue;
         var $x_39 = BufferBinding_this$25.f;
         var s$proxy14 = BufferBinding_this$25.d;
@@ -3103,7 +3101,7 @@ $p.mS = (function(canvas) {
         var buffer$7 = new ArrayBuffer(64);
         var arr$proxy12 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$7), 1);
         var b$7 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy12.dv, 0), device$proxy7, uv$7);
-        b$7.h.i(b$7.d, \u03b4scrutinee178);
+        b$7.h.i(b$7.d, \u03b4scrutinee176);
         var $x_42 = b$7.g.queue;
         var $x_41 = b$7.f;
         var s$proxy15 = b$7.d;
@@ -3113,11 +3111,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$16.c[idx$7] = b$7;
       }
-      var \u03b4scrutinee189 = e2$proxy4.v;
+      var \u03b4scrutinee187 = e2$proxy4.v;
       var idx$8 = (Bindable_this$16.z.t.normalMat | 0);
       if (((idx$8 < (Bindable_this$16.c.length | 0)) && (Bindable_this$16.c[idx$8] !== null))) {
         var BufferBinding_this$29 = Bindable_this$16.c[idx$8];
-        BufferBinding_this$29.h.i(BufferBinding_this$29.d, \u03b4scrutinee189);
+        BufferBinding_this$29.h.i(BufferBinding_this$29.d, \u03b4scrutinee187);
         var $x_44 = BufferBinding_this$29.g.queue;
         var $x_43 = BufferBinding_this$29.f;
         var s$proxy16 = BufferBinding_this$29.d;
@@ -3128,7 +3126,7 @@ $p.mS = (function(canvas) {
         var buffer$8 = new ArrayBuffer(48);
         var arr$proxy13 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$8), 1);
         var b$8 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy13.dv, 0), device$proxy8, uv$8);
-        b$8.h.i(b$8.d, \u03b4scrutinee189);
+        b$8.h.i(b$8.d, \u03b4scrutinee187);
         var $x_46 = b$8.g.queue;
         var $x_45 = b$8.f;
         var s$proxy17 = b$8.d;
@@ -3145,11 +3143,11 @@ $p.mS = (function(canvas) {
       var e2$proxy5 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$4));
       var i$7 = InstanceList_this$4.a1();
       var Bindable_this$21 = InstanceList_this$4.G[i$7];
-      var \u03b4scrutinee200 = e1$proxy5.v;
+      var \u03b4scrutinee198 = e1$proxy5.v;
       var idx$9 = (Bindable_this$21.z.t.model | 0);
       if (((idx$9 < (Bindable_this$21.c.length | 0)) && (Bindable_this$21.c[idx$9] !== null))) {
         var BufferBinding_this$33 = Bindable_this$21.c[idx$9];
-        BufferBinding_this$33.h.i(BufferBinding_this$33.d, \u03b4scrutinee200);
+        BufferBinding_this$33.h.i(BufferBinding_this$33.d, \u03b4scrutinee198);
         var $x_48 = BufferBinding_this$33.g.queue;
         var $x_47 = BufferBinding_this$33.f;
         var s$proxy18 = BufferBinding_this$33.d;
@@ -3160,7 +3158,7 @@ $p.mS = (function(canvas) {
         var buffer$9 = new ArrayBuffer(64);
         var arr$proxy14 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$9), 1);
         var b$9 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy14.dv, 0), device$proxy9, uv$9);
-        b$9.h.i(b$9.d, \u03b4scrutinee200);
+        b$9.h.i(b$9.d, \u03b4scrutinee198);
         var $x_50 = b$9.g.queue;
         var $x_49 = b$9.f;
         var s$proxy19 = b$9.d;
@@ -3170,11 +3168,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$21.c[idx$9] = b$9;
       }
-      var \u03b4scrutinee211 = e2$proxy5.v;
+      var \u03b4scrutinee209 = e2$proxy5.v;
       var idx$10 = (Bindable_this$21.z.t.normalMat | 0);
       if (((idx$10 < (Bindable_this$21.c.length | 0)) && (Bindable_this$21.c[idx$10] !== null))) {
         var BufferBinding_this$37 = Bindable_this$21.c[idx$10];
-        BufferBinding_this$37.h.i(BufferBinding_this$37.d, \u03b4scrutinee211);
+        BufferBinding_this$37.h.i(BufferBinding_this$37.d, \u03b4scrutinee209);
         var $x_52 = BufferBinding_this$37.g.queue;
         var $x_51 = BufferBinding_this$37.f;
         var s$proxy20 = BufferBinding_this$37.d;
@@ -3185,7 +3183,7 @@ $p.mS = (function(canvas) {
         var buffer$10 = new ArrayBuffer(48);
         var arr$proxy15 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$10), 1);
         var b$10 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy15.dv, 0), device$proxy10, uv$10);
-        b$10.h.i(b$10.d, \u03b4scrutinee211);
+        b$10.h.i(b$10.d, \u03b4scrutinee209);
         var $x_54 = b$10.g.queue;
         var $x_53 = b$10.f;
         var s$proxy21 = b$10.d;
@@ -3207,11 +3205,11 @@ $p.mS = (function(canvas) {
       var e2$proxy6 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$5));
       var i$8 = InstanceList_this$5.a1();
       var Bindable_this$26 = InstanceList_this$5.G[i$8];
-      var \u03b4scrutinee222 = e1$proxy6.v;
+      var \u03b4scrutinee220 = e1$proxy6.v;
       var idx$11 = (Bindable_this$26.z.t.model | 0);
       if (((idx$11 < (Bindable_this$26.c.length | 0)) && (Bindable_this$26.c[idx$11] !== null))) {
         var BufferBinding_this$41 = Bindable_this$26.c[idx$11];
-        BufferBinding_this$41.h.i(BufferBinding_this$41.d, \u03b4scrutinee222);
+        BufferBinding_this$41.h.i(BufferBinding_this$41.d, \u03b4scrutinee220);
         var $x_56 = BufferBinding_this$41.g.queue;
         var $x_55 = BufferBinding_this$41.f;
         var s$proxy22 = BufferBinding_this$41.d;
@@ -3222,7 +3220,7 @@ $p.mS = (function(canvas) {
         var buffer$11 = new ArrayBuffer(64);
         var arr$proxy16 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$11), 1);
         var b$11 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy16.dv, 0), device$proxy11, uv$11);
-        b$11.h.i(b$11.d, \u03b4scrutinee222);
+        b$11.h.i(b$11.d, \u03b4scrutinee220);
         var $x_58 = b$11.g.queue;
         var $x_57 = b$11.f;
         var s$proxy23 = b$11.d;
@@ -3232,11 +3230,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$26.c[idx$11] = b$11;
       }
-      var \u03b4scrutinee233 = e2$proxy6.v;
+      var \u03b4scrutinee231 = e2$proxy6.v;
       var idx$12 = (Bindable_this$26.z.t.normalMat | 0);
       if (((idx$12 < (Bindable_this$26.c.length | 0)) && (Bindable_this$26.c[idx$12] !== null))) {
         var BufferBinding_this$45 = Bindable_this$26.c[idx$12];
-        BufferBinding_this$45.h.i(BufferBinding_this$45.d, \u03b4scrutinee233);
+        BufferBinding_this$45.h.i(BufferBinding_this$45.d, \u03b4scrutinee231);
         var $x_60 = BufferBinding_this$45.g.queue;
         var $x_59 = BufferBinding_this$45.f;
         var s$proxy24 = BufferBinding_this$45.d;
@@ -3247,7 +3245,7 @@ $p.mS = (function(canvas) {
         var buffer$12 = new ArrayBuffer(48);
         var arr$proxy17 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$12), 1);
         var b$12 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy17.dv, 0), device$proxy12, uv$12);
-        b$12.h.i(b$12.d, \u03b4scrutinee233);
+        b$12.h.i(b$12.d, \u03b4scrutinee231);
         var $x_62 = b$12.g.queue;
         var $x_61 = b$12.f;
         var s$proxy25 = b$12.d;
@@ -3264,11 +3262,11 @@ $p.mS = (function(canvas) {
       var e2$proxy7 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$6));
       var i$9 = InstanceList_this$6.a1();
       var Bindable_this$31 = InstanceList_this$6.G[i$9];
-      var \u03b4scrutinee244 = e1$proxy7.v;
+      var \u03b4scrutinee242 = e1$proxy7.v;
       var idx$13 = (Bindable_this$31.z.t.model | 0);
       if (((idx$13 < (Bindable_this$31.c.length | 0)) && (Bindable_this$31.c[idx$13] !== null))) {
         var BufferBinding_this$49 = Bindable_this$31.c[idx$13];
-        BufferBinding_this$49.h.i(BufferBinding_this$49.d, \u03b4scrutinee244);
+        BufferBinding_this$49.h.i(BufferBinding_this$49.d, \u03b4scrutinee242);
         var $x_64 = BufferBinding_this$49.g.queue;
         var $x_63 = BufferBinding_this$49.f;
         var s$proxy26 = BufferBinding_this$49.d;
@@ -3279,7 +3277,7 @@ $p.mS = (function(canvas) {
         var buffer$13 = new ArrayBuffer(64);
         var arr$proxy18 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$13), 1);
         var b$13 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy18.dv, 0), device$proxy13, uv$13);
-        b$13.h.i(b$13.d, \u03b4scrutinee244);
+        b$13.h.i(b$13.d, \u03b4scrutinee242);
         var $x_66 = b$13.g.queue;
         var $x_65 = b$13.f;
         var s$proxy27 = b$13.d;
@@ -3289,11 +3287,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$31.c[idx$13] = b$13;
       }
-      var \u03b4scrutinee255 = e2$proxy7.v;
+      var \u03b4scrutinee253 = e2$proxy7.v;
       var idx$14 = (Bindable_this$31.z.t.normalMat | 0);
       if (((idx$14 < (Bindable_this$31.c.length | 0)) && (Bindable_this$31.c[idx$14] !== null))) {
         var BufferBinding_this$53 = Bindable_this$31.c[idx$14];
-        BufferBinding_this$53.h.i(BufferBinding_this$53.d, \u03b4scrutinee255);
+        BufferBinding_this$53.h.i(BufferBinding_this$53.d, \u03b4scrutinee253);
         var $x_68 = BufferBinding_this$53.g.queue;
         var $x_67 = BufferBinding_this$53.f;
         var s$proxy28 = BufferBinding_this$53.d;
@@ -3304,7 +3302,7 @@ $p.mS = (function(canvas) {
         var buffer$14 = new ArrayBuffer(48);
         var arr$proxy19 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$14), 1);
         var b$14 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy19.dv, 0), device$proxy14, uv$14);
-        b$14.h.i(b$14.d, \u03b4scrutinee255);
+        b$14.h.i(b$14.d, \u03b4scrutinee253);
         var $x_70 = b$14.g.queue;
         var $x_69 = b$14.f;
         var s$proxy29 = b$14.d;
@@ -3321,11 +3319,11 @@ $p.mS = (function(canvas) {
       var e2$proxy8 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$7));
       var i$10 = InstanceList_this$7.a1();
       var Bindable_this$36 = InstanceList_this$7.G[i$10];
-      var \u03b4scrutinee266 = e1$proxy8.v;
+      var \u03b4scrutinee264 = e1$proxy8.v;
       var idx$15 = (Bindable_this$36.z.t.model | 0);
       if (((idx$15 < (Bindable_this$36.c.length | 0)) && (Bindable_this$36.c[idx$15] !== null))) {
         var BufferBinding_this$57 = Bindable_this$36.c[idx$15];
-        BufferBinding_this$57.h.i(BufferBinding_this$57.d, \u03b4scrutinee266);
+        BufferBinding_this$57.h.i(BufferBinding_this$57.d, \u03b4scrutinee264);
         var $x_72 = BufferBinding_this$57.g.queue;
         var $x_71 = BufferBinding_this$57.f;
         var s$proxy30 = BufferBinding_this$57.d;
@@ -3336,7 +3334,7 @@ $p.mS = (function(canvas) {
         var buffer$15 = new ArrayBuffer(64);
         var arr$proxy20 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$15), 1);
         var b$15 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy20.dv, 0), device$proxy15, uv$15);
-        b$15.h.i(b$15.d, \u03b4scrutinee266);
+        b$15.h.i(b$15.d, \u03b4scrutinee264);
         var $x_74 = b$15.g.queue;
         var $x_73 = b$15.f;
         var s$proxy31 = b$15.d;
@@ -3346,11 +3344,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$36.c[idx$15] = b$15;
       }
-      var \u03b4scrutinee277 = e2$proxy8.v;
+      var \u03b4scrutinee275 = e2$proxy8.v;
       var idx$16 = (Bindable_this$36.z.t.normalMat | 0);
       if (((idx$16 < (Bindable_this$36.c.length | 0)) && (Bindable_this$36.c[idx$16] !== null))) {
         var BufferBinding_this$61 = Bindable_this$36.c[idx$16];
-        BufferBinding_this$61.h.i(BufferBinding_this$61.d, \u03b4scrutinee277);
+        BufferBinding_this$61.h.i(BufferBinding_this$61.d, \u03b4scrutinee275);
         var $x_76 = BufferBinding_this$61.g.queue;
         var $x_75 = BufferBinding_this$61.f;
         var s$proxy32 = BufferBinding_this$61.d;
@@ -3361,7 +3359,7 @@ $p.mS = (function(canvas) {
         var buffer$16 = new ArrayBuffer(48);
         var arr$proxy21 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$16), 1);
         var b$16 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy21.dv, 0), device$proxy16, uv$16);
-        b$16.h.i(b$16.d, \u03b4scrutinee277);
+        b$16.h.i(b$16.d, \u03b4scrutinee275);
         var $x_78 = b$16.g.queue;
         var $x_77 = b$16.f;
         var s$proxy33 = b$16.d;
@@ -3378,11 +3376,11 @@ $p.mS = (function(canvas) {
       var e2$proxy9 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$8));
       var i$11 = InstanceList_this$8.a1();
       var Bindable_this$41 = InstanceList_this$8.G[i$11];
-      var \u03b4scrutinee288 = e1$proxy9.v;
+      var \u03b4scrutinee286 = e1$proxy9.v;
       var idx$17 = (Bindable_this$41.z.t.model | 0);
       if (((idx$17 < (Bindable_this$41.c.length | 0)) && (Bindable_this$41.c[idx$17] !== null))) {
         var BufferBinding_this$65 = Bindable_this$41.c[idx$17];
-        BufferBinding_this$65.h.i(BufferBinding_this$65.d, \u03b4scrutinee288);
+        BufferBinding_this$65.h.i(BufferBinding_this$65.d, \u03b4scrutinee286);
         var $x_80 = BufferBinding_this$65.g.queue;
         var $x_79 = BufferBinding_this$65.f;
         var s$proxy34 = BufferBinding_this$65.d;
@@ -3393,7 +3391,7 @@ $p.mS = (function(canvas) {
         var buffer$17 = new ArrayBuffer(64);
         var arr$proxy22 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$17), 1);
         var b$17 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy22.dv, 0), device$proxy17, uv$17);
-        b$17.h.i(b$17.d, \u03b4scrutinee288);
+        b$17.h.i(b$17.d, \u03b4scrutinee286);
         var $x_82 = b$17.g.queue;
         var $x_81 = b$17.f;
         var s$proxy35 = b$17.d;
@@ -3403,11 +3401,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$41.c[idx$17] = b$17;
       }
-      var \u03b4scrutinee299 = e2$proxy9.v;
+      var \u03b4scrutinee297 = e2$proxy9.v;
       var idx$18 = (Bindable_this$41.z.t.normalMat | 0);
       if (((idx$18 < (Bindable_this$41.c.length | 0)) && (Bindable_this$41.c[idx$18] !== null))) {
         var BufferBinding_this$69 = Bindable_this$41.c[idx$18];
-        BufferBinding_this$69.h.i(BufferBinding_this$69.d, \u03b4scrutinee299);
+        BufferBinding_this$69.h.i(BufferBinding_this$69.d, \u03b4scrutinee297);
         var $x_84 = BufferBinding_this$69.g.queue;
         var $x_83 = BufferBinding_this$69.f;
         var s$proxy36 = BufferBinding_this$69.d;
@@ -3418,7 +3416,7 @@ $p.mS = (function(canvas) {
         var buffer$18 = new ArrayBuffer(48);
         var arr$proxy23 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$18), 1);
         var b$18 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy23.dv, 0), device$proxy18, uv$18);
-        b$18.h.i(b$18.d, \u03b4scrutinee299);
+        b$18.h.i(b$18.d, \u03b4scrutinee297);
         var $x_86 = b$18.g.queue;
         var $x_85 = b$18.f;
         var s$proxy37 = b$18.d;
@@ -3440,11 +3438,11 @@ $p.mS = (function(canvas) {
       var e2$proxy10 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$9));
       var i$12 = InstanceList_this$9.a1();
       var Bindable_this$46 = InstanceList_this$9.G[i$12];
-      var \u03b4scrutinee310 = e1$proxy10.v;
+      var \u03b4scrutinee308 = e1$proxy10.v;
       var idx$19 = (Bindable_this$46.z.t.model | 0);
       if (((idx$19 < (Bindable_this$46.c.length | 0)) && (Bindable_this$46.c[idx$19] !== null))) {
         var BufferBinding_this$73 = Bindable_this$46.c[idx$19];
-        BufferBinding_this$73.h.i(BufferBinding_this$73.d, \u03b4scrutinee310);
+        BufferBinding_this$73.h.i(BufferBinding_this$73.d, \u03b4scrutinee308);
         var $x_88 = BufferBinding_this$73.g.queue;
         var $x_87 = BufferBinding_this$73.f;
         var s$proxy38 = BufferBinding_this$73.d;
@@ -3455,7 +3453,7 @@ $p.mS = (function(canvas) {
         var buffer$19 = new ArrayBuffer(64);
         var arr$proxy24 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$19), 1);
         var b$19 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy24.dv, 0), device$proxy19, uv$19);
-        b$19.h.i(b$19.d, \u03b4scrutinee310);
+        b$19.h.i(b$19.d, \u03b4scrutinee308);
         var $x_90 = b$19.g.queue;
         var $x_89 = b$19.f;
         var s$proxy39 = b$19.d;
@@ -3465,11 +3463,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$46.c[idx$19] = b$19;
       }
-      var \u03b4scrutinee321 = e2$proxy10.v;
+      var \u03b4scrutinee319 = e2$proxy10.v;
       var idx$20 = (Bindable_this$46.z.t.normalMat | 0);
       if (((idx$20 < (Bindable_this$46.c.length | 0)) && (Bindable_this$46.c[idx$20] !== null))) {
         var BufferBinding_this$77 = Bindable_this$46.c[idx$20];
-        BufferBinding_this$77.h.i(BufferBinding_this$77.d, \u03b4scrutinee321);
+        BufferBinding_this$77.h.i(BufferBinding_this$77.d, \u03b4scrutinee319);
         var $x_92 = BufferBinding_this$77.g.queue;
         var $x_91 = BufferBinding_this$77.f;
         var s$proxy40 = BufferBinding_this$77.d;
@@ -3480,7 +3478,7 @@ $p.mS = (function(canvas) {
         var buffer$20 = new ArrayBuffer(48);
         var arr$proxy25 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$20), 1);
         var b$20 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy25.dv, 0), device$proxy20, uv$20);
-        b$20.h.i(b$20.d, \u03b4scrutinee321);
+        b$20.h.i(b$20.d, \u03b4scrutinee319);
         var $x_94 = b$20.g.queue;
         var $x_93 = b$20.f;
         var s$proxy41 = b$20.d;
@@ -3501,11 +3499,11 @@ $p.mS = (function(canvas) {
       var e2$proxy11 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$10));
       var i$13 = InstanceList_this$10.a1();
       var Bindable_this$51 = InstanceList_this$10.G[i$13];
-      var \u03b4scrutinee332 = e1$proxy11.v;
+      var \u03b4scrutinee330 = e1$proxy11.v;
       var idx$21 = (Bindable_this$51.z.t.model | 0);
       if (((idx$21 < (Bindable_this$51.c.length | 0)) && (Bindable_this$51.c[idx$21] !== null))) {
         var BufferBinding_this$81 = Bindable_this$51.c[idx$21];
-        BufferBinding_this$81.h.i(BufferBinding_this$81.d, \u03b4scrutinee332);
+        BufferBinding_this$81.h.i(BufferBinding_this$81.d, \u03b4scrutinee330);
         var $x_96 = BufferBinding_this$81.g.queue;
         var $x_95 = BufferBinding_this$81.f;
         var s$proxy42 = BufferBinding_this$81.d;
@@ -3516,7 +3514,7 @@ $p.mS = (function(canvas) {
         var buffer$21 = new ArrayBuffer(64);
         var arr$proxy26 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$21), 1);
         var b$21 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy26.dv, 0), device$proxy21, uv$21);
-        b$21.h.i(b$21.d, \u03b4scrutinee332);
+        b$21.h.i(b$21.d, \u03b4scrutinee330);
         var $x_98 = b$21.g.queue;
         var $x_97 = b$21.f;
         var s$proxy43 = b$21.d;
@@ -3526,11 +3524,11 @@ $p.mS = (function(canvas) {
         }
         Bindable_this$51.c[idx$21] = b$21;
       }
-      var \u03b4scrutinee343 = e2$proxy11.v;
+      var \u03b4scrutinee341 = e2$proxy11.v;
       var idx$22 = (Bindable_this$51.z.t.normalMat | 0);
       if (((idx$22 < (Bindable_this$51.c.length | 0)) && (Bindable_this$51.c[idx$22] !== null))) {
         var BufferBinding_this$85 = Bindable_this$51.c[idx$22];
-        BufferBinding_this$85.h.i(BufferBinding_this$85.d, \u03b4scrutinee343);
+        BufferBinding_this$85.h.i(BufferBinding_this$85.d, \u03b4scrutinee341);
         var $x_100 = BufferBinding_this$85.g.queue;
         var $x_99 = BufferBinding_this$85.f;
         var s$proxy44 = BufferBinding_this$85.d;
@@ -3541,7 +3539,7 @@ $p.mS = (function(canvas) {
         var buffer$22 = new ArrayBuffer(48);
         var arr$proxy27 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$22), 1);
         var b$22 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy27.dv, 0), device$proxy22, uv$22);
-        b$22.h.i(b$22.d, \u03b4scrutinee343);
+        b$22.h.i(b$22.d, \u03b4scrutinee341);
         var $x_102 = b$22.g.queue;
         var $x_101 = b$22.f;
         var s$proxy45 = b$22.d;
@@ -3560,11 +3558,11 @@ $p.mS = (function(canvas) {
     var e2$proxy12 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$11));
     var i$14 = InstanceList_this$11.a1();
     var Bindable_this$56 = InstanceList_this$11.G[i$14];
-    var \u03b4scrutinee354 = e1$proxy12.v;
+    var \u03b4scrutinee352 = e1$proxy12.v;
     var idx$23 = (Bindable_this$56.z.t.model | 0);
     if (((idx$23 < (Bindable_this$56.c.length | 0)) && (Bindable_this$56.c[idx$23] !== null))) {
       var BufferBinding_this$89 = Bindable_this$56.c[idx$23];
-      BufferBinding_this$89.h.i(BufferBinding_this$89.d, \u03b4scrutinee354);
+      BufferBinding_this$89.h.i(BufferBinding_this$89.d, \u03b4scrutinee352);
       var $x_104 = BufferBinding_this$89.g.queue;
       var $x_103 = BufferBinding_this$89.f;
       var s$proxy46 = BufferBinding_this$89.d;
@@ -3575,7 +3573,7 @@ $p.mS = (function(canvas) {
       var buffer$23 = new ArrayBuffer(64);
       var arr$proxy28 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$23), 1);
       var b$23 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy28.dv, 0), device$proxy23, uv$23);
-      b$23.h.i(b$23.d, \u03b4scrutinee354);
+      b$23.h.i(b$23.d, \u03b4scrutinee352);
       var $x_106 = b$23.g.queue;
       var $x_105 = b$23.f;
       var s$proxy47 = b$23.d;
@@ -3585,11 +3583,11 @@ $p.mS = (function(canvas) {
       }
       Bindable_this$56.c[idx$23] = b$23;
     }
-    var \u03b4scrutinee365 = e2$proxy12.v;
+    var \u03b4scrutinee363 = e2$proxy12.v;
     var idx$24 = (Bindable_this$56.z.t.normalMat | 0);
     if (((idx$24 < (Bindable_this$56.c.length | 0)) && (Bindable_this$56.c[idx$24] !== null))) {
       var BufferBinding_this$93 = Bindable_this$56.c[idx$24];
-      BufferBinding_this$93.h.i(BufferBinding_this$93.d, \u03b4scrutinee365);
+      BufferBinding_this$93.h.i(BufferBinding_this$93.d, \u03b4scrutinee363);
       var $x_108 = BufferBinding_this$93.g.queue;
       var $x_107 = BufferBinding_this$93.f;
       var s$proxy48 = BufferBinding_this$93.d;
@@ -3600,7 +3598,7 @@ $p.mS = (function(canvas) {
       var buffer$24 = new ArrayBuffer(48);
       var arr$proxy29 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$24), 1);
       var b$24 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy29.dv, 0), device$proxy24, uv$24);
-      b$24.h.i(b$24.d, \u03b4scrutinee365);
+      b$24.h.i(b$24.d, \u03b4scrutinee363);
       var $x_110 = b$24.g.queue;
       var $x_109 = b$24.f;
       var s$proxy49 = b$24.d;
@@ -3617,11 +3615,11 @@ $p.mS = (function(canvas) {
     var e2$proxy13 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$12));
     var i$15 = InstanceList_this$12.a1();
     var Bindable_this$61 = InstanceList_this$12.G[i$15];
-    var \u03b4scrutinee376 = e1$proxy13.v;
+    var \u03b4scrutinee374 = e1$proxy13.v;
     var idx$25 = (Bindable_this$61.z.t.model | 0);
     if (((idx$25 < (Bindable_this$61.c.length | 0)) && (Bindable_this$61.c[idx$25] !== null))) {
       var BufferBinding_this$97 = Bindable_this$61.c[idx$25];
-      BufferBinding_this$97.h.i(BufferBinding_this$97.d, \u03b4scrutinee376);
+      BufferBinding_this$97.h.i(BufferBinding_this$97.d, \u03b4scrutinee374);
       var $x_112 = BufferBinding_this$97.g.queue;
       var $x_111 = BufferBinding_this$97.f;
       var s$proxy50 = BufferBinding_this$97.d;
@@ -3632,7 +3630,7 @@ $p.mS = (function(canvas) {
       var buffer$25 = new ArrayBuffer(64);
       var arr$proxy30 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$25), 1);
       var b$25 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy30.dv, 0), device$proxy25, uv$25);
-      b$25.h.i(b$25.d, \u03b4scrutinee376);
+      b$25.h.i(b$25.d, \u03b4scrutinee374);
       var $x_114 = b$25.g.queue;
       var $x_113 = b$25.f;
       var s$proxy51 = b$25.d;
@@ -3642,11 +3640,11 @@ $p.mS = (function(canvas) {
       }
       Bindable_this$61.c[idx$25] = b$25;
     }
-    var \u03b4scrutinee387 = e2$proxy13.v;
+    var \u03b4scrutinee385 = e2$proxy13.v;
     var idx$26 = (Bindable_this$61.z.t.normalMat | 0);
     if (((idx$26 < (Bindable_this$61.c.length | 0)) && (Bindable_this$61.c[idx$26] !== null))) {
       var BufferBinding_this$101 = Bindable_this$61.c[idx$26];
-      BufferBinding_this$101.h.i(BufferBinding_this$101.d, \u03b4scrutinee387);
+      BufferBinding_this$101.h.i(BufferBinding_this$101.d, \u03b4scrutinee385);
       var $x_116 = BufferBinding_this$101.g.queue;
       var $x_115 = BufferBinding_this$101.f;
       var s$proxy52 = BufferBinding_this$101.d;
@@ -3657,7 +3655,7 @@ $p.mS = (function(canvas) {
       var buffer$26 = new ArrayBuffer(48);
       var arr$proxy31 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$26), 1);
       var b$26 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy31.dv, 0), device$proxy26, uv$26);
-      b$26.h.i(b$26.d, \u03b4scrutinee387);
+      b$26.h.i(b$26.d, \u03b4scrutinee385);
       var $x_118 = b$26.g.queue;
       var $x_117 = b$26.f;
       var s$proxy53 = b$26.d;
@@ -3674,11 +3672,11 @@ $p.mS = (function(canvas) {
     var e2$proxy14 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$13));
     var i$16 = InstanceList_this$13.a1();
     var Bindable_this$66 = InstanceList_this$13.G[i$16];
-    var \u03b4scrutinee398 = e1$proxy14.v;
+    var \u03b4scrutinee396 = e1$proxy14.v;
     var idx$27 = (Bindable_this$66.z.t.model | 0);
     if (((idx$27 < (Bindable_this$66.c.length | 0)) && (Bindable_this$66.c[idx$27] !== null))) {
       var BufferBinding_this$105 = Bindable_this$66.c[idx$27];
-      BufferBinding_this$105.h.i(BufferBinding_this$105.d, \u03b4scrutinee398);
+      BufferBinding_this$105.h.i(BufferBinding_this$105.d, \u03b4scrutinee396);
       var $x_120 = BufferBinding_this$105.g.queue;
       var $x_119 = BufferBinding_this$105.f;
       var s$proxy54 = BufferBinding_this$105.d;
@@ -3689,7 +3687,7 @@ $p.mS = (function(canvas) {
       var buffer$27 = new ArrayBuffer(64);
       var arr$proxy32 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$27), 1);
       var b$27 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy32.dv, 0), device$proxy27, uv$27);
-      b$27.h.i(b$27.d, \u03b4scrutinee398);
+      b$27.h.i(b$27.d, \u03b4scrutinee396);
       var $x_122 = b$27.g.queue;
       var $x_121 = b$27.f;
       var s$proxy55 = b$27.d;
@@ -3699,11 +3697,11 @@ $p.mS = (function(canvas) {
       }
       Bindable_this$66.c[idx$27] = b$27;
     }
-    var \u03b4scrutinee409 = e2$proxy14.v;
+    var \u03b4scrutinee407 = e2$proxy14.v;
     var idx$28 = (Bindable_this$66.z.t.normalMat | 0);
     if (((idx$28 < (Bindable_this$66.c.length | 0)) && (Bindable_this$66.c[idx$28] !== null))) {
       var BufferBinding_this$109 = Bindable_this$66.c[idx$28];
-      BufferBinding_this$109.h.i(BufferBinding_this$109.d, \u03b4scrutinee409);
+      BufferBinding_this$109.h.i(BufferBinding_this$109.d, \u03b4scrutinee407);
       var $x_124 = BufferBinding_this$109.g.queue;
       var $x_123 = BufferBinding_this$109.f;
       var s$proxy56 = BufferBinding_this$109.d;
@@ -3714,7 +3712,7 @@ $p.mS = (function(canvas) {
       var buffer$28 = new ArrayBuffer(48);
       var arr$proxy33 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$28), 1);
       var b$28 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy33.dv, 0), device$proxy28, uv$28);
-      b$28.h.i(b$28.d, \u03b4scrutinee409);
+      b$28.h.i(b$28.d, \u03b4scrutinee407);
       var $x_126 = b$28.g.queue;
       var $x_125 = b$28.f;
       var s$proxy57 = b$28.d;
@@ -3731,11 +3729,11 @@ $p.mS = (function(canvas) {
     var e2$proxy15 = new $c_Ltrivalibs_graphics_painter_BindPair("normalMat", $m_Ltrivalibs_graphics_scene_scene\uff3fobject$package$().X(m$14));
     var i$17 = InstanceList_this$14.a1();
     var Bindable_this$71 = InstanceList_this$14.G[i$17];
-    var \u03b4scrutinee420 = e1$proxy15.v;
+    var \u03b4scrutinee418 = e1$proxy15.v;
     var idx$29 = (Bindable_this$71.z.t.model | 0);
     if (((idx$29 < (Bindable_this$71.c.length | 0)) && (Bindable_this$71.c[idx$29] !== null))) {
       var BufferBinding_this$113 = Bindable_this$71.c[idx$29];
-      BufferBinding_this$113.h.i(BufferBinding_this$113.d, \u03b4scrutinee420);
+      BufferBinding_this$113.h.i(BufferBinding_this$113.d, \u03b4scrutinee418);
       var $x_128 = BufferBinding_this$113.g.queue;
       var $x_127 = BufferBinding_this$113.f;
       var s$proxy58 = BufferBinding_this$113.d;
@@ -3746,7 +3744,7 @@ $p.mS = (function(canvas) {
       var buffer$29 = new ArrayBuffer(64);
       var arr$proxy34 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$29), 1);
       var b$29 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy34.dv, 0), device$proxy29, uv$29);
-      b$29.h.i(b$29.d, \u03b4scrutinee420);
+      b$29.h.i(b$29.d, \u03b4scrutinee418);
       var $x_130 = b$29.g.queue;
       var $x_129 = b$29.f;
       var s$proxy59 = b$29.d;
@@ -3756,11 +3754,11 @@ $p.mS = (function(canvas) {
       }
       Bindable_this$71.c[idx$29] = b$29;
     }
-    var \u03b4scrutinee431 = e2$proxy15.v;
+    var \u03b4scrutinee429 = e2$proxy15.v;
     var idx$30 = (Bindable_this$71.z.t.normalMat | 0);
     if (((idx$30 < (Bindable_this$71.c.length | 0)) && (Bindable_this$71.c[idx$30] !== null))) {
       var BufferBinding_this$117 = Bindable_this$71.c[idx$30];
-      BufferBinding_this$117.h.i(BufferBinding_this$117.d, \u03b4scrutinee431);
+      BufferBinding_this$117.h.i(BufferBinding_this$117.d, \u03b4scrutinee429);
       var $x_132 = BufferBinding_this$117.g.queue;
       var $x_131 = BufferBinding_this$117.f;
       var s$proxy60 = BufferBinding_this$117.d;
@@ -3771,7 +3769,7 @@ $p.mS = (function(canvas) {
       var buffer$30 = new ArrayBuffer(48);
       var arr$proxy35 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$30), 1);
       var b$30 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy35.dv, 0), device$proxy30, uv$30);
-      b$30.h.i(b$30.d, \u03b4scrutinee431);
+      b$30.h.i(b$30.d, \u03b4scrutinee429);
       var $x_134 = b$30.g.queue;
       var $x_133 = b$30.f;
       var s$proxy61 = b$30.d;
@@ -3790,9 +3788,9 @@ $p.mS = (function(canvas) {
     var shapes$1 = [Bindable_this, columnShape, balkShape, wallShape];
     var Panel_this = p$3.mG((void 0), (void 0), clearColor$1, true, true, (void 0), (void 0), (void 0), (void 0), (void 0), shapes$1, (void 0), (void 0));
     var e1$proxy16 = new $c_Ltrivalibs_graphics_painter_BindPair("viewProj", viewProj);
-    var \u03b4scrutinee439 = e1$proxy16.v;
+    var \u03b4scrutinee437 = e1$proxy16.v;
     var dict$proxy1 = Panel_this.h7;
-    dict$proxy1.viewProj = \u03b4scrutinee439;
+    dict$proxy1.viewProj = \u03b4scrutinee437;
     var cam = $m_Ltrivalibs_graphics_scene_PerspectiveCamera$().li(0.6, 1.0, 0.1, 200.0, 0.0, 0.0, new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.0, 3.0, 15.0));
     $m_Ltrivalibs_dev_devPreserve$().lo(cam, "camera");
     var input = $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$().mb(p$3.fn, true, 400.0, 5.0, true, (void 0), 90.0, 50.0);
@@ -6924,7 +6922,7 @@ function $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$() {
   return $n_Ltrivalibs_graphics_shader_dsl_FnRegistry$;
 }
 /** @constructor */
-function $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(in$1, out, bindings, locals, textures) {
+function $c_Ltrivalibs_graphics_shader_dsl_FragmentCtx(in$1, out, bindings, textures) {
   this.g6 = null;
   this.ka = null;
   this.g6 = in$1;
@@ -6980,7 +6978,7 @@ var $d_Ltrivalibs_graphics_shader_dsl_Program = new $TypeData().i($c_Ltrivalibs_
   eP: 1
 }));
 /** @constructor */
-function $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(in$1, out, bindings, locals, textures) {
+function $c_Ltrivalibs_graphics_shader_dsl_VertexCtx(in$1, out, bindings, textures) {
   this.hf = null;
   this.hg = null;
   this.he = null;
@@ -6997,7 +6995,7 @@ function $h_Ltrivalibs_graphics_shader_dsl_VertexCtx() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_VertexCtx.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_VertexCtx = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_VertexCtx, "trivalibs.graphics.shader.dsl.VertexCtx", ({
-  eU: 1
+  eT: 1
 }));
 function $p_Ltrivalibs_graphics_shader_layouts$__calculateOffsets__sjs_js_Array__sjs_js_Array($thiz, sizes) {
   var offsets = [];
@@ -7042,7 +7040,7 @@ $p.kz = (function(device, bindGroupLayouts) {
   }));
 });
 var $d_Ltrivalibs_graphics_shader_layouts$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_layouts$, "trivalibs.graphics.shader.layouts$", ({
-  eW: 1
+  eV: 1
 }));
 var $n_Ltrivalibs_graphics_shader_layouts$;
 function $m_Ltrivalibs_graphics_shader_layouts$() {
@@ -7110,7 +7108,7 @@ $p.mY = (function() {
   }))));
 });
 var $d_Ltrivalibs_utils_animation_Animator = new $TypeData().i($c_Ltrivalibs_utils_animation_Animator, "trivalibs.utils.animation.Animator", ({
-  eZ: 1
+  eY: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_animation_animate$package$() {
@@ -7127,7 +7125,7 @@ $p.lh = (function(frame) {
   return animator;
 });
 var $d_Ltrivalibs_utils_animation_animate$package$ = new $TypeData().i($c_Ltrivalibs_utils_animation_animate$package$, "trivalibs.utils.animation.animate$package$", ({
-  f0: 1
+  eZ: 1
 }));
 var $n_Ltrivalibs_utils_animation_animate$package$;
 function $m_Ltrivalibs_utils_animation_animate$package$() {
@@ -7156,7 +7154,7 @@ $p.eV = (function(tpf) {
   this.ip.eV(tpf);
 });
 var $d_Ltrivalibs_utils_events_CanvasInput = new $TypeData().i($c_Ltrivalibs_utils_events_CanvasInput, "trivalibs.utils.events.CanvasInput", ({
-  f1: 1
+  f0: 1
 }));
 function $ct_Ltrivalibs_utils_events_DragGesture__F0__D__D__($thiz, pointersOf, glideMinSpeed, glideHalfLife) {
   $thiz.kg = pointersOf;
@@ -7250,7 +7248,7 @@ $p.eV = (function(tpf) {
   }
 });
 var $d_Ltrivalibs_utils_events_DragGesture = new $TypeData().i($c_Ltrivalibs_utils_events_DragGesture, "trivalibs.utils.events.DragGesture", ({
-  f2: 1
+  f1: 1
 }));
 function $ct_Ltrivalibs_utils_events_HoldGesture__F0__D__D__($thiz, pointersOf, holdDelay, holdRadius) {
   $thiz.kj = pointersOf;
@@ -7323,7 +7321,7 @@ $p.eV = (function(tpf) {
   }
 });
 var $d_Ltrivalibs_utils_events_HoldGesture = new $TypeData().i($c_Ltrivalibs_utils_events_HoldGesture, "trivalibs.utils.events.HoldGesture", ({
-  f3: 1
+  f2: 1
 }));
 function $p_Ltrivalibs_utils_events_InputState__freeSlot__Ltrivalibs_utils_events_Pointer($thiz) {
   var i = 0;
@@ -7496,7 +7494,7 @@ $p.kV = (function() {
   return (this.ae.length | 0);
 });
 var $d_Ltrivalibs_utils_events_InputState = new $TypeData().i($c_Ltrivalibs_utils_events_InputState, "trivalibs.utils.events.InputState", ({
-  f4: 1
+  f3: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_events_Pointer() {
@@ -7520,7 +7518,7 @@ function $h_Ltrivalibs_utils_events_Pointer() {
 }
 $h_Ltrivalibs_utils_events_Pointer.prototype = $p;
 var $d_Ltrivalibs_utils_events_Pointer = new $TypeData().i($c_Ltrivalibs_utils_events_Pointer, "trivalibs.utils.events.Pointer", ({
-  f5: 1
+  f4: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_utils_events_gestures$package$() {
@@ -7543,7 +7541,7 @@ $p.kB = (function(pointers) {
   return null;
 });
 var $d_Ltrivalibs_utils_events_gestures$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_gestures$package$, "trivalibs.utils.events.gestures$package$", ({
-  f6: 1
+  f5: 1
 }));
 var $n_Ltrivalibs_utils_events_gestures$package$;
 function $m_Ltrivalibs_utils_events_gestures$package$() {
@@ -7582,7 +7580,7 @@ $p.mb = (function(canvas, initialFocus, holdDelay, holdRadius, suppressContextMe
   return new $c_Ltrivalibs_utils_events_CanvasInput(input, $ct_Ltrivalibs_utils_events_DragGesture__Ltrivalibs_utils_events_InputState__D__D__(new $c_Ltrivalibs_utils_events_DragGesture(), input, dragGlideMinSpeed, dragGlideHalfLife), $ct_Ltrivalibs_utils_events_HoldGesture__Ltrivalibs_utils_events_InputState__D__D__(new $c_Ltrivalibs_utils_events_HoldGesture(), input, holdDelay, holdRadius));
 });
 var $d_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$, "trivalibs.utils.events.interactive_canvas$package$", ({
-  f7: 1
+  f6: 1
 }));
 var $n_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$;
 function $m_Ltrivalibs_utils_events_interactive\uff3fcanvas$package$() {
@@ -7621,7 +7619,7 @@ $p.mf = (function(el, onDown, onUp, keepDefault) {
   }));
 });
 var $d_Ltrivalibs_utils_events_keyboard$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_keyboard$package$, "trivalibs.utils.events.keyboard$package$", ({
-  f8: 1
+  f7: 1
 }));
 var $n_Ltrivalibs_utils_events_keyboard$package$;
 function $m_Ltrivalibs_utils_events_keyboard$package$() {
@@ -7676,7 +7674,7 @@ $p.mI = (function() {
   return window;
 });
 var $d_Ltrivalibs_utils_events_pointer$package$ = new $TypeData().i($c_Ltrivalibs_utils_events_pointer$package$, "trivalibs.utils.events.pointer$package$", ({
-  f9: 1
+  f8: 1
 }));
 var $n_Ltrivalibs_utils_events_pointer$package$;
 function $m_Ltrivalibs_utils_events_pointer$package$() {
@@ -8703,7 +8701,7 @@ $p.hq = (function(name) {
 });
 var $d_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedAssignAccessor, "trivalibs.graphics.shader.dsl.TypedAssignAccessor", ({
   eQ: 1,
-  z: 1
+  C: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor(prefix) {
@@ -8721,20 +8719,7 @@ $p.ay = (function(name) {
 });
 var $d_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedExprAccessor, "trivalibs.graphics.shader.dsl.TypedExprAccessor", ({
   eR: 1,
-  z: 1
-}));
-/** @constructor */
-function $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor(kinds) {
-}
-$p = $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor.prototype = new $h_O();
-$p.constructor = $c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor;
-/** @constructor */
-function $h_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor() {
-}
-$h_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor.prototype = $p;
-var $d_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedLocalAccessor, "trivalibs.graphics.shader.dsl.TypedLocalAccessor", ({
-  eS: 1,
-  z: 1
+  C: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor() {
@@ -8746,8 +8731,8 @@ function $h_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor() {
 }
 $h_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor.prototype = $p;
 var $d_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_TypedPanelAccessor, "trivalibs.graphics.shader.dsl.TypedPanelAccessor", ({
-  eT: 1,
-  z: 1
+  eS: 1,
+  C: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_dsl_VertexOut(prefix) {
@@ -8766,8 +8751,8 @@ $p.hq = (function(name) {
   return new $c_Ltrivalibs_graphics_shader_dsl_AssignTarget(((this.kc + ".") + name));
 });
 var $d_Ltrivalibs_graphics_shader_dsl_VertexOut = new $TypeData().i($c_Ltrivalibs_graphics_shader_dsl_VertexOut, "trivalibs.graphics.shader.dsl.VertexOut", ({
-  eV: 1,
-  z: 1
+  eU: 1,
+  C: 1
 }));
 /** @constructor */
 function $c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat3$() {
@@ -8782,7 +8767,7 @@ $p.fD = (function() {
   return "mat3x3<f32>";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat3$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat3$, "trivalibs.graphics.shader.types$package$given_WGSLType_Mat3$", ({
-  eX: 1,
+  eW: 1,
   T: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat3$;
@@ -8805,7 +8790,7 @@ $p.fD = (function() {
   return "mat4x4<f32>";
 });
 var $d_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$ = new $TypeData().i($c_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$, "trivalibs.graphics.shader.types$package$given_WGSLType_Mat4$", ({
-  eY: 1,
+  eX: 1,
   T: 1
 }));
 var $n_Ltrivalibs_graphics_shader_types$package$given\uff3fWGSLType\uff3fMat4$;
@@ -13957,8 +13942,8 @@ var $d_sjsr_WrappedVarArgs = new $TypeData().i($c_sjsr_WrappedVarArgs, "scala.sc
   o: 1,
   at: 1,
   J: 1,
+  A: 1,
   B: 1,
-  C: 1,
   a: 1
 }));
 /** @constructor */
@@ -14071,7 +14056,7 @@ var $d_sci_ArraySeq$ofRef = new $TypeData().i($c_sci_ArraySeq$ofRef, "scala.coll
   as: 1,
   c8: 1,
   ar: 1,
-  A: 1,
+  z: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -14090,8 +14075,8 @@ var $d_sci_ArraySeq$ofRef = new $TypeData().i($c_sci_ArraySeq$ofRef, "scala.coll
   o: 1,
   at: 1,
   D: 1,
+  A: 1,
   B: 1,
-  C: 1,
   J: 1,
   bR: 1,
   a: 1
@@ -14214,7 +14199,7 @@ var $d_scm_ArraySeq$ofRef = new $TypeData().i($c_scm_ArraySeq$ofRef, "scala.coll
   aw: 1,
   av: 1,
   K: 1,
-  A: 1,
+  z: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -14235,8 +14220,8 @@ var $d_scm_ArraySeq$ofRef = new $TypeData().i($c_scm_ArraySeq$ofRef, "scala.coll
   o: 1,
   N: 1,
   M: 1,
+  A: 1,
   B: 1,
-  C: 1,
   a: 1
 }));
 /** @constructor */
@@ -14285,7 +14270,7 @@ var $d_sci_Nil$ = new $TypeData().i($c_sci_Nil$, "scala.collection.immutable.Nil
   ce: 1,
   au: 1,
   ar: 1,
-  A: 1,
+  z: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -14304,8 +14289,8 @@ var $d_sci_Nil$ = new $TypeData().i($c_sci_Nil$, "scala.collection.immutable.Nil
   F: 1,
   cc: 1,
   cb: 1,
+  A: 1,
   B: 1,
-  C: 1,
   c3: 1,
   J: 1,
   a: 1,
@@ -14369,7 +14354,7 @@ $p.F = (function(v1) {
 var $d_scm_StringBuilder = new $TypeData().i($c_scm_StringBuilder, "scala.collection.mutable.StringBuilder", ({
   cl: 1,
   K: 1,
-  A: 1,
+  z: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -14438,7 +14423,7 @@ var $d_sjs_js_WrappedArray = new $TypeData().i($c_sjs_js_WrappedArray, "scala.sc
   cX: 1,
   cf: 1,
   K: 1,
-  A: 1,
+  z: 1,
   v: 1,
   d: 1,
   e: 1,
@@ -14459,8 +14444,8 @@ var $d_sjs_js_WrappedArray = new $TypeData().i($c_sjs_js_WrappedArray, "scala.sc
   az: 1,
   ck: 1,
   ch: 1,
-  C: 1,
   B: 1,
+  A: 1,
   M: 1,
   w: 1,
   o: 1,
