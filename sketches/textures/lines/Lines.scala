@@ -92,13 +92,7 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 //
 // ============================================================================
 
-// Port of the Rust `lines_1` texture shader. Wavy vertical colored line bands
-// bent by 3D simplex noise, drawn in 3 depth-sorted passes over a white
-// background. Each pass builds 3 neighboring lines, sorts them by a hashed
-// "height" (z-order), and blends them onto the running color.
-//
-// The Rust fixed-size arrays + bubble sort are unrolled by *Scala* loops at
-// build time: each iteration emits shader statements into the frag `Block`.
+// Port of the Rust `lines_1` texture shader.
 
 @JSExportTopLevel("sketch")
 def lines(canvas: HTMLCanvasElement): Unit =
@@ -116,16 +110,15 @@ def lines(canvas: HTMLCanvasElement): Unit =
         val lineSeg = LetFloat("lineSeg")
         val lineX = LetFloat("lineX")
         val col = VarVec3("col")
-        // Each line is packed as vec4(color.rgb, intensity); height is separate.
         val lineV = Arr(VarVec4("l0v"), VarVec4("l1v"), VarVec4("l2v"))
         val lineH = Arr(VarFloat("l0h"), VarFloat("l1h"), VarFloat("l2h"))
 
-        // One line variant → (vec4(color, intensity), height). Inlines like the
-        // Rust `compute_line` closure.
+        val PassOffsets = Arr(0.0, 100.0, 200.0)
+
         def computeLine(
             segOff: Double,
             lineXOff: Double,
-        ): (Vec4Expr, FloatExpr) =
+        ): (v: Vec4Expr, h: FloatExpr) =
           val segment = lineSeg + segOff
           val x = lineX + lineXOff
           val noise =
@@ -138,53 +131,53 @@ def lines(canvas: HTMLCanvasElement): Unit =
             Hash.hash1((segment * 7.0 * LineCount).toU32),
             Hash.hash1((segment * 11.0 * LineCount).toU32),
           )
-          val height = Hash.hash1((segment * LineCount).toU32)
-          (vec4(color, intensity), height)
-
-        val stmts = Arr[Stmt]()
-        stmts += (lineSeg := (uvX * LineCount).floor)
-        stmts += (lineX := (uvX * LineCount).fract.fit0111)
-        stmts += (col := vec3(1.0))
-
-        // Height-index pairs for the 3-element bubble sort: (0,1),(1,2),(0,1).
-        val sortPairs = Seq((0, 1), (1, 2), (0, 1))
-        val passOffsets = Seq(0.0, 100.0, 200.0)
-
-        var swapId = 0
-        for passOff <- passOffsets do
-          // Rust order within a pass: [prev, curr, next].
-          val lines = Seq(
-            computeLine(passOff - 1.0, 2.0),
-            computeLine(passOff + 0.0, 0.0),
-            computeLine(passOff + 1.0, -2.0),
+          (
+            v = vec4(color, intensity),
+            h = Hash.hash1((segment * LineCount).toU32),
           )
-          for (line, i) <- lines.zipWithIndex do
-            stmts += (lineV(i) := line._1)
-            stmts += (lineH(i) := line._2)
 
-          // Bubble sort by height, ascending — branchless compare-swaps.
-          for (a, b) <- sortPairs do
-            val cond = lineH(a) > lineH(b)
-            val av = LetVec4(s"sw${swapId}av")
-            val bv = LetVec4(s"sw${swapId}bv")
-            val ah = LetFloat(s"sw${swapId}ah")
-            val bh = LetFloat(s"sw${swapId}bh")
-            stmts += (av := cond.select(lineV(b), lineV(a)))
-            stmts += (bv := cond.select(lineV(a), lineV(b)))
-            stmts += (ah := cond.select(lineH(b), lineH(a)))
-            stmts += (bh := cond.select(lineH(a), lineH(b)))
-            stmts += (lineV(a) := av)
-            stmts += (lineV(b) := bv)
-            stmts += (lineH(a) := ah)
-            stmts += (lineH(b) := bh)
-            swapId += 1
+        def compareSwapByHeight(a: Int, b: Int): Block =
+          scope:
+            val swap = lineH(a) > lineH(b)
+            val av = LetVec4("av")
+            val bv = LetVec4("bv")
+            val ah = LetFloat("ah")
+            val bh = LetFloat("bh")
+            Block(
+              av := swap.select(lineV(b), lineV(a)),
+              bv := swap.select(lineV(a), lineV(b)),
+              ah := swap.select(lineH(b), lineH(a)),
+              bh := swap.select(lineH(a), lineH(b)),
+              lineV(a) := av,
+              lineV(b) := bv,
+              lineH(a) := ah,
+              lineH(b) := bh,
+            )
 
-          // Blend the 3 sorted lines onto the running color, low → high.
-          for j <- 0 until 3 do
-            stmts += (col := col.mix(lineV(j).xyz, lineV(j).w))
+        def blendPass(passOff: Double): Block =
+          val prev = computeLine(passOff - 1.0, 2.0)
+          val curr = computeLine(passOff + 0.0, 0.0)
+          val next = computeLine(passOff + 1.0, -2.0)
+          Block(
+            Arr(prev, curr, next).unroll: (line, i) =>
+              Block(
+                lineV(i) := line.v,
+                lineH(i) := line.h,
+              ),
+            compareSwapByHeight(0, 1),
+            compareSwapByHeight(1, 2),
+            compareSwapByHeight(0, 1),
+            unroll(3): j =>
+              col := col.mix(lineV(j).xyz, lineV(j).w),
+          )
 
-        stmts += (ctx.out.color := vec4(col, 1.0))
-        Block(stmts)
+        Block(
+          lineSeg := (uvX * LineCount).floor,
+          lineX := (uvX * LineCount).fract.fit0111,
+          col := vec3(1.0),
+          PassOffsets.unroll(blendPass(_)),
+          ctx.out.color := vec4(col, 1.0),
+        )
 
     val uRes = p.binding[Vec2]
     val uTime = p.binding(0.0)

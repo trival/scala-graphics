@@ -1775,17 +1775,29 @@ $p.ek = (function(canvas) {
       var AssignTarget_this = ctx.cQ.er("color");
       var value$proxy1 = $m_Ltrivalibs_graphics_math_gpu_vec4$().G(col, $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().g().e(1.0));
       $m_Ltrivalibs_graphics_math_gpu_expr$package$();
-      var $x_1 = $f_sc_IterableOnceOps__mkString__T__T__T__T(new $c_sjsr_WrappedVarArgs([x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, (((("  " + AssignTarget_this.cO) + " = ") + value$proxy1.c) + ";")]), "", "\n", "");
+      var x19 = (((("  " + AssignTarget_this.cO) + " = ") + value$proxy1.c) + ";");
+      var array = [x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19];
+      var out = [];
+      var i = 0;
+      while ((i < (array.length | 0))) {
+        var idx$1 = i;
+        var p = array[idx$1];
+        if ((p.length > 0)) {
+          out.push(p);
+        }
+        i = ((1 + i) | 0);
+      }
+      var $x_1 = out.join("\n");
     } finally {
       $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().ay = prev;
     }
     program.bO = $x_1;
     var array$1 = reg.bJ;
     var len = (array$1.length | 0);
-    var i = 0;
-    while ((i < len)) {
-      $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V(program, array$1[i]);
-      i = ((1 + i) | 0);
+    var i$1 = 0;
+    while ((i$1 < len)) {
+      $p_Ltrivalibs_graphics_shader_dsl_LayerProgram__fnRec__Ltrivalibs_graphics_shader_dsl_WgslFnData__V(program, array$1[i$1]);
+      i$1 = ((1 + i$1) | 0);
     }
     var b$3 = program.bO;
     var helperFns$proxy1 = program.e3();
@@ -1793,17 +1805,17 @@ $p.ek = (function(canvas) {
     p$3.aY = ((1 + p$3.aY) | 0);
     var names = $m_sjs_js_ArrayOpsCommon$().a(["res"], $m_sjs_js_ArrayOpsCommon$().a(["time"], []));
     var dict = ({});
-    var i$1 = 0;
-    while ((i$1 < (names.length | 0))) {
-      dict[names[i$1]] = i$1;
-      i$1 = ((1 + i$1) | 0);
+    var i$2 = 0;
+    while ((i$2 < (names.length | 0))) {
+      dict[names[i$2]] = i$2;
+      i$2 = ((1 + i$2) | 0);
     }
     var names$2 = [];
     var dict$2 = ({});
-    var i$2 = 0;
-    while ((i$2 < (names$2.length | 0))) {
-      dict$2[names$2[i$2]] = i$2;
-      i$2 = ((1 + i$2) | 0);
+    var i$2$1 = 0;
+    while ((i$2$1 < (names$2.length | 0))) {
+      dict$2[names$2[i$2$1]] = i$2$1;
+      i$2$1 = ((1 + i$2$1) | 0);
     }
     var sd = new $c_Ltrivalibs_graphics_shader_ShaderDef("  let x = f32((in.vertex_index << 1u) & 2u) * 2.0 - 1.0;\n  let y = f32(in.vertex_index & 2u) * 2.0 - 1.0;\n  out.uv = vec2f(x * 0.5 + 0.5, 0.5 - y * 0.5);\n  out.position = vec4f(x, y, 0.0, 1.0);", b$3, helperFns$proxy1);
     var vertexInputStruct = $p_Ltrivalibs_graphics_shader_derive$__generateCombinedStructFromLists__T__sjs_js_Array__sjs_js_Array__sjs_js_Array__T($m_Ltrivalibs_graphics_shader_derive$(), "VertexInput", [], [], $m_sjs_js_ArrayOpsCommon$().a([new $c_T3("vertex_index", "vertex_index", "u32")], []));
@@ -1869,18 +1881,18 @@ $p.ek = (function(canvas) {
     var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("res", uRes);
     var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("time", b$4);
     var \u03b4scrutinee70 = e1$proxy1.bv;
-    var idx$1 = (Bindable_this.t.ax.res | 0);
-    while (((Bindable_this.C.length | 0) <= idx$1)) {
-      Bindable_this.C.push(null);
-    }
-    Bindable_this.C[idx$1] = \u03b4scrutinee70;
-    Bindable_this.am = null;
-    var \u03b4scrutinee80 = e2$proxy1.bv;
-    var idx$2 = (Bindable_this.t.ax.time | 0);
+    var idx$2 = (Bindable_this.t.ax.res | 0);
     while (((Bindable_this.C.length | 0) <= idx$2)) {
       Bindable_this.C.push(null);
     }
-    Bindable_this.C[idx$2] = \u03b4scrutinee80;
+    Bindable_this.C[idx$2] = \u03b4scrutinee70;
+    Bindable_this.am = null;
+    var \u03b4scrutinee80 = e2$proxy1.bv;
+    var idx$2$1 = (Bindable_this.t.ax.time | 0);
+    while (((Bindable_this.C.length | 0) <= idx$2$1)) {
+      Bindable_this.C.push(null);
+    }
+    Bindable_this.C[idx$2$1] = \u03b4scrutinee80;
     Bindable_this.am = null;
     var panel = p$3.ei((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this, (void 0));
     p$3.ef(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((v1$2, v2$2) => {
@@ -2066,9 +2078,9 @@ function $h_Ltrivalibs_graphics_math_gpu_LeftScalar$() {
 }
 $h_Ltrivalibs_graphics_math_gpu_LeftScalar$.prototype = $p;
 $p.c3 = (function() {
-  return new $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((_$1$2) => {
+  return new $c_Ltrivalibs_graphics_math_gpu_LeftScalar$$anon$1(new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((_$2$2) => {
     $m_Ltrivalibs_graphics_math_gpu_expr$package$();
-    return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), _$1$2);
+    return $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), _$2$2);
   })));
 });
 var $d_Ltrivalibs_graphics_math_gpu_LeftScalar$ = new $TypeData().i($c_Ltrivalibs_graphics_math_gpu_LeftScalar$, "trivalibs.graphics.math.gpu.LeftScalar$", ({

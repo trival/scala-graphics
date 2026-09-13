@@ -132,15 +132,7 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 //
 // ============================================================================
 
-// Port of the Rust `moving_plates` texture shader. A grid of animated raised
-// "plates"; each fragment sits in one quadrant of its cell and considers the
-// center tile + 3 neighbors, picking the tallest one the pixel lands on and
-// darkening it by the shadow cast from taller neighbors.
-//
-// The Rust fixed-size arrays + 0..4 loops are unrolled by *Scala* loops at
-// build time, emitting shader statements into the frag `Block`. The 4-way
-// quadrant branch selects the 3 neighbors + dirs into vars, so the ground /
-// shadow logic is written once instead of duplicated per branch.
+// Port of the Rust `moving_plates` texture shader.
 
 @JSExportTopLevel("sketch")
 def movingPlates(canvas: HTMLCanvasElement): Unit =
@@ -153,7 +145,10 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
       program.frag: ctx =>
         val t = ctx.bindings.time
 
-        // A tile packed as (hue, height, lightness) from its hashed randoms.
+        def hue(tile: Vec3Expr): FloatExpr = tile.x
+        def height(tile: Vec3Expr): FloatExpr = tile.y
+        def lightness(tile: Vec3Expr): FloatExpr = tile.z
+
         def tileVec(r: Vec2Expr): Vec3Expr =
           val l = r.y * r.x * 0.4
           vec3(
@@ -168,164 +163,148 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
         val idx = LetVec2("idx")
         val col = VarVec3("col")
 
-        val stmts = Arr[Stmt]()
-        stmts += (uv := Uv.aspectPreserving(ctx.in.uv, ctx.bindings.res))
-        stmts += (uvScaled := uv * NumTiles)
-        stmts += (uvTile := uvScaled.fract - 0.5)
-        stmts += (idx := uvScaled.floor + 11.0)
+        // ---- tiles ----
 
-        // Emit the let bindings for one tile at `idxExpr`, return its Vec3.
-        def emitTile(name: String, idxExpr: Vec2Expr): LetVec3 =
-          val r = LetVec2(s"r_$name")
-          val tv = LetVec3(s"t_$name")
-          stmts += (r := Hash.hash2((idxExpr * 17.123411).bitsToU32))
-          stmts += (tv := tileVec(r))
-          tv
+        type Tile = (r: LetVec2, v: LetVec3, dir: Vec2Expr)
 
-        val cc = emitTile("cc", idx)
-        val tr = emitTile("tr", idx + vec2(1.0, -1.0))
-        val tc = emitTile("tc", idx + vec2(0.0, -1.0))
-        val tl = emitTile("tl", idx + vec2(-1.0, -1.0))
-        val cr = emitTile("cr", idx + vec2(1.0, 0.0))
-        val cl = emitTile("cl", idx + vec2(-1.0, 0.0))
-        val br = emitTile("br", idx + vec2(1.0, 1.0))
-        val bc = emitTile("bc", idx + vec2(0.0, 1.0))
-        val bl = emitTile("bl", idx + vec2(-1.0, 1.0))
+        def tile(name: String, dir: Vec2Expr): Tile =
+          (r = LetVec2(s"r_$name"), v = LetVec3(s"t_$name"), dir = dir)
 
-        val dirTR = vec2(1.0, -1.0)
-        val dirTC = vec2(0.0, -1.0)
-        val dirTL = vec2(-1.0, -1.0)
-        val dirCR = vec2(1.0, 0.0)
-        val dirCL = vec2(-1.0, 0.0)
-        val dirBR = vec2(1.0, 1.0)
-        val dirBC = vec2(0.0, 1.0)
-        val dirBL = vec2(-1.0, 1.0)
+        val cc = tile("cc", vec2(0.0, 0.0))
+        val tr = tile("tr", vec2(1.0, -1.0))
+        val tc = tile("tc", vec2(0.0, -1.0))
+        val tl = tile("tl", vec2(-1.0, -1.0))
+        val cr = tile("cr", vec2(1.0, 0.0))
+        val cl = tile("cl", vec2(-1.0, 0.0))
+        val br = tile("br", vec2(1.0, 1.0))
+        val bc = tile("bc", vec2(0.0, 1.0))
+        val bl = tile("bl", vec2(-1.0, 1.0))
 
-        // The 3 quadrant neighbors + their dirs. Declared with dummy values
-        // first (so they emit top-level `var`s), then set by the quadrant
-        // branch below — the ground/shadow logic runs once against these.
+        val AllTiles = Arr(cc, tr, tc, tl, cr, cl, br, bc, bl)
+
+        // ---- quadrant ----
+
         val n1 = VarVec3("n1")
         val n2 = VarVec3("n2")
         val n3 = VarVec3("n3")
         val d1 = VarVec2("d1")
         val d2 = VarVec2("d2")
         val d3 = VarVec2("d3")
-        stmts += (n1 := cc)
-        stmts += (n2 := cc)
-        stmts += (n3 := cc)
-        stmts += (d1 := vec2(0.0))
-        stmts += (d2 := vec2(0.0))
-        stmts += (d3 := vec2(0.0))
 
-        stmts += when((uvTile.y < 0.0) && (uvTile.x < 0.0))(
+        // Seeded at top level so the first `:=` puts the `var` declaration in
+        // the function scope rather than inside a branch.
+        def seedQuadrant: Block =
           Block(
-            n1 := tl,
-            n2 := tc,
-            n3 := cl,
-            d1 := dirTL,
-            d2 := dirTC,
-            d3 := dirCL,
-          ),
-        ).elseIf((uvTile.y < 0.0) && (uvTile.x >= 0.0))(
-          Block(
-            n1 := tr,
-            n2 := tc,
-            n3 := cr,
-            d1 := dirTR,
-            d2 := dirTC,
-            d3 := dirCR,
-          ),
-        ).elseIf(uvTile.x < 0.0)(
-          Block(
-            n1 := bl,
-            n2 := bc,
-            n3 := cl,
-            d1 := dirBL,
-            d2 := dirBC,
-            d3 := dirCL,
-          ),
-        ).elseDo(
-          Block(
-            n1 := br,
-            n2 := bc,
-            n3 := cr,
-            d1 := dirBR,
-            d2 := dirBC,
-            d3 := dirCR,
-          ),
-        )
-
-        // tiles[0] = center; tiles[1..3] = the quadrant neighbors.
-        val tiles = Arr[Vec3Expr](cc, n1, n2, n3)
-        val dirs = Arr[Vec2Expr](vec2(0.0), d1, d2, d3)
-        val uvs =
-          Arr(
-            LetVec2("quv0"),
-            LetVec2("quv1"),
-            LetVec2("quv2"),
-            LetVec2("quv3"),
+            n1 := cc.v,
+            n2 := cc.v,
+            n3 := cc.v,
+            d1 := vec2(0.0),
+            d2 := vec2(0.0),
+            d3 := vec2(0.0),
           )
 
-        for i <- 0 until 4 do
-          stmts += (uvs(i) := (uvTile - dirs(i)) * (1.0 - tiles(i).y * 0.14))
+        def useQuadrant(a: Tile, b: Tile, c: Tile): Block =
+          Block(
+            n1 := a.v,
+            n2 := b.v,
+            n3 := c.v,
+            d1 := a.dir,
+            d2 := b.dir,
+            d3 := c.dir,
+          )
 
-        // Ground = tallest tile the pixel lands on. Unlike the Rust original
-        // (which seeds the threshold from the center tile and so culls shorter
-        // neighbors at cell corners → black notches), we seed gHeight below all
-        // heights — they're `cos(...).fit1101()` ∈ [0, 1] — so selection depends
-        // only on which tiles the pixel is inside. gHue/gLight are placeholders:
-        // overwritten on the first hit, ignored when miss stays 1.
+        // ---- ground & shadow ----
+
+        val tiles = Arr[Vec3Expr](cc.v, n1, n2, n3)
+        val dirs = Arr[Vec2Expr](vec2(0.0), d1, d2, d3)
+        val uvs = Arr(
+          LetVec2("quv0"),
+          LetVec2("quv1"),
+          LetVec2("quv2"),
+          LetVec2("quv3"),
+        )
+
         val gHue = VarFloat("gHue")
         val gHeight = VarFloat("gHeight")
         val gLight = VarFloat("gLight")
         val miss = VarFloat("miss")
-        stmts += (gHue := 0.0)
-        stmts += (gHeight := -1.0)
-        stmts += (gLight := 0.0)
-        stmts += (miss := 1.0)
-
-        for i <- 0 until 4 do
-          stmts += when(
-            (tiles(i).y >= gHeight) &&
-              (Shapes.roundedRect(uvs(i), vec2(0.0), vec2(1.0), 0.2) > 0.5),
-          )(
-            Block(
-              gHue := tiles(i).x,
-              gHeight := tiles(i).y,
-              gLight := tiles(i).z,
-              miss := 0.0,
-            ),
-          )
-
-        // Shadow from taller neighbors, using the final ground height.
         val shadow = VarFloat("shadow")
-        stmts += (shadow := 0.0)
-        for i <- 0 until 4 do
-          stmts += when(tiles(i).y > gHeight)(
-            Block(
-              shadow := shadow + Shapes
-                .roundedRectSmooth(
-                  uvs(i),
-                  vec2(0.0),
-                  vec2(1.0),
-                  0.2,
-                  (tiles(i).y - gHeight) * 0.7,
-                )
-                .pow(0.9),
-            ),
+
+        // Deviation from the Rust original, which seeds the height threshold
+        // from the center tile and so culls shorter neighbors at cell corners
+        // (black notches). Seeding below every height — they are
+        // `cos(...).fit1101()` ∈ [0, 1] — makes selection depend only on which
+        // tiles the pixel is inside.
+        def seedGround: Block =
+          Block(
+            gHue := 0.0,
+            gHeight := -1.0,
+            gLight := 0.0,
+            miss := 1.0,
           )
+
+        def takeGroundIfTallerHit(i: Int): Block =
+          when(
+            (height(tiles(i)) >= gHeight) &&
+              (Shapes.roundedRect(uvs(i), vec2(0.0), vec2(1.0), 0.2) > 0.5),
+          ):
+            Block(
+              gHue := hue(tiles(i)),
+              gHeight := height(tiles(i)),
+              gLight := lightness(tiles(i)),
+              miss := 0.0,
+            )
+
+        def addShadowIfTaller(i: Int): Block =
+          when(height(tiles(i)) > gHeight):
+            shadow := shadow + Shapes
+              .roundedRectSmooth(
+                uvs(i),
+                vec2(0.0),
+                vec2(1.0),
+                0.2,
+                (height(tiles(i)) - gHeight) * 0.7,
+              )
+              .pow(0.9)
 
         val ground = vec3(
           gHue,
           0.7 + gHeight * 0.15,
           (gHeight * 0.45 + 0.55) * (gLight * 0.9 + 0.1),
         ).hsv2rgbSmooth
-        stmts += (col := (miss > 0.5).select(
-          vec3(0.0),
-          ground.mix(vec3(0.0), (shadow * 0.7).clamp01),
-        ))
-        stmts += (ctx.out.color := vec4(col.pow(0.5), 1.0))
-        Block(stmts)
+
+        Block(
+          uv := Uv.aspectPreserving(ctx.in.uv, ctx.bindings.res),
+          uvScaled := uv * NumTiles,
+          uvTile := uvScaled.fract - 0.5,
+          idx := uvScaled.floor + 11.0,
+          AllTiles.unroll: tile =>
+            Block(
+              tile.r := Hash.hash2(((idx + tile.dir) * 17.123411).bitsToU32),
+              tile.v := tileVec(tile.r),
+            ),
+          seedQuadrant,
+          when((uvTile.y < 0.0) && (uvTile.x < 0.0)):
+            useQuadrant(tl, tc, cl)
+          .elseIf((uvTile.y < 0.0) && (uvTile.x >= 0.0)):
+            useQuadrant(tr, tc, cr)
+          .elseIf(uvTile.x < 0.0):
+            useQuadrant(bl, bc, cl)
+          .elseDo:
+            useQuadrant(br, bc, cr)
+          ,
+          unroll(4): i =>
+            uvs(i) := (uvTile - dirs(i)) * (1.0 - height(tiles(i)) * 0.14),
+          seedGround,
+          unroll(4)(takeGroundIfTallerHit),
+          shadow := 0.0,
+          unroll(4)(addShadowIfTaller),
+          col := (miss > 0.5).select(
+            vec3(0.0),
+            ground.mix(vec3(0.0), (shadow * 0.7).clamp01),
+          ),
+          ctx.out.color := vec4(col.pow(0.5), 1.0),
+        )
 
     val uRes = p.binding[Vec2]
     val uTime = p.binding(0.0)
