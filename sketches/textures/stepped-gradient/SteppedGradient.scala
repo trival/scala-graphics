@@ -15,7 +15,7 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
   Painter.init(canvas): p =>
     type U = (
         stops: UniformArray[Vec4, MaxStops],
-        curves: UniformArray[Vec4, MaxStops],
+        curves: UniformArray[Double, MaxStops],
         count: Double,
     )
 
@@ -37,7 +37,7 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
               prev := stops(i - 1),
               cur := stops(i),
               t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
-              col := col.mix(cur.rgb, t.pow(curves(i - 1).x)),
+              col := col.mix(cur.rgb, t.pow(curves(i - 1))),
             ),
           ),
           ctx.out.color := vec4(col, 1.0),
@@ -65,10 +65,10 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
         out.push(Vec4(c.x, c.y, c.z, positions(i)))
       out
 
-    def randomCurves(count: Int): Arr[Vec4] =
-      val out = Arr[Vec4]()
+    def randomCurves(count: Int): Arr[Double] =
+      val out = Arr[Double]()
       for _ <- 0 until count do
-        out.push(Vec4(2.0.pow(randInRange(-3.0, 3.0)), 0.0, 0.0, 0.0))
+        out.push(2.0.pow(randInRange(-3.0, 3.0)))
       out
 
     val stopCount = randIntInRange(2, MaxStops + 1)
@@ -77,8 +77,8 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
       layer = p
         .layer(shade)
         .bind(
-          "stops" := UniformArray[Vec4, MaxStops](randomStops(stopCount)),
-          "curves" := UniformArray[Vec4, MaxStops](randomCurves(stopCount)),
+          "stops" := randomStops(stopCount),
+          "curves" := randomCurves(stopCount),
           "count" := stopCount.toDouble,
         ),
     )

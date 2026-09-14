@@ -1703,11 +1703,11 @@ function $c_Lsketches_experiments_strokes_study1_StrokeStudy1$package$() {
     $m_Ltrivalibs_graphics_math_gpu_expr$package$();
     var t = $ct_Ltrivalibs_graphics_math_gpu_LetExpr__T__(new $c_Ltrivalibs_graphics_math_gpu_LetExpr(), "t");
     var $x_2 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumExt\uff3fFloatExpr$();
-    var WgslFn$_this$1 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
+    var WgslFn$_this = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
     var fn$proxy1 = $m_Ltrivalibs_graphics_shader_lib_random_Hash$().bf;
     var a1$proxy1 = $m_Ltrivalibs_graphics_math_gpu_int\uff3fexpr$package$().c4(cell);
     $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().aP(fn$proxy1);
-    var s$proxy1 = (((WgslFn$_this$1.aL(fn$proxy1) + "(") + a1$proxy1) + ")");
+    var s$proxy1 = (((WgslFn$_this.aL(fn$proxy1) + "(") + a1$proxy1) + ")");
     $m_Ltrivalibs_graphics_math_gpu_expr$package$();
     var $x_1 = $ct_Ltrivalibs_graphics_math_gpu_Expr__T__(new $c_Ltrivalibs_graphics_math_gpu_Expr(), s$proxy1);
     var WgslFn$_this$2 = $m_Ltrivalibs_graphics_shader_dsl_fn$package$WgslFn$();
@@ -2165,29 +2165,29 @@ $p.g1 = (function(canvas) {
     var strokePanel = p$4.eG((void 0), (void 0), clearColor$1, (void 0), true, (void 0), (void 0), (void 0), (void 0), Bindable_this, (void 0), (void 0), (void 0));
     var Bindable_this$3 = p$4.eA(bgShade, (void 0), (void 0), (void 0));
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("aspect", uAspect);
-    var \u03b4scrutinee212 = e1$proxy2.aZ;
+    var \u03b4scrutinee213 = e1$proxy2.aZ;
     var idx$2 = (Bindable_this$3.E.aD.aspect | 0);
     while (((Bindable_this$3.S.length | 0) <= idx$2)) {
       Bindable_this$3.S.push(null);
     }
-    Bindable_this$3.S[idx$2] = \u03b4scrutinee212;
+    Bindable_this$3.S[idx$2] = \u03b4scrutinee213;
     Bindable_this$3.ay = null;
     var Bindable_this$5 = p$4.eA(canvasShade, $m_Ltrivalibs_graphics_painter_BlendState$().dK, (void 0), (void 0));
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("src", strokePanel);
     var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", p$4.fQ());
-    var \u03b4scrutinee226 = e1$proxy3.aZ;
+    var \u03b4scrutinee228 = e1$proxy3.aZ;
     var idx$3 = (Bindable_this$5.E.bO.src | 0);
     while (((Bindable_this$5.a1.length | 0) <= idx$3)) {
       Bindable_this$5.a1.push(null);
     }
-    Bindable_this$5.a1[idx$3] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee226);
+    Bindable_this$5.a1[idx$3] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee228);
     Bindable_this$5.ay = null;
-    var \u03b4scrutinee230 = e2$proxy1.aZ;
+    var \u03b4scrutinee232 = e2$proxy1.aZ;
     var idx$4 = (Bindable_this$5.E.aD.samp | 0);
     while (((Bindable_this$5.S.length | 0) <= idx$4)) {
       Bindable_this$5.S.push(null);
     }
-    Bindable_this$5.S[idx$4] = \u03b4scrutinee230;
+    Bindable_this$5.S[idx$4] = \u03b4scrutinee232;
     Bindable_this$5.ay = null;
     var layers$2 = [Bindable_this$3, Bindable_this$5];
     var canvasPanel = p$4.eG((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), layers$2);

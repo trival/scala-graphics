@@ -3092,24 +3092,25 @@ $p.o6 = (function(canvas) {
     var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", ceilTile);
     var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("tint", new $c_Ltrivalibs_graphics_math_cpu_Vec3(1.1, 1.1, 1.12));
     var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", samp);
-    var \u03b4scrutinee243 = e1$proxy1.n;
+    var \u03b4scrutinee243 = e1$proxy1.m;
     var idx = (Bindable_this.N.a3.tex | 0);
     while (((Bindable_this.X.length | 0) <= idx)) {
       Bindable_this.X.push(null);
     }
     Bindable_this.X[idx] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee243);
-    var \u03b4scrutinee249 = e2$proxy1.n;
+    var \u03b4scrutinee249 = e2$proxy1.m;
     var idx$2 = (Bindable_this.N.A.tint | 0);
-    if (((idx$2 < (Bindable_this.m.length | 0)) && (Bindable_this.m[idx$2] !== null))) {
-      var BufferBinding_this = Bindable_this.m[idx$2];
-      BufferBinding_this.F.B(BufferBinding_this.j, \u03b4scrutinee249);
-      var $x_31 = BufferBinding_this.E.queue;
-      var $x_30 = BufferBinding_this.C;
-      var s$proxy3 = BufferBinding_this.j;
+    var existing = ((idx$2 < (Bindable_this.n.length | 0)) ? Bindable_this.n[idx$2] : null);
+    var device$proxy1 = Bindable_this.g1.g;
+    if ((existing !== null)) {
+      existing.F.B(existing.j, \u03b4scrutinee249);
+      var $x_31 = existing.E.queue;
+      var $x_30 = existing.C;
+      var s$proxy3 = existing.j;
       $x_31.writeBuffer($x_30, 0.0, s$proxy3.dv.buffer);
+      var bb = existing;
     } else {
       var uv$3 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec3\uff3fVec4Buffer$();
-      var device$proxy1 = Bindable_this.g1.g;
       var buffer$2 = new ArrayBuffer(16);
       var arr$proxy5 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$2), 1);
       var b$4 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy5.dv, 0), device$proxy1, uv$3);
@@ -3118,140 +3119,147 @@ $p.o6 = (function(canvas) {
       var $x_32 = b$4.C;
       var s$proxy4 = b$4.j;
       $x_33.writeBuffer($x_32, 0.0, s$proxy4.dv.buffer);
-      while (((Bindable_this.m.length | 0) <= idx$2)) {
-        Bindable_this.m.push(null);
-      }
-      Bindable_this.m[idx$2] = b$4;
+      var bb = b$4;
     }
-    var \u03b4scrutinee264 = e3$proxy1.n;
+    while (((Bindable_this.n.length | 0) <= idx$2)) {
+      Bindable_this.n.push(null);
+    }
+    Bindable_this.n[idx$2] = bb;
+    var \u03b4scrutinee270 = e3$proxy1.m;
     var idx$3 = (Bindable_this.N.A.samp | 0);
-    while (((Bindable_this.m.length | 0) <= idx$3)) {
-      Bindable_this.m.push(null);
+    while (((Bindable_this.n.length | 0) <= idx$3)) {
+      Bindable_this.n.push(null);
     }
-    Bindable_this.m[idx$3] = \u03b4scrutinee264;
+    Bindable_this.n[idx$3] = \u03b4scrutinee270;
     var Bindable_this$6 = p$11.gc(rowForm, renderShade, "none", (void 0));
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", rowTile);
     var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("tint", new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.9, 0.9, 0.92));
     var e3$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", samp);
-    var \u03b4scrutinee284 = e1$proxy2.n;
+    var \u03b4scrutinee290 = e1$proxy2.m;
     var idx$4 = (Bindable_this$6.N.a3.tex | 0);
     while (((Bindable_this$6.X.length | 0) <= idx$4)) {
       Bindable_this$6.X.push(null);
     }
-    Bindable_this$6.X[idx$4] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee284);
-    var \u03b4scrutinee290 = e2$proxy2.n;
+    Bindable_this$6.X[idx$4] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee290);
+    var \u03b4scrutinee296 = e2$proxy2.m;
     var idx$5 = (Bindable_this$6.N.A.tint | 0);
-    if (((idx$5 < (Bindable_this$6.m.length | 0)) && (Bindable_this$6.m[idx$5] !== null))) {
-      var BufferBinding_this$5 = Bindable_this$6.m[idx$5];
-      BufferBinding_this$5.F.B(BufferBinding_this$5.j, \u03b4scrutinee290);
-      var $x_35 = BufferBinding_this$5.E.queue;
-      var $x_34 = BufferBinding_this$5.C;
-      var s$proxy5 = BufferBinding_this$5.j;
+    var existing$2 = ((idx$5 < (Bindable_this$6.n.length | 0)) ? Bindable_this$6.n[idx$5] : null);
+    var device$proxy2 = Bindable_this$6.g1.g;
+    if ((existing$2 !== null)) {
+      existing$2.F.B(existing$2.j, \u03b4scrutinee296);
+      var $x_35 = existing$2.E.queue;
+      var $x_34 = existing$2.C;
+      var s$proxy5 = existing$2.j;
       $x_35.writeBuffer($x_34, 0.0, s$proxy5.dv.buffer);
+      var bb$2 = existing$2;
     } else {
       var uv$2$1 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec3\uff3fVec4Buffer$();
-      var device$proxy2 = Bindable_this$6.g1.g;
       var buffer$3 = new ArrayBuffer(16);
       var arr$proxy6 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$3), 1);
       var b$2$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), device$proxy2, uv$2$1);
-      b$2$1.F.B(b$2$1.j, \u03b4scrutinee290);
+      b$2$1.F.B(b$2$1.j, \u03b4scrutinee296);
       var $x_37 = b$2$1.E.queue;
       var $x_36 = b$2$1.C;
       var s$proxy6 = b$2$1.j;
       $x_37.writeBuffer($x_36, 0.0, s$proxy6.dv.buffer);
-      while (((Bindable_this$6.m.length | 0) <= idx$5)) {
-        Bindable_this$6.m.push(null);
-      }
-      Bindable_this$6.m[idx$5] = b$2$1;
+      var bb$2 = b$2$1;
     }
-    var \u03b4scrutinee305 = e3$proxy2.n;
+    while (((Bindable_this$6.n.length | 0) <= idx$5)) {
+      Bindable_this$6.n.push(null);
+    }
+    Bindable_this$6.n[idx$5] = bb$2;
+    var \u03b4scrutinee317 = e3$proxy2.m;
     var idx$6 = (Bindable_this$6.N.A.samp | 0);
-    while (((Bindable_this$6.m.length | 0) <= idx$6)) {
-      Bindable_this$6.m.push(null);
+    while (((Bindable_this$6.n.length | 0) <= idx$6)) {
+      Bindable_this$6.n.push(null);
     }
-    Bindable_this$6.m[idx$6] = \u03b4scrutinee305;
+    Bindable_this$6.n[idx$6] = \u03b4scrutinee317;
     var Bindable_this$11 = p$11.gc(colForm, renderShade, "none", (void 0));
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", colTile);
     var e2$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("tint", new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.9, 0.9, 0.92));
     var e3$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", samp);
-    var \u03b4scrutinee325 = e1$proxy3.n;
+    var \u03b4scrutinee337 = e1$proxy3.m;
     var idx$7 = (Bindable_this$11.N.a3.tex | 0);
     while (((Bindable_this$11.X.length | 0) <= idx$7)) {
       Bindable_this$11.X.push(null);
     }
-    Bindable_this$11.X[idx$7] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee325);
-    var \u03b4scrutinee331 = e2$proxy3.n;
+    Bindable_this$11.X[idx$7] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee337);
+    var \u03b4scrutinee343 = e2$proxy3.m;
     var idx$8 = (Bindable_this$11.N.A.tint | 0);
-    if (((idx$8 < (Bindable_this$11.m.length | 0)) && (Bindable_this$11.m[idx$8] !== null))) {
-      var BufferBinding_this$9 = Bindable_this$11.m[idx$8];
-      BufferBinding_this$9.F.B(BufferBinding_this$9.j, \u03b4scrutinee331);
-      var $x_39 = BufferBinding_this$9.E.queue;
-      var $x_38 = BufferBinding_this$9.C;
-      var s$proxy7 = BufferBinding_this$9.j;
+    var existing$3 = ((idx$8 < (Bindable_this$11.n.length | 0)) ? Bindable_this$11.n[idx$8] : null);
+    var device$proxy3 = Bindable_this$11.g1.g;
+    if ((existing$3 !== null)) {
+      existing$3.F.B(existing$3.j, \u03b4scrutinee343);
+      var $x_39 = existing$3.E.queue;
+      var $x_38 = existing$3.C;
+      var s$proxy7 = existing$3.j;
       $x_39.writeBuffer($x_38, 0.0, s$proxy7.dv.buffer);
+      var bb$3 = existing$3;
     } else {
       var uv$3$1 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec3\uff3fVec4Buffer$();
-      var device$proxy3 = Bindable_this$11.g1.g;
       var buffer$4 = new ArrayBuffer(16);
       var arr$proxy7 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$4), 1);
       var b$3$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy7.dv, 0), device$proxy3, uv$3$1);
-      b$3$1.F.B(b$3$1.j, \u03b4scrutinee331);
+      b$3$1.F.B(b$3$1.j, \u03b4scrutinee343);
       var $x_41 = b$3$1.E.queue;
       var $x_40 = b$3$1.C;
       var s$proxy8 = b$3$1.j;
       $x_41.writeBuffer($x_40, 0.0, s$proxy8.dv.buffer);
-      while (((Bindable_this$11.m.length | 0) <= idx$8)) {
-        Bindable_this$11.m.push(null);
-      }
-      Bindable_this$11.m[idx$8] = b$3$1;
+      var bb$3 = b$3$1;
     }
-    var \u03b4scrutinee346 = e3$proxy3.n;
+    while (((Bindable_this$11.n.length | 0) <= idx$8)) {
+      Bindable_this$11.n.push(null);
+    }
+    Bindable_this$11.n[idx$8] = bb$3;
+    var \u03b4scrutinee364 = e3$proxy3.m;
     var idx$9 = (Bindable_this$11.N.A.samp | 0);
-    while (((Bindable_this$11.m.length | 0) <= idx$9)) {
-      Bindable_this$11.m.push(null);
+    while (((Bindable_this$11.n.length | 0) <= idx$9)) {
+      Bindable_this$11.n.push(null);
     }
-    Bindable_this$11.m[idx$9] = \u03b4scrutinee346;
+    Bindable_this$11.n[idx$9] = \u03b4scrutinee364;
     var Bindable_this$16 = p$11.gc(boxForm, renderShade, "none", (void 0));
     var e1$proxy4 = new $c_Ltrivalibs_graphics_painter_BindPair("tex", boxTile);
     var e2$proxy4 = new $c_Ltrivalibs_graphics_painter_BindPair("tint", new $c_Ltrivalibs_graphics_math_cpu_Vec3(0.28, 0.27, 0.27));
     var e3$proxy4 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", clampSamp);
-    var \u03b4scrutinee366 = e1$proxy4.n;
+    var \u03b4scrutinee384 = e1$proxy4.m;
     var idx$10 = (Bindable_this$16.N.a3.tex | 0);
     while (((Bindable_this$16.X.length | 0) <= idx$10)) {
       Bindable_this$16.X.push(null);
     }
-    Bindable_this$16.X[idx$10] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee366);
-    var \u03b4scrutinee372 = e2$proxy4.n;
+    Bindable_this$16.X[idx$10] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee384);
+    var \u03b4scrutinee390 = e2$proxy4.m;
     var idx$11 = (Bindable_this$16.N.A.tint | 0);
-    if (((idx$11 < (Bindable_this$16.m.length | 0)) && (Bindable_this$16.m[idx$11] !== null))) {
-      var BufferBinding_this$13 = Bindable_this$16.m[idx$11];
-      BufferBinding_this$13.F.B(BufferBinding_this$13.j, \u03b4scrutinee372);
-      var $x_43 = BufferBinding_this$13.E.queue;
-      var $x_42 = BufferBinding_this$13.C;
-      var s$proxy9 = BufferBinding_this$13.j;
+    var existing$4 = ((idx$11 < (Bindable_this$16.n.length | 0)) ? Bindable_this$16.n[idx$11] : null);
+    var device$proxy4 = Bindable_this$16.g1.g;
+    if ((existing$4 !== null)) {
+      existing$4.F.B(existing$4.j, \u03b4scrutinee390);
+      var $x_43 = existing$4.E.queue;
+      var $x_42 = existing$4.C;
+      var s$proxy9 = existing$4.j;
       $x_43.writeBuffer($x_42, 0.0, s$proxy9.dv.buffer);
+      var bb$4 = existing$4;
     } else {
       var uv$4 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec3\uff3fVec4Buffer$();
-      var device$proxy4 = Bindable_this$16.g1.g;
       var buffer$5 = new ArrayBuffer(16);
       var arr$proxy8 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$5), 1);
       var b$4$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy8.dv, 0), device$proxy4, uv$4);
-      b$4$1.F.B(b$4$1.j, \u03b4scrutinee372);
+      b$4$1.F.B(b$4$1.j, \u03b4scrutinee390);
       var $x_45 = b$4$1.E.queue;
       var $x_44 = b$4$1.C;
       var s$proxy10 = b$4$1.j;
       $x_45.writeBuffer($x_44, 0.0, s$proxy10.dv.buffer);
-      while (((Bindable_this$16.m.length | 0) <= idx$11)) {
-        Bindable_this$16.m.push(null);
-      }
-      Bindable_this$16.m[idx$11] = b$4$1;
+      var bb$4 = b$4$1;
     }
-    var \u03b4scrutinee387 = e3$proxy4.n;
+    while (((Bindable_this$16.n.length | 0) <= idx$11)) {
+      Bindable_this$16.n.push(null);
+    }
+    Bindable_this$16.n[idx$11] = bb$4;
+    var \u03b4scrutinee411 = e3$proxy4.m;
     var idx$12 = (Bindable_this$16.N.A.samp | 0);
-    while (((Bindable_this$16.m.length | 0) <= idx$12)) {
-      Bindable_this$16.m.push(null);
+    while (((Bindable_this$16.n.length | 0) <= idx$12)) {
+      Bindable_this$16.n.push(null);
     }
-    Bindable_this$16.m[idx$12] = \u03b4scrutinee387;
+    Bindable_this$16.n[idx$12] = \u03b4scrutinee411;
     var shapes$2 = [Bindable_this$6, Bindable_this$11, Bindable_this, Bindable_this$16];
     $m_Lsketchlib_utils_mirror_MirrorReflection$();
     var mirror$1 = $m_Ltrivalibs_graphics_geometry_Plane$().k9;
@@ -3424,55 +3432,57 @@ $p.o6 = (function(canvas) {
     var e3$proxy5 = new $c_Ltrivalibs_graphics_painter_BindPair("reflStrength", b$5);
     var e4$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", samp);
     var e5$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("reflTex", mirror.k3);
-    var \u03b4scrutinee505 = e1$proxy5.n;
+    var \u03b4scrutinee529 = e1$proxy5.m;
     var idx$13 = (Bindable_this$21.N.a3.tex | 0);
     while (((Bindable_this$21.X.length | 0) <= idx$13)) {
       Bindable_this$21.X.push(null);
     }
-    Bindable_this$21.X[idx$13] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee505);
-    var \u03b4scrutinee511 = e2$proxy5.n;
+    Bindable_this$21.X[idx$13] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee529);
+    var \u03b4scrutinee535 = e2$proxy5.m;
     var idx$14 = (Bindable_this$21.N.A.tint | 0);
-    if (((idx$14 < (Bindable_this$21.m.length | 0)) && (Bindable_this$21.m[idx$14] !== null))) {
-      var BufferBinding_this$19 = Bindable_this$21.m[idx$14];
-      BufferBinding_this$19.F.B(BufferBinding_this$19.j, \u03b4scrutinee511);
-      var $x_70 = BufferBinding_this$19.E.queue;
-      var $x_69 = BufferBinding_this$19.C;
-      var s$proxy12 = BufferBinding_this$19.j;
+    var existing$5 = ((idx$14 < (Bindable_this$21.n.length | 0)) ? Bindable_this$21.n[idx$14] : null);
+    var device$proxy5 = Bindable_this$21.g1.g;
+    if ((existing$5 !== null)) {
+      existing$5.F.B(existing$5.j, \u03b4scrutinee535);
+      var $x_70 = existing$5.E.queue;
+      var $x_69 = existing$5.C;
+      var s$proxy12 = existing$5.j;
       $x_70.writeBuffer($x_69, 0.0, s$proxy12.dv.buffer);
+      var bb$5 = existing$5;
     } else {
       var uv$5$1 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec3\uff3fVec4Buffer$();
-      var device$proxy5 = Bindable_this$21.g1.g;
       var buffer$7 = new ArrayBuffer(16);
       var arr$proxy10 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$7), 1);
       var b$6$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy10.dv, 0), device$proxy5, uv$5$1);
-      b$6$1.F.B(b$6$1.j, \u03b4scrutinee511);
+      b$6$1.F.B(b$6$1.j, \u03b4scrutinee535);
       var $x_72 = b$6$1.E.queue;
       var $x_71 = b$6$1.C;
       var s$proxy13 = b$6$1.j;
       $x_72.writeBuffer($x_71, 0.0, s$proxy13.dv.buffer);
-      while (((Bindable_this$21.m.length | 0) <= idx$14)) {
-        Bindable_this$21.m.push(null);
-      }
-      Bindable_this$21.m[idx$14] = b$6$1;
+      var bb$5 = b$6$1;
     }
-    var \u03b4scrutinee526 = e3$proxy5.n;
+    while (((Bindable_this$21.n.length | 0) <= idx$14)) {
+      Bindable_this$21.n.push(null);
+    }
+    Bindable_this$21.n[idx$14] = bb$5;
+    var \u03b4scrutinee556 = e3$proxy5.m;
     var idx$15 = (Bindable_this$21.N.A.reflStrength | 0);
-    while (((Bindable_this$21.m.length | 0) <= idx$15)) {
-      Bindable_this$21.m.push(null);
+    while (((Bindable_this$21.n.length | 0) <= idx$15)) {
+      Bindable_this$21.n.push(null);
     }
-    Bindable_this$21.m[idx$15] = \u03b4scrutinee526;
-    var \u03b4scrutinee546 = e4$proxy1.n;
+    Bindable_this$21.n[idx$15] = \u03b4scrutinee556;
+    var \u03b4scrutinee577 = e4$proxy1.m;
     var idx$16 = (Bindable_this$21.N.A.samp | 0);
-    while (((Bindable_this$21.m.length | 0) <= idx$16)) {
-      Bindable_this$21.m.push(null);
+    while (((Bindable_this$21.n.length | 0) <= idx$16)) {
+      Bindable_this$21.n.push(null);
     }
-    Bindable_this$21.m[idx$16] = \u03b4scrutinee546;
-    var \u03b4scrutinee572 = e5$proxy1.n;
+    Bindable_this$21.n[idx$16] = \u03b4scrutinee577;
+    var \u03b4scrutinee603 = e5$proxy1.m;
     var idx$17 = (Bindable_this$21.N.a3.reflTex | 0);
     while (((Bindable_this$21.X.length | 0) <= idx$17)) {
       Bindable_this$21.X.push(null);
     }
-    Bindable_this$21.X[idx$17] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee572);
+    Bindable_this$21.X[idx$17] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee603);
     var ul$proxy3 = new $c_Ltrivalibs_graphics_buffers_UniformLayout$given\uff3fUniformLayout\uff3fT($m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fMat4\uff3fMat4Buffer$());
     var uv$proxy3 = ul$proxy3.ar;
     var buffer$8 = new ArrayBuffer(64);
@@ -3488,9 +3498,9 @@ $p.o6 = (function(canvas) {
     var shapes$3 = [Bindable_this$21, Bindable_this, Bindable_this$6, Bindable_this$11, Bindable_this$16];
     var Panel_this = p$11.bb((void 0), (void 0), clearColor$3, true, true, (void 0), (void 0), "rgba16float", (void 0), (void 0), shapes$3, (void 0), (void 0));
     var e1$proxy6 = new $c_Ltrivalibs_graphics_painter_BindPair("mvp", mvp);
-    var \u03b4scrutinee573 = e1$proxy6.n;
+    var \u03b4scrutinee604 = e1$proxy6.m;
     var dict$proxy1 = Panel_this.gB;
-    dict$proxy1.mvp = \u03b4scrutinee573;
+    dict$proxy1.mvp = \u03b4scrutinee604;
     var build$proxy5 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((program$3$4) => {
       var body$proxy17 = new $c_sr_AbstractFunction1_$$Lambda$7afc3dd0acc1681fb022ef921c83979087aaa919(((ctx$2$9) => {
         var AssignTarget_this$7 = ctx$2$9.ai.a2("color");
@@ -3643,19 +3653,19 @@ $p.o6 = (function(canvas) {
     var Bindable_this$28 = p$11.aW(copyShade, (void 0), (void 0), (void 0));
     var e1$proxy7 = new $c_Ltrivalibs_graphics_painter_BindPair("src", Panel_this);
     var e2$proxy6 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", clampSamp);
-    var \u03b4scrutinee696 = e1$proxy7.n;
+    var \u03b4scrutinee727 = e1$proxy7.m;
     var idx$18 = (Bindable_this$28.r.a3.src | 0);
     while (((Bindable_this$28.H.length | 0) <= idx$18)) {
       Bindable_this$28.H.push(null);
     }
-    Bindable_this$28.H[idx$18] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee696);
+    Bindable_this$28.H[idx$18] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee727);
     Bindable_this$28.G = null;
-    var \u03b4scrutinee700 = e2$proxy6.n;
+    var \u03b4scrutinee731 = e2$proxy6.m;
     var idx$19 = (Bindable_this$28.r.A.samp | 0);
     while (((Bindable_this$28.i.length | 0) <= idx$19)) {
       Bindable_this$28.i.push(null);
     }
-    Bindable_this$28.i[idx$19] = \u03b4scrutinee700;
+    Bindable_this$28.i[idx$19] = \u03b4scrutinee731;
     Bindable_this$28.G = null;
     fadeLayers.push(Bindable_this$28);
     var fm = 0;
@@ -3664,12 +3674,12 @@ $p.o6 = (function(canvas) {
       var mipTarget$1 = ((1 + fm) | 0);
       var Bindable_this$31 = p$11.aW(downBlurShade, (void 0), mipSource$1, mipTarget$1);
       var e1$proxy8 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", clampSamp);
-      var \u03b4scrutinee708 = e1$proxy8.n;
+      var \u03b4scrutinee739 = e1$proxy8.m;
       var idx$20 = (Bindable_this$31.r.A.samp | 0);
       while (((Bindable_this$31.i.length | 0) <= idx$20)) {
         Bindable_this$31.i.push(null);
       }
-      Bindable_this$31.i[idx$20] = \u03b4scrutinee708;
+      Bindable_this$31.i[idx$20] = \u03b4scrutinee739;
       Bindable_this$31.G = null;
       fadeLayers.push(Bindable_this$31);
       fm = ((1 + fm) | 0);
@@ -3791,40 +3801,40 @@ $p.o6 = (function(canvas) {
     var e3$proxy6 = new $c_Ltrivalibs_graphics_painter_BindPair("invVp", invVp);
     var e4$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("camPos", camPos);
     var e5$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", clampSamp);
-    var \u03b4scrutinee799 = e1$proxy9.n;
+    var \u03b4scrutinee830 = e1$proxy9.m;
     var idx$21 = (Bindable_this$33.r.a3.col | 0);
     while (((Bindable_this$33.H.length | 0) <= idx$21)) {
       Bindable_this$33.H.push(null);
     }
-    Bindable_this$33.H[idx$21] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee799);
+    Bindable_this$33.H[idx$21] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee830);
     Bindable_this$33.G = null;
-    var \u03b4scrutinee813 = e2$proxy7.n;
+    var \u03b4scrutinee844 = e2$proxy7.m;
     var idx$22 = (Bindable_this$33.r.a3.depth | 0);
     while (((Bindable_this$33.H.length | 0) <= idx$22)) {
       Bindable_this$33.H.push(null);
     }
-    Bindable_this$33.H[idx$22] = \u03b4scrutinee813;
+    Bindable_this$33.H[idx$22] = \u03b4scrutinee844;
     Bindable_this$33.G = null;
-    var \u03b4scrutinee817 = e3$proxy6.n;
+    var \u03b4scrutinee848 = e3$proxy6.m;
     var idx$23 = (Bindable_this$33.r.A.invVp | 0);
     while (((Bindable_this$33.i.length | 0) <= idx$23)) {
       Bindable_this$33.i.push(null);
     }
-    Bindable_this$33.i[idx$23] = \u03b4scrutinee817;
+    Bindable_this$33.i[idx$23] = \u03b4scrutinee848;
     Bindable_this$33.G = null;
-    var \u03b4scrutinee827 = e4$proxy2.n;
+    var \u03b4scrutinee858 = e4$proxy2.m;
     var idx$24 = (Bindable_this$33.r.A.camPos | 0);
     while (((Bindable_this$33.i.length | 0) <= idx$24)) {
       Bindable_this$33.i.push(null);
     }
-    Bindable_this$33.i[idx$24] = \u03b4scrutinee827;
+    Bindable_this$33.i[idx$24] = \u03b4scrutinee858;
     Bindable_this$33.G = null;
-    var \u03b4scrutinee841 = e5$proxy2.n;
+    var \u03b4scrutinee872 = e5$proxy2.m;
     var idx$25 = (Bindable_this$33.r.A.samp | 0);
     while (((Bindable_this$33.i.length | 0) <= idx$25)) {
       Bindable_this$33.i.push(null);
     }
-    Bindable_this$33.i[idx$25] = \u03b4scrutinee841;
+    Bindable_this$33.i[idx$25] = \u03b4scrutinee872;
     Bindable_this$33.G = null;
     var fadePanel = p$11.bb((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), "rgba16float", (void 0), (void 0), (void 0), Bindable_this$33, (void 0));
     var bloom = $m_Lsketchlib_utils_bloom_Bloom$().mo(p$11, fadePanel, 0.005, 1.0, 4.0, 5, 1.0, 2.0);
@@ -4158,25 +4168,26 @@ $p.mo = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   var Bindable_this = p.aW(thresholdShade, (void 0), (void 0), (void 0));
   var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("scene", scene);
   var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("threshold", threshold);
-  var \u03b4scrutinee194 = e1$proxy1.n;
+  var \u03b4scrutinee194 = e1$proxy1.m;
   var idx = (Bindable_this.r.a3.scene | 0);
   while (((Bindable_this.H.length | 0) <= idx)) {
     Bindable_this.H.push(null);
   }
   Bindable_this.H[idx] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee194);
   Bindable_this.G = null;
-  var \u03b4scrutinee198 = (+e2$proxy1.n);
+  var \u03b4scrutinee198 = (+e2$proxy1.m);
   var idx$2 = (Bindable_this.r.A.threshold | 0);
-  if (((idx$2 < (Bindable_this.i.length | 0)) && (Bindable_this.i[idx$2] !== null))) {
-    var BufferBinding_this$5 = Bindable_this.i[idx$2];
-    BufferBinding_this$5.F.B(BufferBinding_this$5.j, \u03b4scrutinee198);
-    var $x_13 = BufferBinding_this$5.E.queue;
-    var $x_12 = BufferBinding_this$5.C;
-    var s$proxy5 = BufferBinding_this$5.j;
+  var existing = ((idx$2 < (Bindable_this.i.length | 0)) ? Bindable_this.i[idx$2] : null);
+  var device$proxy1 = Bindable_this.gs.g;
+  if ((existing !== null)) {
+    existing.F.B(existing.j, \u03b4scrutinee198);
+    var $x_13 = existing.E.queue;
+    var $x_12 = existing.C;
+    var s$proxy5 = existing.j;
     $x_13.writeBuffer($x_12, 0.0, s$proxy5.dv.buffer);
+    var bb = existing;
   } else {
     var uv$2 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy1 = Bindable_this.gs.g;
     var buffer$3 = new ArrayBuffer(4);
     var arr$proxy3 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$3), 1);
     var b$3$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy3.dv, 0), device$proxy1, uv$2);
@@ -4185,11 +4196,12 @@ $p.mo = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     var $x_14 = b$3$1.C;
     var s$proxy6 = b$3$1.j;
     $x_15.writeBuffer($x_14, 0.0, s$proxy6.dv.buffer);
-    while (((Bindable_this.i.length | 0) <= idx$2)) {
-      Bindable_this.i.push(null);
-    }
-    Bindable_this.i[idx$2] = b$3$1;
+    var bb = b$3$1;
   }
+  while (((Bindable_this.i.length | 0) <= idx$2)) {
+    Bindable_this.i.push(null);
+  }
+  Bindable_this.i[idx$2] = bb;
   Bindable_this.G = null;
   layers.push(Bindable_this);
   var di = 0;
@@ -4199,19 +4211,19 @@ $p.mo = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     var Bindable_this$5 = p.aW(downsampleShade, (void 0), mipSource$1, mipTarget$1);
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("blurRadius", b);
     var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
-    var \u03b4scrutinee209 = e1$proxy2.n;
+    var \u03b4scrutinee214 = e1$proxy2.m;
     var idx$3 = (Bindable_this$5.r.A.blurRadius | 0);
     while (((Bindable_this$5.i.length | 0) <= idx$3)) {
       Bindable_this$5.i.push(null);
     }
-    Bindable_this$5.i[idx$3] = \u03b4scrutinee209;
+    Bindable_this$5.i[idx$3] = \u03b4scrutinee214;
     Bindable_this$5.G = null;
-    var \u03b4scrutinee221 = e2$proxy2.n;
+    var \u03b4scrutinee227 = e2$proxy2.m;
     var idx$4 = (Bindable_this$5.r.A.samp | 0);
     while (((Bindable_this$5.i.length | 0) <= idx$4)) {
       Bindable_this$5.i.push(null);
     }
-    Bindable_this$5.i[idx$4] = \u03b4scrutinee221;
+    Bindable_this$5.i[idx$4] = \u03b4scrutinee227;
     Bindable_this$5.G = null;
     layers.push(Bindable_this$5);
     di = ((1 + di) | 0);
@@ -4221,19 +4233,19 @@ $p.mo = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
     var Bindable_this$8 = p.aW(upsampleShade, $m_Ltrivalibs_graphics_painter_BlendState$().kv, ((1 + ui) | 0), ui);
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("blurRadius", b);
     var e2$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
-    var \u03b4scrutinee231 = e1$proxy3.n;
+    var \u03b4scrutinee237 = e1$proxy3.m;
     var idx$5 = (Bindable_this$8.r.A.blurRadius | 0);
     while (((Bindable_this$8.i.length | 0) <= idx$5)) {
       Bindable_this$8.i.push(null);
     }
-    Bindable_this$8.i[idx$5] = \u03b4scrutinee231;
+    Bindable_this$8.i[idx$5] = \u03b4scrutinee237;
     Bindable_this$8.G = null;
-    var \u03b4scrutinee243 = e2$proxy3.n;
+    var \u03b4scrutinee250 = e2$proxy3.m;
     var idx$6 = (Bindable_this$8.r.A.samp | 0);
     while (((Bindable_this$8.i.length | 0) <= idx$6)) {
       Bindable_this$8.i.push(null);
     }
-    Bindable_this$8.i[idx$6] = \u03b4scrutinee243;
+    Bindable_this$8.i[idx$6] = \u03b4scrutinee250;
     Bindable_this$8.G = null;
     layers.push(Bindable_this$8);
     ui = ((ui - 1) | 0);
@@ -4329,104 +4341,110 @@ $p.mo = (function(p, scene, intensity, threshold, blurRadius, mipLevels, toneKne
   var e4$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("knee", toneKnee);
   var e5$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("lift", toneLift);
   var e6$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("falloff", toneFalloff);
-  var \u03b4scrutinee345 = e1$proxy4.n;
+  var \u03b4scrutinee352 = e1$proxy4.m;
   var idx$7 = (Bindable_this$11.r.a3.scene | 0);
   while (((Bindable_this$11.H.length | 0) <= idx$7)) {
     Bindable_this$11.H.push(null);
   }
-  Bindable_this$11.H[idx$7] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee345);
+  Bindable_this$11.H[idx$7] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee352);
   Bindable_this$11.G = null;
-  var \u03b4scrutinee361 = e2$proxy4.n;
+  var \u03b4scrutinee368 = e2$proxy4.m;
   var idx$8 = (Bindable_this$11.r.a3.bloom | 0);
   while (((Bindable_this$11.H.length | 0) <= idx$8)) {
     Bindable_this$11.H.push(null);
   }
-  Bindable_this$11.H[idx$8] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee361);
+  Bindable_this$11.H[idx$8] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee368);
   Bindable_this$11.G = null;
-  var \u03b4scrutinee365 = e3$proxy1.n;
+  var \u03b4scrutinee372 = e3$proxy1.m;
   var idx$9 = (Bindable_this$11.r.A.intensity | 0);
   while (((Bindable_this$11.i.length | 0) <= idx$9)) {
     Bindable_this$11.i.push(null);
   }
-  Bindable_this$11.i[idx$9] = \u03b4scrutinee365;
+  Bindable_this$11.i[idx$9] = \u03b4scrutinee372;
   Bindable_this$11.G = null;
-  var \u03b4scrutinee377 = (+e4$proxy1.n);
+  var \u03b4scrutinee385 = (+e4$proxy1.m);
   var idx$10 = (Bindable_this$11.r.A.knee | 0);
-  if (((idx$10 < (Bindable_this$11.i.length | 0)) && (Bindable_this$11.i[idx$10] !== null))) {
-    var BufferBinding_this$9 = Bindable_this$11.i[idx$10];
-    BufferBinding_this$9.F.B(BufferBinding_this$9.j, \u03b4scrutinee377);
-    var $x_23 = BufferBinding_this$9.E.queue;
-    var $x_22 = BufferBinding_this$9.C;
-    var s$proxy7 = BufferBinding_this$9.j;
+  var existing$2 = ((idx$10 < (Bindable_this$11.i.length | 0)) ? Bindable_this$11.i[idx$10] : null);
+  var device$proxy2 = Bindable_this$11.gs.g;
+  if ((existing$2 !== null)) {
+    existing$2.F.B(existing$2.j, \u03b4scrutinee385);
+    var $x_23 = existing$2.E.queue;
+    var $x_22 = existing$2.C;
+    var s$proxy7 = existing$2.j;
     $x_23.writeBuffer($x_22, 0.0, s$proxy7.dv.buffer);
+    var bb$5 = existing$2;
   } else {
     var uv$2$1 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy2 = Bindable_this$11.gs.g;
     var buffer$4 = new ArrayBuffer(4);
     var arr$proxy4 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$4), 1);
     var b$4$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy4.dv, 0), device$proxy2, uv$2$1);
-    b$4$1.F.B(b$4$1.j, \u03b4scrutinee377);
+    b$4$1.F.B(b$4$1.j, \u03b4scrutinee385);
     var $x_25 = b$4$1.E.queue;
     var $x_24 = b$4$1.C;
     var s$proxy8 = b$4$1.j;
     $x_25.writeBuffer($x_24, 0.0, s$proxy8.dv.buffer);
-    while (((Bindable_this$11.i.length | 0) <= idx$10)) {
-      Bindable_this$11.i.push(null);
-    }
-    Bindable_this$11.i[idx$10] = b$4$1;
+    var bb$5 = b$4$1;
   }
+  while (((Bindable_this$11.i.length | 0) <= idx$10)) {
+    Bindable_this$11.i.push(null);
+  }
+  Bindable_this$11.i[idx$10] = bb$5;
   Bindable_this$11.G = null;
-  var \u03b4scrutinee394 = (+e5$proxy1.n);
+  var \u03b4scrutinee409 = (+e5$proxy1.m);
   var idx$11 = (Bindable_this$11.r.A.lift | 0);
-  if (((idx$11 < (Bindable_this$11.i.length | 0)) && (Bindable_this$11.i[idx$11] !== null))) {
-    var BufferBinding_this$13 = Bindable_this$11.i[idx$11];
-    BufferBinding_this$13.F.B(BufferBinding_this$13.j, \u03b4scrutinee394);
-    var $x_27 = BufferBinding_this$13.E.queue;
-    var $x_26 = BufferBinding_this$13.C;
-    var s$proxy9 = BufferBinding_this$13.j;
+  var existing$3 = ((idx$11 < (Bindable_this$11.i.length | 0)) ? Bindable_this$11.i[idx$11] : null);
+  var device$proxy3 = Bindable_this$11.gs.g;
+  if ((existing$3 !== null)) {
+    existing$3.F.B(existing$3.j, \u03b4scrutinee409);
+    var $x_27 = existing$3.E.queue;
+    var $x_26 = existing$3.C;
+    var s$proxy9 = existing$3.j;
     $x_27.writeBuffer($x_26, 0.0, s$proxy9.dv.buffer);
+    var bb$6 = existing$3;
   } else {
     var uv$3 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy3 = Bindable_this$11.gs.g;
     var buffer$5 = new ArrayBuffer(4);
     var arr$proxy5 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$5), 1);
     var b$5$1 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy5.dv, 0), device$proxy3, uv$3);
-    b$5$1.F.B(b$5$1.j, \u03b4scrutinee394);
+    b$5$1.F.B(b$5$1.j, \u03b4scrutinee409);
     var $x_29 = b$5$1.E.queue;
     var $x_28 = b$5$1.C;
     var s$proxy10 = b$5$1.j;
     $x_29.writeBuffer($x_28, 0.0, s$proxy10.dv.buffer);
-    while (((Bindable_this$11.i.length | 0) <= idx$11)) {
-      Bindable_this$11.i.push(null);
-    }
-    Bindable_this$11.i[idx$11] = b$5$1;
+    var bb$6 = b$5$1;
   }
+  while (((Bindable_this$11.i.length | 0) <= idx$11)) {
+    Bindable_this$11.i.push(null);
+  }
+  Bindable_this$11.i[idx$11] = bb$6;
   Bindable_this$11.G = null;
-  var \u03b4scrutinee415 = (+e6$proxy1.n);
+  var \u03b4scrutinee439 = (+e6$proxy1.m);
   var idx$12 = (Bindable_this$11.r.A.falloff | 0);
-  if (((idx$12 < (Bindable_this$11.i.length | 0)) && (Bindable_this$11.i[idx$12] !== null))) {
-    var BufferBinding_this$17 = Bindable_this$11.i[idx$12];
-    BufferBinding_this$17.F.B(BufferBinding_this$17.j, \u03b4scrutinee415);
-    var $x_31 = BufferBinding_this$17.E.queue;
-    var $x_30 = BufferBinding_this$17.C;
-    var s$proxy11 = BufferBinding_this$17.j;
+  var existing$4 = ((idx$12 < (Bindable_this$11.i.length | 0)) ? Bindable_this$11.i[idx$12] : null);
+  var device$proxy4 = Bindable_this$11.gs.g;
+  if ((existing$4 !== null)) {
+    existing$4.F.B(existing$4.j, \u03b4scrutinee439);
+    var $x_31 = existing$4.E.queue;
+    var $x_30 = existing$4.C;
+    var s$proxy11 = existing$4.j;
     $x_31.writeBuffer($x_30, 0.0, s$proxy11.dv.buffer);
+    var bb$7 = existing$4;
   } else {
     var uv$4 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fDouble\uff3f$times$colon$();
-    var device$proxy4 = Bindable_this$11.gs.g;
     var buffer$6 = new ArrayBuffer(4);
     var arr$proxy6 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$6), 1);
     var b$6 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy6.dv, 0), device$proxy4, uv$4);
-    b$6.F.B(b$6.j, \u03b4scrutinee415);
+    b$6.F.B(b$6.j, \u03b4scrutinee439);
     var $x_33 = b$6.E.queue;
     var $x_32 = b$6.C;
     var s$proxy12 = b$6.j;
     $x_33.writeBuffer($x_32, 0.0, s$proxy12.dv.buffer);
-    while (((Bindable_this$11.i.length | 0) <= idx$12)) {
-      Bindable_this$11.i.push(null);
-    }
-    Bindable_this$11.i[idx$12] = b$6;
+    var bb$7 = b$6;
   }
+  while (((Bindable_this$11.i.length | 0) <= idx$12)) {
+    Bindable_this$11.i.push(null);
+  }
+  Bindable_this$11.i[idx$12] = bb$7;
   Bindable_this$11.G = null;
   return new $c_Lsketchlib_utils_bloom_Bloom$$anon$1(bloomP, p.bb((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this$11, (void 0)), p, b, b$2);
 });
@@ -4716,21 +4734,21 @@ $p.mp = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   var e1$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("col", mirrorPanel);
   var e2$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("depth", mirrorPanel.lk(0, (-1), true));
   var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("invVp", uInvVp);
-  var \u03b4scrutinee136 = e1$proxy1.n;
+  var \u03b4scrutinee136 = e1$proxy1.m;
   var idx = (Bindable_this.r.a3.col | 0);
   while (((Bindable_this.H.length | 0) <= idx)) {
     Bindable_this.H.push(null);
   }
   Bindable_this.H[idx] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee136);
   Bindable_this.G = null;
-  var \u03b4scrutinee146 = e2$proxy1.n;
+  var \u03b4scrutinee146 = e2$proxy1.m;
   var idx$2 = (Bindable_this.r.a3.depth | 0);
   while (((Bindable_this.H.length | 0) <= idx$2)) {
     Bindable_this.H.push(null);
   }
   Bindable_this.H[idx$2] = \u03b4scrutinee146;
   Bindable_this.G = null;
-  var \u03b4scrutinee150 = e3$proxy1.n;
+  var \u03b4scrutinee150 = e3$proxy1.m;
   var idx$3 = (Bindable_this.r.A.invVp | 0);
   while (((Bindable_this.i.length | 0) <= idx$3)) {
     Bindable_this.i.push(null);
@@ -4744,7 +4762,7 @@ $p.mp = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
     var mipTarget$1 = ((1 + mi) | 0);
     var Bindable_this$5 = p.aW(downBlurShade, (void 0), mipSource$1, mipTarget$1);
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
-    var \u03b4scrutinee158 = e1$proxy2.n;
+    var \u03b4scrutinee158 = e1$proxy2.m;
     var idx$4 = (Bindable_this$5.r.A.samp | 0);
     while (((Bindable_this$5.i.length | 0) <= idx$4)) {
       Bindable_this$5.i.push(null);
@@ -4859,47 +4877,47 @@ $p.mp = (function(p, camera, shapes, vpName, alphaScale, mirror, blurStrength, s
   var e4$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("visHeight", b$3);
   var e5$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("crop", b$4);
   var e6$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", sampler);
-  var \u03b4scrutinee260 = e1$proxy3.n;
+  var \u03b4scrutinee260 = e1$proxy3.m;
   var idx$5 = (Bindable_this$7.r.a3.col | 0);
   while (((Bindable_this$7.H.length | 0) <= idx$5)) {
     Bindable_this$7.H.push(null);
   }
   Bindable_this$7.H[idx$5] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee260);
   Bindable_this$7.G = null;
-  var \u03b4scrutinee264 = e2$proxy2.n;
+  var \u03b4scrutinee264 = e2$proxy2.m;
   var idx$6 = (Bindable_this$7.r.A.blurStrength | 0);
   while (((Bindable_this$7.i.length | 0) <= idx$6)) {
     Bindable_this$7.i.push(null);
   }
   Bindable_this$7.i[idx$6] = \u03b4scrutinee264;
   Bindable_this$7.G = null;
-  var \u03b4scrutinee276 = e3$proxy2.n;
+  var \u03b4scrutinee277 = e3$proxy2.m;
   var idx$7 = (Bindable_this$7.r.A.stretch | 0);
   while (((Bindable_this$7.i.length | 0) <= idx$7)) {
     Bindable_this$7.i.push(null);
   }
-  Bindable_this$7.i[idx$7] = \u03b4scrutinee276;
+  Bindable_this$7.i[idx$7] = \u03b4scrutinee277;
   Bindable_this$7.G = null;
-  var \u03b4scrutinee292 = e4$proxy1.n;
+  var \u03b4scrutinee294 = e4$proxy1.m;
   var idx$8 = (Bindable_this$7.r.A.visHeight | 0);
   while (((Bindable_this$7.i.length | 0) <= idx$8)) {
     Bindable_this$7.i.push(null);
   }
-  Bindable_this$7.i[idx$8] = \u03b4scrutinee292;
+  Bindable_this$7.i[idx$8] = \u03b4scrutinee294;
   Bindable_this$7.G = null;
-  var \u03b4scrutinee312 = e5$proxy1.n;
+  var \u03b4scrutinee315 = e5$proxy1.m;
   var idx$9 = (Bindable_this$7.r.A.crop | 0);
   while (((Bindable_this$7.i.length | 0) <= idx$9)) {
     Bindable_this$7.i.push(null);
   }
-  Bindable_this$7.i[idx$9] = \u03b4scrutinee312;
+  Bindable_this$7.i[idx$9] = \u03b4scrutinee315;
   Bindable_this$7.G = null;
-  var \u03b4scrutinee334 = e6$proxy1.n;
+  var \u03b4scrutinee337 = e6$proxy1.m;
   var idx$10 = (Bindable_this$7.r.A.samp | 0);
   while (((Bindable_this$7.i.length | 0) <= idx$10)) {
     Bindable_this$7.i.push(null);
   }
-  Bindable_this$7.i[idx$10] = \u03b4scrutinee334;
+  Bindable_this$7.i[idx$10] = \u03b4scrutinee337;
   Bindable_this$7.G = null;
   var layers$2 = [Bindable_this$7];
   return new $c_Lsketchlib_utils_mirror_MirrorReflection$$anon$1(mirrorPanel, p.bb((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), "rgba16float", (void 0), (void 0), (void 0), (void 0), layers$2), camera, blurStrength, stretch, overscan, _blurPanel, b$3, b$4, b, 0.0062499999999999995, b$2, reflMat, uVp, uInvVp, p);
@@ -6047,8 +6065,8 @@ function $m_Ltrivalibs_graphics_math_gpu_vec4$() {
 }
 /** @constructor */
 function $c_Ltrivalibs_graphics_painter_BindPair(name, value) {
-  this.n = null;
-  this.n = value;
+  this.m = null;
+  this.m = value;
 }
 $p = $c_Ltrivalibs_graphics_painter_BindPair.prototype = new $h_O();
 $p.constructor = $c_Ltrivalibs_graphics_painter_BindPair;
@@ -6902,12 +6920,12 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
   var hasPanelBinds = $p_Ltrivalibs_graphics_painter_Painter__hasPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Z($thiz, panel);
   if ((instanceCount === 0)) {
     if (hasPanelBinds) {
-      $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, shape.m, shape.X);
+      $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, shape.n, shape.X);
       $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__sjs_js_Array__V($thiz, panel, shape.N, $thiz.as, $thiz.a8);
       $p_Ltrivalibs_graphics_painter_Painter__setValueBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__V($thiz, pass, shape.N, $thiz.as);
       $p_Ltrivalibs_graphics_painter_Painter__setPanelBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__V($thiz, pass, shape.N, $thiz.a8, null);
     } else {
-      $p_Ltrivalibs_graphics_painter_Painter__setValueBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__V($thiz, pass, shape.N, shape.m);
+      $p_Ltrivalibs_graphics_painter_Painter__setValueBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__V($thiz, pass, shape.N, shape.n);
       $p_Ltrivalibs_graphics_painter_Painter__setPanelBindGroup__Ltrivalibs_graphics_painter_GPURenderPassEncoder__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__Ltrivalibs_graphics_painter_GPUTextureView__V($thiz, pass, shape.N, shape.X, null);
     }
     var b = 0;
@@ -6928,7 +6946,7 @@ function $p_Ltrivalibs_graphics_painter_Painter__renderShapeOnPass__Ltrivalibs_g
     var i = 0;
     while ((i < instanceCount)) {
       var inst = shape.iK.hv[i];
-      $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, shape.m, shape.X);
+      $p_Ltrivalibs_graphics_painter_Painter__copyToWork__sjs_js_Array__sjs_js_Array__V($thiz, shape.n, shape.X);
       if (hasPanelBinds) {
         $p_Ltrivalibs_graphics_painter_Painter__applyPanelRuntimeBindings__Ltrivalibs_graphics_painter_Panel__Ltrivalibs_graphics_painter_Shade__sjs_js_Array__sjs_js_Array__V($thiz, panel, shape.N, $thiz.as, $thiz.a8);
       }
@@ -10480,7 +10498,7 @@ function $c_Ltrivalibs_graphics_painter_Shape(painter, form, shade) {
   this.N = null;
   this.iJ = null;
   this.iI = null;
-  this.m = null;
+  this.n = null;
   this.X = null;
   this.iK = null;
   this.g1 = painter;
@@ -10488,7 +10506,7 @@ function $c_Ltrivalibs_graphics_painter_Shape(painter, form, shade) {
   this.N = shade;
   this.iJ = "none";
   this.iI = null;
-  this.m = [];
+  this.n = [];
   this.X = [];
   this.iK = new $c_Ltrivalibs_graphics_painter_InstanceList(shade, painter);
 }

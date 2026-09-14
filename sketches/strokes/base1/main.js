@@ -1693,23 +1693,23 @@ function $p_Lsketches_strokes_base1_BaseStroke1$package$__repaint$1__Ltrivalibs_
   var clearColor$3 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().eE().f(new $c_T4(0.0, 0.0, 0.0, 1.0));
   canvasPanel$1.d9((void 0), (void 0), clearColor$3, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
   var e1$proxy4 = new $c_Ltrivalibs_graphics_painter_BindPair("src", bgPanel$1);
-  var \u03b4scrutinee286 = e1$proxy4.W;
+  var \u03b4scrutinee292 = e1$proxy4.W;
   var idx = (canvasLayer$1.w.aF.src | 0);
   while (((canvasLayer$1.D.length | 0) <= idx)) {
     canvasLayer$1.D.push(null);
   }
-  canvasLayer$1.D[idx] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee286);
+  canvasLayer$1.D[idx] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee292);
   canvasLayer$1.a3 = null;
   $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(p$1, bgPanel$1);
   $p_Ltrivalibs_graphics_painter_Painter__paintPanel__Ltrivalibs_graphics_painter_Panel__V(p$1, canvasPanel$1);
   canvasPanel$1.d9((void 0), (void 0), null, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0));
   var e1$proxy5 = new $c_Ltrivalibs_graphics_painter_BindPair("src", strokePanel$1);
-  var \u03b4scrutinee294 = e1$proxy5.W;
+  var \u03b4scrutinee300 = e1$proxy5.W;
   var idx$2 = (canvasLayer$1.w.aF.src | 0);
   while (((canvasLayer$1.D.length | 0) <= idx$2)) {
     canvasLayer$1.D.push(null);
   }
-  canvasLayer$1.D[idx$2] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee294);
+  canvasLayer$1.D[idx$2] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee300);
   canvasLayer$1.a3 = null;
   var curve = $m_Lsketches_strokes_base1_Strokes$package$().fZ(width, height);
   var brushSize = (0.14285714285714285 * height);
@@ -2122,16 +2122,17 @@ $p.fk = (function(canvas) {
     Bindable_this.a3 = null;
     var \u03b4scrutinee219 = e2$proxy1.W;
     var idx$2 = (Bindable_this.w.a4.noiseOffset | 0);
-    if (((idx$2 < (Bindable_this.C.length | 0)) && (Bindable_this.C[idx$2] !== null))) {
-      var BufferBinding_this = Bindable_this.C[idx$2];
-      BufferBinding_this.aw.aS(BufferBinding_this.S, \u03b4scrutinee219);
-      var $x_39 = BufferBinding_this.av.queue;
-      var $x_38 = BufferBinding_this.ag;
-      var s$proxy6 = BufferBinding_this.S;
+    var existing = ((idx$2 < (Bindable_this.C.length | 0)) ? Bindable_this.C[idx$2] : null);
+    var device$proxy1 = Bindable_this.dM.e;
+    if ((existing !== null)) {
+      existing.aw.aS(existing.S, \u03b4scrutinee219);
+      var $x_39 = existing.av.queue;
+      var $x_38 = existing.ag;
+      var s$proxy6 = existing.S;
       $x_39.writeBuffer($x_38, 0.0, s$proxy6.dv.buffer);
+      var bb$2 = existing;
     } else {
       var uv$4 = $m_Ltrivalibs_graphics_buffers_UniformValue$given\uff3fUniformValue\uff3fVec2\uff3fVec2Buffer$();
-      var device$proxy1 = Bindable_this.dM.e;
       var buffer$4 = new ArrayBuffer(8);
       var arr$proxy4 = new ($a_Ltrivalibs_bufferdata_BufferView())(new DataView(buffer$4), 1);
       var b$4 = new $c_Ltrivalibs_graphics_buffers_BufferBinding(new ($a_Ltrivalibs_bufferdata_BufferView())(arr$proxy4.dv, 0), device$proxy1, uv$4);
@@ -2140,11 +2141,12 @@ $p.fk = (function(canvas) {
       var $x_40 = b$4.ag;
       var s$proxy7 = b$4.S;
       $x_41.writeBuffer($x_40, 0.0, s$proxy7.dv.buffer);
-      while (((Bindable_this.C.length | 0) <= idx$2)) {
-        Bindable_this.C.push(null);
-      }
-      Bindable_this.C[idx$2] = b$4;
+      var bb$2 = b$4;
     }
+    while (((Bindable_this.C.length | 0) <= idx$2)) {
+      Bindable_this.C.push(null);
+    }
+    Bindable_this.C[idx$2] = bb$2;
     Bindable_this.a3 = null;
     var bgPanel = p$4.d7((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this, (void 0));
     var form = p$4.fz((void 0), (void 0), (void 0), (void 0), "triangle-strip", (void 0));
@@ -2153,42 +2155,42 @@ $p.fk = (function(canvas) {
     var e1$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("size", uRes);
     var e2$proxy2 = new $c_Ltrivalibs_graphics_painter_BindPair("color", uColor);
     var e3$proxy1 = new $c_Ltrivalibs_graphics_painter_BindPair("randOffset", uRandOffset);
-    var \u03b4scrutinee230 = e1$proxy2.W;
+    var \u03b4scrutinee236 = e1$proxy2.W;
     var idx$3 = (Bindable_this$5.K.a4.size | 0);
     while (((Bindable_this$5.J.length | 0) <= idx$3)) {
       Bindable_this$5.J.push(null);
     }
-    Bindable_this$5.J[idx$3] = \u03b4scrutinee230;
-    var \u03b4scrutinee240 = e2$proxy2.W;
+    Bindable_this$5.J[idx$3] = \u03b4scrutinee236;
+    var \u03b4scrutinee246 = e2$proxy2.W;
     var idx$4 = (Bindable_this$5.K.a4.color | 0);
     while (((Bindable_this$5.J.length | 0) <= idx$4)) {
       Bindable_this$5.J.push(null);
     }
-    Bindable_this$5.J[idx$4] = \u03b4scrutinee240;
-    var \u03b4scrutinee254 = e3$proxy1.W;
+    Bindable_this$5.J[idx$4] = \u03b4scrutinee246;
+    var \u03b4scrutinee260 = e3$proxy1.W;
     var idx$5 = (Bindable_this$5.K.a4.randOffset | 0);
     while (((Bindable_this$5.J.length | 0) <= idx$5)) {
       Bindable_this$5.J.push(null);
     }
-    Bindable_this$5.J[idx$5] = \u03b4scrutinee254;
+    Bindable_this$5.J[idx$5] = \u03b4scrutinee260;
     var clearColor$2 = $m_Ltrivalibs_graphics_math_cpu_Vec4$().eE().f(new $c_T4(0.0, 0.0, 0.0, 0.0));
     var strokePanel = p$4.d7((void 0), (void 0), clearColor$2, (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this$5, (void 0), (void 0), (void 0));
     var Bindable_this$9 = p$4.eF(canvasShade, $m_Ltrivalibs_graphics_painter_BlendState$().dL, (void 0), (void 0));
     var e1$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("src", bgPanel);
     var e2$proxy3 = new $c_Ltrivalibs_graphics_painter_BindPair("samp", p$4.g5());
-    var \u03b4scrutinee270 = e1$proxy3.W;
+    var \u03b4scrutinee276 = e1$proxy3.W;
     var idx$6 = (Bindable_this$9.w.aF.src | 0);
     while (((Bindable_this$9.D.length | 0) <= idx$6)) {
       Bindable_this$9.D.push(null);
     }
-    Bindable_this$9.D[idx$6] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee270);
+    Bindable_this$9.D[idx$6] = new ($a_Ltrivalibs_graphics_painter_PanelBinding())(\u03b4scrutinee276);
     Bindable_this$9.a3 = null;
-    var \u03b4scrutinee274 = e2$proxy3.W;
+    var \u03b4scrutinee280 = e2$proxy3.W;
     var idx$7 = (Bindable_this$9.w.a4.samp | 0);
     while (((Bindable_this$9.C.length | 0) <= idx$7)) {
       Bindable_this$9.C.push(null);
     }
-    Bindable_this$9.C[idx$7] = \u03b4scrutinee274;
+    Bindable_this$9.C[idx$7] = \u03b4scrutinee280;
     Bindable_this$9.a3 = null;
     var canvasPanel = p$4.d7((void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), (void 0), Bindable_this$9, (void 0));
     p$4.fT(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((p$5) => ((v1$2, v2$2) => {
