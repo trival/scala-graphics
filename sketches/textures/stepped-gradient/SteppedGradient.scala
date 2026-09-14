@@ -29,7 +29,7 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
 
         Block(
           col := stops(0).rgb,
-          loop(1, count.toI32)(i =>
+          loop(1, count.toI32): i =>
             val prev = LetVec4("prev")
             val cur = LetVec4("cur")
             val t = LetFloat("t")
@@ -37,9 +37,9 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
               prev := stops(i - 1),
               cur := stops(i),
               t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
-              col := col.mix(cur.rgb, t.pow(curves(i - 1))),
-            ),
-          ),
+              col := col.lerp(cur.rgb, t.pow(curves(i - 1))),
+            )
+          ,
           ctx.out.color := vec4(col, 1.0),
         )
 
@@ -67,8 +67,7 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
 
     def randomCurves(count: Int): Arr[Double] =
       val out = Arr[Double]()
-      for _ <- 0 until count do
-        out.push(2.0.pow(randInRange(-3.0, 3.0)))
+      for _ <- 0 until count do out.push(2.0.pow(randInRange(-3.0, 3.0)))
       out
 
     val stopCount = randIntInRange(2, MaxStops + 1)
