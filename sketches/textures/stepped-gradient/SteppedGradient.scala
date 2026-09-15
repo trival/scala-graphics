@@ -28,22 +28,27 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
         val col = VarVec3("col")
 
         Block(
-          col := stops(0).rgb,
+          // col := stops(0).rgb,
+          col := vec3(0),
           loop(1, count.toI32): i =>
             val prev = LetVec4("prev")
             val cur = LetVec4("cur")
-            val t = LetFloat("t")
+            val t = VarFloat("t")
             Block(
               prev := stops(i - 1),
               cur := stops(i),
               t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
-              col := col.lerp(cur.rgb, t.pow(curves(i - 1))),
+              t := t.pow(curves(i - 1)),
+              // col := col.lerp(cur.rgb, t),
+              col := (t === 0.0).select(col, t.lerpIn(vec3(0), vec3(1))),
             )
           ,
           ctx.out.color := vec4(col, 1.0),
         )
 
     // ---- random gradient, rolled once per page load ----
+
+    val foo = 0.5.lerpIn(Vec3(0), Vec3(1))
 
     def stopPositions(count: Int): Arr[Double] =
       val spacing = 1.0 / (count - 1)
@@ -70,7 +75,8 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
       for _ <- 0 until count do out.push(2.0.pow(randInRange(-3.0, 3.0)))
       out
 
-    val stopCount = randIntInRange(2, MaxStops + 1)
+    // val stopCount = randIntInRange(2, MaxStops + 1)
+    val stopCount = 5
 
     val panel = p.panel(
       layer = p
