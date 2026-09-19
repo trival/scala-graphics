@@ -313,7 +313,7 @@ object TextureBaker:
           worldPos: Vec3Expr,
           normal: Vec3Expr,
           uv: Vec2Expr,
-          color: AssignTarget,
+          color: AssignTarget[Vec4Expr],
       ) => Block,
   ): TextureBaker[NoUniforms] =
     val shade =
@@ -354,7 +354,7 @@ object TextureBaker:
           worldPos: Vec3Expr,
           normal: Vec3Expr,
           uv: Vec2Expr,
-          color: AssignTarget,
+          color: AssignTarget[Vec4Expr],
       ) => Block,
   ): Panel =
     TextureBaker(p)(frag)

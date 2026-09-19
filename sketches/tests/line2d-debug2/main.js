@@ -1802,13 +1802,13 @@ $p.e5 = (function(canvas) {
       var AssignTarget_this$2 = ctx.bj.bq("cross");
       var uvY$proxy1 = $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().cb(ctx.ai.am("uv"));
       var width$proxy1 = ctx.ai.am("width");
-      var value$proxy2 = $m_Ltrivalibs_graphics_math_gpu_vec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().dC(uvY$proxy1, width$proxy1), width$proxy1);
+      var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec2$().bk($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().dC(uvY$proxy1, width$proxy1), width$proxy1);
       $m_Ltrivalibs_graphics_math_gpu_expr$package$();
-      var x2 = (((("  " + AssignTarget_this$2.aI) + " = ") + value$proxy2.k) + ";");
+      var x2 = (((("  " + AssignTarget_this$2.aI) + " = ") + value$proxy3.k) + ";");
       var AssignTarget_this$3 = ctx.bj.da;
-      var value$proxy3 = $m_Ltrivalibs_graphics_math_gpu_vec4$().dE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().dv(pos), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().eE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().cb(pos)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x(1.0));
+      var value$proxy5 = $m_Ltrivalibs_graphics_math_gpu_vec4$().dE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().dv(pos), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fNumOps\uff3fFloatExpr$().eE($m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$given\uff3fVec2BaseG\uff3fFloatExpr\uff3fVec2Expr$().cb(pos)), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x(0.0), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x(1.0));
       $m_Ltrivalibs_graphics_math_gpu_expr$package$();
-      var x3 = (((("  " + AssignTarget_this$3.aI) + " = ") + value$proxy3.k) + ";");
+      var x3 = (((("  " + AssignTarget_this$3.aI) + " = ") + value$proxy5.k) + ";");
       var array = [x0, x1, x2, x3];
       var out = [];
       var i = 0;
@@ -1838,9 +1838,9 @@ $p.e5 = (function(canvas) {
     $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().a9 = reg$2;
     try {
       var AssignTarget_this$1 = ctx$2.d8.bq("color");
-      var value$proxy4 = $m_Ltrivalibs_graphics_math_gpu_vec4$().bk($m_Ltrivalibs_graphics_math_gpu_cpu\uff3finterop$package$().eA($m_Lsketches_tests_line2d\uff3fdebug2_Line2dDebug2$package$().cs), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x($m_Lsketches_tests_line2d\uff3fdebug2_Line2dDebug2$package$().cr));
+      var value$proxy7 = $m_Ltrivalibs_graphics_math_gpu_vec4$().bk($m_Ltrivalibs_graphics_math_gpu_cpu\uff3finterop$package$().eA($m_Lsketches_tests_line2d\uff3fdebug2_Line2dDebug2$package$().cs), $m_Ltrivalibs_graphics_math_gpu_float\uff3fexpr$package$().c5().x($m_Lsketches_tests_line2d\uff3fdebug2_Line2dDebug2$package$().cr));
       $m_Ltrivalibs_graphics_math_gpu_expr$package$();
-      var $x_2 = (((("  " + AssignTarget_this$1.aI) + " = ") + value$proxy4.k) + ";");
+      var $x_2 = (((("  " + AssignTarget_this$1.aI) + " = ") + value$proxy7.k) + ";");
     } finally {
       $m_Ltrivalibs_graphics_shader_dsl_FnRegistry$().a9 = prev$2;
     }
@@ -1951,8 +1951,8 @@ $p.e5 = (function(canvas) {
       var w = (+v1$2);
       var h = (+v2$2);
       var x$proxy1 = (w / h);
-      var value$proxy5 = Math.fround(x$proxy1);
-      uAspect.cB.eI(uAspect.bw, value$proxy5);
+      var value$proxy9 = Math.fround(x$proxy1);
+      uAspect.cB.eI(uAspect.bw, value$proxy9);
       var $x_7 = uAspect.cA.queue;
       var $x_6 = uAspect.bx;
       var s$proxy1 = uAspect.bw;

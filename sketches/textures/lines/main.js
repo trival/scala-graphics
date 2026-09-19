@@ -2038,8 +2038,8 @@ $p.dN = (function(canvas) {
     p$3.dS(new $c_sr_AbstractFunction2_$$Lambda$b4228bd32034ae3b2f0c5fc896319aa4b79b55f8(((v1$2, v2$2) => {
       var w = (+v1$2);
       var h = (+v2$2);
-      var value$proxy2 = new $c_Ltrivalibs_graphics_math_cpu_Vec2(w, h);
-      uRes.aL.bg(uRes.L, value$proxy2);
+      var value$proxy3 = new $c_Ltrivalibs_graphics_math_cpu_Vec2(w, h);
+      uRes.aL.bg(uRes.L, value$proxy3);
       var $x_10 = uRes.aK.queue;
       var $x_9 = uRes.ad;
       var s$proxy7 = uRes.L;
@@ -2049,8 +2049,8 @@ $p.dN = (function(canvas) {
     $m_Ltrivalibs_utils_animation_animate$package$().dh(((time$1, p$2) => ((arg1$2) => {
       var tpf = (+arg1$2);
       time$1.a9 = (time$1.a9 + (0.001 * tpf));
-      var value$proxy3 = time$1.a9;
-      b$2.aL.bg(b$2.L, value$proxy3);
+      var value$proxy4 = time$1.a9;
+      b$2.aL.bg(b$2.L, value$proxy4);
       var $x_13 = b$2.aK.queue;
       var $x_12 = b$2.ad;
       var s$proxy8 = b$2.L;
