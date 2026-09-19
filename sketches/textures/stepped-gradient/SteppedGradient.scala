@@ -24,63 +24,65 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
         val stops = ctx.bindings.stops
         val curves = ctx.bindings.curves
         val count = ctx.bindings.count
-        val x = ctx.in.uv.x
-        val col = LetVec3("col")
+        val uv = VarVec2("uv")
+        val col = VarVec3("col")
         val gradientSegment = VarInt("gradientSegment")
         val t = VarFloat("t")
+        val stopPrev = LetFloat("stopPrev")
+        val stopNext = LetFloat("stopNext")
+        val yBorder = LetFloat("yBorder")
+        val bgCol = VarVec3("bgColor")
+        val cell = VarVec2("cell")
+        val y = LetFloat("y")
+        val cross = LetVec2("cross")
 
         Block(
+          uv := ctx.in.uv - 0.5,
+          uv *= Mat2.fromRotation(-0.16).toExpr,
+          uv *= 1.25,
+          uv += 0.5,
+
           gradientSegment := 0,
           loop(1, count.toI32): i =>
             Block(
               gradientSegment := i,
-              breakIf(x < stops(i).w),
+              breakIf(uv.x < stops(i).w),
             ),
 
-          t := ((x - stops(gradientSegment - 1).w) / (stops(
-            gradientSegment,
-          ).w - stops(gradientSegment - 1).w)).clamp01,
+          stopPrev := stops(gradientSegment - 1).w,
+          stopNext := stops(gradientSegment).w,
+
+          t := ((uv.x - stopPrev) / (stopNext - stopPrev)).clamp01,
           t := t.pow(curves(gradientSegment - 1)),
 
-          // col := stops(gradientSegment - 1).rgb.lerp(
-          //   stops(gradientSegment).rgb,
-          //   t.pow(curves(gradientSegment - 1)),
-          // ),
-          col := t.lerpIn(
-            vec3(0),
-            vec3(1),
+          col := t
+            .lerpIn(
+              stops(gradientSegment - 1).rgb * 0.5,
+              stops(gradientSegment).rgb,
+            ),
+
+          yBorder := t.lerpIn(stopPrev, stopNext) * 0.6 - 0.2,
+          y := uv.y,
+
+          uv := ctx.in.uv - 0.5,
+          uv *= Mat2.fromRotation(Pi / 3).toExpr,
+          uv += 0.5,
+
+          cell := uv * 26.0,
+          uv := cell.fract,
+          cell := cell.floor,
+
+          bgCol := vec3(0.2), // + (cell.x + cell.y).rem(2.0) * 0.05,
+          cross := (uv > 0.4) * (uv < 0.6),
+          bgCol := cross.y.max(cross.x).lerpIn(bgCol, vec3(0.8, 0.2, 0.8)),
+
+          col := (y > yBorder).select(
+            col,
+            bgCol,
           ),
+
           ctx.out.color := vec4(col, 1.0),
         )
-
-    // alternative implementation of the shader, using a more functional style
-
-    // val shade = p.layerShade[U]: program =>
-    //   program.frag: ctx =>
-    //     val stops = ctx.bindings.stops
-    //     val curves = ctx.bindings.curves
-    //     val count = ctx.bindings.count
-    //     val x = ctx.in.uv.x
-    //     val col = VarVec3("col")
-
-    //     Block(
-    //       // col := stops(0).rgb,
-    //       col := vec3(0),
-    //       loop(1, count.toI32): i =>
-    //         val prev = LetVec4("prev")
-    //         val cur = LetVec4("cur")
-    //         val t = VarFloat("t")
-    //         Block(
-    //           prev := stops(i - 1),
-    //           cur := stops(i),
-    //           t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
-    //           t := t.pow(curves(i - 1)),
-    //           // col := col.lerp(cur.rgb, t),
-    //           col := (t === 0.0).select(col, t.lerpIn(vec3(0), vec3(1))),
-    //         )
-    //       ,
-    //       ctx.out.color := vec4(col, 1.0),
-    //     )
 
     // ---- random gradient, rolled once per page load ----
 
@@ -108,11 +110,11 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
 
     def randomCurves(count: Int): Arr[Double] =
       val out = Arr[Double]()
-      for _ <- 0 until count do out.push(2.0.pow(randInRange(-3.0, 3.0)))
+      for _ <- 0 until count do out.push(2.0.pow(randInRange(-3.0, -0.1)))
       out
 
-    // val stopCount = randIntInRange(2, MaxStops + 1)
-    val stopCount = 5
+    val stopCount = randIntInRange(3, MaxStops + 1)
+    // val stopCount = 5
 
     val panel = p.panel(
       layer = p
