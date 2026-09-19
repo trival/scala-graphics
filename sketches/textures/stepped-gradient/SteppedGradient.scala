@@ -25,26 +25,62 @@ def steppedGradient(canvas: HTMLCanvasElement): Unit =
         val curves = ctx.bindings.curves
         val count = ctx.bindings.count
         val x = ctx.in.uv.x
-        val col = VarVec3("col")
+        val col = LetVec3("col")
+        val gradientSegment = VarInt("gradientSegment")
+        val t = VarFloat("t")
 
         Block(
-          // col := stops(0).rgb,
-          col := vec3(0),
+          gradientSegment := 0,
           loop(1, count.toI32): i =>
-            val prev = LetVec4("prev")
-            val cur = LetVec4("cur")
-            val t = VarFloat("t")
             Block(
-              prev := stops(i - 1),
-              cur := stops(i),
-              t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
-              t := t.pow(curves(i - 1)),
-              // col := col.lerp(cur.rgb, t),
-              col := (t === 0.0).select(col, t.lerpIn(vec3(0), vec3(1))),
-            )
-          ,
+              gradientSegment := i,
+              breakIf(x < stops(i).w),
+            ),
+
+          t := ((x - stops(gradientSegment - 1).w) / (stops(
+            gradientSegment,
+          ).w - stops(gradientSegment - 1).w)).clamp01,
+          t := t.pow(curves(gradientSegment - 1)),
+
+          // col := stops(gradientSegment - 1).rgb.lerp(
+          //   stops(gradientSegment).rgb,
+          //   t.pow(curves(gradientSegment - 1)),
+          // ),
+          col := t.lerpIn(
+            vec3(0),
+            vec3(1),
+          ),
           ctx.out.color := vec4(col, 1.0),
         )
+
+    // alternative implementation of the shader, using a more functional style
+
+    // val shade = p.layerShade[U]: program =>
+    //   program.frag: ctx =>
+    //     val stops = ctx.bindings.stops
+    //     val curves = ctx.bindings.curves
+    //     val count = ctx.bindings.count
+    //     val x = ctx.in.uv.x
+    //     val col = VarVec3("col")
+
+    //     Block(
+    //       // col := stops(0).rgb,
+    //       col := vec3(0),
+    //       loop(1, count.toI32): i =>
+    //         val prev = LetVec4("prev")
+    //         val cur = LetVec4("cur")
+    //         val t = VarFloat("t")
+    //         Block(
+    //           prev := stops(i - 1),
+    //           cur := stops(i),
+    //           t := ((x - prev.w) / (cur.w - prev.w)).clamp01,
+    //           t := t.pow(curves(i - 1)),
+    //           // col := col.lerp(cur.rgb, t),
+    //           col := (t === 0.0).select(col, t.lerpIn(vec3(0), vec3(1))),
+    //         )
+    //       ,
+    //       ctx.out.color := vec4(col, 1.0),
+    //     )
 
     // ---- random gradient, rolled once per page load ----
 
