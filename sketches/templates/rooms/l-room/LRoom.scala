@@ -1,7 +1,6 @@
 package sketches.templates.rooms.lroom
 
 import org.scalajs.dom.HTMLCanvasElement
-import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -435,14 +434,14 @@ val BeamCrossTexScale = 128.0
 def grime(dist: FloatExpr, wp: Vec3Expr): FloatExpr =
   val p = wp * GrimeNoiseScale
   // How far the dirt creeps up, varying along the line.
-  val creep = Noise.fbm3(p, seed = vec3(41)) * GrimeCreep
+  val creep = p.simplexFbm(octaves = 3, seed = 41.0) * GrimeCreep
   // How dark it gets where it does creep up — varied on its own, and at a
   // different frequency, so the two do not move together and read as one
   // stroke that merely got wider.
   val darkest = lerp(
     GrimeDarken,
     1.0,
-    Noise.fbm3(p * 2.3, seed = vec3(9)).fit1101 * GrimePatchiness,
+    (p * 2.3).simplexFbm(octaves = 3, seed = 9.0).fit1101 * GrimePatchiness,
   )
   lerp(darkest, 1.0, (dist + creep).smoothstep(0.0, GrimeWidth))
 
@@ -481,19 +480,10 @@ def roomNoise(
   lerp(
     0.74, // how dark the field is allowed to get; 1.0 is untouched
     1.0,
-    ((Noise
-      .fbm3(
-        scaledWp * 0.10,
-        freqMul = 3.6,
-        ampMul = 0.12,
-        seed = vec3(120),
-      ) +
-      Noise.fbm3(
-        scaledWp.cross(normal) * 0.15,
-        freqMul = 2.1,
-        ampMul = 0.25,
-        seed = vec3(70),
-      ) * normalWeight * edge)
+    (((scaledWp * 0.10)
+      .simplexFbm(octaves = 3, lacunarity = 3.6, gain = 0.12, seed = 120.0) +
+      (scaledWp.cross(normal) * 0.15)
+        .simplexFbm(octaves = 3, lacunarity = 2.1, gain = 0.25, seed = 70.0) * normalWeight * edge)
       / (1.0 + normalWeight)).fit1101,
   )
 

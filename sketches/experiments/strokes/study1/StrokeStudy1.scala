@@ -3,8 +3,6 @@ package sketches.experiments.strokes.study1
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
 import trivalibs.graphics.shader.lib.line.*
-import trivalibs.graphics.shader.lib.random.Hash
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.*
@@ -105,12 +103,8 @@ val grain: WgslFn[(cellPos: Vec2), Float] =
     val cell = LetVec2("cell")
     val t = LetVec2("t")
 
-    val bottomRow = Hash
-      .hash21(cell.bitsToU32)
-      .lerp(Hash.hash21((cell + vec2(1.0, 0.0)).bitsToU32), t.x)
-    val topRow = Hash
-      .hash21((cell + vec2(0.0, 1.0)).bitsToU32)
-      .lerp(Hash.hash21((cell + vec2(1.0, 1.0)).bitsToU32), t.x)
+    val bottomRow = cell.hash1.lerp((cell + vec2(1.0, 0.0)).hash1, t.x)
+    val topRow = (cell + vec2(0.0, 1.0)).hash1.lerp((cell + vec2(1.0, 1.0)).hash1, t.x)
 
     Block(
       cell := p.cellPos.floor,
@@ -206,7 +200,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
           ctx.out.canvasPos := ctx.in.position,
-          ctx.out.cross := lineCross(ctx.in.uv.y, ctx.in.width),
+          ctx.out.cross := LineCross.pack(ctx.in.uv.y, ctx.in.width),
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>
@@ -217,13 +211,8 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
         val alpha = LetFloat("alpha")
         Block(
           v := ctx.in.cross.lineV,
-          base := Simplex
-            .fbmSimplex2d(
-              vec2(ctx.in.uv.x, v) + bristleOffset.toExpr,
-              4.i,
-              2.2,
-              0.8,
-            )
+          base := (vec2(ctx.in.uv.x, v) + bristleOffset.toExpr)
+            .simplexFbm(octaves = 4, lacunarity = 2.2, gain = 0.8)
             .fit1101,
           //   .fit1101 / 4.0 + 0.08,
           base := base.pow(0.9), // - 0.04,

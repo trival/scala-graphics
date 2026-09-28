@@ -2,10 +2,6 @@ package sketches.textures.pool_tiles
 
 import org.scalajs.dom.HTMLCanvasElement
 import sketchlib.shaders.Uv
-import trivalibs.graphics.shader.lib.color.*
-import trivalibs.graphics.shader.lib.coords.*
-import trivalibs.graphics.shader.lib.random.Hash
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 
@@ -111,20 +107,20 @@ def poolTiles(canvas: HTMLCanvasElement): Unit =
           uv := uv * (50.0 * mix(1.0, 0.6, uv.y) * mix(1.0, 0.85, uv.x)),
 
           // slow rotation + noise drift
-          angle := Simplex.simplexNoise2d(vec2(t * 0.006)) * 2.0,
+          angle := vec2(t * 0.006).simplexNoise() * 2.0,
           uv := rotate(uv, angle),
           uv := uv + vec2(
-            Simplex.simplexNoise2d(vec2(t * 0.01 - 100.0)),
-            Simplex.simplexNoise2d(vec2(t * 0.01 - 200.0)),
+            vec2(t * 0.01 - 100.0).simplexNoise(),
+            vec2(t * 0.01 - 200.0).simplexNoise(),
           ) * 33.0,
 
           idx := uv.floor,
-          rnd := Hash.hash21(idx.bitsToU32),
-          nz := Simplex.simplexNoise2d(idx * 0.2).fit1101,
+          rnd := idx.hash1,
+          nz := (idx * 0.2).simplexNoise().fit1101,
           test := nz * 0.7 + rnd * 0.3,
           tileVal := ((rnd.fit0111 * 0.7).round + idx.x + idx.y * 50.0)
             .rem(3.0),
-          tileRnd := Hash.hash1(tileVal.toU32 + 345.u),
+          tileRnd := (tileVal.toU32 + 345.u).hash,
 
           col := (test > 0.5).select(
             vec3(0.6, 0.1, tileVal / 2.5 + tileRnd * 0.3).hsv2rgb,

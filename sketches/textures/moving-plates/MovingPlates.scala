@@ -3,8 +3,6 @@ package sketches.textures.moving_plates
 import org.scalajs.dom.HTMLCanvasElement
 import sketchlib.shaders.Shapes
 import sketchlib.shaders.Uv
-import trivalibs.graphics.shader.lib.color.*
-import trivalibs.graphics.shader.lib.random.Hash
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 
@@ -280,7 +278,7 @@ def movingPlates(canvas: HTMLCanvasElement): Unit =
           idx := uvScaled.floor + 11.0,
           AllTiles.unroll: tile =>
             Block(
-              tile.r := Hash.hash2(((idx + tile.dir) * 17.123411).bitsToU32),
+              tile.r := ((idx + tile.dir) * 17.123411).hash,
               tile.v := tileVec(tile.r),
             ),
           seedQuadrant,

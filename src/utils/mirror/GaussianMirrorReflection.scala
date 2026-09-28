@@ -256,7 +256,7 @@ object GaussianMirrorReflection:
 
     // `blurStrength` is a percentage of canvas height. The shade multiplies by
     // `res.y` to get the target blur in panel pixels; what is left is the
-    // conversion from that to a first-pass `gaussianBlur9` direction.
+    // conversion from that to a first-pass `Blur.gaussian9` direction.
     //
     // Note this is NOT a divide by the kernel's nominal radius (4.5px, the
     // "9px diameter" at `dir = 1`). That names where the outermost tap sits, and
@@ -290,7 +290,7 @@ object GaussianMirrorReflection:
     val uBlurStrength = p.binding(blurStrength * strengthScale)
     val uRatioVertical = p.binding(blurRatioVertical)
     val uStrengthOffset = p.binding(strengthOffset)
-    // Sub-resolution pixel size of the internal panels — `gaussianBlur9` needs
+    // Sub-resolution pixel size of the internal panels — `Blur.gaussian9` needs
     // it to turn pixel offsets into uv steps. This is the *overscanned* size,
     // margins included, since that is the grid the taps step across. Kept
     // current by `applySizing`.
@@ -371,7 +371,7 @@ object GaussianMirrorReflection:
     // The core of Approach B. Each pass reads the *current* per-pixel distance
     // from alpha and scales its own step by it, so the blur radius varies
     // continuously across the image instead of snapping to a pyramid level.
-    // `gaussianBlur9` has no diameter parameter — the step magnitude rides in
+    // `Blur.gaussian9` has no diameter parameter — the step magnitude rides in
     // the direction vector (the same trick the blur example uses).
     type BlurU = (
         blurStrength: Float,
@@ -401,7 +401,7 @@ object GaussianMirrorReflection:
           // (see the pass budget).
           dist := a * ctx.bindings.blurStrength * ctx.bindings.visHeight
             * ctx.bindings.passScale + ctx.bindings.strengthOffset,
-          ctx.out.color := Blur.gaussianBlur9(
+          ctx.out.color := Blur.gaussian9(
             ctx.textures.tex,
             ctx.bindings.samp,
             uv,

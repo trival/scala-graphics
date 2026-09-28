@@ -1,7 +1,6 @@
 package sketches.gradients
 
 import org.scalajs.dom.HTMLCanvasElement
-import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -105,6 +104,9 @@ def snapScale(wanted: Double): (scale: Double, period: Int) =
   val period = (TileWorld * wanted).round.toInt.max(1)
   (scale = period.toDouble / TileWorld, period = period)
 
+def xzPeriod(period: Int): Vec3Expr =
+  vec3(period.toDouble, 0.0, period.toDouble)
+
 val WorldField = snapScale(0.10)
 val OrientField = snapScale(0.15)
 val CreepField = snapScale(0.9)
@@ -114,23 +116,21 @@ def warp(wp: Vec3Expr): Vec3Expr =
   vec3(wp.x + wp.y * 0.2, wp.y * 0.3, wp.z + wp.y * 0.25)
 
 def worldNoise(wp: Vec3Expr): FloatExpr =
-  Noise.tilingFbm3(
-    warp(wp) * WorldField.scale,
-    WorldField.period,
+  (warp(wp) * WorldField.scale).extendedFbmValue(
     octaves = 4,
-    ampMul = 0.28,
-    seed = vec3(120),
+    gain = 0.28,
+    tilingPeriod = xzPeriod(WorldField.period),
+    seed = 120.0,
   )
 
 val OrientSlice = 1.7
 
 def orientNoise(wp: Vec3Expr, normal: Vec3Expr): FloatExpr =
-  Noise.tilingFbm3(
-    warp(wp) * OrientField.scale + normal * OrientSlice,
-    OrientField.period,
+  (warp(wp) * OrientField.scale + normal * OrientSlice).extendedFbmValue(
     octaves = 3,
-    ampMul = 0.3,
-    seed = vec3(70),
+    gain = 0.3,
+    tilingPeriod = xzPeriod(OrientField.period),
+    seed = 70.0,
   )
 
 val AmbienceLow = 0.80
@@ -158,20 +158,20 @@ val GrimeCreep = 0.02
 val GrimePatchiness = 0.3
 
 def creepField(xz: Vec2Expr): FloatExpr =
-  Noise
-    .tilingFbm3(
-      vec3(xz.x, 0.0, xz.y) * CreepField.scale,
-      CreepField.period,
-      seed = vec3(41),
+  (vec3(xz.x, 0.0, xz.y) * CreepField.scale)
+    .extendedFbmValue(
+      octaves = 3,
+      tilingPeriod = xzPeriod(CreepField.period),
+      seed = 41.0,
     )
     .fit1101
 
 def patchField(xz: Vec2Expr): FloatExpr =
-  Noise
-    .tilingFbm3(
-      vec3(xz.x, 0.0, xz.y) * PatchField.scale,
-      PatchField.period,
-      seed = vec3(9),
+  (vec3(xz.x, 0.0, xz.y) * PatchField.scale)
+    .extendedFbmValue(
+      octaves = 3,
+      tilingPeriod = xzPeriod(PatchField.period),
+      seed = 9.0,
     )
     .fit1101
 
@@ -204,7 +204,7 @@ val ShadowBotFadeMul = 2.7
 val BloomIntensity = 0.004
 
 // ===========================================================================
-// STRUCTURAL — `sketchlib.utils.room`, `sketchlib.shaders.Noise`.
+// STRUCTURAL — `sketchlib.utils.room`.
 // See `sketches/templates/open-space/` for what each piece does and why.
 // ===========================================================================
 

@@ -37,7 +37,7 @@ Confirmed design decisions:
    block of cells (e.g. `4×4`, a constant). All geometries bake their **own**
    tiling texture but through **one shared world-space sampling distribution**
    (a single domain transform `noiseDomain(worldPos)` + a single tiling
-   `period`) using `Psrdnoise.tilingRotNoise3d` — so every tile is mutually
+   `period`) using trivalibs' tiling `Extended.noiseValue3d` (psrdnoise) — so every tile is mutually
    seamless across geometries _and_ seamless when repeat-sampled.
 4. **Endless extent** = **static** geometry, built once, sized so its edges sit
    beyond the fog far distance (`extent ≈ 2·fogEnd + margin`). No per-frame
@@ -72,10 +72,10 @@ scala-cli.) Extract a fog/DOF util only once a second sketch needs it.
   - `src/playground/bloom/Bloom.scala` — bloom util API + blur-pyramid layers.
   - `sketches/rooms/base/Base.scala` — HDR ceiling halo strips, mirror+bloom
     wiring, camera/input loop.
-  - `trivalibs/src/graphics/shader/lib/blur.scala` — `boxBlur2dAuto` /
-    `tentBlur2dAuto`.
-  - `trivalibs/src/graphics/shader/lib/random/psrdnoise.scala` —
-    `tilingRotNoise3d(pos, period, normRot)` / `tilingNoise3d(pos, period)`.
+  - `trivalibs/src/graphics/shader/lib/blur.scala` — `Blur.box2d` /
+    `Blur.tent2d` (without `res`).
+  - `trivalibs/src/graphics/shader/lib/noise/extended.scala` —
+    `Extended.noiseValue3d(pos, tilingPeriod, rot)` (psrdnoise).
 
 ## Staged execution order (verify-as-you-go)
 

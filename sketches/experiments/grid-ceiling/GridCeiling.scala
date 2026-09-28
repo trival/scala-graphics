@@ -7,7 +7,7 @@ import trivalibs.dev.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.scene.*
 import trivalibs.graphics.shader.lib.blur.Blur
-import trivalibs.graphics.shader.lib.random.Psrdnoise
+import trivalibs.graphics.shader.lib.noise.Extended
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 
@@ -253,9 +253,10 @@ def roomsGridCeiling(canvas: HTMLCanvasElement): Unit =
           var o = 0
           while o < FbmOctaves do
             val pd = (domainPeriod * freq).toDouble
-            acc = acc + Psrdnoise
-              .tilingNoise3d(domainPos * freq.toDouble, vec3(pd, 0.0, pd))
-              .x * amp
+            acc = acc + Extended.noiseValue3d(
+              domainPos * freq.toDouble,
+              tilingPeriod = vec3(pd, 0.0, pd),
+            ) * amp
             totalAmp += amp
             freq *= 2
             amp *= FbmGain
@@ -602,7 +603,7 @@ def roomsGridCeiling(canvas: HTMLCanvasElement): Unit =
       type DownP = (tex: FragmentPanel)
       val downBlurShade = p.layerShade[DownU, DownP]: program =>
         program.frag: ctx =>
-          ctx.out.color := Blur.tentBlur2dAuto(
+          ctx.out.color := Blur.tent2d(
             ctx.textures.tex,
             ctx.bindings.samp,
             ctx.in.uv,

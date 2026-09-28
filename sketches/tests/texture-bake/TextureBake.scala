@@ -1,7 +1,6 @@
 package sketches.tests.texture_bake
 
 import org.scalajs.dom.HTMLCanvasElement
-import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import trivalibs.graphics.geometry.{*, given}
 import trivalibs.graphics.scene.PerspectiveCamera
@@ -94,7 +93,7 @@ def textureBake(canvas: HTMLCanvasElement): Unit =
       val r = ctx.bindings.radius
       Block(
         // FBM 3D noise — the expensive per-pixel result worth caching.
-        n := Noise.fbm3(ctx.in.worldPos * NoiseScale, seed = vec3(70)),
+        n := (ctx.in.worldPos * NoiseScale).simplexFbm(octaves = 3, seed = 70.0),
         // Tighten the noise into a visible band so the pattern reads clearly.
         // Tint each face by its orientation: normal (-1..1) → color (0..1).
         base := ctx.in.normal.fit1101 * lerp(0.45, 1.0, n.fit1101),

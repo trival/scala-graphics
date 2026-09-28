@@ -175,7 +175,7 @@ object Bloom:
 
     val downsampleShade = p.layerShade[BlurU, BloomPanels]: program =>
       program.frag: ctx =>
-        ctx.out.color := Blur.boxBlur2dAuto(
+        ctx.out.color := Blur.box2d(
           ctx.textures.tex,
           ctx.bindings.samp,
           ctx.in.uv,
@@ -184,7 +184,7 @@ object Bloom:
 
     val upsampleShade = p.layerShade[BlurU, BloomPanels]: program =>
       program.frag: ctx =>
-        ctx.out.color := Blur.tentBlur2dAuto(
+        ctx.out.color := Blur.tent2d(
           ctx.textures.tex,
           ctx.bindings.samp,
           ctx.in.uv,

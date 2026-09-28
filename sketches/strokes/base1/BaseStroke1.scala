@@ -2,9 +2,6 @@ package sketches.strokes.base1
 
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
-import trivalibs.graphics.shader.lib.color.*
-import trivalibs.graphics.shader.lib.random.Hash
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.rand
@@ -73,7 +70,7 @@ val StrokeWeaveShade = 0.78
 def canvasWeave(fragCoord: Vec2Expr): FloatExpr =
   val threads =
     (fragCoord.x * 0.85).sin.fit1101 * (fragCoord.y * 0.85).sin.fit1101
-  (Hash.hash21(fragCoord.bitsToU32) + threads * 0.6) / 1.6
+  (fragCoord.hash1 + threads * 0.6) / 1.6
 
 @JSExportTopLevel("sketch")
 def baseStroke1(canvas: HTMLCanvasElement): Unit =
@@ -116,13 +113,9 @@ def baseStroke1(canvas: HTMLCanvasElement): Unit =
         Block(
           canvasTexture := canvasWeave(ctx.fragCoord.xy).lerpIn(0.81, 1.0),
           color :=
-            Simplex
-              .fbmSimplex2d(
-                (ctx.fragCoord.xy + ctx.bindings.noiseOffset) * 0.001,
-                4.i,
-                3.5,
-                0.22,
-              )
+            ((ctx.fragCoord.xy + ctx.bindings.noiseOffset) * 0.001)
+              .simplexFbm(octaves = 4, lacunarity = 3.5, gain = 0.22)
+              .*(1.279)
               .fit1101,
           edge := color * canvasTexture,
           col2hsvExpr := col2.toExpr.rgb2hsv,
@@ -158,12 +151,9 @@ def baseStroke1(canvas: HTMLCanvasElement): Unit =
         val weave = LetFloat("weave")
         val alpha = LetFloat("alpha")
         Block(
-          // The bristle texture: fbm simplex over the stroke's own uv, offset
-          // per pass so the two strokes don't share a pattern. /4 keeps it well
-          // under the +0.3 base, so it modulates coverage rather than driving
-          // it.
-          base := Simplex
-            .fbmSimplex2d(ctx.in.uv + ctx.bindings.randOffset, 4.i, 2.2, 0.8)
+          base := (ctx.in.uv + ctx.bindings.randOffset)
+            .simplexFbm(octaves = 4, lacunarity = 2.2, gain = 0.8)
+            .*(2.952)
             .fit1101 / 4.0 + 0.08,
           base := base.pow(0.9) - 0.04,
 

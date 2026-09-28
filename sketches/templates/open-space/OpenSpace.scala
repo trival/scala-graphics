@@ -1,7 +1,6 @@
 package sketches.templates.openspace
 
 import org.scalajs.dom.HTMLCanvasElement
-import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -70,8 +69,8 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 //                      anything alone.
 //   STRUCTURAL ....... a pointer. The plan types, the wall geometry, the camera
 //                      clamp, the distance fields and the hanging mechanism all
-//                      live in `sketchlib.utils.room` (`src/utils/room/`), and
-//                      the periodic FBM in `sketchlib.shaders.Noise`.
+//                      live in `sketchlib.utils.room` (`src/utils/room/`); the
+//                      periodic fbm is trivalibs' `p.extendedFbmValue`.
 //   CURATION ......... crude stand-in content. Not a layout to imitate.
 //   `main` ........... bakes, shades, scene assembly, camera.
 //
@@ -175,11 +174,12 @@ val WallHeight = 4.5
 // TILING IS A RESPONSE TO SIZE, NOT A STYLE, and mixing the two costs nothing
 // because both read the same function of world position.
 //
-// The tile has to be repeatable, which is what forces the periodic FBM
-// (`Noise.tilingFbm3`) instead of the room templates' `Noise.fbm3`, and imposes
-// the three rules in its scaladoc — integer domain periods, lacunarity fixed at
-// 2, and only Y may shear into X or Z. `warp` below is written to that last
-// rule; read it before changing it.
+// The tile has to be repeatable, which is what forces the periodic fbm
+// (`p.extendedFbmValue(tilingPeriod = …)`, trivalibs' psrdnoise family) instead
+// of the room templates' `p.simplexFbm`, and imposes three rules: integer
+// domain periods (≤ 289), a whole-number lacunarity (the default 2), and only
+// Y may shear into X or Z. `warp` below is written to that last rule; read it
+// before changing it.
 
 /** The shared world period. Bigger ⇒ less obvious repetition and a bigger bake.
   * At 32 m and 48 texels/m the tile is 1536², and about a dozen periods span
@@ -217,6 +217,12 @@ def snapScale(wanted: Double): (scale: Double, period: Int) =
   val period = (TileWorld * wanted).round.toInt.max(1)
   (scale = period.toDouble / TileWorld, period = period)
 
+/** The `tilingPeriod` of a field that tiles in X and Z and runs free in Y —
+  * the zero component leaves Y unwrapped, so walls standing on the ground read
+  * the same continuous volume.
+  */
+def xzPeriod(period: Int): Vec3Expr = vec3(period.toDouble, 0.0, period.toDouble)
+
 /** The broad, low-frequency field: the one that gives the space its tone. */
 val WorldField = snapScale(0.10)
 
@@ -249,12 +255,11 @@ def warp(wp: Vec3Expr): Vec3Expr =
 
 /** The broad field, `[-1, 1]`. */
 def worldNoise(wp: Vec3Expr): FloatExpr =
-  Noise.tilingFbm3(
-    warp(wp) * WorldField.scale,
-    WorldField.period,
+  (warp(wp) * WorldField.scale).extendedFbmValue(
     octaves = 4,
-    ampMul = 0.28,
-    seed = vec3(120),
+    gain = 0.28,
+    tilingPeriod = xzPeriod(WorldField.period),
+    seed = 120.0,
   )
 
 /** The orientation-varied field, `[-1, 1]` — what gives each face its own look,
@@ -273,12 +278,11 @@ def worldNoise(wp: Vec3Expr): FloatExpr =
   */
 val OrientSlice = 1.7
 def orientNoise(wp: Vec3Expr, normal: Vec3Expr): FloatExpr =
-  Noise.tilingFbm3(
-    warp(wp) * OrientField.scale + normal * OrientSlice,
-    OrientField.period,
+  (warp(wp) * OrientField.scale + normal * OrientSlice).extendedFbmValue(
     octaves = 3,
-    ampMul = 0.3,
-    seed = vec3(70),
+    gain = 0.3,
+    tilingPeriod = xzPeriod(OrientField.period),
+    seed = 70.0,
   )
 
 /** How dark the ambience field is allowed to get; 1.0 is untouched. Tighter
@@ -382,21 +386,13 @@ val GrimePatchiness = 0.3
   * be. Flattening the field to the plane removes the second source of drift.
   */
 def creepField(xz: Vec2Expr): FloatExpr =
-  Noise
-    .tilingFbm3(
-      vec3(xz.x, 0.0, xz.y) * CreepField.scale,
-      CreepField.period,
-      seed = vec3(41),
-    )
+  (vec3(xz.x, 0.0, xz.y) * CreepField.scale)
+    .extendedFbmValue(octaves = 3, tilingPeriod = xzPeriod(CreepField.period), seed = 41.0)
     .fit1101
 
 def patchField(xz: Vec2Expr): FloatExpr =
-  Noise
-    .tilingFbm3(
-      vec3(xz.x, 0.0, xz.y) * PatchField.scale,
-      PatchField.period,
-      seed = vec3(9),
-    )
+  (vec3(xz.x, 0.0, xz.y) * PatchField.scale)
+    .extendedFbmValue(octaves = 3, tilingPeriod = xzPeriod(PatchField.period), seed = 9.0)
     .fit1101
 
 /** The grime line itself, given a distance to the junction and the two fields
@@ -487,8 +483,8 @@ val BloomIntensity = 0.004
 // STRUCTURAL — the plan and everything derived from it.
 //
 // All of it lives in `src/utils/room/` (`sketchlib.utils.room`), shared with
-// the room templates, plus the periodic FBM in `src/shaders/Noise.scala`. It is
-// there rather than here because none of it makes a LOOK decision.
+// the room templates; the periodic fbm is trivalibs' `p.extendedFbmValue`. It
+// is there rather than here because none of it makes a LOOK decision.
 //
 //   Plan.scala      Facing / Ring / Footprint / Edge / Boundary
 //   Confine.scala   nearest / contains / confine / clearOf — the camera clamp
@@ -496,7 +492,6 @@ val BloomIntensity = 0.004
 //   Surfaces.scala  planeQuad — the ground plate, and the tile bake's own quad
 //   Fields.scala    edgeSetDist / cornerDist / edgeFade shader emitters
 //   Hanging.scala   PaintingSpec / Painting / Hanging — hang + shadow composite
-//   Noise.scala     fbm3 and its tiling twin tilingFbm3
 //
 // `Raster.scala` is the one room module this template does not touch: there is
 // no ceiling to put a beam raster on.

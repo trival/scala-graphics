@@ -2,7 +2,6 @@ package sketches.strokes.tile_strokes
 
 import org.scalajs.dom.HTMLCanvasElement
 import trivalibs.graphics.geometry.*
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 import trivalibs.utils.random.*
@@ -152,13 +151,8 @@ def tileStrokes(canvas: HTMLCanvasElement): Unit =
           // The bristle texture: fbm simplex over the stroke's own uv, offset
           // per tile so no two strokes share a pattern. /4 keeps it well under
           // the +0.3 base, so it modulates coverage rather than driving it.
-          base := Simplex
-            .fbmSimplex2d(
-              ctx.in.uv * 1.0 + ctx.bindings.randOffset,
-              4.i,
-              2.2,
-              0.8,
-            )
+          base := (ctx.in.uv * 1.0 + ctx.bindings.randOffset)
+            .simplexFbm(octaves = 4, lacunarity = 2.2, gain = 0.8)
             .fit1101 / 4.0 + 0.08,
           base := base.pow(0.9) - 0.04,
 

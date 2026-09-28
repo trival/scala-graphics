@@ -1,7 +1,6 @@
 package sketches.rooms.base
 
 import org.scalajs.dom.HTMLCanvasElement
-import sketchlib.shaders.Noise
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.MirrorReflection
@@ -113,19 +112,10 @@ def roomsBase(canvas: HTMLCanvasElement): Unit =
       lerp(
         0.68,
         1.0,
-        ((Noise
-          .fbm3(
-            scaledWp * 0.15,
-            freqMul = 3.6,
-            ampMul = 0.12,
-            seed = vec3(140),
-          ) +
-          Noise.fbm3(
-            scaledWp.cross(normal) * 0.2,
-            freqMul = 2.1,
-            ampMul = 0.25,
-            seed = vec3(70),
-          ) * 0.3)
+        (((scaledWp * 0.15)
+          .simplexFbm(octaves = 3, lacunarity = 3.6, gain = 0.12, seed = 140.0) +
+          (scaledWp.cross(normal) * 0.2)
+            .simplexFbm(octaves = 3, lacunarity = 2.1, gain = 0.25, seed = 70.0) * 0.3)
           / 1.3).fit1101,
       )
 

@@ -39,14 +39,16 @@ uniquely-baked one in the same scene costs nothing, and a copy of this template
 that adds a small object should bake it uniquely rather than tiling it out of
 consistency.
 
-The mechanism is `Noise.tilingFbm3` (`src/shaders/Noise.scala`, added for this
-template), which is `Noise.fbm3`'s periodic twin over psrdnoise. Its three rules
-are in its scaladoc and all three are live in this sketch:
+The mechanism is the periodic fbm over psrdnoise: trivalibs'
+`p.extendedFbmValue(tilingPeriod = …)` (it replaced `Noise.tilingFbm3`, which
+was added to `src/shaders/Noise.scala` for this template). Its three rules are
+in its scaladoc and all three are live in this sketch:
 
 - **integer domain periods** — hence `snapScale`, which moves the feature size
   so the tiling stays exact and hands back both halves;
-- **lacunarity fixed at 2** — so the room templates' `freqMul = 3.6` has no
-  equivalent, and the fields here are re-tuned with more octaves instead;
+- **whole-number lacunarity** (the default 2) — so the room templates'
+  `lacunarity = 3.6` has no equivalent, and the fields here are re-tuned with
+  more octaves instead;
 - **only Y may shear into X or Z** — hence `warp`, which is the room templates'
   anisotropic warp with the `wp.z * 0.8` term removed. Scaling Z on its way in
   would mean the tile no longer holds a whole number of periods along Z, and the

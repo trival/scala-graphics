@@ -279,7 +279,9 @@ import `sketchlib.*` with no build change. Two subnamespaces:
   `src/utils/bake/`).
 - `sketchlib.shaders.*` (`src/shaders/`) — reusable shader-DSL blocks:
   build-time helpers that assemble WGSL expressions from trivalibs primitives
-  (e.g. `Noise.fbm3`).
+  (e.g. `Uv.aspectPreserving`, `Shapes.roundedRect`). Noise is not here: it
+  lives in trivalibs (`p.simplexFbm`, `p.extendedFbmValue(tilingPeriod = …)`,
+  `p.worleyNoise` — shared CPU/GPU extensions from the painter prelude).
 
 Unlike one-off sketch code, these are **shared infrastructure compiled into many
 sketches**, so they follow the same **bundle-size discipline as the trivalibs

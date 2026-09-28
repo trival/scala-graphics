@@ -1,6 +1,7 @@
 package sketches.strokes.tile_strokes
 
 import trivalibs.graphics.geometry.*
+import trivalibs.graphics.lib.color.*
 import trivalibs.graphics.math.cpu.{*, given}
 import trivalibs.prelude.core.{*, given}
 import trivalibs.utils.random.*

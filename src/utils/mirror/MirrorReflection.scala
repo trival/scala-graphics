@@ -291,7 +291,7 @@ object MirrorReflection:
     val maxRadius = (mipLevels - 1).toDouble.exp2 - 1.0
     // `blurStrength` is the *perceived* blur (σ) as a percentage of canvas
     // height; the shade wants a nominal mip radius. The tent chain blurs wider
-    // than the radius it is asked for — each `tentBlur2dAuto` step taps ±4
+    // than the radius it is asked for — each `Blur.tent2d` step taps ±4
     // source texels, so the levels accumulate to roughly 1.6× the nominal radius
     // — hence the divide. With it, `blurStrength` denotes the same physical
     // spread here as in `GaussianMirrorReflection`, so the two are swappable at
@@ -379,7 +379,7 @@ object MirrorReflection:
     type DownP = (tex: FragmentPanel)
     val downBlurShade = p.layerShade[DownU, DownP]: program =>
       program.frag: ctx =>
-        ctx.out.color := Blur.tentBlur2dAuto(
+        ctx.out.color := Blur.tent2d(
           ctx.textures.tex,
           ctx.bindings.samp,
           ctx.in.uv,

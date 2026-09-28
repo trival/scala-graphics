@@ -155,7 +155,7 @@ def line2dDebug(canvas: HTMLCanvasElement): Unit =
           ).fit0111,
           ctx.out.uv := ctx.in.uv,
           ctx.out.localUv := ctx.in.localUv,
-          ctx.out.cross := lineCross(ctx.in.uv.y, ctx.in.width),
+          ctx.out.cross := LineCross.pack(ctx.in.uv.y, ctx.in.width),
           ctx.out.position := vec4(pos.x, -pos.y, 0.0, 1.0),
         )
       program.frag: ctx =>

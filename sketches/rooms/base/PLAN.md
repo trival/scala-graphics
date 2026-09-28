@@ -235,7 +235,7 @@ Now Steps 1–3 plug into a full HDR pipeline.
 - Bloom pipeline & shades (to extract): `sketches/post/bloom/Bloom.scala`.
 - Logarithmic blur loop: `trivalibs/examples/blur/Blur.scala:131-154`.
 - Blur fn lib: `trivalibs/src/graphics/shader/lib/blur.scala`
-  (`gaussianBlur9`).
+  (`Blur.gaussian9`).
 - Box geometry / face helpers: as already used (`Box`,
   `Quad.fromDimensionsCenter`).
 - Mirror-scene strategy (old TS): Y-axis flip matrix + alpha-encodes-distance

@@ -65,7 +65,7 @@ helpful. The entire sketch now lives in a single flat file,
 - **Shared infra comes from `sketchlib.utils.*`** (not a local block):
   `TextureBaker` (`utils.bake`), `Bloom` (`utils.bloom`),
   `GaussianMirrorReflection` / `MirrorReflection` (`utils.mirror`), and
-  `Noise.fbm3` (`sketchlib.shaders`).
+  `p.simplexFbm` (trivalibs; formerly `sketchlib.shaders.Noise.fbm3`).
 
 This is deliberate: we keep everything explicit and local until a concrete need
 for reuse forces a specific abstraction out (see “Reuse strategy”).

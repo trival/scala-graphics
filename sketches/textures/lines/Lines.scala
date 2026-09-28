@@ -1,8 +1,6 @@
 package sketches.textures.lines
 
 import org.scalajs.dom.HTMLCanvasElement
-import trivalibs.graphics.shader.lib.random.Hash
-import trivalibs.graphics.shader.lib.random.Simplex
 import trivalibs.prelude.core.{*, given}
 import trivalibs.prelude.painter.{*, given}
 
@@ -122,18 +120,16 @@ def lines(canvas: HTMLCanvasElement): Unit =
           val segment = lineSeg + segOff
           val x = lineX + lineXOff
           val noise =
-            Simplex.simplexNoise3d(
-              vec3(segment, uvY + time * 0.1, time * 0.07),
-            ) * 1.3
+            vec3(segment, uvY + time * 0.1, time * 0.07).simplexNoise() * 1.3
           val intensity = (x + noise).abs.smoothstep(0.7, 0.6)
           val color = vec3(
-            Hash.hash1((segment * 3.0 * LineCount).toU32),
-            Hash.hash1((segment * 7.0 * LineCount).toU32),
-            Hash.hash1((segment * 11.0 * LineCount).toU32),
+            (segment * 3.0 * LineCount).toU32.hash,
+            (segment * 7.0 * LineCount).toU32.hash,
+            (segment * 11.0 * LineCount).toU32.hash,
           )
           (
             v = vec4(color, intensity),
-            h = Hash.hash1((segment * LineCount).toU32),
+            h = (segment * LineCount).toU32.hash,
           )
 
         def compareSwapByHeight(a: Int, b: Int): Block =
