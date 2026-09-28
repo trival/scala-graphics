@@ -2,9 +2,10 @@
 
 This repo is the playground for experimenting with the [trivalibs](trivalibs/)
 Scala.js WebGPU library. The library itself lives in the `trivalibs/` submodule
-(sources, examples, tests). This outer repo is for **sketches** — ad-hoc
-experiments built against trivalibs. Once a sketch matures into a
-feature-documenting example, it migrates over into `trivalibs/examples/`.
+(sources, examples, tests). This outer repo is for **sketches** — complete
+pieces that stand on their own, from quick experiments to finished works, built
+against trivalibs. They are a different thing from `trivalibs/examples/`, which
+are reduced renderings demonstrating a single painter feature in isolation.
 
 > **Work in progress** — both the library and the sketch workflow are beta.
 
@@ -102,7 +103,8 @@ Run `sketch:watch` and `dev` side-by-side in two terminals to iterate.
    </script>
    ```
 
-4. (Optional) Add a card to `sketches/index.html`.
+4. Add an entry to `sketches/index.html`, under the category matching its
+   folder. Every sketch gets one — it is how a sketch is reached at all.
 5. `bun run sketch <category>/my-sketch` to build.
 
 The same `project.scala` covers Metals's view of all sketches plus the library

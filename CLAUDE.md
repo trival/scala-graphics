@@ -5,9 +5,9 @@ code in this repository.
 
 This repo is the **sketch / experiment playground**. It is a consumer of the
 `trivalibs` library (included as a git submodule under `trivalibs/`). The
-graphics / math / shader-DSL / painter code lives in trivalibs. When an
-experiment evolves into a feature-documenting example, it migrates over to
-`trivalibs/examples/`.
+graphics / math / shader-DSL / painter code lives in trivalibs. Sketches stand
+on their own and are more complex than `trivalibs/examples/`, which are reduced
+renderings demonstrating a single painter feature in isolation.
 
 For library development, optimization, and the full architecture reference, see
 `trivalibs/CLAUDE.md`.
