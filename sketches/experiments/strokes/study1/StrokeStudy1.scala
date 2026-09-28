@@ -224,17 +224,18 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
               2.2,
               0.8,
             )
-            .fit1101 / 4.0 + 0.08,
-          base := base.pow(0.9) - 0.04,
+            .fit1101,
+          //   .fit1101 / 4.0 + 0.08,
+          base := base.pow(0.9), // - 0.04,
           edgeFade :=
             ctx.in.localUv.x.fit0111.abs.pow(13.0) +
               v.fit0111.abs.pow(10.0),
           weave := canvasWeave(ctx.in.canvasPos),
-          alpha := (base - edgeFade + 0.3).clamp01 *
-            ctx.in.uv.x.smoothstep(1.0, 0.87) *
-            weave.lerpIn(StrokeWeaveBite, 1.0),
+          alpha := (base - edgeFade).clamp01 *
+            ctx.in.uv.x.smoothstep(1.0, 0.87), // *
+          // weave.lerpIn(StrokeWeaveBite, 1.0),
           ctx.out.color := vec4(
-            strokeCol.toExpr * weave.lerpIn(StrokeWeaveShade, 1.0),
+            strokeCol.toExpr, // * weave.lerpIn(StrokeWeaveShade, 1.0),
             alpha,
           ),
         )
@@ -271,7 +272,7 @@ def strokeStudy1(canvas: HTMLCanvasElement): Unit =
     )
 
     val canvasPanel = p.panel(layers =
-      Arr[AnyLayer](
+      Arr(
         p.layer(bgShade).bind("aspect" := uAspect),
         p.layer(canvasShade, blendState = BlendState.Alpha)
           .bind("src" := strokePanel, "samp" := p.samplerLinear),
