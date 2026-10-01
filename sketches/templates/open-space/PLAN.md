@@ -230,7 +230,7 @@ same side of it; `l-room` has one, `hex-partitions` has eight.
   `faceUp`, and that formula has to move with it.
 - **The grime line is the wall's only contact cue.** Standing on a mirror under
   an even sky, an object with no contact darkening floats. If the wall ever
-  looks like it is hovering, `GrimeWidth` / `GrimeDarken` are the knobs — not a
+  looks like it is hovering, `width` / `darken` in `grime` are the knobs — not a
   cast shadow, which would introduce the light position this space does not
   have.
 - **The dissolve goes last, over the composited ground.** Fading the base alone

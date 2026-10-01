@@ -1,6 +1,7 @@
 package sketches.gradients
 
 import org.scalajs.dom.HTMLCanvasElement
+import sketchlib.shaders.room.*
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -152,11 +153,6 @@ val Fades: EdgeFades = (
 
 // ---- The grime line ---------------------------------------------------------
 
-val GrimeWidth = 0.06
-val GrimeDarken = 0.85
-val GrimeCreep = 0.02
-val GrimePatchiness = 0.3
-
 def creepField(xz: Vec2Expr): FloatExpr =
   (vec3(xz.x, 0.0, xz.y) * CreepField.scale)
     .extendedFbmValue(
@@ -176,11 +172,14 @@ def patchField(xz: Vec2Expr): FloatExpr =
     .fit1101
 
 def grime(dist: FloatExpr, creep: FloatExpr, patch: FloatExpr): FloatExpr =
-  val darkest = lerp(GrimeDarken, 1.0, patch * GrimePatchiness)
-  lerp(
-    darkest,
-    1.0,
-    (dist + creep.fit0111 * GrimeCreep).smoothstep(0.0, GrimeWidth),
+  grimeExp(
+    dist,
+    creep = creep.fit0111,
+    patch = patch,
+    width = 0.06,
+    darken = 0.85,
+    creepAmount = 0.02,
+    patchiness = 0.3,
   )
 
 // ---- Surface tints ----------------------------------------------------------

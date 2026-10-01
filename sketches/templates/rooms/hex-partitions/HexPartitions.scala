@@ -1,6 +1,7 @@
 package sketches.templates.rooms.hexpartitions
 
 import org.scalajs.dom.HTMLCanvasElement
+import sketchlib.shaders.room.*
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -411,38 +412,6 @@ val Fades: EdgeFades = (
   */
 val BeamEdgeFade = 0.08
 
-/** The floor grime line: dirt collecting where wall meets floor. Its own width,
-  * deliberately separate from the fades above — they are unrelated quantities
-  * that `canvases` happened to give the same number.
-  */
-val GrimeWidth = 0.06
-val GrimeDarken = 0.91 // brightness multiplier right at the junction
-
-/** How far the grime line wanders in and out along the junction, in meters, and
-  * how much its darkness varies independently of that (0 = none, 1 = it fades
-  * out entirely in the lightest patches).
-  *
-  * The creep is the one that matters: a band of constant width reads as painted
-  * on, an irregular one reads as accumulated. The patchiness stops the result
-  * looking like a single wobbly stroke.
-  *
-  * **Bounded by the bake resolution, not by taste.** Floor and walls bake at
-  * `AmbienceTexScale` texels per meter, so at 64 that is 1.56 cm per texel and
-  * `GrimeWidth` is about 5 texels across. A creep much beyond ~0.02 m has
-  * nothing to land on, and detail finer than the scale below will crawl rather
-  * than resolve. Wanting genuinely fine speckle means a separate,
-  * higher-resolution grime input — not raising the ambience scale, which is
-  * deliberately cheap.
-  */
-val GrimeCreep = 0.03
-val GrimePatchiness = 0.3
-
-/** Feature size of the grime noise, as an inverse scale on world position —
-  * lower is larger. At 0.9 the features run roughly half a meter, which is
-  * about how dirt actually pools and is also all the bake can resolve.
-  */
-val GrimeNoiseScale = 0.9
-
 // Surface tints. Authored as CPU vectors, lifted with `vec3(…)` in the bakers.
 val FloorTint = Vec3(0.80, 0.78, 0.75)
 val CeilTint = Vec3(0.87, 0.87, 0.86)
@@ -526,10 +495,10 @@ val BeamCrossTexScale = 128.0
 // your head before you could change anything. Floor, walls and beams all bake
 // against it, so a change here re-tones the whole room at once.
 
-/** Dirt collecting where wall meets floor — darkest at the junction, back to
-  * full brightness `GrimeWidth` away. This is the ONE darkening in the room,
-  * and it is grime, not light: that is why it belongs only at the floor line
-  * and generalizes to no other edge.
+/** Dirt collecting where wall meets floor — darkest at the junction, decaying
+  * exponentially to near full brightness `width` away. This is the ONE
+  * darkening in the room, and it is grime, not light: that is why it belongs
+  * only at the floor line and generalizes to no other edge.
   *
   * `dist` is measured differently by each caller — the floor's distance to the
   * plan boundary, a wall's height above it — because the junction is the same
@@ -544,23 +513,30 @@ val BeamCrossTexScale = 128.0
   * free — the same reason `roomNoise` is world-space, and it keeps holding when
   * a partition or an L's notch arrives.
   *
-  * At `GrimeNoiseScale` the field barely changes across the 8 cm band, so it
-  * effectively varies only ALONG the junction. That is what is wanted, and it
-  * is why this needs no per-edge tangent to work at any wall angle.
+  * The noise features run roughly half a meter, so the field barely changes
+  * across the band and effectively varies only ALONG the junction. That is
+  * what is wanted, and it is why this needs no per-edge tangent to work at any
+  * wall angle.
+  *
+  * **Bounded by the bake resolution, not by taste.** Floor and walls bake at
+  * `AmbienceTexScale` = 64 texels per meter, 1.56 cm per texel: a creep much
+  * beyond ~0.02 m has nothing to land on, and noise finer than this will crawl
+  * rather than resolve. Fine speckle wants a separate, higher-resolution grime
+  * input — not a raised ambience scale.
   */
 def grime(dist: FloatExpr, wp: Vec3Expr): FloatExpr =
-  val p = wp * GrimeNoiseScale
-  // How far the dirt creeps up, varying along the line.
-  val creep = p.simplexFbm(octaves = 3, seed = 41.0) * GrimeCreep
-  // How dark it gets where it does creep up — varied on its own, and at a
-  // different frequency, so the two do not move together and read as one
-  // stroke that merely got wider.
-  val darkest = lerp(
-    GrimeDarken,
-    1.0,
-    (p * 2.3).simplexFbm(octaves = 3, seed = 9.0).fit1101 * GrimePatchiness,
+  // The falloff shape is shared (`grimeExp`, or `grimeSmooth` for a band); the
+  // fields are this room's. Patch runs at a different frequency from creep, so
+  // the two do not move together and read as one stroke that merely got wider.
+  grimeExp(
+    dist,
+    creep = (wp * 0.9).simplexFbm(octaves = 3, seed = 41.0),
+    patch = (wp * 2.07).simplexFbm(octaves = 3, seed = 9.0).fit1101,
+    width = 0.06,
+    darken = 0.91,
+    creepAmount = 0.03,
+    patchiness = 0.3,
   )
-  lerp(darkest, 1.0, (dist + creep).smoothstep(0.0, GrimeWidth))
 
 /** The ambience field, given how far the point is from being ON a geometry
   * edge: 0 at an edge, 1 well clear of every one, smooth between.

@@ -1,6 +1,7 @@
 package sketches.templates.openspace
 
 import org.scalajs.dom.HTMLCanvasElement
+import sketchlib.shaders.room.*
 import sketchlib.utils.bake.*
 import sketchlib.utils.bloom.Bloom
 import sketchlib.utils.mirror.GaussianMirrorReflection
@@ -346,29 +347,6 @@ val Fades: EdgeFades = (
 
 // ---- The grime line ---------------------------------------------------------
 
-/** The dirt collecting where the wall meets the ground: darkest at the
-  * junction, back to full brightness `GrimeWidth` away. THE ONE DARKENING in
-  * the scene, and it is grime, not light — which is why it belongs only at the
-  * ground line and generalizes to no other edge.
-  *
-  * It is also the only contact cue the wall has. Standing on a mirror under an
-  * even sky, an object with no contact darkening floats; if this wall ever
-  * looks like it is hovering, this is the knob, not a shadow.
-  */
-val GrimeWidth = 0.06
-val GrimeDarken = 0.85 // brightness multiplier right at the junction
-
-/** How far the line wanders in and out along the junction, in meters, and how
-  * much its darkness varies independently of that (0 = none, 1 = it fades out
-  * entirely in the lightest patches).
-  *
-  * The creep is the one that matters: a band of constant width reads as painted
-  * on, an irregular one reads as accumulated. The patchiness stops the result
-  * looking like a single wobbly stroke.
-  */
-val GrimeCreep = 0.02
-val GrimePatchiness = 0.3
-
 /** The two grime FIELDS, in `[0, 1]`. Both are functions of WORLD XZ ONLY, and
   * that is load-bearing twice over.
   *
@@ -395,20 +373,33 @@ def patchField(xz: Vec2Expr): FloatExpr =
     .extendedFbmValue(octaves = 3, tilingPeriod = xzPeriod(PatchField.period), seed = 9.0)
     .fit1101
 
-/** The grime line itself, given a distance to the junction and the two fields
-  * sampled there. `dist` is measured differently by each caller — the ground's
-  * distance to the wall's footprint, the wall's height above the ground —
-  * because the junction is the same line reached from two directions.
+/** The dirt collecting where the wall meets the ground, given a distance to the
+  * junction and the two fields sampled there. THE ONE DARKENING in the scene,
+  * and it is grime, not light — which is why it belongs only at the ground line
+  * and generalizes to no other edge.
+  *
+  * `dist` is measured differently by each caller — the ground's distance to
+  * the wall's footprint, the wall's height above the ground — because the
+  * junction is the same line reached from two directions.
+  *
+  * It is also the only contact cue the wall has. Standing on a mirror under an
+  * even sky, an object with no contact darkening floats; if this wall ever
+  * looks like it is hovering, `width` / `darken` below are the knobs, not a
+  * shadow.
   */
 def grime(dist: FloatExpr, creep: FloatExpr, patch: FloatExpr): FloatExpr =
-  val darkest = lerp(GrimeDarken, 1.0, patch * GrimePatchiness)
+  // The falloff shape is shared (`grimeExp`, or `grimeSmooth` for a band).
   // `fit0111` re-centers the creep field so the line wanders BOTH ways: a
   // one-sided creep only ever widens the band, which reads as a thicker stroke
   // rather than an irregular one.
-  lerp(
-    darkest,
-    1.0,
-    (dist + creep.fit0111 * GrimeCreep).smoothstep(0.0, GrimeWidth),
+  grimeExp(
+    dist,
+    creep = creep.fit0111,
+    patch = patch,
+    width = 0.06,
+    darken = 0.85,
+    creepAmount = 0.02,
+    patchiness = 0.3,
   )
 
 // ---- Surface tints ----------------------------------------------------------
