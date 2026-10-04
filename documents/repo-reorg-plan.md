@@ -36,6 +36,20 @@ Target names:
 | `trival/scala-trivalibs`                 | `trivial-space/trivalibs-scala` | GH Pages docs → `trivial-space.github.io/trivalibs-scala/`      |
 | `trival/scala-graphics`                  | `trivial-space/sketches-scala`  | `sketches-scala.trivialspace.net` → `sketches.trivialspace.net` |
 
+Local paths (relative to this repo's root):
+
+| Path                                                | Repo                                          |
+| --------------------------------------------------- | --------------------------------------------- |
+| `.`                                                 | sketches-scala (this repo)                    |
+| `trivalibs/`                                        | trivalibs-scala (submodule)                   |
+| `../trivalibs/`                                     | trivalibs-scala (standalone clone)            |
+| `../../trivialspace/playground/`                    | sketches-old                                  |
+| `../../trivialspace/playground/projects/libs-wasm/` | trivalibs-rs (submodule, old Feb 2024 commit) |
+| `../../trivialspace/trivalibs/`                     | trivalibs-rs (standalone clone, current main) |
+| `../../rust/graphics/`                              | `trival/rust-graphics` (wgpu sketches)        |
+| `../../rust/graphics/trivalibs/`                    | trivalibs-rs (submodule, current main)        |
+| `../../trivialspace/website/`                       | website                                       |
+
 Current state (verified):
 
 - `trivial-space/playground` has already been renamed to `trivial-space/sketches`
@@ -47,16 +61,20 @@ Current state (verified):
   only, no routes). Its domain `sketches-scala.trivialspace.net` was set in the
   dashboard.
 - Website: CF Pages `trivialspace-website` (git-connected). 6 hrefs in
-  `trivialspace/website/src/data/data.ts` point to
+  `../../trivialspace/website/src/data/data.ts` point to
   `sketches.trivialspace.net/...`, and all of them are old-repo sketches.
 - trivalibs docs on GitHub Pages: `trival.github.io/scala-trivalibs/`. No repo
   links to it were found.
-- Local clones that need remote updates:
-  - `trivialspace/trivalibs` (Rust, current main, has painter + native).
-  - `trivialspace/playground/projects/libs-wasm`: a submodule of the same repo,
-    pinned to an old Feb 2024 commit (the wasm-only libs era).
-  - `scala/trivalibs`: a standalone clone of scala-trivalibs.
-  - `scala/graphics/trivalibs`: the submodule.
+- Rust sketches (`../../rust/graphics/`, `trival/rust-graphics`): wgpu +
+  Rust-GPU sketches that took trivalibs-rs beyond the TS playground (painter,
+  nostd shader utils). The Scala port was modelled on this state. It
+  references trivalibs-rs in `.gitmodules` and in a `README.md` link
+  (`trivial-space/trivalibs/tree/main/crates/trivalibs_painter`). It is not
+  deployed.
+- Every local clone in the paths table needs a remote update. The trivalibs-rs
+  submodule (`../../trivialspace/playground/projects/libs-wasm/`) is pinned to
+  the wasm-only libs era. The standalone clone has the painter and native
+  support.
 
 Decisions:
 
@@ -70,7 +88,12 @@ Decisions:
 - Drop the `sketches-scala.trivialspace.net` domain completely (no alias).
 - Keep the CF project and worker names (`trivialspace-sketches`,
   `scala-sketches`).
-- Keep the local dir names (`playground/projects/libs-wasm`, `scala/graphics`).
+- Keep the local dir names (see the paths table).
+- `trival/rust-graphics` stays where it is, in the `trival` namespace. Only
+  its trivalibs-rs references get updated. Most of its sketches were ported
+  to Scala as verification while the libs were being ported, so none of them
+  are relevant on their own anymore. That is unlike the TS playground
+  (sketches-old), whose sketches are still live and used.
 
 ## Steps
 
@@ -87,13 +110,12 @@ Each one gets confirmed before it runs.
 - [ ] `gh api -X POST repos/trival/scala-graphics/transfer -f new_owner=trivial-space -f new_name=sketches-scala`
 - [ ] trivalibs-scala: check that GitHub Pages is still enabled (source =
       Actions), then rerun `deploy-docs.yml`.
-- [ ] Update the local remotes (`git remote set-url origin …`) in playground,
-      `playground/projects/libs-wasm`, `trivialspace/trivalibs`,
-      `scala/graphics`, `scala/graphics/trivalibs` and `scala/trivalibs`.
+- [ ] Update the local remotes (`git remote set-url origin …`) in every path
+      from the paths table.
 
 ### 2. Code edits
 
-`trivialspace/playground`:
+`../../trivialspace/playground/` (sketches-old):
 
 - [ ] `.gitmodules`: change the libs-wasm url to
       `git@github.com:trivial-space/trivalibs-rs.git`, then run
@@ -112,7 +134,7 @@ Each one gets confirmed before it runs.
 - [ ] `.devcontainer/devcontainer.json`: change `trivial-space/libs-wasm` to
       `trivial-space/trivalibs-rs`.
 
-`scala/graphics`:
+`.` (this repo, sketches-scala):
 
 - [ ] `.gitmodules`: change the url to
       `https://github.com/trivial-space/trivalibs-scala.git`, then run
@@ -124,14 +146,23 @@ Each one gets confirmed before it runs.
       deploy at sketches.trivialspace.net.
 - [ ] `package.json`: rename to `sketches-scala` (optional, cosmetic).
 
-`trivialspace/trivalibs` (Rust):
+`../../trivialspace/trivalibs/` (trivalibs-rs):
 
 - [ ] `README.md`: rename the title to trivalibs-rs. Add a short "Language
       lines" note: this is the multi-target/native line and the model for
       trivalibs-scala, but web work prefers trivalibs-scala. Link to
       trivalibs-scala.
 
-`scala/graphics/trivalibs` (Scala):
+`../../rust/graphics/` (rust-graphics):
+
+- [ ] `.gitmodules`: change the url to
+      `git@github.com:trivial-space/trivalibs-rs.git`, then run
+      `git submodule sync`.
+- [ ] `README.md`: change the trivalibs_painter link to
+      `trivial-space/trivalibs-rs/...`. Optionally add a short note that the
+      Scala port (trivalibs-scala / sketches-scala) is the active web line.
+
+`trivalibs/` (trivalibs-scala submodule; afterwards pull in `../trivalibs/`):
 
 - [ ] `README.md`: rename the title to trivalibs-scala. Add a short lineage
       note: a port of the trivalibs-rs painter with extra Scala ergonomics,
@@ -139,7 +170,7 @@ Each one gets confirmed before it runs.
       trivalibs-rs.
 - [ ] Leave `documents/done/*` as historical.
 
-`trivialspace/website`:
+`../../trivialspace/website/`:
 
 - [ ] `src/data/data.ts`: change the 6 hrefs from `sketches.` to
       `sketches-old.`.
@@ -167,16 +198,17 @@ These are done in the dashboard or via the API, and each one gets confirmed.
 
 ### 4. Commits
 
-- [ ] One commit per repo: playground, trivalibs-rs (README), trivalibs-scala
-      (README), scala/graphics (submodule url + bump, wrangler, README),
-      website. Push only after approval.
+- [ ] One commit per repo: sketches-old, trivalibs-rs (README), rust-graphics
+      (submodule url, README), trivalibs-scala (README), sketches-scala
+      (submodule url + bump, wrangler, README), website. Push only after
+      approval.
 
 ## Verification
 
 - `gh repo view trivial-space/{sketches-old,trivalibs-rs,trivalibs-scala,sketches-scala}`
   resolves for all four.
-- `git submodule update --init` works in playground and scala/graphics
-  (ideally on a fresh clone).
+- `git submodule update --init` works in `../../trivialspace/playground/`,
+  `../../rust/graphics/` and `.` (ideally on a fresh clone).
 - `curl -sI https://sketches-old.trivialspace.net/works/homage/` returns 200.
 - `https://sketches.trivialspace.net/` serves the scala index (check the body).
   `sketches-scala.trivialspace.net` no longer resolves.
