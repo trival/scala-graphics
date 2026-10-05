@@ -9,6 +9,10 @@ are reduced renderings demonstrating a single painter feature in isolation.
 
 > **Work in progress** — both the library and the sketch workflow are beta.
 
+Live at [sketches.trivialspace.net](https://sketches.trivialspace.net): the
+Cloudflare Worker `sketches-scala` (static assets, `wrangler.jsonc`) rebuilds
+from Vite on every push to `main`.
+
 ## Prerequisites
 
 - [Bun](https://bun.sh)
@@ -25,7 +29,7 @@ bun install
 
 The `trivalibs` submodule is registered with an **HTTPS** URL in
 [.gitmodules](.gitmodules) so that anonymous/token-based clients (Cloudflare
-Pages builds, CI) can read and check it out without an SSH key.
+Workers Builds, CI) can read and check it out without an SSH key.
 
 If you contribute to the submodule, keep pushing over SSH with your key by
 adding this one-time global rewrite — fetches stay on HTTPS, pushes silently use
