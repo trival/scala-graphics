@@ -1,8 +1,8 @@
 # Repo reorg: promote the Scala line
 
-Status: **executed 2026-10-05.** Open: deleting the old Pages project
-`trivialspace-sketches`, and the local DNS check for `sketches.trivialspace.net`
-(see phases 6–7).
+Status: **executed 2026-10-05.** Open: only the local DNS check for
+`sketches.trivialspace.net` (phase 6). It resolves publicly; the local resolver
+still has "doesn't exist" cached.
 
 ## Context
 
@@ -282,7 +282,7 @@ finish the push: that is the way back to a working state.
 - [x] [you] Removed the custom domain `sketches.trivialspace.net` from
       `trivialspace-sketches`. Deleting the project failed ("too many
       deployments"), so the full delete moved to phase 7.
-- [ ] (moved to phase 7) Delete the Pages project `trivialspace-sketches` entirely. This
+- [x] (done in phase 7) Delete the Pages project `trivialspace-sketches` entirely. This
       drops its domains `sketches.trivialspace.net` and
       `trivialspace-sketches.pages.dev`. Nothing links to the `pages.dev` one
       (grepped all repos, 2026-10-05). If the dashboard asks for the custom
@@ -313,9 +313,10 @@ finish the push: that is the way back to a working state.
   - Commit and push.
 - [x] [you] Delete the worker `scala-sketches`. This also drops
       `sketches-scala.trivialspace.net` (no longer resolves, checked).
-- [ ] [you] Delete the old Pages deployments (the `!` wrangler loop, or the
+- [x] [you] Delete the old Pages deployments (the `!` wrangler loop, or the
       Cloudflare script from https://cfl.re/3CXesln), then delete the Pages
-      project `trivialspace-sketches`.
+      project `trivialspace-sketches`. Gone from `wrangler pages project list`;
+      `trivialspace-sketches.pages.dev` no longer responds.
 
 ## Verification
 
@@ -329,8 +330,8 @@ Results of the run on 2026-10-05:
       (`544953b`), rust-graphics (`924de38`) and sketches-scala (`effc267`).
 - [x] Every local clone in the paths table has `origin` on the new name.
 - [x] `https://sketches-old.trivialspace.net/works/homage/` returns 200.
-- [ ] Pages project `sketches-old` deploys on push (yes); `trivialspace-sketches`
-      is gone (pending).
+- [x] Pages project `sketches-old` deploys on push; `trivialspace-sketches` is
+      gone.
 - [x] `https://sketches.trivialspace.net/` serves the Scala index (via
       1.1.1.1). `sketches-scala.trivialspace.net` no longer resolves.
 - [x] Worker `sketches-scala` serves it; `scala-sketches` is gone.
