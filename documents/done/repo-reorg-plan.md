@@ -1,8 +1,6 @@
 # Repo reorg: promote the Scala line
 
-Status: **executed 2026-10-05.** Open: only the local DNS check for
-`sketches.trivialspace.net` (phase 6). It resolves publicly; the local resolver
-still has "doesn't exist" cached.
+Status: **completed 2026-10-05.** Archived in `documents/done/`.
 
 ## Context
 
@@ -298,7 +296,7 @@ finish the push: that is the way back to a working state.
       (check the body). Confirmed through Cloudflare's resolver (1.1.1.1). Local
       resolvers may still have "doesn't exist" cached for up to 30 min (SOA
       minimum 1800 s), from the time the record was gone.
-- [ ] [you] Check: the domain resolves locally too.
+- [x] [you] Check: the domain resolves locally too.
 
 ### Phase 7: cleanup
 
