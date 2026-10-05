@@ -1,6 +1,6 @@
-# scala-graphics — sketch playground
+# sketches-scala — sketch playground
 
-This repo is the playground for experimenting with the [trivalibs](trivalibs/)
+This repo is the playground for experimenting with the [trivalibs-scala](trivalibs/)
 Scala.js WebGPU library. The library itself lives in the `trivalibs/` submodule
 (sources, examples, tests). This outer repo is for **sketches** — complete
 pieces that stand on their own, from quick experiments to finished works, built

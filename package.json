@@ -1,5 +1,5 @@
 {
-	"name": "scala-graphics",
+	"name": "sketches-scala",
 	"type": "module",
 	"scripts": {
 		"sketch": "bun scripts/sketch.ts",
