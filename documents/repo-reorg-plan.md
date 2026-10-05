@@ -86,8 +86,11 @@ Decisions:
   working.
 - `trivalibs-rs` stays active (rename only).
 - Drop the `sketches-scala.trivialspace.net` domain completely (no alias).
-- Keep the CF project and worker names (`trivialspace-sketches`,
-  `scala-sketches`).
+- CF Pages project `trivialspace-sketches` becomes `sketches-old`. The old
+  name sounds too official for the aged project. Pages projects can't be
+  renamed, so this means a new git-connected project plus deleting the old one
+  after the domain swap.
+- Keep the worker name `scala-sketches`.
 - Keep the local dir names (see the paths table).
 - `trival/rust-graphics` stays where it is, in the `trival` namespace. Only
   its trivalibs-rs references get updated. Most of its sketches were ported
@@ -179,11 +182,14 @@ Each one gets confirmed before it runs.
 
 These are done in the dashboard or via the API, and each one gets confirmed.
 
-1. [ ] Pages `trivialspace-sketches`: add the custom domain
+1. [ ] Create Pages project `sketches-old`, git-connected to
+       `trivial-space/sketches-old` (after the sketches-old commit is pushed).
+       Copy build command, output dir, root dir and env vars from
+       `trivialspace-sketches`. Check that the first build succeeds (incl. the
+       trivalibs-rs submodule clone) and that `sketches-old.pages.dev` serves.
+2. [ ] Pages `sketches-old`: add the custom domain
        `sketches-old.trivialspace.net`. Wait until it is active, then check
        that the 6 sketch URLs load there.
-2. [ ] Pages git integration: check that it still tracks the renamed repo
-       `sketches-old`, and reconnect it if it doesn't.
 3. [ ] Commit and push the website change so it deploys automatically. Check
        that the iframes on www.trivialspace.net load from sketches-old.
 4. [ ] Pages `trivialspace-sketches`: remove the custom domain
@@ -195,6 +201,9 @@ These are done in the dashboard or via the API, and each one gets confirmed.
 6. [ ] Remove the custom domain `sketches-scala.trivialspace.net` from the
        worker `scala-sketches` (Domains & Routes), and remove any leftover DNS
        record.
+7. [ ] Delete Pages project `trivialspace-sketches` (frees
+       `trivialspace-sketches.pages.dev`). First grep the website and repos for
+       `trivialspace-sketches.pages.dev` links.
 
 ### 4. Commits
 
@@ -210,6 +219,8 @@ These are done in the dashboard or via the API, and each one gets confirmed.
 - `git submodule update --init` works in `../../trivialspace/playground/`,
   `../../rust/graphics/` and `.` (ideally on a fresh clone).
 - `curl -sI https://sketches-old.trivialspace.net/works/homage/` returns 200.
+- Pages project `sketches-old` deploys on push; `trivialspace-sketches` is
+  gone.
 - `https://sketches.trivialspace.net/` serves the scala index (check the body).
   `sketches-scala.trivialspace.net` no longer resolves.
 - On www.trivialspace.net, every gallery iframe renders.
