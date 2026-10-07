@@ -9,7 +9,7 @@ root = true
 	insert_final_newline = true
 	end_of_line = lf
 
-[*.{yml,yaml,md,json,scala,sbt}]
+[*.{yml,yaml,md,json*,scala,sbt}]
 	indent_style = space
 
 [*.md]
