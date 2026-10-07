@@ -21,66 +21,72 @@ This repo is the current generation of that work. Its predecessor,
 [sketches-old](https://github.com/trivial-space/sketches-old) (WebGL, a
 TypeScript painter and Rust/wasm libs), is frozen and stays live at
 [sketches-old.trivialspace.net](https://sketches-old.trivialspace.net). Work now
-continues here, on
-[trivalibs-scala](https://github.com/trivial-space/trivalibs-scala): a
-type-safe Scala.js toolkit for WebGPU, with a Scala shader DSL, included as the
+continues here and on
+[trivalibs-scala](https://github.com/trivial-space/trivalibs-scala): a type-safe
+Scala.js toolkit for WebGPU, with a Scala shader DSL, included as the
 `trivalibs/` submodule.
 
-## What happens here
+## Current work focus
 
-This repo is the place where the trivial space project itself is
-developed, along three lines:
+This repo is the place where the trivial space project itself is developed,
+along three lines:
 
-1. **Tooling.** New library features get their first real use here, and every
-   non-trivial piece of shared machinery gets a test sketch that renders it in
-   isolation. Proven building blocks move down into `src/` or into trivalibs
-   itself.
+1. **Tooling.** The trivalibs libraries are developed directly alongside the
+   sketches, in the submodule. New library features get their first real use
+   here, and every non-trivial piece of shared machinery is tested in isolated
+   sketches.
 2. **Generative art.** Shader art, procedural textures and — one main focus —
    **paint stroke simulation**, built on the custom line geometry from
-   trivalibs: brush strokes with varying width, bevels and painterly shading,
-   composed into generative paintings.
-3. **Virtual art spaces.** Walkable rooms and open spaces with baked surfaces,
-   light, reflections and bloom — a stage being built up step by step towards a
-   **virtual gallery** in which these generative works, or any other kind of
+   trivalibs: brush strokes with rich configuration options and custom painterly
+   shading, composed into generative paintings.
+3. **Virtual art spaces.** Walkable rooms and open spaces with advanced
+   composable lighting algorithms — a stage being built up step by step towards
+   a **virtual gallery** in which the generative works, or any other kind of
    art, can be exhibited.
-
-The pillars feed each other: the spaces need content to show, the artworks need
-a place to be shown, and both drive what the libraries have to learn next.
 
 ### Current focus: exhibition spaces as templates
 
 The rooms are not built as one gallery but as a **stage for many exhibitions**:
-each show of procedurally generated work gets its own room, re-tuned around its
-content — palette, proportions, light. What stays fixed is the vocabulary
-(baked world-space noise surfaces, soft corner fades, contact grime, hung pieces
-with shadows, floor mirror, bloom), not its values, and what hangs where is left
-entirely to the curation of each show.
+each show of virtual art work gets its own room, re-tuned around its curated
+content — the spaces palette, proportions, light, textures. What stays reusable
+is the vocabulary of composable building blocks (procedural baked ambient
+lighting, soft corner fades, contact grime, hung pieces with shadows, floor
+reflection, light effects, surface and floor patterns). With them each curation
+can get its distinct tailored environment.
 
-To make that cheap, the room is being turned into a family of readable
-**templates** in `sketches/templates/rooms/`, built on any floor plan rather
-than a box: a recessed light plane behind a grid ceiling, camera confinement
-from the same plan data, and free-standing partitions. So far: `grid-canvases`
-(box room), `l-room` (concave plan) and `hex-partitions` (hexagon, triangular
-raster, partitions). The shared plan geometry has moved into `src/utils/room/`,
-with unit tests. The first real exhibition is the next step. Design and progress
-are recorded in
-[grid-ceiling-rooms-plan.md](documents/grid-ceiling-rooms-plan.md) and
+The aim is a growing collection of algorithms, shaders and code patterns that
+can be chosen and combined to create a space tailored to the art it exhibits.
+The room **templates** in `sketches/templates/rooms/` are meant to become
+documented, explorable examples of that: anyone wanting to build their own space
+should be able to study the configuration options and how the algorithms
+interplay, and understand and tweak any part of the rendering to their needs.
+The first ones — `grid-canvases`, `l-room` and `hex-partitions` — explore
+arbitrary floor plans, a grid ceiling and free-standing partitions; more are to
+follow.
+
+This is all work in progress: the template structure, the APIs and consistent
+usage patterns are still taking shape, and changes are to be expected. Some
+patterns get extracted into shared functions in `src/` along the way — like the
+floor plan geometry or contact grime — while others are meant to stay explicit
+in the templates, to be copied into your own spaces. Design and progress are
+recorded in [grid-ceiling-rooms-plan.md](documents/grid-ceiling-rooms-plan.md)
+and
 [room-templates-implementation.md](documents/room-templates-implementation.md).
 
 ## Contents
 
-Each sketch is a self-contained directory under `sketches/`, linked from the
-nav page at [sketches/index.html](sketches/index.html).
+Each sketch is a self-contained directory under `sketches/`, linked from the nav
+page at [sketches/index.html](sketches/index.html).
 
-| Folder                   | What is in it                                                                                                  |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `strokes/`               | Generative brush paintings from trivalibs line geometry                                                        |
-| `textures/`, `gradients` | Procedural shader surfaces — tile grids, line bands, plates, gradients                                         |
-| `rooms/`                 | Walkable art spaces — the base room, hung canvases, columns                                                    |
-| `templates/`             | Documented starting points meant to be read and copied: room templates on arbitrary floor plans, an open space |
-| `experiments/`           | Attempts kept as proof of concept, not continued                                                               |
-| `tests/`                 | Single-feature renders of shared machinery — bloom, texture baking, line geometry debugging                    |
-| `base-triangle/`         | The minimal starter sketch                                                                                     |
+| Folder                   | What is in it                                                    |
+| ------------------------ | ---------------------------------------------------------------- |
+| `strokes/`               | Generative brush paintings from trivalibs line geometry          |
+| `textures/`, `gradients` | Procedural shader surfaces                                       |
+| `rooms/`                 | Walkable art spaces                                              |
+| `templates/`             | Documented starting points meant to be read and copied           |
+| `experiments/`           | Attempts and experiments kept as proof of concept, not continued |
+| `tests/`                 | Single-feature renders of shared machinery                       |
+| `base-triangle/`         | The minimal starter sketch                                       |
 
 Shared building blocks used by several sketches live in `src/` (namespace
 `sketchlib.*`): painter-level utilities like bloom, mirror reflections, texture
@@ -89,9 +95,9 @@ baking and room geometry (`src/utils/`), and reusable shader-DSL blocks
 
 ## Contributing & reuse
 
-This is the working studio of a personal art project, not a community library —
-its direction follows the trivial space work, so it isn't set up for outside
-contributions. The library is the place for that:
+This is the work in progress repository of the trivial space art project, not so
+much a community library — it isn't set up for outside contributions. The
+library is the place for that:
 [trivalibs-scala](https://github.com/trivial-space/trivalibs-scala).
 
 It is, however, meant to work as a **template** for your own trivalibs
@@ -108,8 +114,13 @@ Prerequisites:
 - A WebGPU-capable browser (recent Chrome/Edge, or Firefox with the flag
   enabled)
 
+If you want to experiment with the code yourself, **fork the repo** on GitHub
+and clone your fork rather than this repository. That way your sketches have a
+home of their own, and you can still pull in upstream changes when you want
+them.
+
 ```bash
-git clone --recurse-submodules https://github.com/trivial-space/sketches-scala.git
+git clone --recurse-submodules https://github.com/<you>/sketches-scala.git
 cd sketches-scala
 bun install
 ```
@@ -118,10 +129,14 @@ bun install
 
 ### The trivalibs submodule
 
-trivalibs is not published as a package; sketches compile directly against its
-sources in `trivalibs/src`. That keeps the library editable alongside the
+trivalibs is not published as a package yet; sketches compile directly against
+its sources in `trivalibs/src`. That keeps the library editable alongside the
 sketches — a missing feature is added in the submodule, not worked around in a
 sketch. If you plan to change the library, point the submodule at your own fork.
+
+Publishing trivalibs as a standalone package, to be included as a regular
+dependency, is planned — but only once its API has stabilized. Until then the
+submodule is the way to use it.
 
 The submodule is registered with an **HTTPS** URL in [.gitmodules](.gitmodules)
 so that anonymous/token-based clients (Cloudflare Workers Builds, CI) can check
@@ -137,10 +152,14 @@ After that, commit and push inside `trivalibs/` as usual. Verify with
 
 ## Workflow
 
-A sketch is compiled in isolation — the only inputs are its own sources,
-`src/`, `trivalibs/src/` and the root `project.scala`. The output lands in
-`<sketch-dir>/main.js` (checked into git for now) and is loaded by the sketch's
-`index.html` as an ES module.
+A sketch is compiled in isolation — the only inputs are its own sources, `src/`,
+`trivalibs/src/` and the root `project.scala`. The output lands in
+`<sketch-dir>/main.js` and is loaded by the sketch's `index.html` as an ES
+module.
+
+The compiled `main.js` files are checked into git on purpose: the deployment
+only runs the Vite build over them, so it needs no Scala toolchain. Rebuild a
+sketch before committing changes to its sources.
 
 ### Build and serve
 
@@ -154,8 +173,9 @@ bun run test                   # munit tests for shared utils
 ```
 
 `<path>` is the sketch directory, with or without a leading `sketches/` (so tab
-completion from the project root works), e.g. `bun run sketch:watch
-base-triangle` or `bun run sketch:watch sketches/rooms/canvases/`.
+completion from the project root works), e.g.
+`bun run sketch:watch base-triangle` or
+`bun run sketch:watch sketches/rooms/canvases/`.
 
 Run `sketch:watch` and `dev` side by side to iterate: Vite serves `sketches/` as
 its root, so each sketch is reachable at its relative path (`/base-triangle/`,
@@ -165,8 +185,8 @@ its root, so each sketch is reachable at its relative path (`/base-triangle/`,
 
 ### Add a sketch
 
-1. Create `sketches/<category>/my-sketch/` (the category folder is optional),
-   or `cp -r sketches/base-triangle` as a seed.
+1. Create `sketches/<category>/my-sketch/` (the category folder is optional), or
+   `cp -r sketches/base-triangle` as a seed.
 2. Add `MySketch.scala` with a package matching the path (e.g.
    `package sketches.category.my_sketch`) and an entry point that takes the
    canvas:
@@ -180,22 +200,23 @@ its root, so each sketch is reachable at its relative path (`/base-triangle/`,
 
    ```html
    <script type="module">
-     import { sketch } from './main.js'
-     sketch(document.getElementById('canvas'))
+   	import { sketch } from './main.js'
+   	sketch(document.getElementById('canvas'))
    </script>
    ```
 
 4. Link it from `sketches/index.html` under the matching category.
 5. `bun run sketch <category>/my-sketch`.
 
-The sketch never looks up its canvas or runs on import. Keeping the DOM out of
-sketch code means the same bundle can be driven by a non-browser host such as
+The sketch scala code should not look up its canvas or run on import. Keeping
+the DOM out of sketch code means the same bundle can be driven by a non-browser
+host such as
 [NativeScript Canvas](https://canvas.nativescript.org/canvas/installation),
 which supplies a canvas object but no `document`.
 
-`project.scala` gives Metals one workspace covering all sketches plus the library
-sources, so the IDE type-checks everything together while each sketch still
-builds on its own.
+`project.scala` gives Metals one workspace covering all sketches plus the
+library sources, so the IDE type-checks everything together while each sketch
+still builds on its own.
 
 ### Deployment
 
@@ -243,9 +264,9 @@ a **dynamic port**:
 ```jsonc
 // .mcp.json  (generated by Metals; do not edit or commit)
 {
-  "mcpServers": {
-    "metals": { "type": "http", "url": "http://localhost:<port>/mcp" },
-  },
+	"mcpServers": {
+		"metals": { "type": "http", "url": "http://localhost:<port>/mcp" },
+	},
 }
 ```
 
@@ -277,8 +298,8 @@ reconnect, or restart the session.
 
 **Outside VS Code.** The MCP server lives only as long as a Metals instance, and
 Metals is normally launched by an editor. For a terminal Claude session keep an
-editor with Metals open in the background so the server stays up and
-`.mcp.json` stays current.
+editor with Metals open in the background so the server stays up and `.mcp.json`
+stays current.
 
 See
 [trivalibs/README.md](trivalibs/README.md#metals-mcp-live-api-for-editors--ai-agents)
@@ -298,7 +319,7 @@ for the library-side notes.
 │   └── <category>/<name>/        # one sketch (nesting depth is free)
 │       ├── <Name>.scala
 │       ├── index.html
-│       └── main.js               # scala-cli output (in git, for now)
+│       └── main.js               # scala-cli output (in git, for deployment)
 ├── src/                # shared sketch utilities (sketchlib.*)
 ├── test/               # munit tests for src/
 ├── documents/          # plans and design notes
