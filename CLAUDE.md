@@ -41,7 +41,7 @@ be nested in arbitrary category folders (e.g. `sketches/geometry/voronoi/`);
 sketches/<path>/
 ├── <Name>.scala     # the sketch source
 ├── index.html       # imports ./main.js and calls sketch(canvas)
-└── main.js          # scala-cli output (checked into git, for now)
+└── main.js          # scala-cli output (checked into git, for deployment)
 ```
 
 `sketches/base-triangle/` is the minimal starter — `cp -r` it to seed a new

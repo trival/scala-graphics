@@ -6,19 +6,21 @@
 // trivalibs submodule src + project.scala contribute to its bundle — never a
 // bare ".", which would pull in unrelated sources.
 
-import { join } from "node:path"
+import { join } from 'node:path'
 
 export const sketchPackageArgs = (
 	sketchDir: string,
 	opts: { watch?: boolean } = {},
 ): string[] => [
-	"--power", "package",
+	'--power',
+	'package',
 	sketchDir,
-	"src",
-	"trivalibs/src",
-	"project.scala",
-	"--js",
-	"-o", join(sketchDir, "main.js"),
-	"-f",
-	...(opts.watch ? ["-w"] : []),
+	'src',
+	'trivalibs/src',
+	'project.scala',
+	'--js',
+	'-o',
+	join(sketchDir, 'main.js'),
+	'-f',
+	...(opts.watch ? ['-w'] : []),
 ]

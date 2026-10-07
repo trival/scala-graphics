@@ -2,16 +2,16 @@
 // Build a single sketch with isolated inputs.
 // Usage: bun scripts/sketch.ts <relative/path/from/sketches> [--watch|-w]
 
-import { existsSync } from "node:fs"
-import { join, normalize } from "node:path"
-import { sketchPackageArgs } from "./build.ts"
+import { existsSync } from 'node:fs'
+import { join, normalize } from 'node:path'
+import { sketchPackageArgs } from './build.ts'
 
 const argv = process.argv.slice(2)
-const watch = argv.includes("--watch") || argv.includes("-w")
-const rawName = argv.find(a => !a.startsWith("-"))
+const watch = argv.includes('--watch') || argv.includes('-w')
+const rawName = argv.find((a) => !a.startsWith('-'))
 if (!rawName) {
 	console.error(
-		"usage: bun scripts/sketch.ts <sketches/path | path/from/sketches> [--watch|-w]",
+		'usage: bun scripts/sketch.ts <sketches/path | path/from/sketches> [--watch|-w]',
 	)
 	process.exit(1)
 }
@@ -20,19 +20,21 @@ if (!rawName) {
 //   bun run sketch sketches/geometry/voronoi  (tab-completed)
 //   bun run sketch geometry/voronoi           (typed directly)
 // Strip an optional leading "sketches/" and any trailing slash from tab completion.
-const name = normalize(rawName).replace(/^sketches[\/\\]/, "").replace(/[\/\\]$/, "")
+const name = normalize(rawName)
+	.replace(/^sketches[\/\\]/, '')
+	.replace(/[\/\\]$/, '')
 
-const sketchDir = join("sketches", name)
+const sketchDir = join('sketches', name)
 if (!existsSync(sketchDir)) {
 	console.error(`sketch not found: ${sketchDir}`)
 	process.exit(1)
 }
 const args = sketchPackageArgs(sketchDir, { watch })
 
-const proc = Bun.spawn(["scala-cli", ...args], {
-	stdout: "pipe",
-	stderr: "pipe",
-	stdin: "inherit",
+const proc = Bun.spawn(['scala-cli', ...args], {
+	stdout: 'pipe',
+	stderr: 'pipe',
+	stdin: 'inherit',
 })
 
 const ansi = /\x1b\[[0-9;]*m/g
@@ -47,19 +49,19 @@ const formatMs = (ms: number) =>
 let startTime: number | undefined = performance.now()
 
 const annotate = (line: string): string => {
-	const plain = line.replace(ansi, "")
-	if (plain.startsWith("Compiling project")) {
+	const plain = line.replace(ansi, '')
+	if (plain.startsWith('Compiling project')) {
 		startTime = performance.now()
 		return line
 	}
-	if (plain.startsWith("Wrote ") && startTime !== undefined) {
+	if (plain.startsWith('Wrote ') && startTime !== undefined) {
 		const ms = performance.now() - startTime
 		startTime = undefined
 		return `${line} [${formatMs(ms)}]`
 	}
 	if (
-		(plain.startsWith("Error compiling") ||
-			plain.startsWith("Compilation failed")) &&
+		(plain.startsWith('Error compiling') ||
+			plain.startsWith('Compilation failed')) &&
 		startTime !== undefined
 	) {
 		const ms = performance.now() - startTime
@@ -75,16 +77,16 @@ const pipe = async (
 ) => {
 	const reader = stream.getReader()
 	const decoder = new TextDecoder()
-	let buffer = ""
+	let buffer = ''
 	while (true) {
 		const { done, value } = await reader.read()
 		if (done) break
 		buffer += decoder.decode(value, { stream: true })
 		let idx: number
-		while ((idx = buffer.indexOf("\n")) !== -1) {
+		while ((idx = buffer.indexOf('\n')) !== -1) {
 			const line = buffer.slice(0, idx)
 			buffer = buffer.slice(idx + 1)
-			out.write(annotate(line) + "\n")
+			out.write(annotate(line) + '\n')
 		}
 	}
 	if (buffer.length > 0) out.write(annotate(buffer))

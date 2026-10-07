@@ -2,10 +2,10 @@ import { readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { defineConfig } from 'vite'
 
-const sketchesDir = resolve(__dirname, 'sketches')
+const sketchesDir = resolve(import.meta.dirname, 'sketches')
 
 // Walks `sketches/` recursively. Every directory containing an `index.html`
-// is treated as a sketch and added as a rollup input. The root nav page is
+// is treated as a sketch and added as a build input. The root nav page is
 // included under the "index" key.
 const sketchInputs = () => {
   const inputs: Record<string, string> = {}
@@ -36,7 +36,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: sketchInputs(),
     },
   },
