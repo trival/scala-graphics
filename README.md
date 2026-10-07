@@ -1,7 +1,7 @@
 # trivial space sketches
 
 The experimental studio of [trivial space](https://www.trivialspace.net) —
-generative art and virtual art spaces for the web, written in Scala.js on
+generative art and virtual exhibition spaces for the web, written in Scala.js on
 WebGPU.
 
 Live at [sketches.trivialspace.net](https://sketches.trivialspace.net).
